@@ -27,10 +27,10 @@ from marvin.utils.datamodel.drp import datamodel
 from marvin.utils.general import FuzzyDict, get_nsa_data
 
 from .core import MarvinToolsClass
-from .mixins import NSAMixIn
+from .mixins import GetApertureMixIn, NSAMixIn
 
 
-class Cube(MarvinToolsClass, NSAMixIn):
+class Cube(MarvinToolsClass, NSAMixIn, GetApertureMixIn):
     """A class to interface with MaNGA DRP data cubes.
 
     This class represents a fully reduced DRP data cube, initialised either
@@ -605,111 +605,3 @@ class Cube(MarvinToolsClass, NSAMixIn):
         maps = marvin.tools.maps.Maps(**kwargs)
         maps._cube = self
         return maps
-
-    def getAperture(self, coords, radius, mode='pix', weight=True,
-                    return_type='mask'):
-        """Returns the spaxel in a circular or elliptical aperture.
-
-        Returns either a mask of the same shape as the cube with the spaxels
-        within an aperture, or the integrated spaxel from combining the spectra
-        for those spaxels.
-
-        The centre of the aperture is defined by ``coords``, which must be a
-        tuple of ``(x,y)`` (if ``mode='pix'``) or ``(ra,dec)`` coordinates
-        (if ``mode='sky'``). ``radius`` defines the radius of the circular
-        aperture, or the parameters of the aperture ellipse.
-
-        If ``weight=True``, the returned mask indicated the fraction of the
-        spaxel encompassed by the aperture, ranging from 0 for spaxels not
-        included to 1 for pixels totally included in the aperture. This
-        weighting is used to return the integrated spaxel.
-
-        Parameters:
-            coords (tuple):
-                Either the ``(x,y)`` or ``(ra,dec)`` coordinates of the centre
-                of the aperture.
-            radius (float or tuple):
-                If a float, the radius of the circular aperture. If
-                ``mode='pix'`` it must be the radius in pixels; if
-                ``mode='sky'``, ``radius`` is in arcsec. To define an
-                elliptical aperture, ``radius`` must be a 3-element tuple with
-                the first two elements defining the major and minor semi-axis
-                of the ellipse, and the third one the position angle in degrees
-                from North to East.
-            mode ({'pix', 'sky'}):
-                Defines whether the values in ``coords`` and ``radius`` refer
-                to pixels in the cube or angles on the sky.
-            weight (bool):
-                If ``True``, the returned mask or integrated spaxel will be
-                weighted by the fractional pixels in the aperture.
-            return_type ({'mask', 'mean', 'median', 'sum', 'spaxels'}):
-                The type of data to be returned.
-
-        Returns:
-            result:
-                If ``return_type='mask'``, this methods returns a 2D mask with
-                the shape of the cube indicating the spaxels included in the
-                aperture and, if appliable, their fractional contribution to
-                the aperture. If ``spaxels``, both the mask (flattened to a
-                1D array) and the :class:`~marvin.tools.spaxel.Spaxel`
-                included in the aperture are returned. ``mean``, ``median``,
-                or ``sum`` will allow arithmetic operations with the spaxels
-                in the aperture in the future.
-
-        Example:
-            To get the mask for a circular aperture centred in spaxel (5, 7)
-            and with radius 5 spaxels
-
-                >>> mask = cube.getAperture((5, 7), 5)
-                >>> mask.shape
-                (34, 34)
-
-            If you want to get the spaxels associated with that mask
-
-                >>> mask, spaxels = cube.getAperture((5, 7), 5, return_type='spaxels')
-                >>> len(spaxels)
-                15
-        """
-
-        raise NotImplementedError('getAperture is not currently implemented.')
-
-    #     assert return_type in ['mask', 'mean', 'median', 'sum', 'spaxels']
-    #
-    #     if return_type not in ['mask', 'spaxels']:
-    #         raise marvin.core.exceptions.MarvinNotImplemented(
-    #             'return_type={0} is not yet implemented'.format(return_type))
-    #
-    #     if not photutils:
-    #         raise MarvinError('getAperture currently requires photutils.')
-    #
-    #     if mode != 'pix':
-    #         raise marvin.core.exceptions.MarvinNotImplemented(
-    #             'mode={0} is not yet implemented'.format(mode))
-    #
-    #     if not np.isscalar(radius):
-    #         raise marvin.core.exceptions.MarvinNotImplemented(
-    #             'elliptical apertures are not yet implemented')
-    #
-    #     data_mask = np.zeros(self.shape)
-    #
-    #     if weight:
-    #         phot_mode = ''
-    #     else:
-    #         phot_mode = 'center'
-    #
-    #     coords = np.atleast_2d(coords) + 0.5
-    #
-    #     mask = photutils.aperture_funcs.get_circular_fractions(
-    #         data_mask, coords, radius, phot_mode, 0)
-    #
-    #     if return_type == 'mask':
-    #         return mask
-    #
-    #     if return_type == 'spaxels':
-    #         mask_idx = np.where(mask)
-    #         spaxels = self.getSpaxel(x=mask_idx[0], y=mask_idx[1],
-    #                                  xyorig='lower')
-    #
-    #         fractions = mask[mask_idx]
-    #
-    #         return (fractions, spaxels)
