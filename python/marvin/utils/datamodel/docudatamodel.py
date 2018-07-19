@@ -6,7 +6,7 @@
 # @Author: Brian Cherinka
 # @Date:   2017-11-21 11:56:56
 # @Last modified by:   Brian Cherinka
-# @Last Modified time: 2018-07-19 00:57:56
+# @Last Modified time: 2018-07-19 15:42:46
 
 from __future__ import print_function, division, absolute_import
 from docutils import nodes
@@ -319,9 +319,10 @@ def _format_command(name, command, **kwargs):
     # vacs
     if 'vac' in kwargs:
         vac_release = kwargs.get('vac', None)
-        vacdm = command[vac_release]
-        for line in _format_vacs(vacdm.vacs, vacdm.release):
-            yield line
+        if vac_release and vac_release in command:
+            vacdm = command[vac_release]
+            for line in _format_vacs(vacdm.vacs, vacdm.release):
+                yield line
 
 
 class DataModelDirective(rst.Directive):

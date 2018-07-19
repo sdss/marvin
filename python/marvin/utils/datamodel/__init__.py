@@ -10,9 +10,8 @@
 
 from __future__ import print_function, division, absolute_import
 from collections import OrderedDict
-from marvin import config, log
+from marvin import config
 import six
-import os
 
 
 class MetaDataModel(type):
