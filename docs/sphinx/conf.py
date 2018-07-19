@@ -366,7 +366,7 @@ extensions += [matplotlib.sphinxext.plot_directive.__name__]
 
 def get_test_data():
 
-    url = 'https://data.sdss.org/sas/mangawork/users/u0931042/mangawork_rtd.tar.gz'
+    url = 'https://www.dropbox.com/s/mdb02ui9mwhl6m3/mangawork_rtd.tar.gz?dl=0'
 
     sas_path = os.path.expanduser('~/sas')
 
