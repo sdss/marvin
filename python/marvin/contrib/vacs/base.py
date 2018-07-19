@@ -6,7 +6,7 @@
 # @Author: Brian Cherinka
 # @Date:   2018-06-21 17:01:09
 # @Last modified by:   Brian Cherinka
-# @Last Modified time: 2018-07-18 23:33:56
+# @Last Modified time: 2018-07-19 00:04:40
 
 from __future__ import absolute_import, division, print_function
 
@@ -47,8 +47,9 @@ class VACMixIn(object, six.with_metaclass(abc.ABCMeta)):
 
     """
 
-    # The name of the VAC.
+    # The name and description of the VAC.
     name = None
+    description = None
 
     def __init__(self):
 
@@ -58,7 +59,7 @@ class VACMixIn(object, six.with_metaclass(abc.ABCMeta)):
             self.rsync_access = sdss_access.sync.RsyncAccess()
 
     def __repr__(self):
-        return '<VAC (name={0})>'.format(self.name)
+        return '<VAC (name={0}, description={1})>'.format(self.name, self.description)
 
     @abc.abstractmethod
     def get_data(self, parent_object):
@@ -172,13 +173,9 @@ class VACMixIn(object, six.with_metaclass(abc.ABCMeta)):
         if name is None:
             name = self.name
 
-        # Expand any wildcards present in the path_params
-        if '*' in path_params.values():
+        # check for and expand any wildcards present in the path_params
+        if self.rsync_access.any(name, **path_params):
             files = self.rsync_access.expand(name, **path_params)
-        else:
-            files = self.rsync_access.full(name, **path_params)
-
-        if len(files) > 0:
             return files[0]
         else:
             return False
