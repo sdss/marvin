@@ -33,7 +33,7 @@ Marvin Tools provide:
 Getting started
 ---------------
 
-We call Marvin galaxy Tools to the three main classes (`~cube.Cube`, `~maps.Maps`, and `~modelcube.ModelCube`) associated to the analogous DRP and DAP data products, the `quantities <marvin-quantities>` representing multidimensional data, and a variety of utilities and mixins that provide additional functionality. Sub-region galaxy tools (`~spaxel.Spaxel` and `~spaxel.Bin`) are explained `in their own section <marvin-subregion-tools>`. The three main Tools classes inherit from `~core.core.MarvinToolsClass` and thus much of their functionality and logic is shared. In this section we will prominently use the `~cube.Cube` but most of what we explain here can also be applied to the `~maps.Maps` and `~modelcube.ModelCube`.
+We call Marvin galaxy Tools to the three main classes (`~cube.Cube`, `~maps.Maps`, and `~modelcube.ModelCube`) associated to the analogous DRP and DAP data products, the `quantities <marvin-quantities>` representing multidimensional data, and a variety of utilities and mixins that provide additional functionality. Sub-region galaxy tools (`~spaxel.Spaxel` and `~spaxel.Bin`) are explained `in their own section <marvin-subregion-tools>`. The three main Tools classes inherit from `~tools.core.MarvinToolsClass` and thus much of their functionality and logic is shared. In this section we will prominently use the `~cube.Cube` but most of what we explain here can also be applied to the `~maps.Maps` and `~modelcube.ModelCube`.
 
 All the Tools classes can be accessed from the :ref:`marvin.tools <marvin-tools-ref>` module. Let's load a DRP cube ::
 
@@ -196,10 +196,82 @@ See the :ref:`datamodel <marvin-datamodel>` section for more information on how 
 
 Note that the `~marvin.tools.quantities.map.Map.plot` method returns the matplotlib `~matplotlib.figure.Figure` and `~matplotlib.axes.Axes` for the plot. We can use those to modify or save the plot. :ref:`Marvin plotting routines <marvin-plotting>` try to select the best parameters, colour maps, and dynamic ranges. You can modify those by passing extra arguments to `~marvin.tools.quantities.map.Map.plot`. You can learn more in the :ref:`Map plotting <marvin-utils-plot-map>` section. We will talk about the `~marvin.tools.quantities.map.Map` class in detail in :ref:`marvin-quantities` and in :ref:`marvin-map`.
 
-- Targeting bits
-- Quality bits
-- Downloading a file
-- Get spaxel + slicing
+Let's take a step back and go back to ``hyb_maps``, our `~marvin.tools.maps.Maps` instance. We can access the `targeting bits <~marvin.tools.core.MarvinToolsClass.target_flags>` for that galaxy (for an introduction to maskbits check `this page <https://www.sdss.org/dr14/algorithms/bitmasks/>`) ::
+
+    >>> hyb_maps.target_flags
+    [<Maskbit 'MANGA_TARGET1' ['PRIMARY_PLUS_COM', 'COLOR_ENHANCED_COM', 'PRIMARY_v1_1_0', 'COLOR_ENHANCED_COM2', 'PRIMARY_v1_2_0']>,
+     <Maskbit 'MANGA_TARGET2' []>,
+     <Maskbit 'MANGA_TARGET3' []>]
+
+Note that in this case the galaxy belongs to the primary sample from the final target selection (``PRIMARY_v1_2_0``) as well as to the primary and colour enhanced samples from several commissioning target selections. The galaxy does not have any ancillary bit (``manga_target3``).
+
+Similarly, we can access quality flags, which indicate us if there is something we need to know about the data ::
+
+    >>> hyb_maps.quality_flag
+    <Maskbit 'MANGA_DAPQUAL' []>
+
+In this case the ``MANGA_DAPQUAL`` maskbit does not have any bit activated, which means the data is safe to use. See the :ref:`Maskbits <marvin-utils-maskbit>` section for more information.
+
+For each target we can also access additional catalogue data: the associated parameters from the `NASA Sloan Atlas <http://nsatlas.org/>`_, and the `DAPall <https://testng.sdss.org/dr15/manga/manga-data/catalogs/#DAPALLFile>`_ file ::
+
+    >>> my_cube.nsa
+    {'iauname': 'J151806.10+424438.0',
+     'field': 213,
+     'run': 3918,
+     'camcol': 3,
+     'version': 'v1_0_1',
+     'nsaid': 684509,
+     'nsaid_v1b': 230855,
+     'z': 0.0402719,
+     'zdist': 0.0406307,
+     ... }
+
+    >>> hyb_maps.dapall
+    {'plate': 7443,
+     'ifudesign': 12703,
+     'plateifu': '7443-12703',
+     'mangaid': '12-193481',
+     'drpallindx': 1465,
+     'mode': 'CUBE',
+     'daptype': 'HYB10-GAU-MILESHC',
+     ... }
+
+The NSA and DAPall catalogues are implemented as mixins via `~marvin.tools.mixins.nsa.NSAMixIn` and `~marvin.tools.mixins.dapall.DAPAllMixIn`, respectively.
+
+While Marvin allows you to access data remotely, frequently you will find that you want to download the file associated to an object so that you can access it more quickly in the future. We can do that using the `MarvinToolsClass.download <marvin.tools.core.MarvinToolsClass.download>` method. Let's try to load a cube that we know we do not have in out hard drive ::
+
+    >>> remote_cube = marvin.tools.Cube('8485-1902')
+    >>> remote_cube
+    <Marvin Cube (plateifu='8485-1902', mode='remote', data_origin='api')>
+
+    >>> remote_cube.download()
+    SDSS_ACCESS> syncing... please wait
+    SDSS_ACCESS> Done!
+
+Now we can try loading it again ::
+
+    >>> new_cube = marvin.tools.Cube('8485-1902')
+    >>> new_cube
+    <Marvin Cube (plateifu='8485-1902', mode='local', data_origin='file')>
+    >>> new_cube.filename
+    '/Users/albireo/Documents/MaNGA/mangawork/manga/spectro/redux/v2_3_1/8485/stack/manga-8485-1902-LOGCUBE.fits.gz'
+
+The cube has now been loaded from the file we just downloaded! You can find the file in its corresponding location in your local SAS.
+
+Finally, we can extract one or more `~marvin.tools.spaxel.Spaxel` object from a Galaxy Tool. We can either use the standard array slicing notation (0-indexed, origin of coordinates in the lower left corner of the array) ::
+
+    >>> spaxel = new_cube[15, 10]
+    >>> spaxel
+    <Marvin Spaxel (plateifu=8485-1902, x=10, y=15; x_cen=-6, y_cen=-1, loaded=cube/maps)>
+
+or we can use `~cube.Cube.getSpaxel`, which accepts multiple arguments (refer to the method's documentation). Note that by default, ``(x, y)`` coordinates passed to `~cube.Cube.getSpaxel` are measured from the centre of the array ::
+
+    >>> central_spaxel = new_cube.getSpaxel(x=0, y=0)
+    >>> central_spaxel
+    <Marvin Spaxel (plateifu=8485-1902, x=16, y=16; x_cen=0, y_cen=0, loaded=cube/maps)>
+
+`~marvin.tools.spaxel.Spaxel` and `~marvin.tools.spaxel.Bin` will be treated in detail in the :ref:`marvin--subregion-tools` section.
+
 
 .. _marvin-quantities:
 
