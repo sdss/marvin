@@ -30,6 +30,7 @@ from marvin.tools.modelcube import ModelCube
 from marvin.tools.quantities import Spectrum
 from marvin.tools.spaxel import SpaxelBase, Spaxel, Bin
 from marvin.tests import marvin_test_if
+from marvin.tests.conftest import set_the_config
 
 
 spaxel_modes = [True, False, 'object']
@@ -260,6 +261,7 @@ class TestBin(object):
 
     def test_load_all(self):
 
+        set_the_config('MPL-6')
         bb = SpaxelBase(15, 15, plateifu='8485-1901', cube=True,
                         maps=True, modelcube=True, bintype='HYB10', release='MPL-6')
 

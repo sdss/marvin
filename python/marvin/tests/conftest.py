@@ -19,6 +19,8 @@ from marvin.tools.modelcube import ModelCube
 from marvin.tools.maps import Maps
 from marvin.tools.query import Query
 from marvin.utils.datamodel.dap import datamodel
+from brain import bconfig
+from flask_jwt_extended import tokens
 
 from sdss_access.path import Path
 
@@ -190,6 +192,8 @@ def check_config():
     """Check the config to see if a db is on."""
     return config.db is None
 
+URLMAP = None
+
 
 @pytest.fixture(scope='session')
 def set_sasurl(loc='local', port=None):
@@ -198,8 +202,11 @@ def set_sasurl(loc='local', port=None):
         port = int(os.environ.get('LOCAL_MARVIN_PORT', 5000))
     istest = True if loc == 'utah' else False
     config.switchSasUrl(loc, test=istest, port=port)
-    response = Interaction('api/general/getroutemap', request_type='get')
-    config.urlmap = response.getRouteMap()
+    global URLMAP
+    if not URLMAP:
+        response = Interaction('api/general/getroutemap', request_type='get', auth='netrc')
+        config.urlmap = response.getRouteMap()
+        URLMAP = config.urlmap
 
 
 @pytest.fixture(scope='session', autouse=True)
@@ -245,8 +252,20 @@ def set_the_config(release):
     """Set config release without parametrizing.
 
     Using ``set_release`` combined with ``galaxy`` double parametrizes!"""
+    config.access = 'collab'
     config.setRelease(release)
+    set_sasurl(loc='local')
+    config.login()
     config._traceback = None
+
+
+def custom_login():
+    config.token = tokens.encode_access_token('test', os.environ.get('MARVIN_SECRET'), 'HS256', False, True, 'user_claims', True, 'identity', 'user_claims')
+
+
+def custom_auth(self, authtype=None):
+    authtype = 'token'
+    super(Interaction, self).setAuth(authtype=authtype)
 
 
 # DB-based FIXTURES
@@ -347,6 +366,20 @@ def expmode(mode, db):
         return 'remote'
 
 
+@pytest.fixture()
+def user(maindb):
+    username = 'test'
+    password = 'test'
+    model = maindb.datadb.User
+    user = maindb.session.query(model).filter(model.username == username).one_or_none()
+    if not user:
+        user = model(username=username, login_count=1)
+        user.set_password(password)
+        maindb.session.add(user)
+    yield user
+    maindb.session.delete(user)
+
+
 # Monkeypatch-based FIXTURES
 # --------------------------
 @pytest.fixture()
@@ -370,6 +403,14 @@ def monkeymanga(monkeypatch, temp_scratch):
                         str(temp_scratch.join('mangawork/manga/spectro/redux')))
     monkeypatch.setitem(os.environ, 'MANGA_SPECTRO_ANALYSIS',
                         str(temp_scratch.join('mangawork/manga/spectro/analysis')))
+
+
+@pytest.fixture()
+def monkeyauth(monkeypatch):
+    monkeypatch.setattr(config, 'login', custom_login)
+    monkeypatch.setattr(Interaction, 'setAuth', custom_auth)
+    monkeypatch.setattr(bconfig, '_public_api_url', config.sasurl)
+    monkeypatch.setattr(bconfig, '_collab_api_url', config.sasurl)
 
 
 # Temp Dir/File-based FIXTURES
@@ -513,7 +554,7 @@ class Galaxy(object):
 
 
 @pytest.fixture(scope='function')
-def galaxy(get_params, plateifu):
+def galaxy(monkeyauth, get_params, plateifu):
     """Yield an instance of a Galaxy object for use in tests."""
     release, bintype, template = get_params
 
@@ -522,7 +563,6 @@ def galaxy(get_params, plateifu):
     gal.set_params(bintype=bintype, template=template, release=release)
     gal.set_filepaths()
     gal.set_galaxy_data()
-
     yield gal
     gal = None
 
@@ -547,9 +587,9 @@ def modelcube(galaxy, exporigin, mode):
         Fixture tests 6 modelcube origins from (mode+db) combos [file, db and api]
     '''
     if exporigin == 'file':
-        mc = ModelCube(filename=galaxy.modelpath, release=galaxy.release, mode=mode)
+        mc = ModelCube(filename=galaxy.modelpath, release=galaxy.release, mode=mode, bintype=galaxy.bintype)
     else:
-        mc = ModelCube(plateifu=galaxy.plateifu, release=galaxy.release, mode=mode)
+        mc = ModelCube(plateifu=galaxy.plateifu, release=galaxy.release, mode=mode, bintype=galaxy.bintype)
     mc.exporigin = exporigin
     yield mc
     mc = None
@@ -561,9 +601,9 @@ def maps(galaxy, exporigin, mode):
         Fixture tests 6 cube origins from (mode+db) combos [file, db and api]
     '''
     if exporigin == 'file':
-        m = Maps(filename=galaxy.mapspath, release=galaxy.release, mode=mode)
+        m = Maps(filename=galaxy.mapspath, release=galaxy.release, mode=mode, bintype=galaxy.bintype)
     else:
-        m = Maps(plateifu=galaxy.plateifu, release=galaxy.release, mode=mode)
+        m = Maps(plateifu=galaxy.plateifu, release=galaxy.release, mode=mode, bintype=galaxy.bintype)
     m.exporigin = exporigin
     yield m
     m = None

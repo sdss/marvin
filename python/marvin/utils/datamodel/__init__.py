@@ -56,6 +56,14 @@ class DataModelList(six.with_metaclass(MetaDataModel, OrderedDict)):
 
         raise KeyError('cannot find release or alias {0!r}'.format(release))
 
+    def __contains__(self, value):
+        ''' Returns True based on release/aliases using getitem '''
+        try:
+            dm = self[value]
+            return True
+        except KeyError as e:
+            return False
+
     def __repr__(self):
 
         return repr([xx for xx in self.values()])

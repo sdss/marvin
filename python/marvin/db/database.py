@@ -4,21 +4,24 @@
 
     The example given is for a PostgreSQL database, but can be modified for any other.
 '''
-from __future__ import print_function
-from __future__ import division
+from __future__ import division, print_function
 
+import os
+
+import yaml
+from marvin import config
 from marvin.db.DatabaseConnection import DatabaseConnection
 from pgpasslib import getpass
-from marvin import config
-import yaml
-import os
+
 
 # Read in the db connection configuration
 dbconfigfile = 'dbconfig.ini'
 dbconfigfile = os.path.join(os.path.dirname(os.path.abspath(__file__)), dbconfigfile)
 
 try:
-    rawfile = open(dbconfigfile, 'r').read()
+    with open(dbconfigfile, 'r') as ff:
+        rawfile = ff.read()
+
 except IOError as e:
     raise RuntimeError('IOError: Could not open dbconfigfile {0}:{1}'.format(dbconfigfile, e))
 dbdict = yaml.load(rawfile)

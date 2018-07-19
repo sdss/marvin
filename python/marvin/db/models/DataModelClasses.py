@@ -6,6 +6,7 @@
 import sys
 import os
 import math
+import re
 from decimal import *
 from operator import *
 from astropy.io import fits
@@ -14,7 +15,7 @@ from sqlalchemy.orm import relationship, deferred
 from sqlalchemy.schema import Column
 from sqlalchemy.engine import reflection
 from sqlalchemy.dialects.postgresql import *
-from sqlalchemy.types import Float, Integer
+from sqlalchemy.types import Float, Integer, String
 from sqlalchemy.orm.session import Session
 from sqlalchemy import select, func  # for aggregate, other functions
 from sqlalchemy.ext.hybrid import hybrid_property, hybrid_method
@@ -31,6 +32,9 @@ except ImportError as e:
 
 from marvin.db.database import db
 import marvin.db.models.SampleModelClasses as sampledb
+
+from flask_login import UserMixin
+from werkzeug.security import generate_password_hash, check_password_hash
 
 # ========================
 # Define database classes
@@ -367,6 +371,32 @@ class Cube(Base, ArrayOps):
     def restwave(cls):
         restw = (func.rest_wavelength(sampledb.NSA.z))
         return restw
+
+    def has_modelspaxels(self, name=None):
+        if not name:
+            name = '(SPX|HYB)'
+        has_ms = False
+        model_cubes = [f.modelcube for f in self.dapfiles if re.search('LOGCUBE-{0}'.format(name), f.filename)]
+        if model_cubes:
+            mc = sum(model_cubes, [])
+            if mc:
+                from marvin.db.models.DapModelClasses import ModelSpaxel
+                session = Session.object_session(mc[0])
+                ms = session.query(ModelSpaxel).filter_by(modelcube_pk=mc[0].pk).first()
+                has_ms = True if ms else False
+        return has_ms
+
+    def has_spaxels(self):
+        if len(self.spaxels) > 0:
+            return True
+        else:
+            return False
+
+    def has_fibers(self):
+        if len(self.fibers) > 0:
+            return True
+        else:
+            return False
 
 
 class Wavelength(Base, ArrayOps):
@@ -784,6 +814,29 @@ class QueryMeta(Base, Timestamp):
     def __repr__(self):
         return '<QueryMeta (pk={0}, filter={1}), count={2}>'.format(self.pk, self.searchfilter, self.count)
 
+
+class User(Base, UserMixin, Timestamp):
+    __tablename__ = 'user'
+    __table_args__ = {'autoload': True, 'schema': 'history'}
+
+    def __repr__(self):
+        return '<User (pk={0}, username={1})'.format(self.pk, self.username)
+
+    def set_password(self, password):
+        self.password_hash = generate_password_hash(password)
+
+    def check_password(self, password):
+        return check_password_hash(self.password_hash, password)
+
+    def get_id(self):
+        return (self.pk)
+
+    def update_stats(self, request=None):
+        remote_addr = request.remote_addr or None
+        self.login_count += 1
+        old_current_ip, new_current_ip = self.current_ip, remote_addr
+        self.last_ip = old_current_ip
+        self.current_ip = new_current_ip
 
 # Define relationships
 # ========================

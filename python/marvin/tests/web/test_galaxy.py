@@ -11,14 +11,15 @@
 from __future__ import print_function, division, absolute_import
 from marvin.web.controllers.galaxy import make_nsa_dict
 from marvin.tools.cube import Cube
-from marvin.tests.web.conftest import Page
-from marvin.tests import marvin_test_if
+from marvin import config
+from marvin.tests.conftest import set_the_config
 import pytest
 
 
 @pytest.fixture()
 def cube(galaxy, mode):
-    cube = Cube(plateifu=galaxy.plateifu, mode=mode)
+    set_the_config(galaxy.release)
+    cube = Cube(plateifu=galaxy.plateifu, mode=mode, release=galaxy.release)
     cube.exp_nsa_plotcols = galaxy.nsa_data
     return cube
 
@@ -42,7 +43,7 @@ class TestGalaxyPage(object):
 class TestNSA(object):
 
     #@marvin_test_if(mark='skip', cube=dict(nsa=[None]))
-    def test_nsadict_correct(self, page, cube):
+    def test_nsadict_correct(self, cube, page):
         nsa, cols = make_nsa_dict(cube.nsa)
         for value in cube.exp_nsa_plotcols.values():
             assert set(value.keys()).issubset(set(cols))

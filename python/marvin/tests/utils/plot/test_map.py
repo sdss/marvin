@@ -5,8 +5,9 @@
 #
 # @Author: Brett Andrews <andrews>
 # @Date:   2017-05-01 09:07:00
+
 # @Last modified by:   andrews
-# @Last modified time: 2018-03-20 20:03:12
+# @Last modified time: 2018-07-06 15:07:79
 
 import numpy as np
 import matplotlib
@@ -15,7 +16,7 @@ import pytest
 from marvin import config
 from marvin.tests import marvin_test_if
 import marvin.utils.plot.map as mapplot
-from marvin.utils.general import get_plot_params
+from marvin.utils.datamodel.dap import datamodel
 
 
 matplotlib_2 = pytest.mark.skipif(int(matplotlib.__version__.split('.')[0]) <= 1,
@@ -112,7 +113,7 @@ image_3_false = np.array([[1, 1, 1],
 @pytest.fixture(scope='module', params=['stellar_vel', 'stellar_sigma', 'emline_gflux',
                                         'specindex'])
 def bits(request, set_release):
-    params = get_plot_params(dapver=config.lookUpVersions()[1], prop=request.param)
+    params = datamodel[config.lookUpVersions()[1]].get_plot_params(request.param)
     return params['bitmasks']
 
 
@@ -161,7 +162,7 @@ class TestMasks(object):
             pytest.skip('Only include MPL-4.')
 
         for prop in ['stellar_vel', 'stellar_sigma', 'emline_gflux', 'specindex']:
-            params = get_plot_params(dapver=config.lookUpVersions()[1], prop=prop)
+            params = datamodel[config.lookUpVersions()[1]].get_plot_params(prop)
             actual = mapplot._format_use_masks(use_masks, mask, dapmap=None,
                                                default_masks=params['bitmasks'])
             assert actual == expected
@@ -179,7 +180,7 @@ class TestMasks(object):
             pytest.skip('Skip MPL-4.')
 
         for prop in ['stellar_vel', 'stellar_sigma', 'emline_gflux', 'specindex']:
-            params = get_plot_params(dapver=config.lookUpVersions()[1], prop=prop)
+            params = datamodel[config.lookUpVersions()[1]].get_plot_params(prop)
             actual = mapplot._format_use_masks(use_masks, mask, dapmap=None,
                                                default_masks=params['bitmasks'])
             assert actual == expected
@@ -192,20 +193,8 @@ class TestMapPlot(object):
                               ([35, 35], True, np.array([-17.5, 17.5, -17.5, 17.5])),
                               ([36, 36], False, np.array([0, 35, 0, 35]))])
     def test_set_extent(self, cube_size, sky_coords, expected):
-        extent = mapplot.set_extent(cube_size, sky_coords)
+        extent = mapplot._set_extent(cube_size, sky_coords)
         assert np.all(extent == expected)
-
-    @matplotlib_2
-    def test_set_hatch_linewidth(self, maps_release_only):
-        map_ = maps_release_only.getMap('emline_gflux', channel='ha_6564')
-        fig, ax = mapplot.plot(dapmap=map_)
-        assert matplotlib.rcParams['hatch.linewidth'] == 0.5
-
-    @matplotlib_2
-    def test_set_hatch_color(self, maps_release_only):
-        map_ = maps_release_only.getMap('emline_gflux', channel='ha_6564')
-        fig, ax = mapplot.plot(dapmap=map_)
-        assert matplotlib.rcParams['hatch.color'] == 'w'
 
     @matplotlib_2
     def test_ax_facecolor(self):

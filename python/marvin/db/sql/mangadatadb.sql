@@ -30,14 +30,14 @@ CREATE TABLE mangadatadb.cart (pk serial PRIMARY KEY NOT NULL, id INTEGER);
 
 CREATE TABLE mangadatadb.cart_to_cube (pk serial PRIMARY KEY NOT NULL, cube_pk INTEGER, cart_pk INTEGER);
 
-CREATE TABLE mangadatadb.rssfiber (pk serial PRIMARY KEY NOT NULL, flux double precision[],
-				ivar double precision[], mask INTEGER[], xpos double precision[],
-				ypos double precision[], disp double precision[], exposure_no INTEGER, mjd INTEGER,
-				exposure_pk INTEGER, cube_pk INTEGER, fibers_pk INTEGER, predisp double precision[]);
+CREATE TABLE mangadatadb.rssfiber (pk serial PRIMARY KEY NOT NULL, flux real[],
+				ivar real[], mask INTEGER[], xpos real[],
+				ypos real[], disp real[], exposure_no INTEGER, mjd INTEGER,
+				exposure_pk INTEGER, cube_pk INTEGER, fibers_pk INTEGER, predisp real[]);
 
-CREATE TABLE mangadatadb.spaxel (pk serial PRIMARY KEY NOT NULL, flux double precision[], ivar double precision[],
-				mask integer[], disp double precision[], cube_pk INTEGER, x INTEGER, y INTEGER,
-				predisp double precision[]);
+CREATE TABLE mangadatadb.spaxel (pk serial PRIMARY KEY NOT NULL, flux real[], ivar real[],
+				mask integer[], disp real[], cube_pk INTEGER, x INTEGER, y INTEGER,
+				predisp real[]);
 
 CREATE TABLE mangadatadb.wavelength (pk serial PRIMARY KEY NOT NULL, wavelength double precision[],
 				bintype TEXT);
@@ -123,8 +123,14 @@ CREATE TABLE mangadatadb.cube_shape (pk serial PRIMARY KEY NOT NULL, size INTEGE
 
 create schema history;
 create table history.query (pk serial primary key not null, searchfilter text, n_run integer, count integer,
-	release varchar(8), created timestamp, updated timestamp);
+	release varchar(8), created timestamp, updated timestamp, return_params text, sql text);
 create index concurrently filter_idx on history.query using btree(searchfilter);
+create index concurrently sql_idx on history.query using btree(sql);
+
+create table history.user (pk serial primary key not null, username varchar(64), email varchar(120), password_hash varchar(256),
+	created timestamp, updated timestamp, login_count integer, last_ip varchar(100), current_ip varchar(100));
+create index concurrently user_idx on history.user using btree(username);
+
 
 INSERT INTO mangadatadb.fiber_type VALUES (0, 'IFU'),(1,'SKY');
 INSERT INTO mangadatadb.target_type VALUES (0, 'science'),(1,'sky'),(2,'standard');

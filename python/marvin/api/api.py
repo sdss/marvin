@@ -13,6 +13,7 @@ Revision History:
 from __future__ import print_function
 from __future__ import division
 from brain.api.api import BrainInteraction
+from marvin import config
 
 configkeys = ['release', 'session_id', 'compression']
 
@@ -83,10 +84,21 @@ class Interaction(BrainInteraction):
     def _loadConfigParams(self):
         """Load the local configuration into a parameters dictionary to be sent with the request"""
 
-        from marvin import config
         if self.params:
             for k in configkeys:
                 if k not in self.params or self.params[k] is None:
                     self.params[k] = config.__getattribute__(k)
         else:
             self.params = {k: config.__getattribute__(k) for k in configkeys}
+
+    def setAuth(self, authtype=None):
+        ''' Set the authorization '''
+
+        release = self.params['release'] if self.params and 'release' in self.params else config.release
+
+        if (config.access == 'collab' and 'DR' in release) or config.access == 'public':
+            authtype = None
+        else:
+            assert authtype is not None, 'Must have an authorization type set for collab access to MPLs!'
+
+        super(Interaction, self).setAuth(authtype=authtype)
