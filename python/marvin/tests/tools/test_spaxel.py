@@ -8,28 +8,23 @@
 # @Copyright: José Sánchez-Gallego
 
 
-from __future__ import division
-from __future__ import print_function
-from __future__ import absolute_import
+from __future__ import absolute_import, division, print_function
 
 import itertools
 import os
 
-import pytest
 import astropy.io.fits
+import pytest
 
 from marvin import config
-
 from marvin.core.exceptions import MarvinError
-
-from marvin.tests import marvin_test_if_class
-
+from marvin.tests import marvin_test_if, marvin_test_if_class
+from marvin.tests.conftest import set_the_config
 from marvin.tools.cube import Cube
 from marvin.tools.maps import Maps
 from marvin.tools.modelcube import ModelCube
 from marvin.tools.quantities import Spectrum
-from marvin.tools.spaxel import SpaxelBase, Spaxel, Bin
-from marvin.tests import marvin_test_if
+from marvin.tools.spaxel import Bin, Spaxel, SpaxelBase
 
 
 spaxel_modes = [True, False, 'object']
@@ -260,6 +255,7 @@ class TestBin(object):
 
     def test_load_all(self):
 
+        set_the_config('MPL-6')
         bb = SpaxelBase(15, 15, plateifu='8485-1901', cube=True,
                         maps=True, modelcube=True, bintype='HYB10', release='MPL-6')
 
@@ -272,6 +268,21 @@ class TestBin(object):
 
         for sp in bb.spaxels:
             assert sp.loaded is True
+
+    def test_correct_binid(self):
+        """Checks if the binid of the bin spaxels is the correct one (#457)"""
+
+        maps = Maps(plateifu='8485-1901', release='MPL-6', bintype='HYB10')
+        bb = maps[22, 14]
+
+        assert isinstance(bb, Bin)
+        assert bb.x == 14, bb.y == 22
+
+        spaxels = bb.spaxels
+
+        for sp in spaxels:
+            sp_bin = maps[sp.y, sp.x]
+            assert sp_bin.binid == bb.binid
 
 
 class TestPickling(object):

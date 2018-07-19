@@ -68,7 +68,7 @@ Tools
 
 * When a Cube is instantiated from a file, the Maps object derived from could be instantiated remotely even if the Maps file is present locally. See `this issue <https://github.com/sdss/marvin/issues/40>`_.
 
-* **Queries** - Marvin Queries work!, but they are sometimes intermittent.  You sometimes may receive this error ``MarvinError: API Query call failed: Requests Http Status Error: 404 Client Error: Not Found for url: https://api.sdss.org/test/marvin2/api/query/cubes/.``  If you do, then just wait a moment, and try your query again.  Sometimes the query succeeds on the server-side and caches your results, but fails when sending it back to you.  We don't yet know why this happens, but we are currently trying to understand this problem!
+* **Queries** - Marvin Queries work!, but they are sometimes intermittent.  You sometimes may receive this error ``MarvinError: API Query call failed: Requests Http Status Error: 404 Client Error: Not Found for url: https://api.sdss.org/test/marvin/api/query/cubes/.``  If you do, then just wait a moment, and try your query again.  Sometimes the query succeeds on the server-side and caches your results, but fails when sending it back to you.  We don't yet know why this happens, but we are currently trying to understand this problem!
 
 
 Web

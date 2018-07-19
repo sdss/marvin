@@ -83,7 +83,7 @@ class MapsView(marvin.api.base.BaseView):
 
         .. sourcecode:: http
 
-           GET /marvin2/api/maps/ HTTP/1.1
+           GET /marvin/api/maps/ HTTP/1.1
            Host: api.sdss.org
            Accept: application/json, */*
 
@@ -144,7 +144,7 @@ class MapsView(marvin.api.base.BaseView):
 
         .. sourcecode:: http
 
-           GET /marvin2/api/maps/8485-1901/SPX/GAU-MILESHC/ HTTP/1.1
+           GET /marvin/api/maps/8485-1901/SPX/GAU-MILESHC/ HTTP/1.1
            Host: api.sdss.org
            Accept: application/json, */*
 
@@ -237,7 +237,7 @@ class MapsView(marvin.api.base.BaseView):
 
         .. sourcecode:: http
 
-           GET /marvin2/api/maps/8485-1901/SPX/GAU-MILESHC/map/emline_gflux/ha_6564/ HTTP/1.1
+           GET /marvin/api/maps/8485-1901/SPX/GAU-MILESHC/map/emline_gflux/ha_6564/ HTTP/1.1
            Host: api.sdss.org
            Accept: application/json, */*
 
@@ -318,7 +318,7 @@ class MapsView(marvin.api.base.BaseView):
 
         .. sourcecode:: http
 
-           GET /marvin2/api/maps/8485-1901/SPX/GAU-MILESHC/dapall HTTP/1.1
+           GET /marvin/api/maps/8485-1901/SPX/GAU-MILESHC/dapall HTTP/1.1
            Host: api.sdss.org
            Accept: application/json, */*
 
@@ -386,7 +386,7 @@ class MapsView(marvin.api.base.BaseView):
 
         .. sourcecode:: http
 
-           GET /marvin2/api/maps/8485-1901/quantities/10/12/ HTTP/1.1
+           GET /marvin/api/maps/8485-1901/quantities/10/12/ HTTP/1.1
            Host: api.sdss.org
            Accept: application/json, */*
 

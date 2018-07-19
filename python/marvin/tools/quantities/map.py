@@ -27,7 +27,6 @@ import marvin.api.api
 import marvin.core.marvin_pickle
 import marvin.core.exceptions
 from marvin.utils.datamodel.dap.base import Property
-from marvin.utils.datamodel.dap.plotting import get_default_plot_params
 import marvin.utils.plot.map
 import marvin.utils.general
 from marvin.utils.general.general import add_doc
@@ -302,6 +301,14 @@ class Map(units.Quantity, QuantityMixIn):
 
         return value, ivar, mask
 
+    def getSpaxel(self, **kwargs):
+        """Returns a `~marvin.tools.spaxel.Spaxel`."""
+
+        if not self._maps:
+            raise ValueError('this Map does not have an associate parent Maps.')
+
+        return self._maps.getSpaxel(**kwargs)
+
     def save(self, path, overwrite=False):
         """Pickle the map to a file.
 
@@ -346,7 +353,7 @@ class Map(units.Quantity, QuantityMixIn):
 
         assert self.mask is not None, 'mask is None'
 
-        default_params = get_default_plot_params(self._datamodel.parent.release)
+        default_params = self._datamodel.parent.get_default_plot_params()
         labels = default_params['default']['bitmasks']
 
         return np.ma.array(self.value, mask=self.pixmask.get_mask(labels, dtype=bool))
@@ -525,7 +532,45 @@ class Map(units.Quantity, QuantityMixIn):
             raise marvin.core.exceptions.MarvinError(
                 'Cannot correct {0} for instrumental broadening.'.format(self.datamodel.full()))
 
-        return (self**2 - map_corr**2)**0.5
+        sigcorr = (self**2 - map_corr**2)**0.5
+        sigcorr.ivar = (sigcorr.value / self.value) * self.ivar
+        sigcorr.ivar[self.ivar == 0] = 0
+        sigcorr.ivar[map_corr.value >= self.value] = 0
+        sigcorr.value[map_corr.value >= self.value] = 0
+
+        sigcorr._show_datamodel = True
+
+        return sigcorr
+
+    def specindex_correction(self):
+        """Correct spectral index measurements for velocity dispersion.
+        """
+        if self.datamodel.name == 'specindex':
+
+            if self._datamodel.parent.release == 'MPL-4':
+                raise marvin.core.exceptions.MarvinError(
+                    'Velocity dispersion correction not implemented for MPL-4.')
+
+            corr_name = '_'.join((self.datamodel.name, 'corr', self.datamodel.channel.name))
+            map_corr = self.getMaps()[corr_name]
+
+        else:
+            raise marvin.core.exceptions.MarvinError(
+                'Cannot correct {0} for velocity dispersion.'.format(self.datamodel.full()))
+
+        if self.unit in ['Angstrom', '']:
+            specindex_corr = self * map_corr
+
+        elif self.unit == 'mag':
+            specindex_corr = self + map_corr
+
+        else:
+            raise marvin.core.exceptions.MarvinError(
+                'Specindex unit must be "Angstrom", "mag", or "" (i.e., dimensionless)')
+
+        specindex_corr._show_datamodel = True
+
+        return specindex_corr
 
     @property
     def pixmask(self):
@@ -553,6 +598,7 @@ class EnhancedMap(Map):
 
     def __init__(self, *args, **kwargs):
         self._datamodel = kwargs.get('datamodel', None)
+        self._show_datamodel = False
 
     def __repr__(self):
         return ('<Marvin EnhancedMap>\n{0!r} {1!r}').format(self.value, self.unit.to_string())
@@ -591,4 +637,12 @@ class EnhancedMap(Map):
 
     @property
     def datamodel(self):
-        return None
+        if self._show_datamodel:
+            return self._datamodel
+        else:
+            return None
+
+    @datamodel.setter
+    def datamodel(self, value):
+        self._datamodel = value
+        self._show_datamodel = True

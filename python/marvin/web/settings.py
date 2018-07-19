@@ -6,16 +6,18 @@
 # @Author: Brian Cherinka
 # @Date:   2017-06-28 15:32:49
 # @Last modified by:   Brian Cherinka
-# @Last Modified time: 2017-10-26 11:14:51
+# @Last Modified time: 2018-07-10 15:31:48
 
 from __future__ import print_function, division, absolute_import
 import os
+import datetime
 
 
 class Config(object):
     SECRET_KEY = os.environ.get('MARVIN_SECRET', 'secret-key')
+    FLASK_SECRET = SECRET_KEY
     APP_DIR = os.path.abspath(os.path.dirname(__file__))  # This directory
-    APP_BASE = os.environ.get('MARVIN_BASE', 'marvin2')
+    APP_BASE = os.environ.get('MARVIN_BASE', 'marvin')
     projroot = os.path.abspath(os.path.join(APP_DIR, os.pardir, os.pardir, os.pardir))
     PROJECT_ROOT = os.environ.get('MARVIN_DIR', projroot)
     BCRYPT_LOG_ROUNDS = 13
@@ -51,10 +53,10 @@ class Config(object):
             "enabled": False
         },
         "ignore": [
-            "/marvin2/jsglue.js",
-            "/marvin2/static/.*",
-            "/marvin2/lib/.*",
-            "/marvin2/getgalidlist/"
+            "/marvin/jsglue.js",
+            "/marvin/static/.*",
+            "/marvin/lib/.*",
+            "/marvin/getgalidlist/"
         ]
     }
     # RATELIMIT_DEFAULT = '10/hour;100/day;2000 per year'
@@ -71,6 +73,8 @@ class ProdConfig(Config):
     USE_X_SENDFILE = True
     USE_SENTRY = True
     SENTRY_DSN = os.environ.get('SENTRY_DSN', None)
+    PERMANENT_SESSION_LIFETIME = datetime.timedelta(1)
+    JWT_ACCESS_TOKEN_EXPIRES = datetime.timedelta(300)
 
 
 class DevConfig(Config):
@@ -96,6 +100,7 @@ class TestConfig(Config):
     PRESERVE_CONTEXT_ON_EXCEPTION = False
     USE_PROFILER = False  # Turn off the Flask Profiler extension
     RATELIMIT_ENABLED = False  # Turn off the Flask Rate Limiter
+    #os.environ['PUBLIC_SERVER'] = 'True' # this breaks the debug server
 
 
 class CustomConfig(object):
@@ -104,4 +109,4 @@ class CustomConfig(object):
     os.environ['SAS_ANALYSIS'] = 'sas/mangawork/manga/spectro/analysis'
     os.environ['SAS_SANDBOX'] = 'sas/mangawork/manga/sandbox'
     release = os.environ.get('MARVIN_RELEASE', 'mangawork')
-    os.environ['SAS_PREFIX'] = 'marvin2' if release == 'mangawork' else 'dr13/marvin'
+    os.environ['SAS_PREFIX'] = 'marvin' if release == 'mangawork' else 'dr15/marvin'

@@ -361,4 +361,5 @@ MPL6 = DAPDataModel('2.1.3', aliases=['MPL-6', 'MPL6'],
                     default_bintype='SPX',
                     default_template='GAU-MILESHC',
                     property_table='SpaxelProp6',
-                    default_binid=binid_properties[0])
+                    default_binid=binid_properties[0],
+                    default_mapmask=['NOCOV', 'UNRELIABLE', 'DONOTUSE'])

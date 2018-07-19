@@ -21,6 +21,7 @@ networkx>=1.11
 Flask>=0.12.1,<1.0
 Flask-Classy>=0.6.10
 Flask-Classful>=0.14.1
+Flask-JWT-Extended>=3.8.1
 webargs>=1.5.2
 raven>=5.32.0
 dogpile.cache>=0.6.2

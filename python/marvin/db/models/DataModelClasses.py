@@ -15,7 +15,7 @@ from sqlalchemy.orm import relationship, deferred
 from sqlalchemy.schema import Column
 from sqlalchemy.engine import reflection
 from sqlalchemy.dialects.postgresql import *
-from sqlalchemy.types import Float, Integer
+from sqlalchemy.types import Float, Integer, String
 from sqlalchemy.orm.session import Session
 from sqlalchemy import select, func  # for aggregate, other functions
 from sqlalchemy.ext.hybrid import hybrid_property, hybrid_method
@@ -32,6 +32,9 @@ except ImportError as e:
 
 from marvin.db.database import db
 import marvin.db.models.SampleModelClasses as sampledb
+
+from flask_login import UserMixin
+from werkzeug.security import generate_password_hash, check_password_hash
 
 # ========================
 # Define database classes
@@ -811,6 +814,29 @@ class QueryMeta(Base, Timestamp):
     def __repr__(self):
         return '<QueryMeta (pk={0}, filter={1}), count={2}>'.format(self.pk, self.searchfilter, self.count)
 
+
+class User(Base, UserMixin, Timestamp):
+    __tablename__ = 'user'
+    __table_args__ = {'autoload': True, 'schema': 'history'}
+
+    def __repr__(self):
+        return '<User (pk={0}, username={1})'.format(self.pk, self.username)
+
+    def set_password(self, password):
+        self.password_hash = generate_password_hash(password)
+
+    def check_password(self, password):
+        return check_password_hash(self.password_hash, password)
+
+    def get_id(self):
+        return (self.pk)
+
+    def update_stats(self, request=None):
+        remote_addr = request.remote_addr or None
+        self.login_count += 1
+        old_current_ip, new_current_ip = self.current_ip, remote_addr
+        self.last_ip = old_current_ip
+        self.current_ip = new_current_ip
 
 # Define relationships
 # ========================

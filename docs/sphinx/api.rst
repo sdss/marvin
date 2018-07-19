@@ -75,7 +75,7 @@ With the command-line http:
 ::
 
     # use http to make a POST request
-    http api.sdss.org/marvin2/api/cubes/8485-1901/ -v release=MPL-5
+    http api.sdss.org/marvin/api/cubes/8485-1901/ -v release=MPL-5
 
 
 With Python requests:
@@ -86,7 +86,7 @@ With Python requests:
     import requests
 
     # set the url
-    url = 'https://api.sdss.org/marvin2/api/cube/8485-1901/'
+    url = 'https://api.sdss.org/marvin/api/cube/8485-1901/'
 
     # submit the request as a POST request
     response = requests.post(url)
@@ -132,7 +132,7 @@ Usage
     url = config.urlmap['api']['getCube']['url']
 
     # print(url)
-    u'/marvin2/api/cubes/{name}/'
+    u'/marvin/api/cubes/{name}/'
 
 Some urls require parameters passed to them. Others do not.  Urls with curly braces {} in them indicate an input parameter. For example, in the above url, ```{name}``` means a parameter called name must be passed into the url. See how to pass in parameters in the examples below.
 

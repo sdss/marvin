@@ -1,5 +1,5 @@
 from flask_classful import route
-from flask import request, jsonify, Response, current_app, redirect, url_for
+from flask import jsonify, Response
 from marvin.tools.query import doQuery, Query
 from marvin.core.exceptions import MarvinError
 from marvin.api.base import BaseView, arg_validate as av
@@ -104,7 +104,7 @@ class QueryView(BaseView):
 
         .. sourcecode:: http
 
-           GET /marvin2/api/query/ HTTP/1.1
+           GET /marvin/api/query/ HTTP/1.1
            Host: api.sdss.org
            Accept: application/json, */*
 
@@ -166,7 +166,7 @@ class QueryView(BaseView):
 
         .. sourcecode:: http
 
-           GET /marvin2/api/query/cubes/ HTTP/1.1
+           GET /marvin/api/query/cubes/ HTTP/1.1
            Host: api.sdss.org
            Accept: application/json, */*
 
@@ -238,7 +238,7 @@ class QueryView(BaseView):
 
         .. sourcecode:: http
 
-           GET /marvin2/api/query/cubes/columns/plateifu/ HTTP/1.1
+           GET /marvin/api/query/cubes/columns/plateifu/ HTTP/1.1
            Host: api.sdss.org
            Accept: application/json, */*
 
@@ -321,7 +321,7 @@ class QueryView(BaseView):
 
         .. sourcecode:: http
 
-           GET /marvin2/api/query/cubes/getsubset/ HTTP/1.1
+           GET /marvin/api/query/cubes/getsubset/ HTTP/1.1
            Host: api.sdss.org
            Accept: application/json, */*
 
@@ -392,7 +392,7 @@ class QueryView(BaseView):
 
         .. sourcecode:: http
 
-           GET /marvin2/api/query/getparamslist/ HTTP/1.1
+           GET /marvin/api/query/getparamslist/ HTTP/1.1
            Host: api.sdss.org
            Accept: application/json, */*
 
@@ -450,7 +450,7 @@ class QueryView(BaseView):
 
         .. sourcecode:: http
 
-           GET /marvin2/api/query/cleanup/ HTTP/1.1
+           GET /marvin/api/query/cleanup/ HTTP/1.1
            Host: api.sdss.org
            Accept: application/json, */*
 

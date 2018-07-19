@@ -5,24 +5,24 @@
 #
 # @Author: Brett Andrews <andrews>
 # @Date:   2017-07-02 13:08:00
-# @Last modified by:   andrews
-# @Last modified time: 2018-03-01 11:03:79
+# @Last modified by: José Sánchez-Gallego (gallegoj@uw.edu)
+# @Last modified time: 2018-07-19 14:28:48
 
+import operator
 from copy import deepcopy
 
-import numpy as np
-from astropy import units as u
 import matplotlib
+import numpy as np
 import pytest
+from astropy import units as u
 
-from marvin import config
 from marvin.core.exceptions import MarvinError
-from marvin.tools.maps import Maps
-from marvin.tools.quantities import Map, EnhancedMap
 from marvin.tests import marvin_test_if
+from marvin.tools.maps import Maps
+from marvin.tools.quantities import EnhancedMap, Map
 from marvin.utils.datamodel.dap import datamodel
-from marvin.utils.datamodel.dap.plotting import get_default_plot_params
 from marvin.utils.general.maskbit import Maskbit
+
 
 value1 = np.array([[16.35, 0.8],
                    [0, -10.]])
@@ -183,6 +183,33 @@ class TestMap(object):
 
         reordered_ha = np.moveaxis(ha, 0, -1)
         assert reordered_ha.unit is not None
+
+    @marvin_test_if(mark='include', maps={'plateifu': '8485-1901',
+                                          'release': 'MPL-6',
+                                          'bintype': ['SPX']})
+    def test_get_spaxel(self, maps):
+        """Tests `.Map.getSpaxel`."""
+
+        ha = maps['emline_gflux_ha']
+
+        spaxel = ha.getSpaxel(x=10, y=10, xyorig='lower')
+
+        assert spaxel is not None
+        assert spaxel.x == 10 and spaxel.y == 10
+
+    def test_stellar_sigma_values(self, maps, galaxy):
+        ''' Assert values for stellar_sigma and stellar_sigmacorr are different (issue #411) '''
+
+        ss = maps.stellar_sigma
+        sc = maps.stellar_sigmacorr
+        compare = sum(ss == sc)
+        assert len(np.unique(compare)) > 1
+        x = galaxy.dap['x']
+        y = galaxy.dap['y']
+        ssvalue = galaxy.dap['stellar_sigma'][galaxy.bintype.name]
+        scvalue = galaxy.dap['stellar_sigmacorr'][galaxy.bintype.name]
+        assert ssvalue == pytest.approx(ss[x, y].value, 1e-4)
+        assert scvalue == pytest.approx(sc[x, y].value, 1e-4)
 
 
 class TestMapArith(object):
@@ -363,11 +390,19 @@ class TestMapArith(object):
         maps = Maps(plateifu=galaxy.plateifu)
         stsig = maps['stellar_sigma']
         stsigcorr = maps['stellar_sigmacorr']
+
         expected = (stsig**2 - stsigcorr**2)**0.5
+        expected.ivar = (expected.value / stsig.value) * stsig.ivar
+        expected.ivar[stsig.ivar == 0] = 0
+        expected.ivar[stsigcorr.value >= stsig.value] = 0
+        expected.value[stsigcorr.value >= stsig.value] = 0
+
         actual = stsig.inst_sigma_correction()
+
         assert actual.value == pytest.approx(expected.value, nan_ok=True)
         assert actual.ivar == pytest.approx(expected.ivar)
         assert (actual.mask == expected.mask).all()
+        assert actual.datamodel == stsig.datamodel
 
     @marvin_test_if(mark='include', galaxy=dict(release=['MPL-4']))
     def test_stellar_sigma_correction_MPL4(self, galaxy):
@@ -394,18 +429,44 @@ class TestMapArith(object):
         emsigcorr = maps['emline_instsigma_ha_6564']
 
         expected = (hasig**2 - emsigcorr**2)**0.5
+        expected.ivar = (expected.value / hasig.value) * hasig.ivar
+        expected.ivar[hasig.ivar == 0] = 0
+        expected.ivar[emsigcorr.value >= hasig.value] = 0
+        expected.value[emsigcorr.value >= hasig.value] = 0
+
         actual = hasig.inst_sigma_correction()
 
         assert actual.value == pytest.approx(expected.value, nan_ok=True)
         assert actual.ivar == pytest.approx(expected.ivar)
         assert (actual.mask == expected.mask).all()
+        assert actual.datamodel == hasig.datamodel
+
+    @marvin_test_if(mark='skip', galaxy=dict(release=['MPL-4', 'MPL-5']))
+    @pytest.mark.parametrize('channel, op',
+                             [('hb', '*'),
+                              ('d4000', '*'),
+                              ('cn1', '+'),
+                              ])
+    def test_specindex_sigma_correction(self, galaxy, channel, op):
+        maps = Maps(plateifu=galaxy.plateifu)
+        si = maps['specindex_' + channel]
+        sicorr = maps['specindex_corr' + channel]
+
+        ops = {'+': operator.add, '-': operator.sub, '*': operator.mul, '/': operator.truediv}
+        expected = ops[op](si, sicorr)
+
+        actual = si.specindex_correction()
+
+        assert actual.value == pytest.approx(expected.value, nan_ok=True)
+        assert actual.ivar == pytest.approx(expected.ivar)
+        assert (actual.mask == expected.mask).all()
+        assert actual.datamodel == si.datamodel
 
 
 class TestMaskbit(object):
 
     def test_masked(self, maps_release_only):
-        __, dapver = config.lookUpVersions(maps_release_only.release)
-        params = get_default_plot_params(dapver)
+        params = maps_release_only.datamodel.parent.get_default_plot_params()
         ha = maps_release_only['emline_gflux_ha_6564']
         expected = ha.pixmask.get_mask(params['default']['bitmasks'], dtype=bool)
 

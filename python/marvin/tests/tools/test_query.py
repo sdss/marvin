@@ -6,7 +6,7 @@
 # @Author: Brian Cherinka
 # @Date:   2017-05-25 10:11:21
 # @Last modified by:   Brian Cherinka
-# @Last Modified time: 2018-03-01 15:13:44
+# @Last Modified time: 2018-07-14 12:33:05
 
 from __future__ import print_function, division, absolute_import
 from marvin.tools.query import Query, doQuery
@@ -16,6 +16,7 @@ from marvin.tools.cube import Cube
 from marvin.tools.maps import Maps
 from marvin.tools.spaxel import Spaxel
 from marvin.tools.modelcube import ModelCube
+from marvin.tests.conftest import set_the_config
 import pytest
 
 
@@ -70,6 +71,8 @@ class TestQuerySearches(object):
     def test_bad_queries(self, expmode, badquery, errmsg):
         if expmode is None:
             pytest.skip('cannot use queries in local mode without a db')
+
+        set_the_config(config.release)
 
         with pytest.raises(MarvinError) as cm:
             query = Query(searchfilter=badquery, mode=expmode)
