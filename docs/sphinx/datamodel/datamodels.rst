@@ -20,7 +20,7 @@ By Release
 * :ref:`datamodel-mpl4`
 * :ref:`datamodel-mpl5`
 * :ref:`datamodel-mpl6`
-
+* :ref:`datamodel-mpl7`
 
 DRP Datamodel
 -------------
