@@ -8,16 +8,19 @@
 #     Initial Version: 2016-05-17 10:17:35 by Brian Cherinka
 #     Last Modified On: 2016-05-17 10:17:35 by Brian
 
-from __future__ import print_function
-from __future__ import division
-from marvin.core.core import MarvinToolsClass
+from __future__ import division, print_function
+
+import inspect
+
+from astropy.io import fits
+
+from marvin import config, marvindb
 from marvin.core.exceptions import MarvinError
 from marvin.tools.cube import Cube
-from marvin import config, marvindb
 from marvin.utils.general.structs import FuzzyList
-from astropy.io import fits
-from brain.utils.general import checkPath
-import inspect
+
+from .core import MarvinToolsClass
+
 
 try:
     from sdss_access.path import Path

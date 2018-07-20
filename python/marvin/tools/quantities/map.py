@@ -301,6 +301,14 @@ class Map(units.Quantity, QuantityMixIn):
 
         return value, ivar, mask
 
+    def getSpaxel(self, **kwargs):
+        """Returns a `~marvin.tools.spaxel.Spaxel`."""
+
+        if not self._maps:
+            raise ValueError('this Map does not have an associate parent Maps.')
+
+        return self._maps.getSpaxel(**kwargs)
+
     def save(self, path, overwrite=False):
         """Pickle the map to a file.
 
@@ -311,7 +319,7 @@ class Map(units.Quantity, QuantityMixIn):
             path (str):
                 The path of the file to which the ``Map`` will be saved.
                 Unlike for other Marvin Tools that derive from
-                :class:`~marvin.core.core.MarvinToolsClass`, ``path`` is
+                :class:`~marvin.tools.core.MarvinToolsClass`, ``path`` is
                 mandatory for ``Map`` given that the there is no default
                 path for a given map.
             overwrite (bool):

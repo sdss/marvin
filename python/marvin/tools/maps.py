@@ -8,20 +8,17 @@
 # @Copyright: José Sánchez-Gallego
 
 
-from __future__ import division
-from __future__ import print_function
-from __future__ import absolute_import
+from __future__ import absolute_import, division, print_function
 
 import copy
 import inspect
-import itertools
-import six
 import warnings
 
 import astropy.io.fits
 import astropy.wcs
 import numpy as np
 import pandas as pd
+import six
 
 import marvin
 import marvin.api.api
@@ -30,16 +27,16 @@ import marvin.tools.cube
 import marvin.tools.modelcube
 import marvin.tools.quantities.map
 import marvin.tools.spaxel
-import marvin.utils.general.general
 import marvin.utils.dap.bpt
-
-from marvin.core.core import MarvinToolsClass, NSAMixIn, DAPallMixIn
+import marvin.utils.general.general
 from marvin.utils.datamodel.dap import datamodel
-from marvin.utils.datamodel.dap.base import Property, Channel
+from marvin.utils.datamodel.dap.base import Channel, Property
 from marvin.utils.general import FuzzyDict, turn_off_ion
-from marvin.utils.general.maskbit import get_manga_target
 
+from .core import MarvinToolsClass
+from .mixins import DAPallMixIn, GetApertureMixIn, NSAMixIn
 from .quantities import AnalysisProperty
+
 
 try:
     import sqlalchemy
@@ -50,7 +47,7 @@ except ImportError:
 __all__ = ['Maps']
 
 
-class Maps(MarvinToolsClass, NSAMixIn, DAPallMixIn):
+class Maps(MarvinToolsClass, NSAMixIn, DAPallMixIn, GetApertureMixIn):
     """A class that represents a DAP MAPS file.
 
     Provides access to the data stored in a DAP MAPS file. In addition to
@@ -498,26 +495,6 @@ class Maps(MarvinToolsClass, NSAMixIn, DAPallMixIn):
                                                 release=self.release,
                                                 bintype=self.bintype,
                                                 template=self.template)
-
-    @property
-    def manga_target1(self):
-        """Return MANGA_TARGET1 flag."""
-        return get_manga_target('1', self._bitmasks, self.header)
-
-    @property
-    def manga_target2(self):
-        """Return MANGA_TARGET2 flag."""
-        return get_manga_target('2', self._bitmasks, self.header)
-
-    @property
-    def manga_target3(self):
-        """Return MANGA_TARGET3 flag."""
-        return get_manga_target('3', self._bitmasks, self.header)
-
-    @property
-    def target_flags(self):
-        """Bundle MaNGA targeting flags."""
-        return [self.manga_target1, self.manga_target2, self.manga_target3]
 
     @property
     def quality_flag(self):

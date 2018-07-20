@@ -10,16 +10,15 @@
 #     Last Modified On: 2016-05-10 20:17:52 by Brian
 
 
-from __future__ import print_function, division
-from marvin.core.core import MarvinToolsClass
-from marvin.core.exceptions import MarvinError, MarvinUserWarning
+from __future__ import division, print_function
+
 from marvin import config
-import numpy as np
-import warnings
-from functools import wraps
+
+from .core import MarvinToolsClass
+
 
 try:
-    from sdss_access import RsyncAccess, AccessError
+    from sdss_access import RsyncAccess
     from sdss_access.path import Path
 except ImportError:
     Path = None
@@ -75,5 +74,3 @@ class Image(MarvinToolsClass):
 
     def getRandom(self):
         pass
-
-

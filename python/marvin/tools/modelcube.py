@@ -8,32 +8,30 @@
 # @Copyright: José Sánchez-Gallego
 
 
-from __future__ import division
-from __future__ import print_function
-from __future__ import absolute_import
+from __future__ import absolute_import, division, print_function
 
 import distutils
 import warnings
 
+import numpy as np
 from astropy.io import fits
 from astropy.wcs import WCS
-import numpy as np
 
 import marvin
 import marvin.core.exceptions
+import marvin.tools.maps
 import marvin.tools.spaxel
 import marvin.utils.general.general
-import marvin.tools.maps
-
-from marvin.core.core import MarvinToolsClass, NSAMixIn, DAPallMixIn
 from marvin.core.exceptions import MarvinError
 from marvin.tools.quantities import DataCube, Spectrum
-from marvin.utils.datamodel.dap import datamodel, Model
+from marvin.utils.datamodel.dap import Model, datamodel
 from marvin.utils.general import FuzzyDict
-from marvin.utils.general.maskbit import get_manga_target
+
+from .core import MarvinToolsClass
+from .mixins import DAPallMixIn, GetApertureMixIn, NSAMixIn
 
 
-class ModelCube(MarvinToolsClass, NSAMixIn, DAPallMixIn):
+class ModelCube(MarvinToolsClass, NSAMixIn, DAPallMixIn, GetApertureMixIn):
     """A class to interface with MaNGA DAP model cubes.
 
     This class represents a DAP model cube, initialised either from a file,
@@ -229,8 +227,9 @@ class ModelCube(MarvinToolsClass, NSAMixIn, DAPallMixIn):
             dm = datamodel[self.release]
             if dm.db_only:
                 if self.bintype not in dm.db_only:
-                    raise marvin.core.exceptions.MarvinError('Specified bintype {0} is not available in the DB'.format(self.bintype.name))
-
+                    raise marvin.core.exceptions.MarvinError(
+                        'Specified bintype {0} is not '
+                        'available in the DB'.format(self.bintype.name))
 
             if self.data:
                 assert isinstance(self.data, dapdb.ModelCube), \
@@ -299,26 +298,6 @@ class ModelCube(MarvinToolsClass, NSAMixIn, DAPallMixIn):
 
         self.plateifu = str(self.header['PLATEIFU'].strip())
         self.mangaid = str(self.header['MANGAID'].strip())
-
-    @property
-    def manga_target1(self):
-        """Return MANGA_TARGET1 flag."""
-        return get_manga_target('1', self._bitmasks, self.header)
-
-    @property
-    def manga_target2(self):
-        """Return MANGA_TARGET2 flag."""
-        return get_manga_target('2', self._bitmasks, self.header)
-
-    @property
-    def manga_target3(self):
-        """Return MANGA_TARGET3 flag."""
-        return get_manga_target('3', self._bitmasks, self.header)
-
-    @property
-    def target_flags(self):
-        """Bundle MaNGA targeting flags."""
-        return [self.manga_target1, self.manga_target2, self.manga_target3]
 
     @property
     def quality_flag(self):
