@@ -288,7 +288,7 @@ class Cube(MarvinToolsClass, NSAMixIn, GetApertureMixIn):
                             wavelength=np.array(self._wavelength),
                             std=self._get_extension_data(name, 'std'),
                             unit=model.unit,
-                            pixmask_flag='MANGA_DRP3PIXMASK')
+                            pixmask_flag=self.header['MASKNAME'])
 
         return spectrum
 
@@ -497,7 +497,7 @@ class Cube(MarvinToolsClass, NSAMixIn, GetApertureMixIn):
                                                     std=data['std'],
                                                     wavelength=self._wavelength,
                                                     unit=dm.unit,
-                                                    pixmask_flag='MANGA_DRP3PIXMASK')
+                                                    pixmask_flag=self.header['MASKNAME'])
 
         if self.data_origin == 'api':
 
@@ -527,14 +527,14 @@ class Cube(MarvinToolsClass, NSAMixIn, GetApertureMixIn):
                                                     mask=data[dm.name]['mask'],
                                                     wavelength=data['wavelength'],
                                                     unit=dm.unit,
-                                                    pixmask_flag='MANGA_DRP3PIXMASK')
+                                                    pixmask_flag=self.header['MASKNAME'])
 
         return cube_quantities
 
     @property
     def pixmask(self):
         """Return the DRP3PIXMASK flag."""
-        pixmask = self._bitmasks['MANGA_DRP3PIXMASK']
+        pixmask = self._bitmasks[self.header['MASKNAME']]
         pixmask.mask = getattr(self.flux, 'mask', None)
         return pixmask
 

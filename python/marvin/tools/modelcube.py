@@ -448,7 +448,7 @@ class ModelCube(MarvinToolsClass, NSAMixIn, DAPallMixIn, GetApertureMixIn):
                                                          mask=data['mask'],
                                                          wavelength=self._wavelength,
                                                          unit=dm.unit,
-                                                         pixmask_flag='MANGA_DAPSPECMASK')
+                                                         pixmask_flag=self.header['MASKNAME'])
 
         if self.data_origin == 'api':
 
@@ -474,7 +474,7 @@ class ModelCube(MarvinToolsClass, NSAMixIn, DAPallMixIn, GetApertureMixIn):
                                                          mask=data[dm.name]['mask'],
                                                          wavelength=data['wavelength'],
                                                          unit=dm.unit,
-                                                         pixmask_flag='MANGA_DAPSPECMASK')
+                                                         pixmask_flag=self.header['MASKNAME'])
 
         return modelcube_quantities
 
