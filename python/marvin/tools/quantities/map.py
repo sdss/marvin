@@ -1,37 +1,36 @@
 #!/usr/bin/env python
-# encoding: utf-8
+# -*- coding: utf-8 -*-
 #
-# @Author: José Sánchez-Gallego
-# @Date: Oct 30, 2017
+# @Author: Brian Cherinka, José Sánchez-Gallego, and Brett Andrews
+# @Date: 2017-10-30
 # @Filename: map.py
-# @License: BSD 3-Clause
-# @Copyright: José Sánchez-Gallego
+# @License: BSD 3-clause (http://www.opensource.org/licenses/BSD-3-Clause)
+#
+# @Last modified by: José Sánchez-Gallego (gallegoj@uw.edu)
+# @Last modified time: 2018-07-21 16:43:16
 
 
-from __future__ import division
-from __future__ import print_function
-from __future__ import absolute_import
+from __future__ import absolute_import, division, print_function
 
 import operator
 import os
 import warnings
-
 from copy import deepcopy
 
 import astropy.units as units
-
 import numpy as np
 
 import marvin
 import marvin.api.api
-import marvin.core.marvin_pickle
 import marvin.core.exceptions
-from marvin.utils.datamodel.dap.base import Property
-import marvin.utils.plot.map
+import marvin.core.marvin_pickle
 import marvin.utils.general
+import marvin.utils.plot.map
+from marvin.utils.datamodel.dap.base import Property
 from marvin.utils.general.general import add_doc
 
 from .base_quantity import QuantityMixIn
+
 
 try:
     import sqlalchemy
@@ -70,11 +69,14 @@ class Map(units.Quantity, QuantityMixIn):
             The mask array for ``value``.
         binid (array-like, optional):
             The associated binid map.
+        pixmask_flag (str):
+            The maskbit flag to be used to convert from mask bits to labels
+            (e.g., MANGA_DAPPIXMASK).
 
     """
 
     def __new__(cls, array, unit=None, scale=1, ivar=None, mask=None,
-                binid=None, dtype=None, copy=True):
+                binid=None, pixmask_flag=None, dtype=None, copy=True):
 
         if scale is not None:
             unit = units.CompositeUnit(unit.scale * scale, unit.bases, unit.powers)
@@ -89,6 +91,8 @@ class Map(units.Quantity, QuantityMixIn):
         obj.ivar = np.array(ivar) if ivar is not None else None
         obj.mask = np.array(mask) if mask is not None else None
         obj.binid = np.array(binid) if binid is not None else None
+
+        obj.pixmask_flag = None
 
         return obj
 
@@ -150,6 +154,7 @@ class Map(units.Quantity, QuantityMixIn):
         self.ivar = getattr(obj, 'ivar', None)
         self.mask = getattr(obj, 'mask', None)
         self.binid = getattr(obj, 'binid', None)
+        self.pixmask_flag = getattr(obj, 'pixmask_flag', None)
 
         self._set_unit(getattr(obj, 'unit', None))
 
@@ -211,6 +216,7 @@ class Map(units.Quantity, QuantityMixIn):
         obj.target_flags = maps.target_flags
 
         obj.quality_flag = maps.quality_flag
+        obj.pixmask_flag = maps.header['MASKNAME']
 
         return obj
 
@@ -357,23 +363,6 @@ class Map(units.Quantity, QuantityMixIn):
         labels = default_params['default']['bitmasks']
 
         return np.ma.array(self.value, mask=self.pixmask.get_mask(labels, dtype=bool))
-
-    @property
-    def error(self):
-        """Computes the standard deviation of the measurement."""
-
-        if self.ivar is None:
-            return None
-
-        np.seterr(divide='ignore')
-
-        return np.sqrt(1. / self.ivar) * self.unit
-
-    @property
-    def snr(self):
-        """Return the signal-to-noise ratio for each spaxel in the map."""
-
-        return np.abs(self.value * np.sqrt(self.ivar))
 
     @staticmethod
     def _add_ivar(ivar1, ivar2, *args, **kwargs):
@@ -572,17 +561,6 @@ class Map(units.Quantity, QuantityMixIn):
 
         return specindex_corr
 
-    @property
-    def pixmask(self):
-        """Maskbit instance for the MANGA_DAPPIXMASK flag.
-
-        See :ref:`marvin-utils-maskbit` for documentation and
-        :meth:`marvin.utils.general.maskbit.Maskbit` for API reference.
-        """
-        pixmask = self._datamodel.parent.bitmasks['MANGA_DAPPIXMASK']
-        pixmask.mask = getattr(self, 'mask', None)
-        return pixmask
-
     @add_doc(marvin.utils.plot.map.plot.__doc__)
     def plot(self, *args, **kwargs):
         return marvin.utils.plot.map.plot(dapmap=self, *args, **kwargs)
@@ -623,17 +601,6 @@ class EnhancedMap(Map):
     def inst_sigma_correction(self):
         """Override Map.inst_sigma_correction with AttributeError."""
         raise AttributeError("'EnhancedMap' has no attribute 'inst_sigma_correction'.")
-
-    @property
-    def pixmask(self):
-        """Maskbit instance for the MANGA_DAPPIXMASK flag.
-
-        See :ref:`marvin-utils-maskbit` for documentation and
-        :meth:`marvin.utils.general.maskbit.Maskbit` for API reference.
-        """
-        pixmask = self._datamodel.parent.bitmasks['MANGA_DAPPIXMASK']
-        pixmask.mask = self.mask if self.mask is not None else None
-        return pixmask
 
     @property
     def datamodel(self):

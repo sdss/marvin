@@ -7,7 +7,7 @@
 # @License: BSD 3-clause (http://www.opensource.org/licenses/BSD-3-Clause)
 #
 # @Last modified by: José Sánchez-Gallego (gallegoj@uw.edu)
-# @Last modified time: 2018-07-20 18:26:32
+# @Last modified time: 2018-07-21 15:46:36
 
 
 from __future__ import absolute_import, division, print_function
@@ -275,7 +275,7 @@ class Cube(MarvinToolsClass, NSAMixIn, GetApertureMixIn):
                             np.array(self._wavelength),
                             ivar=self._get_extension_data(name, 'ivar'),
                             mask=self._get_extension_data(name, 'mask'),
-                            unit=model.unit)
+                            unit=model.unit, pixmask_flag=self.header['MASKNAME'])
 
         return datacube
 

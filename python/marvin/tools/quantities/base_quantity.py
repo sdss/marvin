@@ -1,21 +1,24 @@
 #!/usr/bin/env python
-# encoding: utf-8
+# -*- coding: utf-8 -*-
 #
-# @Author: José Sánchez-Gallego
-# @Date: Oct 31, 2017
+# @Author: Brian Cherinka, José Sánchez-Gallego, and Brett Andrews
+# @Date: 2017-10-31
 # @Filename: base_quantity.py
-# @License: BSD 3-Clause
-# @Copyright: José Sánchez-Gallego
+# @License: BSD 3-clause (http://www.opensource.org/licenses/BSD-3-Clause)
+#
+# @Last modified by: José Sánchez-Gallego (gallegoj@uw.edu)
+# @Last modified time: 2018-07-21 16:37:02
 
 
-from __future__ import division
-from __future__ import print_function
-from __future__ import absolute_import
+from __future__ import absolute_import, division, print_function
 
-import numpy as np
+import warnings
 
 import astropy.units as units
+import numpy as np
 
+import marvin.core.exceptions
+from marvin.utils.general import maskbit
 from marvin.utils.general.general import _sort_dir
 
 
@@ -30,12 +33,45 @@ class QuantityMixIn(object):
         return return_list
 
     @property
+    def pixmask(self):
+        """Maskbit instance for the pixmask flag.
+
+        See :ref:`marvin-utils-maskbit` for documentation and
+        `~marvin.utils.general.maskbit.Maskbit` for API reference.
+
+        """
+
+        assert self.pixmask_flag, 'pixmask flag not set'
+
+        pixmask = maskbit.Maskbit(self.pixmask_flag)
+        pixmask.mask = self.mask
+
+        return pixmask
+
+    @property
     def masked(self):
-        """Return a masked array."""
+        """Return a masked array.
 
-        assert self.mask is not None, 'mask is None'
+        If the `~QuantityMixIn.pixmask` is set, and the maskbit contains a
+        ``DONOTUSE`` label, the returned array will be masked for the values
+        that contain the ``DONOTUSE`` bit. Otherwise, all values where the
+        mask is greater than zero will be masked.
 
-        return np.ma.array(self.value, mask=self.mask > 0)
+        """
+
+        assert self.mask is not None, 'mask is not set'
+
+        try:
+            pixmask = self.pixmask
+        except AssertionError:
+            warnings.warn('pixmask not set. Applying full mask.',
+                          marvin.core.exceptions.MarvinUserWarning)
+            return np.ma.array(self.value, mask=(self.mask > 0))
+
+        if 'DONOTUSE' in pixmask.schema.label.tolist():
+            return np.ma.array(self.value, mask=self.pixmask.get_mask('DONOTUSE') > 0)
+        else:
+            return np.ma.array(self.value, mask=(self.mask > 0))
 
     @property
     def error(self):

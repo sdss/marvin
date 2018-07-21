@@ -437,7 +437,8 @@ class Maps(MarvinToolsClass, NSAMixIn, DAPallMixIn, GetApertureMixIn):
                 maps_quantities[dm.full()] = AnalysisProperty(data['value'],
                                                               unit=dm.unit,
                                                               ivar=data['ivar'],
-                                                              mask=data['mask'])
+                                                              mask=data['mask'],
+                                                              pixmask_flag=self.header['MASKNAME'])
 
         if self.data_origin == 'api':
 
@@ -461,7 +462,8 @@ class Maps(MarvinToolsClass, NSAMixIn, DAPallMixIn, GetApertureMixIn):
                 maps_quantities[dm.full()] = AnalysisProperty(data[dm.full()]['value'],
                                                               ivar=data[dm.full()]['ivar'],
                                                               mask=data[dm.full()]['mask'],
-                                                              unit=dm.unit)
+                                                              unit=dm.unit,
+                                                              pixmask_flag=self.header['MASKNAME'])
 
         return maps_quantities
 

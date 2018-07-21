@@ -7,7 +7,7 @@
 # @License: BSD 3-clause (http://www.opensource.org/licenses/BSD-3-Clause)
 #
 # @Last modified by: José Sánchez-Gallego (gallegoj@uw.edu)
-# @Last modified time: 2018-07-20 18:27:15
+# @Last modified time: 2018-07-21 16:03:52
 
 
 from __future__ import absolute_import, division, print_function
@@ -546,7 +546,8 @@ class ModelCube(MarvinToolsClass, NSAMixIn, DAPallMixIn, GetApertureMixIn):
                         mask=binned_flux_mask,
                         redcorr=self._redcorr,
                         binid=self.get_binid(model),
-                        unit=model.unit)
+                        unit=model.unit,
+                        pixmask_flag=self.header['MASKNAME'])
 
     @property
     def full_fit(self):
@@ -563,7 +564,8 @@ class ModelCube(MarvinToolsClass, NSAMixIn, DAPallMixIn, GetApertureMixIn):
                         mask=model_mask,
                         redcorr=self._redcorr,
                         binid=self.get_binid(model),
-                        unit=model.unit)
+                        unit=model.unit,
+                        pixmask_flag=self.header['MASKNAME'])
 
     @property
     def emline_fit(self):
@@ -580,7 +582,8 @@ class ModelCube(MarvinToolsClass, NSAMixIn, DAPallMixIn, GetApertureMixIn):
                         mask=emline_mask,
                         redcorr=self._redcorr,
                         binid=self.get_binid(model),
-                        unit=model.unit)
+                        unit=model.unit,
+                        pixmask_flag=self.header['MASKNAME'])
 
     @property
     def stellarcont_fit(self):
@@ -600,7 +603,8 @@ class ModelCube(MarvinToolsClass, NSAMixIn, DAPallMixIn, GetApertureMixIn):
                         mask=stellarcont_mask,
                         redcorr=self._redcorr,
                         binid=self.get_binid(model),
-                        unit=model.unit)
+                        unit=model.unit,
+                        pixmask_flag=self.header['MASKNAME'])
 
     def getCube(self):
         """Returns the associated `~marvin.tools.cube.Cube`."""
