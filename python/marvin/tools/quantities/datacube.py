@@ -7,7 +7,7 @@
 # @License: BSD 3-clause (http://www.opensource.org/licenses/BSD-3-Clause)
 #
 # @Last modified by: José Sánchez-Gallego (gallegoj@uw.edu)
-# @Last modified time: 2018-07-21 16:42:58
+# @Last modified time: 2018-07-21 23:27:25
 
 
 from __future__ import absolute_import, division, print_function
@@ -175,9 +175,36 @@ class DataCube(units.Quantity, QuantityMixIn):
 
         return self.error
 
+    def derredden(self, redcorr=None):
+        """Returns the derreddened datacube.
 
-        new_value = (self.value.T * self.redcorr).T
-        new_ivar = (self.value.T / self.redcorr**2).T
+        Parameters
+        ----------
+        redcorr : float or None
+            The reddening correction to apply. If ``None``, defaults to the
+            ``DataCube.redcorr``.
+
+        Returns
+        -------
+        derredden : DataCube
+            A `DataCube` with the flux and ivar corrected from reddening.
+
+        Raises
+        ------
+        ValueError
+            If ``redcorr=None`` and ``DataCube.redcorr=None``.
+
+        """
+
+        redcorr = redcorr if redcorr is not None else self.redcorr
+
+        if redcorr is None:
+            raise ValueError('no reddening correction specified.')
+
+        assert len(redcorr) == len(self.wavelength), 'invalid length for redcorr.'
+
+        new_value = (self.value.T * redcorr).T
+        new_ivar = (self.ivar.T / redcorr**2).T
 
         new_obj = DataCube(new_value, self.wavelength, unit=self.unit,
                            redcorr=None, ivar=new_ivar, mask=self.mask,
