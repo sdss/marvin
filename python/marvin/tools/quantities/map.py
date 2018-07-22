@@ -92,7 +92,7 @@ class Map(units.Quantity, QuantityMixIn):
         obj.mask = np.array(mask) if mask is not None else None
         obj.binid = np.array(binid) if binid is not None else None
 
-        obj.pixmask_flag = None
+        obj.pixmask_flag = pixmask_flag
 
         return obj
 
@@ -140,6 +140,7 @@ class Map(units.Quantity, QuantityMixIn):
         new_map.target_flags = deepcopy(self.target_flags)
 
         new_map.quality_flag = deepcopy(self.quality_flag)
+        new_map.pixmask_flag = deepcopy(self.pixmask_flag)
 
         return new_map
 
@@ -430,7 +431,7 @@ class Map(units.Quantity, QuantityMixIn):
         map_mask[bad] = map_mask[bad] | self.pixmask.labels_to_value('DONOTUSE')
 
         return EnhancedMap(value=map_value, unit=self.unit, ivar=map_ivar, mask=map_mask,
-                           datamodel=self._datamodel, copy=True)
+                           datamodel=self._datamodel, pixmask_flag=self.pixmask_flag, copy=True)
 
     def _map_arith(self, map2, op):
         """Do map arithmetic and correctly handle map attributes."""
@@ -460,7 +461,7 @@ class Map(units.Quantity, QuantityMixIn):
         map12_unit = self._unit_propagation(self.unit, map2.unit, op)
 
         return EnhancedMap(value=map12_value, unit=map12_unit, ivar=map12_ivar, mask=map12_mask,
-                           datamodel=self._datamodel, copy=True)
+                           datamodel=self._datamodel, pixmask_flag=self.pixmask_flag, copy=True)
 
     def __add__(self, map2):
         """Add two maps."""
@@ -497,7 +498,7 @@ class Map(units.Quantity, QuantityMixIn):
         unit = self.unit**power
 
         return EnhancedMap(value=value, unit=unit, ivar=ivar, mask=self.mask,
-                           datamodel=self._datamodel, copy=True)
+                           datamodel=self._datamodel, pixmask_flag=self.pixmask_flag, copy=True)
 
     def inst_sigma_correction(self):
         """Correct for instrumental broadening.
@@ -584,7 +585,7 @@ class EnhancedMap(Map):
     def __deepcopy__(self, memo):
         return EnhancedMap(value=deepcopy(self.value, memo), unit=deepcopy(self.unit, memo),
                            ivar=deepcopy(self.ivar, memo), mask=deepcopy(self.mask, memo),
-                           copy=True)
+                           pixmask_flag=deepcopy(self.pixmask_flag, memo), copy=True)
 
     def _init_map_from_maps(self):
         raise AttributeError("'EnhancedMap' has no attribute '_init_map_from_maps'.")
