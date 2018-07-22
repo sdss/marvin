@@ -169,8 +169,12 @@ class DataCube(units.Quantity, QuantityMixIn):
 
         self._set_unit(getattr(obj, 'unit', None))
 
-    def derredden(self):
-        """Returns the derreddened datacube."""
+    @property
+    def std(self):
+        """The standard deviation of the measurement."""
+
+        return self.error
+
 
         new_value = (self.value.T * self.redcorr).T
         new_ivar = (self.value.T / self.redcorr**2).T

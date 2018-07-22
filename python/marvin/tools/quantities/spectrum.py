@@ -117,20 +117,6 @@ class Spectrum(Quantity, QuantityMixIn):
         return new_obj
 
     @property
-    def error(self):
-        """The standard deviation of the measurement."""
-
-        if self._std is not None:
-            return self._std
-
-        if self.ivar is None:
-            return None
-
-        np.seterr(divide='ignore')
-
-        return np.sqrt(1. / self.ivar) * self.unit
-
-    @property
     def std(self):
         """The standard deviation of the measurement."""
 

@@ -7,7 +7,7 @@
 # @License: BSD 3-clause (http://www.opensource.org/licenses/BSD-3-Clause)
 #
 # @Last modified by: José Sánchez-Gallego (gallegoj@uw.edu)
-# @Last modified time: 2018-07-21 16:43:16
+# @Last modified time: 2018-07-22 02:10:42
 
 
 from __future__ import absolute_import, division, print_function
@@ -364,6 +364,12 @@ class Map(units.Quantity, QuantityMixIn):
         labels = default_params['default']['bitmasks']
 
         return np.ma.array(self.value, mask=self.pixmask.get_mask(labels, dtype=bool))
+
+    @property
+    def std(self):
+        """The standard deviation of the measurement."""
+
+        return self.error
 
     @staticmethod
     def _add_ivar(ivar1, ivar2, *args, **kwargs):

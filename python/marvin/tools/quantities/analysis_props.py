@@ -7,7 +7,7 @@
 # @License: BSD 3-clause (http://www.opensource.org/licenses/BSD-3-Clause)
 #
 # @Last modified by: José Sánchez-Gallego (gallegoj@uw.edu)
-# @Last modified time: 2018-07-21 16:42:34
+# @Last modified time: 2018-07-22 01:52:54
 
 
 from __future__ import absolute_import, division, print_function
@@ -67,3 +67,9 @@ class AnalysisProperty(Quantity, QuantityMixIn):
         self.mask = getattr(obj, 'mask', None)
 
         self._set_unit(getattr(obj, 'unit', None))
+
+    @property
+    def std(self):
+        """The standard deviation of the measurement."""
+
+        return self.error

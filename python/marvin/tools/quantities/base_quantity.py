@@ -7,7 +7,7 @@
 # @License: BSD 3-clause (http://www.opensource.org/licenses/BSD-3-Clause)
 #
 # @Last modified by: José Sánchez-Gallego (gallegoj@uw.edu)
-# @Last modified time: 2018-07-21 16:37:02
+# @Last modified time: 2018-07-22 01:52:22
 
 
 from __future__ import absolute_import, division, print_function
@@ -76,6 +76,9 @@ class QuantityMixIn(object):
     @property
     def error(self):
         """Compute the standard deviation of the measurement."""
+
+        if hasattr(self, '_std') and self._std is not None:
+            return self._std
 
         if self.ivar is None:
             return None
