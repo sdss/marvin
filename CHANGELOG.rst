@@ -35,6 +35,12 @@ Fixed
 - Bugfix - Python 3 xrange syntax bug in buildImageDict
 - ``Bin._create_spaxels`` instantiating spaxels with the wrong ``(i,j)`` values for the bin. The ``(i, j)`` values from the ``binid`` map were being swapped twice before sending them to ``SpaxelBase`` (:issue:`457`).
 - A bug in the calculation of the derredden inverse variance in a `~marvin.tools.quantities.datacube.DataCube`.
+- Issue with setting drpall path on initial import/set of release before tree has been planted
+- Issue `#456 <https://github.com/sdss/marvin/issues/456>`_ - spectrum web display shows incorrect RA, Dec
+- Issue `#422 <https://github.com/sdss/marvin/issues/422>`_ - ensuring config auto checks access to netrc
+- Issue `#423 <https://github.com/sdss/marvin/issues/423>`_ - adding marvin.yml documentation
+- Issue `#431 <https://github.com/sdss/marvin/issues/431>`_ - adding login documentation
+- Issue `#151 <https://github.com/sdss/marvin/issues/151>`_ - adding web spectrum tooltips
 
 Refactored
 ^^^^^^^^^^

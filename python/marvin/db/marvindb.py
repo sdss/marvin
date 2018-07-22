@@ -28,6 +28,10 @@ class MarvinDB(object):
         self.db = None
         self.log = kwargs.get('log', None)
         self.error = []
+        self.spaxelpropdict = None
+        self.datadb = None
+        self.dapdb = None
+        self.sampledb = None
         self.__init_the_db()
 
     def __init_the_db(self):
@@ -36,10 +40,6 @@ class MarvinDB(object):
             self._setupDB()
         if self.db:
             self._importModels()
-        else:
-            self.datadb = None
-            self.sampledb = None
-            self.dapdb = None
         self._setSession()
         self.testDbConnection()
         self._setModelGraph()
@@ -67,7 +67,6 @@ class MarvinDB(object):
             import marvin.db.models.SampleModelClasses as sampledb
         except Exception as e:
             log.debug('Exception raised: Problem importing mangadb SampleModelClasses: {0}'.format(e))
-            self.sampledb = None
         else:
             self.sampledb = sampledb
 
@@ -75,7 +74,6 @@ class MarvinDB(object):
             import marvin.db.models.DataModelClasses as datadb
         except Exception as e:
             log.debug('Exception raised: Problem importing mangadb DataModelClasses: {0}'.format(e))
-            self.datadb = None
         else:
             self.datadb = datadb
 
@@ -83,8 +81,6 @@ class MarvinDB(object):
             import marvin.db.models.DapModelClasses as dapdb
         except Exception as e:
             log.debug('Exception raised: Problem importing mangadb DapModelClasses: {0}'.format(e))
-            self.dapdb = None
-            self.spaxelpropdict = None
         else:
             self.dapdb = dapdb
             self.spaxelpropdict = self._setSpaxelPropDict()
