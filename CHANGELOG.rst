@@ -27,12 +27,14 @@ Changed
 - Extra keyword arguments passed to ``Spectrum.plot`` are now forwarded to ``Axes.plot``.
 - Tools (e.g., ``Cube``, ``Maps``) can now be accessed from the ``marvin`` namespace (e.g., ``marvin.tools.Cube`` or ``marvin.tools.cube.Cube``).
 - `~marvin.tools.quantities.Spectrum.plot` now only masks part of the spectrum that have the ``DONOTUSE`` maskbit set.
+- ``pixmask`` is now available for all quantities (except ``AnalysisProprty``). The property ``masked`` now uses the bit ``DONOTUSE`` to determine what values must be masked out (:issue:`462`).
 
 Fixed
 ^^^^^
 - Issue `#421 <https://github.com/sdss/marvin/issues/421>`_ - query returning spaxel props returns wrong total count
 - Bugfix - Python 3 xrange syntax bug in buildImageDict
 - ``Bin._create_spaxels`` instantiating spaxels with the wrong ``(i,j)`` values for the bin. The ``(i, j)`` values from the ``binid`` map were being swapped twice before sending them to ``SpaxelBase`` (:issue:`457`).
+- A bug in the calculation of the derredden inverse variance in a `~marvin.tools.quantities.datacube.DataCube`.
 
 Refactored
 ^^^^^^^^^^
