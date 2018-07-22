@@ -7,7 +7,7 @@
 # @License: BSD 3-clause (http://www.opensource.org/licenses/BSD-3-Clause)
 #
 # @Last modified by: José Sánchez-Gallego (gallegoj@uw.edu)
-# @Last modified time: 2018-07-20 20:22:48
+# @Last modified time: 2018-07-21 21:51:06
 
 import copy
 import itertools
@@ -575,12 +575,20 @@ def cube(galaxy, exporigin, mode):
     ''' Yield a Marvin Cube based on the expected origin combo of (mode+db).
         Fixture tests 6 cube origins from (mode+db) combos [file, db and api]
     '''
+
+    if str(galaxy.bintype) != 'SPX':
+        pytest.skip()
+
     if exporigin == 'file':
         c = Cube(filename=galaxy.cubepath, release=galaxy.release, mode=mode)
     else:
         c = Cube(plateifu=galaxy.plateifu, release=galaxy.release, mode=mode)
+
     c.exporigin = exporigin
+    c.initial_mode = mode
+
     yield c
+
     c = None
 
 
@@ -594,6 +602,7 @@ def modelcube(galaxy, exporigin, mode):
     else:
         mc = ModelCube(plateifu=galaxy.plateifu, release=galaxy.release, mode=mode, bintype=galaxy.bintype)
     mc.exporigin = exporigin
+    mc.initial_mode = mode
     yield mc
     mc = None
 
