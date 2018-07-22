@@ -6,7 +6,7 @@
 # @License: BSD 3-clause (http://www.opensource.org/licenses/BSD-3-Clause)
 #
 # @Last modified by: José Sánchez-Gallego (gallegoj@uw.edu)
-# @Last modified time: 2018-07-20 19:14:06
+# @Last modified time: 2018-07-21 21:21:36
 
 
 import os
@@ -20,8 +20,6 @@ from marvin import config, marvindb
 from marvin.core.exceptions import MarvinError, MarvinUserWarning
 from marvin.tests import marvin_test_if
 from marvin.tools.cube import Cube
-from marvin.tools.quantities import DataCube, Spectrum
-from marvin.utils.general import maskbit
 
 
 @pytest.fixture(autouse=True)
@@ -72,26 +70,6 @@ class TestCube(object):
         with pytest.raises(MarvinError) as cm:
             Cube(plateifu=plateifu, mode=mode)
         assert errmsg in str(cm.value)
-
-    @pytest.mark.slow
-    @marvin_test_if(mark='include', cube={'plateifu': '8485-1901'})
-    def test_cube_quantities(self, cube):
-
-        assert cube.flux is not None
-
-        assert isinstance(cube.flux, np.ndarray)
-        assert isinstance(cube.flux, DataCube)
-
-        assert isinstance(cube.spectral_resolution, Spectrum)
-        assert isinstance(cube.spectral_resolution.pixmask, maskbit.Maskbit)
-        assert cube.spectral_resolution.pixmask.name == 'MANGA_DRP3PIXMASK'
-
-        if cube.release in ['MPL-4', 'MPL-5']:
-            with pytest.raises(AssertionError) as ee:
-                cube.spectral_resolution_prepixel
-            assert 'spectral_resolution_prepixel is not present in his MPL version' in str(ee)
-        else:
-            assert isinstance(cube.spectral_resolution_prepixel, Spectrum)
 
     @marvin_test_if(mark='include', cube={'plateifu': '8485-1901',
                                           'release': 'MPL-6',
