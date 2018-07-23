@@ -1,57 +1,83 @@
 #!/usr/bin/env python
-# encoding: utf-8
+# -*- coding: utf-8 -*-
 #
-# rss.py
+# @Author: Brian Cherinka, José Sánchez-Gallego, and Brett Andrews
+# @Date: 2016-04-11
+# @Filename: rss.py
+# @License: BSD 3-clause (http://www.opensource.org/licenses/BSD-3-Clause)
 #
-# Licensed under a 3-clause BSD license.
-#
-# Revision history:
-#     11 Apr 2016 J. Sánchez-Gallego
-#       Initial version
+# @Last modified by: José Sánchez-Gallego (gallegoj@uw.edu)
+# @Last modified time: 2018-07-23 01:06:18
 
 
-from __future__ import division
-from __future__ import print_function
+from __future__ import division, print_function
 
+import io
+import os
+
+import numpy
+from brain.core.exceptions import BrainError
 from flask import jsonify
 from flask_classful import route
+from sdss_access.path import Path
 
-from marvin.tools.rss import RSS
-from marvin.api.base import BaseView, arg_validate as av
+import marvin
+from marvin.api.base import BaseView
+from marvin.api.base import arg_validate as av
 from marvin.core.exceptions import MarvinError
-from marvin.utils.general import parseIdentifier
+from marvin.utils.general import mangaid2plateifu, parseIdentifier
 
 
-def _getRSS(name, **kwargs):
+def _getRSS(name, use_file=True, release=None, **kwargs):
     """Retrieves a RSS Marvin object."""
+
+    drpver, __ = marvin.config.lookUpVersions(release)
 
     rss = None
     results = {}
 
-    # Pop the release to remove a duplicate input to Maps
-    release = kwargs.pop('release', None)
-
     # parse name into either mangaid or plateifu
     try:
         idtype = parseIdentifier(name)
-    except Exception as e:
-        results['error'] = 'Failed to parse input name {0}: {1}'.format(name, str(e))
+    except Exception as ee:
+        results['error'] = 'Failed to parse input name {0}: {1}'.format(name, str(ee))
         return rss, results
 
-    try:
-        if idtype == 'plateifu':
-            plateifu = name
-            mangaid = None
-        elif idtype == 'mangaid':
-            mangaid = name
-            plateifu = None
-        else:
-            raise MarvinError('invalid plateifu or mangaid: {0}'.format(idtype))
+    filename = None
+    plateifu = None
+    mangaid = None
 
-        rss = RSS(mangaid=mangaid, plateifu=plateifu, mode='local', release=release)
+    try:
+        if use_file:
+
+            if idtype == 'mangaid':
+                plate, ifu = mangaid2plateifu(name, drpver=drpver)
+            elif idtype == 'plateifu':
+                plate, ifu = name.split('-')
+
+            if Path is not None:
+                filename = Path().full('mangarss', ifu=ifu, plate=plate, drpver=drpver)
+                assert os.path.exists(filename), 'file not found.'
+            else:
+                raise MarvinError('cannot create path for MaNGA rss.')
+
+        else:
+
+            if idtype == 'plateifu':
+                plateifu = name
+            elif idtype == 'mangaid':
+                mangaid = name
+            else:
+                raise MarvinError('invalid plateifu or mangaid: {0}'.format(idtype))
+
+        rss = marvin.tools.RSS(filename=filename, mangaid=mangaid, plateifu=plateifu,
+                               mode='local', release=release)
+
         results['status'] = 1
-    except Exception as e:
-        results['error'] = 'Failed to retrieve RSS {0}: {1}'.format(name, str(e))
+
+    except Exception as ee:
+
+        results['error'] = 'Failed to retrieve RSS {0}: {1}'.format(name, str(ee))
 
     return rss, results
 
@@ -109,12 +135,33 @@ class RSSView(BaseView):
         # Pop any args we don't want going into Rss
         args = self._pop_args(args, arglist='name')
 
-        rss, results = _getRSS(name, **args)
-        self.update_results(results)
+        rss, res = _getRSS(name, **args)
+        self.update_results(res)
 
         if rss:
-            # For now we don't return anything here, maybe later.
-            self.results['data'] = {}
+
+            try:
+                nsa_data = rss.nsa
+            except (MarvinError, BrainError):
+                nsa_data = None
+
+            wavelength = (rss._wavelength.tolist() if isinstance(rss._wavelength, numpy.ndarray)
+                          else rss._wavelength)
+
+            obsinfo = io.StringIO()
+            rss.obsinfo.write(format='ascii', filename=obsinfo)
+            obsinfo.seek(0)
+
+            self.results['data'] = {'plateifu': name,
+                                    'mangaid': rss.mangaid,
+                                    'ra': rss.ra,
+                                    'dec': rss.dec,
+                                    'header': rss.header.tostring(),
+                                    'redshift': nsa_data.z if nsa_data else -9999,
+                                    'wavelength': wavelength,
+                                    'wcs_header': rss.wcs.to_header_string(),
+                                    'nfibers': rss._nfibers,
+                                    'obsinfo': obsinfo.read()}
 
         return jsonify(self.results)
 

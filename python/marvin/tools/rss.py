@@ -1,95 +1,80 @@
 #!/usr/bin/env python
-# encoding: utf-8
+# -*- coding: utf-8 -*-
 #
-# rss.py
+# @Author: Brian Cherinka, José Sánchez-Gallego, and Brett Andrews
+# @Date: 2016-04-11
+# @Filename: rss.py
+# @License: BSD 3-clause (http://www.opensource.org/licenses/BSD-3-Clause)
 #
-# Licensed under a 3-clause BSD license.
-#
-# Revision history:
-#     11 Apr 2016 J. Sánchez-Gallego
-#       Initial version
+# @Last modified by: José Sánchez-Gallego (gallegoj@uw.edu)
+# @Last modified time: 2018-07-23 01:05:25
 
 
 from __future__ import division, print_function
 
+import os
 import warnings
 
-import numpy as np
+import astropy.io.ascii
+import astropy.table
+import astropy.wcs
 from astropy.io import fits
 
 import marvin
 from marvin.core.exceptions import MarvinError, MarvinUserWarning
-from marvin.tools.quantities.spectrum import Spectrum
+from marvin.utils.datamodel.drp import datamodel_rss
 
 from .core import MarvinToolsClass
+from .cube import Cube
+from .mixins import GetApertureMixIn, NSAMixIn
+from .quantities.spectrum import Spectrum
 
 
-class RSS(MarvinToolsClass, list):
-    """A class to interface with MaNGA RSS data.
+class RSS(MarvinToolsClass, NSAMixIn, GetApertureMixIn):
+    """A class to interface with a MaNGA DRP row-stacked spectra file.
 
-    This class represents a fully reduced RSS file, initialised either
-    from a file, a database, or remotely via the Marvin API. The class
-    inherits from Python's list class, and is defined as a list of
-    RSSFiber objects.
+    This class represents a fully reduced DRP data cube, initialised either
+    from a file, a database, or remotely via the Marvin API.
 
-    Parameters:
-        filename (str):
-            The path of the file containing the RSS to load.
-        mangaid (str):
-            The mangaid of the RSS to load.
-        plateifu (str):
-            The plate-ifu of the RSS to load (either ``mangaid`` or
-            ``plateifu`` can be used, but not both).
-        mode ({'local', 'remote', 'auto'}):
-            The load mode to use. See
-            :doc:`Mode secision tree</mode_decision>`.
-        nsa_source ({'auto', 'drpall', 'nsa'}):
-            Defines how the NSA data for this object should loaded when
-            ``RSS.nsa`` is first called. If ``drpall``, the drpall file will
-            be used (note that this will only contain a subset of all the NSA
-            information); if ``nsa``, the full set of data from the DB will be
-            retrieved. If the drpall file or a database are not available, a
-            remote API call will be attempted. If ``nsa_source='auto'``, the
-            source will depend on how the ``RSS`` object has been
-            instantiated. If the cube has ``RSS.data_origin='file'``,
-            the drpall file will be used (as it is more likely that the user
-            has that file in their system). Otherwise, ``nsa_source='nsa'``
-            will be assumed. This behaviour can be modified during runtime by
-            modifying the ``RSS.nsa_mode`` with one of the valid values.
-        release (str):
-            The MPL/DR version of the data to use.
-
-    Return:
-        rss:
-            An object representing the RSS entity. The object is a list of
-            RSSFiber objects, one for each fibre in the RSS entity.
+    See `~.MarvinToolsClass` and `~.NSAMixIn` for a list of input parameters.
 
     """
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, input=None, filename=None, mangaid=None, plateifu=None,
+                 mode=None, data=None, release=None,
+                 drpall=None, download=None, nsa_source='auto'):
 
-        valid_kwargs = ['filename', 'mangaid', 'plateifu', 'mode',
-                        'drpall', 'release', 'nsa_source']
+        MarvinToolsClass.__init__(self, input=input, filename=filename, mangaid=mangaid,
+                                  plateifu=plateifu, mode=mode, data=data, release=release,
+                                  drpall=drpall, download=download)
 
-        assert len(args) == 0, 'RSS does not accept arguments, only keywords.'
-        for kw in kwargs:
-            assert kw in valid_kwargs, 'keyword {0} is not valid'.format(kw)
+        NSAMixIn.__init__(self, nsa_source=nsa_source)
 
-        self.data = None
-
-        MarvinToolsClass.__init__(self, *args, **kwargs)
+        #: An `astropy.table.Table` with the observing information associated
+        #: with this RSS object.
+        self.obsinfo = None
 
         if self.data_origin == 'file':
-            self._load_rss_from_file()
+            self._load_rss_from_file(data=self.data)
         elif self.data_origin == 'db':
-            self._load_rss_from_db()
+            self._load_rss_from_db(data=self.data)
         elif self.data_origin == 'api':
             self._load_rss_from_api()
 
-        _fibers = self._init_fibers()
-        list.__init__(self, _fibers)
+        Cube._init_attributes(self)
 
-        # TODO: check that the drpver of the loaded data matches the one in the object.
+        # Checks that the drpver set in MarvinToolsClass matches the header
+        header_drpver = self.header['VERSDRP3'].strip()
+        header_drpver = 'v1_5_1' if header_drpver == 'v1_5_0' else header_drpver
+        assert header_drpver == self._drpver, ('mismatch between cube._drpver={0} '
+                                               'and header drpver={1}'.format(self._drpver,
+                                                                              header_drpver))
+
+    def _set_datamodel(self):
+        """Sets the datamodel for DRP."""
+
+        self.datamodel = datamodel_rss[self.release.upper()]
+        self._bitmasks = datamodel_rss[self.release.upper()].bitmasks
 
     def __repr__(self):
         """Representation for RSS."""
@@ -117,65 +102,56 @@ class RSS(MarvinToolsClass, list):
 
         return super(RSS, self).download('mangarss', ifu=ifu, drpver=self._drpver, plate=plate)
 
-    def _load_rss_from_file(self):
+    def _load_rss_from_file(self, data=None):
         """Initialises the RSS object from a file."""
 
-        try:
-            self.data = fits.open(self.filename)
-            self.mangaid = self.data[0].header['MANGAID'].strip()
-            self.plateifu = '{0}-{1}'.format(
-                self.data[0].header['PLATEID'], self.data[0].header['IFUDSGN'])
-        except Exception as ee:
-            raise MarvinError('Could not initialize via filename: {0}'.format(ee))
+        if data is not None:
+            assert isinstance(data, fits.HDUList), 'data is not an HDUList object'
+        else:
+            try:
+                self.data = fits.open(self.filename)
+            except (IOError, OSError) as err:
+                raise OSError('filename {0} cannot be found: {1}'.format(self.filename, err))
 
-        # Checks and populates release.
-        file_drpver = self.data[0].header['VERSDRP3']
-        file_drpver = 'v1_5_1' if file_drpver == 'v1_5_0' else file_drpver
+        self.header = self.data[1].header
+        self.wcs = astropy.wcs.WCS(self.header)
+        self.wcs = self.wcs.dropaxis(1)  # The header creates an empty axis for the exposures.
 
-        file_ver = marvin.config.lookUpRelease(file_drpver)
-        assert file_ver is not None, 'cannot find file version.'
+        # Confirm that this is a RSS file
+        assert 'XPOS' in self.data and self.header['CTYPE1'] == 'WAVE-LOG', \
+            'invalid file type. It does not appear to be a LOGRSS.'
 
-        if file_ver != self._release:
-            warnings.warn('mismatch between file version={0} and object release={1}. '
-                          'Setting object release to {0}'.format(file_ver, self._release),
-                          MarvinUserWarning)
-            self._release = file_ver
+        self._wavelength = self.data['WAVE'].data
+        self._shape = None
+        self._nfibers = self.data['FLUX'].shape[0]
 
-        self._drpver, self._dapver = marvin.config.lookUpVersions(release=self._release)
+        self.obsinfo = astropy.table.Table(self.data['OBSINFO'].data)
 
-    def _load_rss_from_db(self):
-        """Initialises the RSS object from the DB."""
+        Cube._do_file_checks(self)
 
-        import sqlalchemy
+    def _load_rss_from_db(self, data=None):
+        """Initialises the RSS object from the DB.
 
-        mdb = marvin.marvindb
+        At this time the DB does not contain enough information to successfully
+        instantiate a RSS object so we hack the data access mode to try to use
+        files. For users this should be irrelevant since they rarely will have
+        a Marvin DB. For the API, it means the access to RSS data will happen
+        via files.
 
-        if not mdb.isdbconnected:
-            raise MarvinError('No db connected')
+        """
 
-        plate, ifudesign = [item.strip() for item in self.plateifu.split('-')]
+        warnings.warn('DB mode is not working for RSS. Trying file access mode.',
+                      MarvinUserWarning)
 
-        try:
-            self.data = mdb.session.query(mdb.datadb.RssFiber).join(
-                mdb.datadb.Cube, mdb.datadb.PipelineInfo,
-                mdb.datadb.PipelineVersion, mdb.datadb.IFUDesign).filter(
-                    mdb.datadb.PipelineVersion.version == self._drpver,
-                    mdb.datadb.Cube.plate == plate,
-                    mdb.datadb.IFUDesign.name == ifudesign).all()
-
-        except sqlalchemy.orm.exc.NoResultFound as ee:
-            raise MarvinError('Could not retrieve RSS for plate-ifu {0}: '
-                              'No Results Found: {1}'
-                              .format(self.plateifu, ee))
-
-        except Exception as ee:
-            raise MarvinError('Could not retrieve RSS for plate-ifu {0}: '
-                              'Unknown exception: {1}'
-                              .format(self.plateifu, ee))
-
-        if not self.data:
-            raise MarvinError('Could not retrieve RSS for plate-ifu {0}: '
-                              'Unknown error.'.format(self.plateifu))
+        fullpath = self._getFullPath()
+        if fullpath and os.path.exists(fullpath):
+            self.filename = fullpath
+            self.data_origin = 'file'
+            self._load_rss_from_file()
+        else:
+            raise MarvinError('cannot find a valid RSS file for '
+                              'plateifu={self.plateifu!r}, release={self.release!r}'
+                              .format(self=self))
 
     def _load_rss_from_api(self):
         """Initialises the RSS object using the remote API."""
@@ -184,41 +160,25 @@ class RSS(MarvinToolsClass, list):
         routeparams = {'name': self.plateifu}
         url = marvin.config.urlmap['api']['getRSS']['url'].format(**routeparams)
 
-        # Make the API call
-        self._toolInteraction(url)
+        try:
+            response = self._toolInteraction(url.format(name=self.plateifu))
+        except Exception as ee:
+            raise MarvinError('found a problem when checking if remote RSS '
+                              'exists: {0}'.format(str(ee)))
 
-    def _init_fibers(self):
-        """Initialises the object as a list of RSSFiber instances."""
+        data = response.getData()
 
-        if self.data_origin == 'file':
-            _fibers = [RSSFiber._init_from_hdu(hdulist=self.data, index=ii)
-                       for ii in range(self.data[1].data.shape[0])]
+        self.header = fits.Header.fromstring(data['header'])
+        self.wcs = astropy.wcs.WCS(fits.Header.fromstring(data['wcs_header']))
+        self._wavelength = data['wavelength']
+        self._nfibers = data['nfibers']
 
-        elif self.data_origin == 'db':
-            _fibers = [RSSFiber._init_from_db(rssfiber=rssfiber) for rssfiber in self.data]
+        self.obsinfo = astropy.io.ascii.read(data['obsinfo'])
 
-        elif self.data_origin == 'api':
-            # Makes a call to the API to retrieve all the arrays for all the fibres.
+        if self.plateifu != data['plateifu']:
+            raise MarvinError('remote RSS has a different plateifu!')
 
-            routeparams = {'name': self.plateifu}
-            url = marvin.config.urlmap['api']['getRSSAllFibers']['url'].format(**routeparams)
-
-            # Make the API call
-            response = self._toolInteraction(url)
-            data = response.getData()
-
-            wavelength = np.array(data['wavelength'])
-
-            _fibers = []
-            for ii in range(len(data) - 1):
-                flux = np.array(data[str(ii)][0])
-                ivar = np.array(data[str(ii)][1])
-                mask = np.array(data[str(ii)][2])
-                _fibers.append(
-                    RSSFiber(flux, ivar=ivar, mask=mask, wavelength=wavelength,
-                             mangaid=self.mangaid, plateifu=self.plateifu, data_origin='api'))
-
-        return _fibers
+        return
 
 
 class RSSFiber(Spectrum):
