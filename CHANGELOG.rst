@@ -25,6 +25,7 @@ Changed
 - Added rawsql and return_params columns to history.query table in mangadb
 - Extra keyword arguments passed to ``Spectrum.plot`` are now forwarded to ``Axes.plot``.
 - Tools (e.g., ``Cube``, ``Maps``) can now be accessed from the ``marvin`` namespace (e.g., ``marvin.tools.Cube`` or ``marvin.tools.cube.Cube``).
+- Moved ``yanny.py`` to ``extern/`` and added a readme file for the external packages (:issue:`468`).
 
 Fixed
 ^^^^^
