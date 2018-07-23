@@ -8,32 +8,27 @@
 # @Copyright: José Sánchez-Gallego
 
 
-from __future__ import division
-from __future__ import print_function
-from __future__ import absolute_import
+from __future__ import absolute_import, division, print_function
 
 import abc
 import inspect
 import itertools
-import six
 import warnings
 
 import numpy as np
+import six
 
 import marvin
-import marvin.core.core
 import marvin.core.exceptions
-from marvin.core.exceptions import MarvinError, MarvinUserWarning, MarvinBreadCrumb
 import marvin.core.marvin_pickle
-import marvin.utils.general.general
-
 import marvin.tools.cube
 import marvin.tools.maps
 import marvin.tools.modelcube
-
-from marvin.utils.general.structs import FuzzyDict
+import marvin.utils.general.general
+from marvin.core.exceptions import MarvinBreadCrumb, MarvinError, MarvinUserWarning
 from marvin.utils.datamodel.dap import datamodel as dap_datamodel
 from marvin.utils.datamodel.drp import datamodel as drp_datamodel
+from marvin.utils.general.structs import FuzzyDict
 
 
 breadcrumb = MarvinBreadCrumb()
@@ -65,15 +60,13 @@ def spaxel_factory(cls, *args, **kwargs):
 
     """
 
-    Maps = marvin.tools.maps.Maps
-    ModelCube = marvin.tools.modelcube.ModelCube
-
     if cls is not SpaxelBase:
         return type.__call__(cls, *args, **kwargs)
 
     cube = kwargs.pop('cube', None)
     maps = kwargs.pop('maps', None)
     modelcube = kwargs.pop('modelcube', None)
+    lazy = kwargs.pop('lazy', False)
 
     plateifu = kwargs.pop('plateifu', (getattr(cube, 'plateifu', None) or
                                        getattr(maps, 'plateifu', None) or
@@ -89,7 +82,8 @@ def spaxel_factory(cls, *args, **kwargs):
 
     spaxel_kwargs = kwargs.copy()
     spaxel_kwargs.update(cube=cube, maps=maps, modelcube=modelcube,
-                         plateifu=plateifu, mangaid=mangaid, release=release)
+                         plateifu=plateifu, mangaid=mangaid, release=release,
+                         lazy=lazy)
 
     if not cube and not maps and not modelcube:
         raise MarvinError('no inputs defined.')
@@ -97,7 +91,8 @@ def spaxel_factory(cls, *args, **kwargs):
     if not maps and not modelcube:
         return Spaxel(*args, **spaxel_kwargs)
 
-    if isinstance(maps, Maps) or isinstance(modelcube, ModelCube):
+    if (isinstance(maps, marvin.tools.maps.Maps) or
+            isinstance(modelcube, marvin.tools.modelcube.ModelCube)):
         bintype = getattr(maps, 'bintype', None) or getattr(modelcube, 'bintype', None)
         spaxel_kwargs.update(bintype=bintype)
         if bintype.binned:
@@ -106,15 +101,16 @@ def spaxel_factory(cls, *args, **kwargs):
             return Spaxel(*args, **spaxel_kwargs)
 
     if maps:
-        maps = Maps((maps if maps is not True else None) or plateifu or mangaid,
-                    release=release, **kwargs)
+        maps = marvin.tools.maps.Maps((maps if maps is not True else None) or plateifu or mangaid,
+                                      release=release, **kwargs)
         spaxel_kwargs.update(bintype=maps.bintype)
         if maps.bintype.binned:
             return Bin(*args, **spaxel_kwargs)
 
     if modelcube:
-        modelcube = ModelCube((modelcube if modelcube is not True else None) or
-                              plateifu or mangaid, release=release, **kwargs)
+        modelcube = marvin.tools.modelcube.ModelCube(
+            (modelcube if modelcube is not True else None) or
+            plateifu or mangaid, release=release, **kwargs)
         spaxel_kwargs.update(bintype=modelcube.bintype)
         if modelcube.bintype.binned:
             return Bin(*args, **spaxel_kwargs)
@@ -351,7 +347,7 @@ class SpaxelBase(six.with_metaclass(SpaxelABC, object)):
             path (str):
                 The path of the file to which the `.Spaxel` will be saved.
                 Unlike for other Marvin Tools that derive from
-                `~marvin.core.core.MarvinToolsClass`, ``path`` is
+                `~marvin.tools.core.MarvinToolsClass`, ``path`` is
                 mandatory for `.Spaxel.save` as there is no default path for a
                 given spaxel.
             overwrite (bool):
@@ -616,7 +612,15 @@ class Spaxel(SpaxelBase):
 
 
 class Bin(SpaxelBase):
-    """A class that represents a bin."""
+    """A class that represents a bin.
+
+    Attributes
+    ----------
+    spaxels : list
+        A list of `.Spaxel` instances that provides access to the unbinned
+        spaxels that are associated with the bin.
+
+    """
 
     def __init__(self, *args, **kwargs):
 
@@ -679,7 +683,7 @@ class Bin(SpaxelBase):
         spaxel_coords = zip(*np.where(binid_map == self.binid))
         self.spaxels = []
 
-        for jj, ii in spaxel_coords:
+        for ii, jj in spaxel_coords:
             self.spaxels.append(Spaxel(x=jj, y=ii, plateifu=self.plateifu, release=self.release,
                                        cube=self._cube, maps=True if self._maps else False,
                                        modelcube=True if self._modelcube else False,

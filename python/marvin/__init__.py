@@ -271,8 +271,9 @@ class MarvinConfig(object):
         with self._replant_tree(value) as val:
             self._release = val
 
-        drpver, __ = self.lookUpVersions(value)
-        self.drpall = self._getDrpAllPath(drpver)
+        if 'MANGA_SPECTRO_REDUX' in os.environ:
+            drpver, __ = self.lookUpVersions(value)
+            self.drpall = self._getDrpAllPath(drpver)
 
     @property
     def access(self):
