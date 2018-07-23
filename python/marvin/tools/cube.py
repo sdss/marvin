@@ -36,19 +36,7 @@ class Cube(MarvinToolsClass, NSAMixIn, GetApertureMixIn):
     This class represents a fully reduced DRP data cube, initialised either
     from a file, a database, or remotely via the Marvin API.
 
-    See `~.MarvinToolsClass` for a list of parameters. In addition to the
-    attributes defined `there <~.MarvinToolsClass>`, the following ones are
-    also defined
-
-    Attributes:
-        header (`astropy.io.fits.Header`):
-            The header of the datacube.
-        ifu (int):
-            The id of the IFU.
-        ra,dec (float):
-            Coordinates of the target.
-        wcs (`astropy.wcs.WCS`):
-            The WCS solution for this plate
+    See `~.MarvinToolsClass` and `~.NSAMixIn` for a list of input parameters.
 
     """
 
@@ -146,25 +134,8 @@ class Cube(MarvinToolsClass, NSAMixIn, GetApertureMixIn):
 
         self.dir3d = 'mastar' if self._isbright else 'stack'
 
-    def _load_cube_from_file(self, data=None):
-        """Initialises a cube from a file."""
-
-        if data is not None:
-            assert isinstance(data, fits.HDUList), 'data is not an HDUList object'
-        else:
-            try:
-                self.data = fits.open(self.filename)
-            except (IOError, OSError) as err:
-                raise OSError('filename {0} cannot be found: {1}'.format(self.filename, err))
-
-        self.header = self.data[1].header
-        self.wcs = WCS(self.header)
-
-        self._check_file(self.data[0].header, self.data, 'Cube')
-
-        self._wavelength = self.data['WAVE'].data
-        self._shape = (self.data['FLUX'].header['NAXIS2'],
-                       self.data['FLUX'].header['NAXIS1'])
+    def _do_file_checks(self):
+        """Performs a series of check when we load from a file."""
 
         self.plateifu = self.header['PLATEIFU']
 
@@ -193,6 +164,28 @@ class Cube(MarvinToolsClass, NSAMixIn, GetApertureMixIn):
                                      drpver=self._drpver, drpall=self._drpall)
 
         self._drpver, self._dapver = marvin.config.lookUpVersions(release=self._release)
+
+    def _load_cube_from_file(self, data=None):
+        """Initialises a cube from a file."""
+
+        if data is not None:
+            assert isinstance(data, fits.HDUList), 'data is not an HDUList object'
+        else:
+            try:
+                self.data = fits.open(self.filename)
+            except (IOError, OSError) as err:
+                raise OSError('filename {0} cannot be found: {1}'.format(self.filename, err))
+
+        self.header = self.data[1].header
+        self.wcs = WCS(self.header)
+
+        self._check_file(self.data[0].header, self.data, 'Cube')
+
+        self._wavelength = self.data['WAVE'].data
+        self._shape = (self.data['FLUX'].header['NAXIS2'],
+                       self.data['FLUX'].header['NAXIS1'])
+
+        self._do_file_checks()
 
     def _load_cube_from_db(self, data=None):
         """Initialises a cube from the DB."""
