@@ -1,2 +1,2 @@
 
-from .MPL import datamodel
+from .MPL import datamodel, datamodel_rss
