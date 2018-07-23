@@ -171,8 +171,8 @@ class DataCube(units.Quantity, QuantityMixIn):
 
         return self.error
 
-    def derredden(self, redcorr=None):
-        """Returns the derreddened datacube.
+    def deredden(self, redcorr=None):
+        """Returns the dereddened datacube.
 
         Parameters
         ----------
@@ -182,7 +182,7 @@ class DataCube(units.Quantity, QuantityMixIn):
 
         Returns
         -------
-        derredden : DataCube
+        deredden : DataCube
             A `DataCube` with the flux and ivar corrected from reddening.
 
         Raises
