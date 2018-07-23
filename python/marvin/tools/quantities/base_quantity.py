@@ -7,7 +7,7 @@
 # @License: BSD 3-clause (http://www.opensource.org/licenses/BSD-3-Clause)
 #
 # @Last modified by: José Sánchez-Gallego (gallegoj@uw.edu)
-# @Last modified time: 2018-07-22 01:52:22
+# @Last modified time: 2018-07-23 16:42:56
 
 
 from __future__ import absolute_import, division, print_function
@@ -52,9 +52,9 @@ class QuantityMixIn(object):
     def masked(self):
         """Return a masked array.
 
-        If the `~QuantityMixIn.pixmask` is set, and the maskbit contains a
-        ``DONOTUSE`` label, the returned array will be masked for the values
-        that contain the ``DONOTUSE`` bit. Otherwise, all values where the
+        If the `~QuantityMixIn.pixmask` is set, and the maskbit contains the
+        ``DONOTUSE`` and ``NOCOV`` labels, the returned array will be masked
+        for the values containing those bits. Otherwise, all values where the
         mask is greater than zero will be masked.
 
         """
@@ -68,7 +68,10 @@ class QuantityMixIn(object):
                           marvin.core.exceptions.MarvinUserWarning)
             return np.ma.array(self.value, mask=(self.mask > 0))
 
-        if 'DONOTUSE' in pixmask.schema.label.tolist():
+        labels = pixmask.schema.label.tolist()
+        if 'DONOTUSE' in labels and 'NOCOV' in labels:
+            return np.ma.array(self.value, mask=self.pixmask.get_mask(['DONOTUSE', 'NOCOV']) > 0)
+        elif 'DONOTUSE' in labels:
             return np.ma.array(self.value, mask=self.pixmask.get_mask('DONOTUSE') > 0)
         else:
             return np.ma.array(self.value, mask=(self.mask > 0))
