@@ -15,6 +15,7 @@ Added
 - New marvin.yml config file for customization of configuration options
 - Adds User table into the history schema of mangadb.  Tracks user logins.
 - ``Map`` has a new method ``getSpaxel`` to retrieve an ``Spaxel`` using the parent ``Maps``.
+- New configuration option in ``marvin.yml``, ``default_release``, to set the release to be used when Marvin gets imported (:issue:`463`).
 
 Changed
 ^^^^^^^
@@ -41,7 +42,7 @@ Fixed
 Refactored
 ^^^^^^^^^^
 - Moved `marvin.core.core` to `marvin.tools.core` and split the mixins into `marvin.tools.mixins`.
-- Reimplemented `~marvin.tools.mixins.aperture.GetApertureMixIn.getAperture` as a mixin using photutils apertures (:issues:`3,315`).
+- Reimplemented `~marvin.tools.mixins.aperture.GetApertureMixIn.getAperture` as a mixin using photutils apertures (:issue:`3,315`).
 
 
 [2.2.5] - 2018/04/26
