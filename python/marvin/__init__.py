@@ -403,6 +403,14 @@ class MarvinConfig(object):
         # update the allowed releases
         self._update_releases()
 
+        # If the configuration file included a default release, we set it now
+        if 'default_release' in self._custom_config and self._custom_config['default_release']:
+            if self._custom_config['default_release'] in self._allowed_releases:
+                self.release = self._custom_config['default_release']
+            else:
+                warnings.warn('invalid release {!r}. Using default configuration.'
+                              .format(self._custom_config['default_release']), MarvinUserWarning)
+
         # Check for release version and if in allowed list
         latest = self._get_latest_release(mpl_only=self.access == 'collab')
         if not self.release:
