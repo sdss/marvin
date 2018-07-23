@@ -447,7 +447,8 @@ class ModelCube(MarvinToolsClass, NSAMixIn, DAPallMixIn, GetApertureMixIn):
                                                          ivar=data['ivar'],
                                                          mask=data['mask'],
                                                          wavelength=self._wavelength,
-                                                         unit=dm.unit)
+                                                         unit=dm.unit,
+                                                         pixmask_flag=self.header['MASKNAME'])
 
         if self.data_origin == 'api':
 
@@ -472,7 +473,8 @@ class ModelCube(MarvinToolsClass, NSAMixIn, DAPallMixIn, GetApertureMixIn):
                                                          ivar=data[dm.name]['ivar'],
                                                          mask=data[dm.name]['mask'],
                                                          wavelength=data['wavelength'],
-                                                         unit=dm.unit)
+                                                         unit=dm.unit,
+                                                         pixmask_flag=self.header['MASKNAME'])
 
         return modelcube_quantities
 

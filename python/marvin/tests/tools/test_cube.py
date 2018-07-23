@@ -3,8 +3,8 @@
 import os
 import re
 
-import pytest
 import numpy as np
+import pytest
 from astropy import wcs
 
 from marvin import config, marvindb
@@ -12,6 +12,7 @@ from marvin.core.exceptions import MarvinError, MarvinUserWarning
 from marvin.tests import marvin_test_if
 from marvin.tools.cube import Cube
 from marvin.tools.quantities import DataCube, Spectrum
+from marvin.utils.general import maskbit
 
 
 @pytest.fixture(autouse=True)
@@ -73,6 +74,8 @@ class TestCube(object):
         assert isinstance(cube.flux, DataCube)
 
         assert isinstance(cube.spectral_resolution, Spectrum)
+        assert isinstance(cube.spectral_resolution.pixmask, maskbit.Maskbit)
+        assert cube.spectral_resolution.pixmask.name == 'MANGA_DRP3PIXMASK'
 
         if cube.release in ['MPL-4', 'MPL-5']:
             with pytest.raises(AssertionError) as ee:
