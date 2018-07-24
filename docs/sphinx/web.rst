@@ -173,6 +173,9 @@ flux map, and the d4000 spectral index map.  All maps are generated using the
   * **Get Maps**: Click to display maps.
   * **Reset Selection**: Clear your selected Analysis Properties (Binning Scheme and Stellar Template combination will remain the same.).
 
+* **Sigma Corrections**:
+  When selecting the ``stellar_sigma`` or ``emline_sigma`` maps, we automatically apply the relevant sigma correction.  A corrected map is indicated via the **Corrected: [name]** map title.  Uncorrected maps, for example, in MPL-6, retain the original title name.
+
 * **Map Color Schemes**:
 
   * **No Data and Bad Data**
