@@ -25,7 +25,7 @@ The Marvin plot function makes creating quick 2d scatter plots an easy process.
     y = np.random.random(100)*10
 
     # create and plot a 2-d scatter plot from scratch
-    from marvin.utils.scatter import plot
+    from marvin.utils.plot.scatter import plot
     output = plot(x, y)
 
 
