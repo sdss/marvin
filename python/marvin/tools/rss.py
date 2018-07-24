@@ -7,7 +7,7 @@
 # @License: BSD 3-clause (http://www.opensource.org/licenses/BSD-3-Clause)
 #
 # @Last modified by: José Sánchez-Gallego (gallegoj@uw.edu)
-# @Last modified time: 2018-07-23 19:15:11
+# @Last modified time: 2018-07-23 21:13:41
 
 
 from __future__ import division, print_function
@@ -17,6 +17,7 @@ import warnings
 
 import astropy.io.ascii
 import astropy.table
+import astropy.units
 import astropy.wcs
 import numpy
 from astropy.io import fits
@@ -190,21 +191,21 @@ class RSS(MarvinToolsClass, NSAMixIn, GetApertureMixIn, list):
         """Populates the internal list of fibres."""
 
         for ii in range(self._nfibers):
-            self.append(RSSFiber(ii, self, load=False, pixmask_flag=self.header['MASKNAME']))
+            self.append(RSSFiber(ii, self, self._wavelength, load=False,
+                                 pixmask_flag=self.header['MASKNAME']))
 
 
 class RSSFiber(Spectrum):
 
-    def __new__(cls, fiberid, rss, **kwargs):
+    def __new__(cls, fiberid, rss, wavelength, **kwargs):
 
         # For now we instantiate a mostly empty Spectrum. Proper instantiation
         # will happen in load().
 
-        array_size = len(rss._wavelength)
+        array_size = len(wavelength)
 
         obj = super(RSSFiber, cls).__new__(
-            cls, numpy.zeros(array_size, dtype=numpy.float64),
-            numpy.zeros(array_size, dtype=numpy.float64),
+            cls, numpy.zeros(array_size, dtype=numpy.float64), wavelength,
             scale=None, unit=None)
 
         obj._extra_attributes = ['fiberid', 'rss', 'loaded']
@@ -212,7 +213,7 @@ class RSSFiber(Spectrum):
 
         return obj
 
-    def __init__(self, fiberid, rss, pixmask_flag=None, load=False):
+    def __init__(self, fiberid, rss, wavelength, pixmask_flag=None, load=False):
 
         self.fiberid = fiberid
         self.rss = rss
@@ -243,6 +244,9 @@ class RSSFiber(Spectrum):
                 setattr(self, attr, getattr(obj, attr, None))
         self._extra_attributes = getattr(obj, '_extra_attributes', None)
 
+        if hasattr(obj, '_spectra'):
+            for spectrum in obj._spectra:
+                setattr(self, spectrum, getattr(obj, spectrum, None))
         self._spectra = getattr(obj, '_spectra', None)
 
     def __getitem__(self, sl):
@@ -269,8 +273,6 @@ class RSSFiber(Spectrum):
 
         datamodel_extensions = self.rss.datamodel.rss + self.rss.datamodel.spectra
 
-        self.wavelength = self.rss._wavelength
-
         for extension in datamodel_extensions:
 
             value, ivar, mask = self._get_extension_data(extension)
@@ -291,6 +293,59 @@ class RSSFiber(Spectrum):
                 self._spectra.append(extension.name)
 
         self.loaded = True
+
+    @property
+    def masked(self):
+        """Return a masked array.
+
+        If the `~QuantityMixIn.pixmask` is set, and the maskbit contains the
+        ``DONOTUSE`` and ``NOCOV`` labels, the returned array will be masked
+        for the values containing those bits. Otherwise, all values where the
+        mask is greater than zero will be masked.
+
+        """
+
+        assert self.mask is not None, 'mask is not set'
+
+        return numpy.ma.array(self.value, mask=(self.mask > 0))
+
+    def descale(self):
+        """Returns a copy of the object in which the scale is unity.
+
+        Note that this only affects to the core value of this quantity.
+        Associated array attributes will not be modified.
+
+        Example:
+
+            >>> fiber.unit
+            Unit("1e-17 erg / (Angstrom cm2 fiber s)")
+            >>> fiber[100]
+            <RSSFiber 0.270078063011169 1e-17 erg / (Angstrom cm2 fiber s)>
+            >>> fiber_descaled = fiber.descale()
+            >>> fiber_descaled.unit
+            Unit("Angstrom cm2 fiber s")
+            >>> fiber[100]
+            <RSSFiber 2.70078063011169e-18 erg / (Angstrom cm2 fiber s)>
+
+        """
+
+        if self.unit.scale == 1:
+            return self
+
+        value_descaled = self.value * self.unit.scale
+        value_unit = astropy.units.CompositeUnit(1, self.unit.bases, self.unit.powers)
+
+        if self.ivar is not None:
+            ivar_descaled = self.ivar / (self.unit.scale ** 2)
+        else:
+            ivar_descaled = None
+
+        copy_of_self = self.copy()
+        copy_of_self.value[:] = value_descaled
+        copy_of_self.ivar = ivar_descaled
+        copy_of_self._set_unit(value_unit)
+
+        return copy_of_self
 
     def _get_extension_data(self, extension):
         """Returns the value of an extension for this fibre, either from file or API.
