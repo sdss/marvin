@@ -15,7 +15,6 @@ Added
 - New marvin.yml config file for customization of configuration options
 - Adds User table into the history schema of mangadb.  Tracks user logins.
 - ``Map`` has a new method ``getSpaxel`` to retrieve an ``Spaxel`` using the parent ``Maps``.
-- `~marvin.tools.quantities.Spectrum` has a new property `~marvin.tools.quantities.Spectrum.pixmask` that provides access to the ``MANGA_DRP3PIXMASK`` or ``MANGA_DAPSPECMASK`` `~from marvin.utils.general.maskbit.Maskbit` instance.
 
 Changed
 ^^^^^^^
