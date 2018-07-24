@@ -166,11 +166,6 @@ Spaxels with Negative Values
 **Important**: In 2.1.4, the call signature is ``log_colorbar_mask(value, log_cb)``. In version 2.2.0, this changes to ``mask_neg_values(value)``.
 
 
-Axis Setup
-::::::::::
-
-:meth:`~marvin.utils.plot.map.ax_setup` sets the x- and y-labels and facecolor.
-
 
 Set Title
 :::::::::
