@@ -7,7 +7,7 @@
 # @License: BSD 3-clause (http://www.opensource.org/licenses/BSD-3-Clause)
 #
 # @Last modified by: José Sánchez-Gallego (gallegoj@uw.edu)
-# @Last modified time: 2018-07-24 01:27:01
+# @Last modified time: 2018-07-24 08:04:38
 
 
 from __future__ import division, print_function
@@ -395,14 +395,7 @@ class RSSFiber(Spectrum):
 
     @property
     def masked(self):
-        """Return a masked array.
-
-        If the `~QuantityMixIn.pixmask` is set, and the maskbit contains the
-        ``DONOTUSE`` and ``NOCOV`` labels, the returned array will be masked
-        for the values containing those bits. Otherwise, all values where the
-        mask is greater than zero will be masked.
-
-        """
+        """Return a masked array where the mask is greater than zero."""
 
         assert self.mask is not None, 'mask is not set'
 
