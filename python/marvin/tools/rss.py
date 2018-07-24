@@ -7,7 +7,7 @@
 # @License: BSD 3-clause (http://www.opensource.org/licenses/BSD-3-Clause)
 #
 # @Last modified by: José Sánchez-Gallego (gallegoj@uw.edu)
-# @Last modified time: 2018-07-24 01:17:15
+# @Last modified time: 2018-07-24 01:27:01
 
 
 from __future__ import division, print_function
@@ -44,7 +44,7 @@ class RSS(MarvinToolsClass, NSAMixIn, GetApertureMixIn, list):
     """
 
     def __init__(self, input=None, filename=None, mangaid=None, plateifu=None,
-                 mode=None, data=None, release=None,
+                 mode=None, data=None, release=None, autoload=True,
                  drpall=None, download=None, nsa_source='auto'):
 
         MarvinToolsClass.__init__(self, input=input, filename=filename, mangaid=mangaid,
@@ -56,6 +56,10 @@ class RSS(MarvinToolsClass, NSAMixIn, GetApertureMixIn, list):
         #: An `astropy.table.Table` with the observing information associated
         #: with this RSS object.
         self.obsinfo = None
+
+        #: If True, unloaded `.RSSFiber` instances are automatically loaded
+        #: when accessed. Otherwise, they need to be loaded via `.RSSFiber.load`.
+        self.autoload = autoload
 
         if self.data_origin == 'file':
             self._load_rss_from_file(data=self.data)
@@ -89,6 +93,16 @@ class RSS(MarvinToolsClass, NSAMixIn, GetApertureMixIn, list):
         return ('<Marvin RSS (mangaid={self.mangaid!r}, plateifu={self.plateifu!r}, '
                 'mode={self.mode!r}, data_origin={self.data_origin!r})>'.format(self=self))
 
+    def __getitem__(self, fiberid):
+        """Returns the `.RSSFiber` whose fiberid matches the input."""
+
+        rssfiber = super(RSS, self).__getitem__(fiberid)
+
+        if self.autoload and not rssfiber.loaded:
+            rssfiber.load()
+
+        return rssfiber
+
     def _getFullPath(self):
         """Returns the full path of the file in the tree."""
 
@@ -108,6 +122,13 @@ class RSS(MarvinToolsClass, NSAMixIn, GetApertureMixIn, list):
         plate, ifu = self.plateifu.split('-')
 
         return super(RSS, self).download('mangarss', ifu=ifu, drpver=self._drpver, plate=plate)
+
+    def load_all(self):
+        """Loads all the `.RSSFiber` associated to this `.RSS` instance."""
+
+        for rssfiber in self:
+            if not rssfiber.loaded:
+                rssfiber.load()
 
     def _load_rss_from_file(self, data=None):
         """Initialises the RSS object from a file."""
