@@ -161,10 +161,5 @@ Most Marvin configuration options can be set using the Marvin ``config`` object 
 * **use_token**:
     Set this value to your valid API token.  This ensures proper API authentication across iPython sessions.
 
-
-
-
-
-
-
-
+* **default_release**:
+    Set to to the release you want to use by default when importing Marvin. If set to **null**, uses the latest available version for your access mode. Default is **null**.

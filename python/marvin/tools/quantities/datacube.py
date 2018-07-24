@@ -1,19 +1,18 @@
 #!/usr/bin/env python
-# encoding: utf-8
+# -*- coding: utf-8 -*-
 #
-# @Author: José Sánchez-Gallego
-# @Date: Oct 30, 2017
+# @Author: Brian Cherinka, José Sánchez-Gallego, and Brett Andrews
+# @Date: 2017-10-30
 # @Filename: datacube.py
-# @License: BSD 3-Clause
-# @Copyright: José Sánchez-Gallego
+# @License: BSD 3-clause (http://www.opensource.org/licenses/BSD-3-Clause)
+#
+# @Last modified by: José Sánchez-Gallego (gallegoj@uw.edu)
+# @Last modified time: 2018-07-21 23:27:25
 
 
-from __future__ import division
-from __future__ import print_function
-from __future__ import absolute_import
+from __future__ import absolute_import, division, print_function
 
 import numpy as np
-
 from astropy import units
 
 from .base_quantity import QuantityMixIn
@@ -52,6 +51,9 @@ class DataCube(units.Quantity, QuantityMixIn):
         binid (`~numpy.ndarray`):
             The associated binid map for this datacube. Only set for DAP
             `~marvin.tools.modelcube.ModelCube` datacubes.
+        pixmask_flag (str):
+            The maskbit flag to be used to convert from mask bits to labels
+            (e.g., MANGA_DRP3PIXMASK).
         kwargs (dict):
             Keyword arguments to be passed to `~astropy.units.Quantity` when
             it is initialised.
@@ -60,7 +62,7 @@ class DataCube(units.Quantity, QuantityMixIn):
 
     def __new__(cls, value, wavelength, scale=None, unit=units.dimensionless_unscaled,
                 wavelength_unit=units.Angstrom, redcorr=None, ivar=None, mask=None,
-                binid=None, dtype=None, copy=True, **kwargs):
+                binid=None, pixmask_flag=None, dtype=None, copy=True, **kwargs):
 
         # If the scale is defined, creates a new composite unit with the input scale.
         if scale is not None:
@@ -96,6 +98,8 @@ class DataCube(units.Quantity, QuantityMixIn):
         obj.ivar = np.array(ivar) if ivar is not None else None
         obj.mask = np.array(mask) if mask is not None else None
         obj.binid = np.array(binid) if binid is not None else None
+
+        obj.pixmask_flag = pixmask_flag
 
         if redcorr is not None:
             assert len(redcorr) == len(obj.wavelength), 'invalid length for redcorr.'
@@ -146,7 +150,7 @@ class DataCube(units.Quantity, QuantityMixIn):
 
         if new_obj.ndim == 1 and not np.isscalar(new_obj.wavelength.value):
             return Spectrum(new_obj.value, unit=new_obj.unit, wavelength=new_obj.wavelength,
-                            ivar=new_obj.ivar, mask=new_obj.mask)
+                            ivar=new_obj.ivar, mask=new_obj.mask, pixmask_flag=self.pixmask_flag)
 
         return new_obj
 
@@ -161,16 +165,49 @@ class DataCube(units.Quantity, QuantityMixIn):
         self.redcorr = getattr(obj, 'redcorr', None)
         self.binid = getattr(obj, 'binid', None)
 
+        self.pixmask_flag = getattr(obj, 'pixmask_flag', None)
+
         self._set_unit(getattr(obj, 'unit', None))
 
-    def derredden(self):
-        """Returns the derreddened datacube."""
+    @property
+    def std(self):
+        """The standard deviation of the measurement."""
 
-        new_value = (self.value.T * self.redcorr).T
-        new_ivar = (self.value.T / self.redcorr**2).T
+        return self.error
+
+    def deredden(self, redcorr=None):
+        """Returns the dereddened datacube.
+
+        Parameters
+        ----------
+        redcorr : float or None
+            The reddening correction to apply. If ``None``, defaults to the
+            ``DataCube.redcorr``.
+
+        Returns
+        -------
+        deredden : DataCube
+            A `DataCube` with the flux and ivar corrected from reddening.
+
+        Raises
+        ------
+        ValueError
+            If ``redcorr=None`` and ``DataCube.redcorr=None``.
+
+        """
+
+        redcorr = redcorr if redcorr is not None else self.redcorr
+
+        if redcorr is None:
+            raise ValueError('no reddening correction specified.')
+
+        assert len(redcorr) == len(self.wavelength), 'invalid length for redcorr.'
+
+        new_value = (self.value.T * redcorr).T
+        new_ivar = (self.ivar.T / redcorr**2).T
 
         new_obj = DataCube(new_value, self.wavelength, unit=self.unit,
                            redcorr=None, ivar=new_ivar, mask=self.mask,
-                           binid=self.binid)
+                           binid=self.binid, pixmask_flag=self.pixmask_flag)
 
         return new_obj

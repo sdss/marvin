@@ -1,36 +1,33 @@
 #!/usr/bin/env python
-# encoding: utf-8
+# -*- coding: utf-8 -*-
 #
 # @Author: Brian Cherinka, José Sánchez-Gallego, and Brett Andrews
 # @Filename: core.py
-# @License: BSD 3-Clause
-# @Copyright: Brian Cherinka, José Sánchez-Gallego, and Brett Andrews
+# @License: BSD 3-clause (http://www.opensource.org/licenses/BSD-3-Clause)
+#
+# @Last modified by: José Sánchez-Gallego (gallegoj@uw.edu)
+# @Last modified time: 2018-07-20 18:25:35
 
-from __future__ import division
-from __future__ import print_function
-from __future__ import absolute_import
+from __future__ import absolute_import, division, print_function
 
 import abc
-import distutils
 import os
 import re
-import six
-import warnings
 import time
+import warnings
 
 import astropy.io.fits
-
-from brain.core.exceptions import BrainError
+import six
 
 import marvin
 import marvin.api.api
-
 from marvin.core import marvin_pickle
-from marvin.core.exceptions import MarvinUserWarning, MarvinError
-from marvin.core.exceptions import MarvinMissingDependency, MarvinBreadCrumb
-
+from marvin.core.exceptions import (MarvinBreadCrumb, MarvinError,
+                                    MarvinMissingDependency, MarvinUserWarning)
 from marvin.utils.db import testDbConnection
-from marvin.utils.general import mangaid2plateifu, get_nsa_data, get_dapall_file, map_dapall
+from marvin.utils.general.general import mangaid2plateifu
+from marvin.utils.general.maskbit import get_manga_target
+
 
 try:
     from sdss_access.path import Path
@@ -70,7 +67,7 @@ class MarvinToolsClass(object, six.with_metaclass(abc.ABCMeta)):
     Parameters:
         input (str):
             A string that can be a filename, plate-ifu, or mangaid. It will be
-            aumatically identified based on its unique format. This argument
+            automatically identified based on its unique format. This argument
             is always the first one, so it can be defined without the keyword
             for convenience.
         filename (str):
@@ -320,7 +317,9 @@ class MarvinToolsClass(object, six.with_metaclass(abc.ABCMeta)):
             rsync_access.set_stream()
             rsync_access.commit()
             paths = rsync_access.get_paths()
-            time.sleep(0.001)  # adding a millisecond pause for download to finish and file extistence to register
+            # adding a millisecond pause for download to finish and file existence to register
+            time.sleep(0.001)
+
             self.filename = paths[0]  # doing this for single files, may need to change
 
     @abc.abstractmethod
@@ -382,7 +381,8 @@ class MarvinToolsClass(object, six.with_metaclass(abc.ABCMeta)):
                 raise MarvinError('Trying to open a non DAP file with Marvin {0}'.format(objtype))
             else:
                 if (dapfrmt and dapfrmt != daptype[dapindex]) or (wronggflux):
-                    raise MarvinError('Trying to open a DAP {0} with Marvin {1}'.format(daptype[altdap], objtype))
+                    raise MarvinError('Trying to open a DAP {0} with Marvin {1}'
+                                      .format(daptype[altdap], objtype))
         elif objtype == 'Cube':
             if bininhdr or dapinhdr:
                 raise MarvinError('Trying to open a DAP file with Marvin Cube')
@@ -455,7 +455,7 @@ class MarvinToolsClass(object, six.with_metaclass(abc.ABCMeta)):
 
     @release.setter
     def release(self, value):
-        """Fails when trying to set the release after instatiation."""
+        """Fails when trying to set the release after instantiation."""
 
         raise MarvinError('the release cannot be changed once the object has been instantiated.')
 
@@ -480,183 +480,38 @@ class MarvinToolsClass(object, six.with_metaclass(abc.ABCMeta)):
             except Exception as ee:
                 warnings.warn('failed to close FITS instance: {0}'.format(ee), MarvinUserWarning)
 
-
-class NSAMixIn(object):
-    """A mixin that provides access to NSA paremeters.
-
-    Must be used in combination with `.MarvinToolsClass` and initialised
-    before `~.NSAMixIn.nsa` can be called.
-
-    Parameters:
-        nsa_source ({'auto', 'drpall', 'nsa'}):
-            Defines how the NSA data for this object should loaded when
-            ``.nsa`` is first called. If ``drpall``, the drpall file will
-            be used (note that this will only contain a subset of all the NSA
-            information); if ``nsa``, the full set of data from the DB will be
-            retrieved. If the drpall file or a database are not available, a
-            remote API call will be attempted. If ``nsa_source='auto'``, the
-            source will depend on how the parent object has been
-            instantiated. If the parent has ``data_origin='file'``,
-            the drpall file will be used (as it is more likely that the user
-            has that file in their system). Otherwise, ``nsa_source='nsa'``
-            will be assumed. This behaviour can be modified during runtime by
-            modifying the ``nsa_mode`` attribute with one of the valid values.
-
-    """
-
-    def __init__(self, nsa_source='auto'):
-
-        self._nsa = None
-        self.nsa_source = nsa_source
-
-        assert self.nsa_source in ['auto', 'nsa', 'drpall'], \
-            'nsa_source must be one of auto, nsa, or drpall'
-
     @property
-    def nsa(self):
-        """Returns the contents of the NSA catalogue for this target."""
+    def quality_flag(self):
+        """Return quality flag."""
 
-        if hasattr(self, 'nsa_source') and self.nsa_source is not None:
-            nsa_source = self.nsa_source
-        else:
-            nsa_source = 'auto'
-
-        if self._nsa is None:
-
-            if nsa_source == 'auto':
-                if self.data_origin == 'file':
-                    nsa_source = 'drpall'
-                else:
-                    nsa_source = 'nsa'
-
-            try:
-                self._nsa = get_nsa_data(self.mangaid, mode='auto',
-                                         source=nsa_source,
-                                         drpver=self._drpver,
-                                         drpall=self._drpall)
-            except (MarvinError, BrainError):
-                warnings.warn('cannot load NSA information for mangaid={!r}.'
-                              .format(self.mangaid), MarvinUserWarning)
-                return None
-
-        return self._nsa
-
-
-class DAPallMixIn(object):
-    """A mixin that provides access to DAPall paremeters.
-
-    Must be used in combination with `.MarvinToolsClass` and initialised
-    before `~.DAPallMixIn.dapall` can be called.
-
-    `DAPallMixIn` uses the `.MarvinToolsClass.data_origin` of the object to
-    determine how to obtain the DAPall information. However, if the object
-    contains a ``dapall`` attribute with the path to a DAPall file, that file
-    will be used.
-
-    """
-
-    __min_dapall_version__ = distutils.version.StrictVersion('2.1.0')
-
-    @property
-    def dapall(self):
-        """Returns the contents of the DAPall data for this target."""
-
-        if (not self._dapver or
-                distutils.version.StrictVersion(self._dapver) < self.__min_dapall_version__):
-            raise MarvinError('DAPall is not available for versions before MPL-6.')
-
-        if hasattr(self, '_dapall') and self._dapall is not None:
-            return self._dapall
-
-        if self.data_origin == 'file':
-            try:
-                dapall_data = self._get_dapall_from_file()
-            except IOError:
-                warnings.warn('cannot find DAPall file. Trying remote request.',
-                              MarvinUserWarning)
-                dapall_data = self._get_from_api()
-        elif self.data_origin == 'db':
-            dapall_data = self._get_dapall_from_db()
-        else:
-            dapall_data = self._get_dapall_from_api()
-
-        self._dapall = dapall_data
-
-        return self._dapall
-
-    def _get_dapall_from_file(self):
-        """Uses DAPAll file to retrieve information."""
-
-        daptype = self.bintype.name + '-' + self.template.name
-
-        dapall_path = get_dapall_file(self._drpver, self._dapver)
-
-        assert dapall_path is not None, 'cannot build DAPall file.'
-
-        if not os.path.exists(dapall_path):
-            raise MarvinError('cannot find DAPall file in the system.')
-
-        dapall_hdu = astropy.io.fits.open(dapall_path)
-
-        header = dapall_hdu[0].header
-        dapall_table = dapall_hdu[-1].data
-
-        dapall_row = dapall_table[(dapall_table['PLATEIFU'] == self.plateifu) &
-                                  (dapall_table['DAPTYPE'] == daptype)]
-
-        assert len(dapall_row) == 1, 'cannot find matching row in DAPall.'
-
-        return map_dapall(header, dapall_row[0])
-
-    def _get_dapall_from_db(self):
-        """Uses the DB to retrieve the DAPAll data."""
-
-        dapall_data = {}
-
-        daptype = self.bintype.name + '-' + self.template.name
-
-        mdb = marvin.marvindb
-
-        if not mdb.isdbconnected:
-            raise MarvinError('No DB connected')
-
-        datadb = mdb.datadb
-        dapdb = mdb.dapdb
-
-        dapall_row = mdb.session.query(dapdb.DapAll).join(
-            dapdb.File, datadb.PipelineInfo, datadb.PipelineVersion).filter(
-                mdb.datadb.PipelineVersion.version == self._dapver,
-                dapdb.DapAll.plateifu == self.plateifu,
-                dapdb.DapAll.daptype == daptype).first()
-
-        if dapall_row is None:
-            raise MarvinError('cannot find a DAPall match for this target in the DB.')
-
-        for col in dapall_row.__table__.columns.keys():
-            if col != 'pk' and '_pk' not in col:
-                dapall_data[col] = getattr(dapall_row, col)
-
-        return dapall_data
-
-    def _get_dapall_from_api(self):
-        """Uses the API to retrieve the DAPall data."""
-
-        url = marvin.config.urlmap['api']['dapall']['url']
-
-        url_full = url.format(name=self.plateifu,
-                              bintype=self.bintype.name,
-                              template=self.template.name)
+        assert self._qualflag is not None, 'quality flag not set.'
 
         try:
-            response = self._toolInteraction(url_full)
-        except Exception as ee:
-            raise marvin.core.exceptions.MarvinError(
-                'found a problem while getting DAPall: {0}'.format(str(ee)))
+            dapqual = self._bitmasks['MANGA_' + self._qualflag]
+        except KeyError:
+            warnings.warn('cannot find bitmask MANGA_{!r}'.format(self._qualflag))
+            dapqual = None
+        else:
+            dapqual.mask = int(self.header[self._qualflag])
 
-        if response.results['error'] is not None:
-            raise MarvinError('found a problem while getting DAPall: {}'
-                              .format(str(response.results['error'])))
+        return dapqual
 
-        data = response.getData()
+    @property
+    def manga_target1(self):
+        """Return MANGA_TARGET1 flag."""
+        return get_manga_target('1', self._bitmasks, self.header)
 
-        return data['dapall_data']
+    @property
+    def manga_target2(self):
+        """Return MANGA_TARGET2 flag."""
+        return get_manga_target('2', self._bitmasks, self.header)
+
+    @property
+    def manga_target3(self):
+        """Return MANGA_TARGET3 flag."""
+        return get_manga_target('3', self._bitmasks, self.header)
+
+    @property
+    def target_flags(self):
+        """Bundle MaNGA targeting flags."""
+        return [self.manga_target1, self.manga_target2, self.manga_target3]

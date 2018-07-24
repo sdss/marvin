@@ -6,21 +6,23 @@
 # Created by José Sánchez-Gallego on 7 Oct 2016.
 
 
-from __future__ import division
-from __future__ import print_function
-from __future__ import absolute_import
+from __future__ import absolute_import, division, print_function
+
+import os
+import warnings
+
+from six import string_types
+
+from marvin.core.exceptions import MarvinError, MarvinUserWarning
+
 
 try:
     import cPickle as pickle
 except:
     import pickle
 
-import warnings
 
-import os
 
-from six import string_types
-from marvin.core.exceptions import MarvinError, MarvinUserWarning
 
 
 def save(obj, path=None, overwrite=False):
@@ -43,7 +45,7 @@ def save(obj, path=None, overwrite=False):
             Path of saved file.
     """
 
-    from marvin.core.core import MarvinToolsClass
+    from ..tools.core import MarvinToolsClass
 
     if path is None:
         assert isinstance(obj, MarvinToolsClass), 'path=None is only allowed for core objects.'

@@ -1,31 +1,34 @@
 #!/usr/bin/env python
-# encoding: utf-8
+# -*- coding: utf-8 -*-
 #
-# conftest.py
+# @Author: Brian Cherinka, José Sánchez-Gallego, and Brett Andrews
+# @Date: 2017-03-20
+# @Filename: conftest.py
+# @License: BSD 3-clause (http://www.opensource.org/licenses/BSD-3-Clause)
 #
-# Created by Brett Andrews on 20 Mar 2017.
+# @Last modified by: José Sánchez-Gallego (gallegoj@uw.edu)
+# @Last modified time: 2018-07-21 21:51:06
 
-
-from collections import OrderedDict
+import copy
 import itertools
 import os
-import copy
+import warnings
+from collections import OrderedDict
+
 import pytest
+import yaml
+from brain import bconfig
+from flask_jwt_extended import tokens
+from sdss_access.path import Path
 
 from marvin import config, marvindb
 from marvin.api.api import Interaction
 from marvin.tools.cube import Cube
-from marvin.tools.modelcube import ModelCube
 from marvin.tools.maps import Maps
+from marvin.tools.modelcube import ModelCube
 from marvin.tools.query import Query
 from marvin.utils.datamodel.dap import datamodel
-from brain import bconfig
-from flask_jwt_extended import tokens
 
-from sdss_access.path import Path
-
-import yaml
-import warnings
 
 warnings.simplefilter('always')
 
@@ -64,7 +67,7 @@ class TravisSubset(object):
     def __init__(self):
         self.new_gals = ['8485-1901']
         self.new_releases = ['MPL-6']
-        self.new_bintypes = ['SPX', 'HYB10']  # ['SPX', 'VOR10', 'NONE', 'STON']
+        self.new_bintypes = ['SPX', 'HYB10']
         self.new_templates = ['GAU-MILESHC']
         self.new_dbs = ['nodb']
         self.new_origins = ['file', 'api']
@@ -73,7 +76,7 @@ class TravisSubset(object):
 
 # Global Parameters for FIXTURES
 # ------------------------------
-releases = ['MPL-6', 'MPL-5', 'MPL-4']           # to loop over releases (see release fixture)
+releases = ['MPL-6', 'MPL-5', 'MPL-4']  # to loop over releases (see release fixture)
 
 bintypes_accepted = {'MPL-4': ['NONE', 'VOR10'],
                      'MPL-5': ['SPX', 'VOR10'],
@@ -118,7 +121,7 @@ query_data = yaml.load(open(os.path.join(os.path.dirname(__file__), 'data/query_
 @pytest.fixture(scope='session', params=releases)
 def release(request):
     """Yield a release."""
-    if travis and release not in travis.new_releases:
+    if travis and request.param not in travis.new_releases:
         pytest.skip('Skipping non-requested release')
 
     return request.param
@@ -572,12 +575,20 @@ def cube(galaxy, exporigin, mode):
     ''' Yield a Marvin Cube based on the expected origin combo of (mode+db).
         Fixture tests 6 cube origins from (mode+db) combos [file, db and api]
     '''
+
+    if str(galaxy.bintype) != 'SPX':
+        pytest.skip()
+
     if exporigin == 'file':
         c = Cube(filename=galaxy.cubepath, release=galaxy.release, mode=mode)
     else:
         c = Cube(plateifu=galaxy.plateifu, release=galaxy.release, mode=mode)
+
     c.exporigin = exporigin
+    c.initial_mode = mode
+
     yield c
+
     c = None
 
 
@@ -591,6 +602,7 @@ def modelcube(galaxy, exporigin, mode):
     else:
         mc = ModelCube(plateifu=galaxy.plateifu, release=galaxy.release, mode=mode, bintype=galaxy.bintype)
     mc.exporigin = exporigin
+    mc.initial_mode = mode
     yield mc
     mc = None
 

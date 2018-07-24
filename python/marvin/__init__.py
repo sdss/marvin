@@ -139,6 +139,11 @@ class MarvinConfig(object):
 
         self._custom_config = config
 
+        # If the configuration file included a default release, we set it now
+        if 'default_release' in self._custom_config and self._custom_config['default_release']:
+            # We set _release because at this point the available versions are not yet set.
+            self._release = self._custom_config['default_release']
+
     def _checkPaths(self, name):
         ''' Check for the necessary path existence.
 
@@ -271,8 +276,9 @@ class MarvinConfig(object):
         with self._replant_tree(value) as val:
             self._release = val
 
-        drpver, __ = self.lookUpVersions(value)
-        self.drpall = self._getDrpAllPath(drpver)
+        if 'MANGA_SPECTRO_REDUX' in os.environ:
+            drpver, __ = self.lookUpVersions(value)
+            self.drpall = self._getDrpAllPath(drpver)
 
     @property
     def access(self):
@@ -411,6 +417,7 @@ class MarvinConfig(object):
             # this toggles to latest DR when switching to public
             warnings.warn('Release {0} is not in the allowed releases.  '
                           'Switching to {1}'.format(self.release, latest), MarvinUserWarning)
+
             self.setRelease(latest)
 
     def setRelease(self, version=None):
@@ -627,6 +634,11 @@ class MarvinConfig(object):
 
         # yield the value (a release)
         yield value
+
+        # return early if the tree isn't set up or _release is None
+        # this should only occur during the initial imports
+        if not hasattr(self, '_tree') or self._release is None:
+            return
 
         # set tree_config
         tree_config = 'sdsswork' if 'MPL' in value else value.lower() if 'DR' in value else None
