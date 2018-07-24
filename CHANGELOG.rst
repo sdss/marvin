@@ -29,6 +29,8 @@ Changed
 - Moved ``yanny.py`` to ``extern/`` and added a readme file for the external packages (:issue:`468`).
 - `~marvin.tools.quantities.Spectrum.plot` now only masks part of the spectrum that have the ``DONOTUSE`` maskbit set (:issue:`455`).
 - ``pixmask`` is now available for all quantities (except ``AnalysisProprty``). The property ``masked`` now uses the bit ``DONOTUSE`` to determine what values must be masked out (:issue:`462`).
+- Raises error when applying ``inst_sigma_correction`` on ``stellar_sigma`` MPL-6 maps.  Applies correction to stellar_sigma
+and emline_sigma for web maps with added 'Corrected' title (:issue:`478`)
 
 Fixed
 ^^^^^

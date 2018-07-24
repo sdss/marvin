@@ -82,12 +82,26 @@ def getWebSpectrum(cube, x, y, xyorig=None, byradec=False):
 def getWebMap(cube, parameter='emline_gflux', channel='ha_6564',
               bintype=None, template=None):
     ''' Get and format a map for the web '''
-    name = '{0}_{1}'.format(parameter.lower(), channel)
+    if channel:
+        name = '{0}_{1}'.format(parameter.lower(), channel)
+    else:
+        name = '{0}'.format(parameter.lower())
+
     webmap = None
     try:
         maps = cube.getMaps(plateifu=cube.plateifu, mode='local',
                             bintype=bintype, template=template)
         data = maps.getMap(parameter, channel=channel)
+
+        # correct the stellar_sigma or emline_gsigma maps
+        if parameter == 'stellar_sigma' or parameter == 'emline_gsigma':
+            try:
+                data = data.inst_sigma_correction()
+            except MarvinError as e:
+                pass
+            else:
+                name = 'Corrected {0}'.format(name)
+
     except Exception as e:
         mapmsg = 'Could not get map: {0}'.format(e)
     else:
