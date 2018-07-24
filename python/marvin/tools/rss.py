@@ -7,7 +7,7 @@
 # @License: BSD 3-clause (http://www.opensource.org/licenses/BSD-3-Clause)
 #
 # @Last modified by: José Sánchez-Gallego (gallegoj@uw.edu)
-# @Last modified time: 2018-07-23 21:16:07
+# @Last modified time: 2018-07-24 01:17:15
 
 
 from __future__ import division, print_function
@@ -271,11 +271,47 @@ class RSSFiber(Spectrum):
 
         assert self.loaded is False, 'object already loaded.'
 
+        # Depending on whether the parent RSS is a file or API-populated, we
+        # select the data to use.
+        if self.rss.data_origin == 'file':
+
+            # If the data origin is a file we use the HDUList in rss.data
+            rss_data = self.rss.data
+
+        elif self.rss.data_origin == 'api':
+
+            # If data origin is the API, we make a request for the data
+            # associated with this fiberid for all the extensions in the file.
+
+            url = marvin.config.urlmap['api']['getRSSFiber']['url']
+
+            try:
+                response = self.rss._toolInteraction(url.format(name=self.rss.plateifu,
+                                                                fiberid=self.fiberid))
+            except Exception as ee:
+                raise MarvinError('found a problem retrieving RSS fibre data for '
+                                  'plateifu={!r}, fiberid={!r}: {}'.format(
+                                      self.rss.plateifu, self.fiberid, str(ee)))
+
+            api_data = response.getData()
+
+            # Create a quick and dirty HDUList from the API data so that we
+            # can parse it in the same way as if the data origin is file.
+            rss_data = astropy.io.fits.HDUList([astropy.io.fits.PrimaryHDU()])
+            for ext in api_data:
+                rss_data.append(astropy.io.fits.ImageHDU(data=api_data[ext], name=ext.upper()))
+
+        else:
+            raise ValueError('invalid data_origin={!r}'.format(self.rss.data_origin))
+
+        # Compile a list of all RSS datamodel extensions, either RSS or spectra
         datamodel_extensions = self.rss.datamodel.rss + self.rss.datamodel.spectra
 
         for extension in datamodel_extensions:
 
-            value, ivar, mask = self._get_extension_data(extension)
+            # Retrieve the value (and mask and ivar, if associated) for each extension.
+            value, ivar, mask = self._get_extension_data(extension, rss_data,
+                                                         data_origin=self.rss.data_origin)
 
             if extension.name == 'flux':
 
@@ -293,6 +329,48 @@ class RSSFiber(Spectrum):
                 self._spectra.append(extension.name)
 
         self.loaded = True
+
+    def _get_extension_data(self, extension, data, data_origin='file'):
+        """Returns the value of an extension for this fibre, either from file or API.
+
+        Parameters
+        ----------
+        extension : datamodel object
+            The datamodel object containing the information for the extension
+            we want to retrieve.
+        data : ~astropy.io.fits.HDUList
+            An `~astropy.io.fits.HDUList` object containing the RSS
+            information.
+
+        """
+
+        # Determine if this is an RSS datamodel object or an spectrum.
+        # If the origin is the API, the extension data contains a single spectrum,
+        # not a row-stacked array, so we consider it a 1D array.
+        is_extension_data_1D = isinstance(extension, SpectrumDataModel) or data_origin == 'api'
+
+        value = data[extension.fits_extension()].data
+
+        if extension.has_mask():
+            mask = data[extension.fits_extension('mask')].data
+        else:
+            mask = None
+
+        if hasattr(extension, 'has_ivar') and extension.has_ivar():
+            ivar = data[extension.fits_extension('ivar')].data
+        elif hasattr(extension, 'has_std') and extension.has_std():
+            std = data[extension.fits_extension('std')].data
+            ivar = 1. / (std**2)
+        else:
+            ivar = None
+
+        # If this is an RSS, gets the right row in the stacked spectra.
+        if not is_extension_data_1D:
+            value = value[self.fiberid, :]
+            mask = mask[self.fiberid, :] if mask is not None else None
+            ivar = ivar[self.fiberid, :] if ivar is not None else None
+
+        return value, ivar, mask
 
     @property
     def masked(self):
@@ -346,44 +424,3 @@ class RSSFiber(Spectrum):
         copy_of_self._set_unit(value_unit)
 
         return copy_of_self
-
-    def _get_extension_data(self, extension):
-        """Returns the value of an extension for this fibre, either from file or API.
-
-        Parameters
-        ----------
-        extension : datamodel object
-            The datamodel object containing the information for the extension
-            we want to retrieve.
-
-        """
-
-        if self.rss.data_origin == 'file':
-
-            data = self.rss.data
-
-            # Determine if this is an RSS datamodel object or an spectrum.
-            is_spectrum = isinstance(extension, SpectrumDataModel)
-
-            value = data[extension.fits_extension()].data
-
-            if extension.has_mask():
-                mask = data[extension.fits_extension('mask')].data
-            else:
-                mask = None
-
-            if hasattr(extension, 'has_ivar') and extension.has_ivar():
-                ivar = data[extension.fits_extension('ivar')].data
-            elif hasattr(extension, 'has_std') and extension.has_std():
-                std = data[extension.fits_extension('std')].data
-                ivar = 1. / (std**2)
-            else:
-                ivar = None
-
-            # If this is an RSS, gets the right row in the stacked spectra.
-            if not is_spectrum:
-                value = value[self.fiberid, :]
-                mask = mask[self.fiberid, :] if mask is not None else None
-                ivar = ivar[self.fiberid, :] if ivar is not None else None
-
-            return value, ivar, mask

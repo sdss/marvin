@@ -7,7 +7,7 @@
 # @License: BSD 3-clause (http://www.opensource.org/licenses/BSD-3-Clause)
 #
 # @Last modified by: José Sánchez-Gallego (gallegoj@uw.edu)
-# @Last modified time: 2018-07-23 01:06:18
+# @Last modified time: 2018-07-24 01:05:01
 
 
 from __future__ import division, print_function
@@ -165,14 +165,15 @@ class RSSView(BaseView):
 
         return jsonify(self.results)
 
-    @route('/<name>/fibers/', methods=['GET', 'POST'], endpoint='getRSSAllFibers')
+    @route('/<name>/fibers/<fiberid>', methods=['GET', 'POST'], endpoint='getRSSFiber')
     @av.check_args()
-    def getAllFibers(self, args, name):
-        """Returns a list of all the flux, ivar, mask, and wavelength arrays for all fibres.
+    def getFiber(self, args, name, fiberid):
+        """Returns a list of all the RSS arrays for a given fibre.
 
-        .. :quickref: RSS; Get a list of flux, ivar, mask, and wavelength arrays for all fibers
+        .. :quickref: RSS; Get a list of all the RSS arrays for a given fibre.
 
         :param name: The name of the cube as plate-ifu or mangaid
+        :param fiberid: The fiberid of the fibre to retrieve.
         :form release: the release of MaNGA
         :resjson int status: status of response. 1 if good, -1 if bad.
         :resjson string error: error message, null if None
@@ -180,8 +181,6 @@ class RSSView(BaseView):
         :resjson json utahconfig: json of outcoming configuration
         :resjson string traceback: traceback of an error, null if None
         :resjson json data: dictionary of returned data
-        :json list rssfiber: the flux, ivar, mask arrays for the given rssfiber index
-        :json list wavelength: the wavelength arrays for all fibers
         :resheader Content-Type: application/json
         :statuscode 200: no error
         :statuscode 422: invalid input parameters
@@ -190,7 +189,7 @@ class RSSView(BaseView):
 
         .. sourcecode:: http
 
-           GET /marvin/api/rss/8485-1901/fibers/ HTTP/1.1
+           GET /marvin/api/rss/8485-1901/fibers/15 HTTP/1.1
            Host: api.sdss.org
            Accept: application/json, */*
 
@@ -206,11 +205,12 @@ class RSSView(BaseView):
               "inconfig": {"release": "MPL-5"},
               "utahconfig": {"release": "MPL-5", "mode": "local"},
               "traceback": null,
-              "data": {"wavelength": [3621.6, 3622.43, 3623.26, ...],
-                       "0": [flux, ivar, mask],
-                       "1": [flux, ivar, mask],
+              "data": {"flux": [1., 2., 3., ...]
+                       "wavelength": [3621.6, 3622.43, 3623.26, ...],
+                       "ivar: ...,
+                       "mask: ...,
+                       "dispersion": ...
                        ...
-                       "170": [flux, ivar, mask]
               }
            }
 
@@ -219,17 +219,19 @@ class RSSView(BaseView):
         # Pop any args we don't want going into Rss
         args = self._pop_args(args, arglist='name')
 
-        rss, results = _getRSS(name, **args)
-        self.update_results(results)
+        rss, res = _getRSS(name, **args)
+        self.update_results(res)
 
         if rss:
-            self.results['data'] = {}
-            self.results['data']['wavelength'] = rss[0].wavelength.value.tolist()
 
-            for ii, fiber in enumerate(rss):
-                flux = fiber.value.tolist()
-                ivar = fiber.ivar.tolist()
-                mask = fiber.mask.tolist()
-                self.results['data'][ii] = [flux, ivar, mask]
+            self.results['data'] = {}
+
+            for ext in rss.data:
+                if ext.data is None or ext.name == 'OBSINFO':
+                    continue
+                if ext.data.ndim == 2:
+                    self.results['data'][ext.name] = ext.data[int(fiberid), :].tolist()
+                else:
+                    self.results['data'][ext.name] = ext.data.tolist()
 
         return jsonify(self.results)
