@@ -73,7 +73,7 @@ regions['default'] = make_region(
         }
     )
 
-for mpl in config._mpldict.keys():
+for mpl in config._allowed_releases.keys():
     nsacache = 'nsa_{0}'.format(mpl.lower().replace('-', ''))
     regions[nsacache] = make_nsa_region(nsacache)
 

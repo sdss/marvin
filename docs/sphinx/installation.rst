@@ -53,10 +53,16 @@ If you experience problem after the installation, check the :ref:`marvin-faq`.
 
 |
 
+
 .. _setup-netrc:
 
 Set up your netrc
 ^^^^^^^^^^^^^^^^^
+
+.. admonition:: Note
+    :class: warning
+
+    If you are not a member of the SDSS collaboration, you do not need to perform this step.
 
 While Marvin is now publicly available, not all MaNGA data is so. As a result,
 you need to add some configuration to allow you to access proprietary data. To
@@ -64,15 +70,14 @@ do that, create and edit a file in your home called ``.netrc`` an copy
 these lines inside::
 
     machine api.sdss.org
-       login sdss
+       login <username>
        password <password>
 
     machine data.sdss.org
-       login sdss
+       login <username>
        password <password>
 
-and replace ``<password>`` with the default SDSS data password. Finally, run
-``chmod 600 ~/.netrc`` to make the file only accessible to your user.
+and replace ``<username>`` and ``<password>`` with your login credentials. The default SDSS username and password is also acceptable for anonymous access.  Finally, run ``chmod 600 ~/.netrc`` to make the file only accessible to your user.
 
 |
 

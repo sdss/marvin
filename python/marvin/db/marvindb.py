@@ -14,6 +14,7 @@ from __future__ import print_function
 from __future__ import division
 from brain.db.modelGraph import ModelGraph
 from marvin import config, log
+from marvin.utils.datamodel.dap import datamodel
 import inspect
 
 __author__ = 'Brian Cherinka'
@@ -27,6 +28,10 @@ class MarvinDB(object):
         self.db = None
         self.log = kwargs.get('log', None)
         self.error = []
+        self.spaxelpropdict = None
+        self.datadb = None
+        self.dapdb = None
+        self.sampledb = None
         self.__init_the_db()
 
     def __init_the_db(self):
@@ -35,10 +40,6 @@ class MarvinDB(object):
             self._setupDB()
         if self.db:
             self._importModels()
-        else:
-            self.datadb = None
-            self.sampledb = None
-            self.dapdb = None
         self._setSession()
         self.testDbConnection()
         self._setModelGraph()
@@ -66,7 +67,6 @@ class MarvinDB(object):
             import marvin.db.models.SampleModelClasses as sampledb
         except Exception as e:
             log.debug('Exception raised: Problem importing mangadb SampleModelClasses: {0}'.format(e))
-            self.sampledb = None
         else:
             self.sampledb = sampledb
 
@@ -74,7 +74,6 @@ class MarvinDB(object):
             import marvin.db.models.DataModelClasses as datadb
         except Exception as e:
             log.debug('Exception raised: Problem importing mangadb DataModelClasses: {0}'.format(e))
-            self.datadb = None
         else:
             self.datadb = datadb
 
@@ -82,8 +81,6 @@ class MarvinDB(object):
             import marvin.db.models.DapModelClasses as dapdb
         except Exception as e:
             log.debug('Exception raised: Problem importing mangadb DapModelClasses: {0}'.format(e))
-            self.dapdb = None
-            self.spaxelpropdict = None
         else:
             self.dapdb = dapdb
             self.spaxelpropdict = self._setSpaxelPropDict()
@@ -100,16 +97,22 @@ class MarvinDB(object):
 
     def _setSpaxelPropDict(self):
         ''' Set the SpaxelProp lookup dictionary '''
-        newmpls = [m for m in config._mpldict.keys() if m > 'MPL-4']
-        spdict = {'MPL-4': 'SpaxelProp'}
-        newdict = {mpl: 'SpaxelProp{0}'.format(mpl.split('-')[1]) for mpl in newmpls}
-        spdict.update(newdict)
+        spdict = {}
+        for release in config._allowed_releases.keys():
+            if release in datamodel:
+                dm = datamodel[release]
+                spdict.update({release: dm.property_table})
         return spdict
 
     def _getSpaxelProp(self):
-        ''' Get the correct SpaxelProp class given an MPL '''
-        return {'full': self.spaxelpropdict[self._release], 'clean':
-                'Clean{0}'.format(self.spaxelpropdict[self._release])}
+        ''' Get the correct SpaxelProp class given an release '''
+        inspdict = self._release in self.spaxelpropdict
+        if inspdict:
+            specific_spaxelprop = {'full': self.spaxelpropdict[self._release], 'clean':
+                                   'Clean{0}'.format(self.spaxelpropdict[self._release])}
+        else:
+            specific_spaxelprop = {'full': None, 'clean': None}
+        return specific_spaxelprop
 
     def _setSession(self):
         ''' Sets the database session '''

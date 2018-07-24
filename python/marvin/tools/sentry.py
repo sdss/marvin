@@ -6,7 +6,7 @@
 # @Author: Brian Cherinka
 # @Date:   2017-01-22 20:17:33
 # @Last modified by:   Brian Cherinka
-# @Last Modified time: 2017-03-03 10:27:12
+# @Last Modified time: 2018-07-16 11:52:02
 
 from __future__ import print_function, division, absolute_import
 import requests
@@ -46,7 +46,7 @@ class Sentry(object):
 
     '''
 
-    def __init__(self, org='manga', project='marvin2', authtoken=None):
+    def __init__(self, org='manga', project='marvin', authtoken=None):
         self.org = org
         self.project = project
         self.authtoken = authtoken
@@ -87,6 +87,12 @@ class Sentry(object):
         '''
         if not self.response.raise_for_status():
             self.data = self.response.json()
+
+    def get_events(self):
+        ''' Get the events for a projet '''
+        url = urljoin(self.base_url, os.path.join('projects', self.org, self.project, 'events/'))
+        self.send_request(url)
+        self.events = self.data
 
     def get_users(self):
         ''' Get the users for a projet '''

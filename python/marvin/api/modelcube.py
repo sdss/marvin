@@ -138,7 +138,7 @@ class ModelCubeView(BaseView):
 
         .. sourcecode:: http
 
-           GET /marvin2/api/modelcubes/8485-1901/SPX/GAU-MILESHC/ HTTP/1.1
+           GET /marvin/api/modelcubes/8485-1901/SPX/GAU-MILESHC/ HTTP/1.1
            Host: api.sdss.org
            Accept: application/json, */*
 
@@ -223,7 +223,7 @@ class ModelCubeView(BaseView):
 
         .. sourcecode:: http
 
-           GET /marvin2/api/modelcubes/8485-1901/extensions/flux/ HTTP/1.1
+           GET /marvin/api/modelcubes/8485-1901/extensions/flux/ HTTP/1.1
            Host: api.sdss.org
            Accept: application/json, */*
 
@@ -294,7 +294,7 @@ class ModelCubeView(BaseView):
 
         .. sourcecode:: http
 
-           GET /marvin2/api/modelcubes/8485-1901/binids/flux/ HTTP/1.1
+           GET /marvin/api/modelcubes/8485-1901/binids/flux/ HTTP/1.1
            Host: api.sdss.org
            Accept: application/json, */*
 
@@ -358,7 +358,7 @@ class ModelCubeView(BaseView):
 
         .. sourcecode:: http
 
-           GET /marvin2/api/modelcubes/8485-1901/SPX/GAU_MILESHC/quantities/10/12/ HTTP/1.1
+           GET /marvin/api/modelcubes/8485-1901/SPX/GAU_MILESHC/quantities/10/12/ HTTP/1.1
            Host: api.sdss.org
            Accept: application/json, */*
 

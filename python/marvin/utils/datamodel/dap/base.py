@@ -37,7 +37,8 @@ class DAPDataModel(object):
 
     def __init__(self, release, bintypes=[], templates=[], properties=[], models=[],
                  default_template=None, default_bintype=None, property_table=None,
-                 default_binid=None, aliases=[], bitmasks=None, db_only=[]):
+                 default_binid=None, aliases=[], bitmasks=None, db_only=[], default_mapset=None,
+                 default_mapmask=None):
 
         self.release = release
         self.bintypes = bintypes
@@ -53,6 +54,12 @@ class DAPDataModel(object):
 
         self.property_table = property_table
 
+        # default plotting params
+        self.default_mapmask = default_mapmask
+        self.default_mapset = self.get_default_mapset(default_mapset)
+        self.default_plot_params = self.get_default_plot_params()
+
+        # default bintypes/templates
         self._default_bintype = None
         self.default_bintype = default_bintype
 
@@ -218,6 +225,73 @@ class DAPDataModel(object):
             bins = [b for b in bins if b in self.db_only]
 
         return ['-'.join(item) for item in list(itertools.product(bins, temps))]
+
+    @staticmethod
+    def get_default_mapset(default=None):
+        ''' Return the default set of maps
+
+        Syntax of a map name is parameter:channel
+
+        Parameters:
+            default (list):
+                A list of default map names
+
+        Returns:
+            A list of map names
+
+        '''
+        if not default:
+            default = ['stellar_vel', 'emline_gflux:ha_6564', 'specindex:d4000']
+
+        assert len(default) <= 6, 'default maps must number less than six'
+        return default
+
+    def get_default_plot_params(self):
+        ''' Return the default set of plotting params '''
+
+        if not self.default_mapmask:
+            self.default_mapmask = ['DONOTUSE']
+
+        return self.set_base_params()
+
+    def get_plot_params(self, prop=None):
+        ''' Get one set of plotting params for a given property
+
+        Parameters:
+            prop (str):
+                The name of the property
+        Returns:
+            The default set of plotting params for the given property
+        '''
+
+        defaults = self.get_default_plot_params()
+
+        if 'vel' in prop:
+            key = 'vel'
+        elif 'sigma' in prop:
+            key = 'sigma'
+        else:
+            key = 'default'
+        return defaults[key]
+
+    def set_base_params(self):
+        ''' Set the base plotting param defaults '''
+
+        return {'default': {'bitmasks': self.default_mapmask,
+                            'cmap': 'linearlab',
+                            'percentile_clip': [5, 95],
+                            'symmetric': False,
+                            'snr_min': 1},
+                'vel': {'bitmasks': self.default_mapmask,
+                        'cmap': 'RdBu_r',
+                        'percentile_clip': [10, 90],
+                        'symmetric': True,
+                        'snr_min': None},
+                'sigma': {'bitmasks': self.default_mapmask,
+                          'cmap': 'inferno',
+                          'percentile_clip': [10, 90],
+                          'symmetric': False,
+                          'snr_min': 1}}
 
 
 class DAPDataModelList(DataModelList):
@@ -619,11 +693,14 @@ class Property(object):
         if self._binid is not None:
             self._binid.parent = value
 
-    def full(self):
+    def full(self, web=None):
         """Returns the name + channel string."""
 
         if self.channel:
-            return self.name + '_' + self.channel.name
+            if web:
+                return self.name + ':' + self.channel.name
+            else:
+                return self.name + '_' + self.channel.name
 
         return self.name
 

@@ -25,6 +25,8 @@ import sphinx_rtd_theme
 from sphinx.ext.napoleon.docstring import GoogleDocstring
 
 import marvin
+
+
 marvin.config.forceDbOff()
 
 
@@ -144,7 +146,8 @@ intersphinx_mapping = {'python': ('https://docs.python.org/3.6', None),
                        'astropy': ('http://docs.astropy.org/en/latest', None),
                        'numpy': ('http://docs.scipy.org/doc/numpy/', None),
                        'pandas': ('http://pandas.pydata.org/pandas-docs/stable/', None),
-                       'matplotlib': ('https://matplotlib.org/', None)}
+                       'matplotlib': ('https://matplotlib.org/', None),
+                       'photutils': ('http://photutils.readthedocs.io/en/stable/', None)}
 
 autodoc_member_order = 'groupwise'
 modindex_common_prefix = ['marvin.']

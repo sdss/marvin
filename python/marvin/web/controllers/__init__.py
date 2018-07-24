@@ -6,14 +6,15 @@
 # @Author: Brian Cherinka
 # @Date:   2016-12-08 14:24:58
 # @Last modified by:   Brian Cherinka
-# @Last Modified time: 2018-02-14 11:04:11
+# @Last Modified time: 2018-07-13 18:21:26
 
 from __future__ import print_function, division, absolute_import
 from flask_classful import FlaskView
-from flask import request
-from marvin.web.web_utils import parseSession
+from flask import request, current_app
+from marvin.web.web_utils import parseSession, update_allowed, updateGlobalSession, check_access
 import marvin
 from brain.api.general import BrainGeneralRequestsView
+from brain.utils.general import build_routemap
 from marvin.api.base import arg_validate as av
 import json
 
@@ -31,16 +32,21 @@ class BaseWebView(FlaskView):
 
     def before_request(self, *args, **kwargs):
         ''' this runs before every single request '''
+
+        # check login/access status and update global session
+        check_access()
+        updateGlobalSession()
+
         self.base['error'] = None
+        self._versions = update_allowed()
         self._endpoint = request.endpoint
         self._drpver, self._dapver, self._release = parseSession()
 
         # try to get a local version of the urlmap for the arg_validator
         if not av.urlmap:
-            bv = BrainGeneralRequestsView()
-            resp = bv.buildRouteMap()
-            marvin.config.urlmap = json.loads(resp.get_data())['urlmap']
-            av.urlmap = marvin.config.urlmap
+            urlmap = build_routemap(current_app)
+            marvin.config.urlmap = urlmap
+            av.urlmap = urlmap
 
     def after_request(self, name, response):
         ''' this runs after every single request '''
@@ -61,3 +67,5 @@ class BaseWebView(FlaskView):
         for key, val in mydict.items():
             if key in diffkeys and (key not in exclude):
                 mydict[key] = '' if isinstance(val, str) else None
+        mydict['versions'] = self._versions
+        mydict['release'] = self._release

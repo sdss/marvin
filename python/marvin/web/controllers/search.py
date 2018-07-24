@@ -11,7 +11,7 @@ Revision History:
 
 '''
 from __future__ import print_function, division
-from flask import Blueprint, render_template, session as current_session, request, jsonify, url_for
+from flask import Blueprint, render_template, session as current_session, request, jsonify
 from flask_classful import route
 from brain.api.base import processRequest
 from marvin.core.exceptions import MarvinError
@@ -20,7 +20,7 @@ from marvin.utils.datamodel.query.forms import MarvinForm
 from marvin.web.controllers import BaseWebView
 from marvin.api.base import arg_validate as av
 from marvin.utils.datamodel.query.base import query_params, bestparams
-from wtforms import validators, ValidationError
+from wtforms import ValidationError
 from marvin.utils.general import getImagesByList
 from marvin.web.web_utils import buildImageDict
 from marvin.web.extensions import limiter

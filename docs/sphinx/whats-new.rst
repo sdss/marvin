@@ -5,7 +5,6 @@
 
 
 What's new in Marvin
-====================
 
 .. toctree::
     :hidden:
