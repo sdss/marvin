@@ -1,11 +1,13 @@
 #!/usr/bin/env python
-# encoding: utf-8
+# -*- coding: utf-8 -*-
 #
-# @Author: Brian Cherinka, José Sánchez-Gallego, Brett Andrews
-# @Date: Oct 25, 2017
-# @Filename: base.py
-# @License: BSD 3-Clause
-# @Copyright: Brian Cherinka, José Sánchez-Gallego, Brett Andrews
+# @Author: Brian Cherinka, José Sánchez-Gallego, and Brett Andrews
+# @Date: 2017-10-5
+# @Filename: cube.py
+# @License: BSD 3-clause (http://www.opensource.org/licenses/BSD-3-Clause)
+#
+# @Last modified by: José Sánchez-Gallego (gallegoj@uw.edu)
+# @Last modified time: 2018-07-21 15:46:36
 
 
 from __future__ import absolute_import, division, print_function
@@ -52,6 +54,8 @@ class Cube(MarvinToolsClass, NSAMixIn, GetApertureMixIn):
 
     """
 
+    _qualflag = 'DRP3QUAL'
+
     def __init__(self, input=None, filename=None, mangaid=None, plateifu=None,
                  mode=None, data=None, release=None,
                  drpall=None, download=None, nsa_source='auto'):
@@ -71,6 +75,7 @@ class Cube(MarvinToolsClass, NSAMixIn, GetApertureMixIn):
         self._spectral_resolution_prepixel = None
         self._dispersion = None
         self._dispersion_prepixel = None
+
         self._bitmasks = None
 
         MarvinToolsClass.__init__(self, input=input, filename=filename, mangaid=mangaid,
@@ -270,7 +275,7 @@ class Cube(MarvinToolsClass, NSAMixIn, GetApertureMixIn):
                             np.array(self._wavelength),
                             ivar=self._get_extension_data(name, 'ivar'),
                             mask=self._get_extension_data(name, 'mask'),
-                            unit=model.unit)
+                            unit=model.unit, pixmask_flag=self.header['MASKNAME'])
 
         return datacube
 
@@ -530,20 +535,6 @@ class Cube(MarvinToolsClass, NSAMixIn, GetApertureMixIn):
                                                     pixmask_flag=self.header['MASKNAME'])
 
         return cube_quantities
-
-    @property
-    def pixmask(self):
-        """Return the DRP3PIXMASK flag."""
-        pixmask = self._bitmasks[self.header['MASKNAME']]
-        pixmask.mask = getattr(self.flux, 'mask', None)
-        return pixmask
-
-    @property
-    def quality_flag(self):
-        """Return ModelCube DRP3QUAL flag."""
-        drp3qual = self._bitmasks['MANGA_DRP3QUAL']
-        drp3qual.mask = int(self.header['DRP3QUAL'])
-        return drp3qual
 
     def getSpaxel(self, x=None, y=None, ra=None, dec=None,
                   properties=True, models=False, **kwargs):

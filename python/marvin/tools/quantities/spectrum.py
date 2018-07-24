@@ -7,15 +7,14 @@
 # @License: BSD 3-clause (http://www.opensource.org/licenses/BSD-3-Clause)
 #
 # @Last modified by: José Sánchez-Gallego (gallegoj@uw.edu)
-# @Last modified time: 2018-07-19 16:21:28
+# @Last modified time: 2018-07-21 16:43:21
+
 
 from __future__ import absolute_import, division, print_function
 
 import matplotlib.pyplot as plt
 import numpy as np
 from astropy.units import Angstrom, CompositeUnit, Quantity
-
-from marvin.utils.general import maskbit
 
 from .base_quantity import QuantityMixIn
 
@@ -82,8 +81,7 @@ class Spectrum(Quantity, QuantityMixIn):
         else:
             obj.wavelength = np.array(wavelength) * wavelength_unit
 
-        obj._pixmask = None
-        obj._pixmask_flag = pixmask_flag
+        obj.pixmask_flag = pixmask_flag
 
         return obj
 
@@ -96,6 +94,8 @@ class Spectrum(Quantity, QuantityMixIn):
         self._std = getattr(obj, '_std', None)
         self.mask = getattr(obj, 'mask', None)
         self.wavelength = getattr(obj, 'wavelength', None)
+
+        self.pixmask_flag = getattr(obj, 'pixmask_flag', None)
 
         self._set_unit(getattr(obj, 'unit', None))
 
@@ -117,47 +117,10 @@ class Spectrum(Quantity, QuantityMixIn):
         return new_obj
 
     @property
-    def masked(self):
-        """Return a masked array."""
-
-        assert self.mask is not None, 'mask is None'
-
-        return np.ma.array(self.value, mask=self.pixmask.get_mask('DONOTUSE') > 0)
-
-    @property
-    def error(self):
-        """The standard deviation of the measurement."""
-
-        if self._std is not None:
-            return self._std
-
-        if self.ivar is None:
-            return None
-
-        np.seterr(divide='ignore')
-
-        return np.sqrt(1. / self.ivar) * self.unit
-
-    @property
     def std(self):
         """The standard deviation of the measurement."""
 
         return self.error
-
-    @ property
-    def pixmask(self):
-        """Maskbit instance for the pixmask flag.
-
-        See :ref:`marvin-utils-maskbit` for documentation and
-        `~marvin.utils.general.maskbit.Maskbit` for API reference.
-
-        """
-
-        if not self._pixmask:
-            self._pixmask = maskbit.Maskbit(self._pixmask_flag)
-            self._pixmask.mask = self.mask
-
-        return self._pixmask
 
     def plot(self, xlim=None, ylim=None, show_std=True, use_mask=True,
              n_sigma=1, xlabel='Wavelength', ylabel='Flux', show_units=True,
