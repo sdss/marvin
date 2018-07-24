@@ -10,32 +10,32 @@
 #                - Added config drpver info
 #     2016-03-12 - Changed parameter input to be a natural language string
 
-from __future__ import print_function, division, unicode_literals
-from marvin.core.exceptions import MarvinError, MarvinUserWarning, MarvinBreadCrumb
-from marvin.utils.general.structs import string_folding_wrapper
-from sqlalchemy_boolean_search import parse_boolean_search, BooleanSearchException
-from sqlalchemy import func
+from __future__ import division, print_function, unicode_literals
+
+import datetime
+import os
+import re
+import warnings
+from collections import OrderedDict, defaultdict
+from functools import wraps
+from operator import eq, ge, gt, le, lt, ne
+
+import numpy as np
+import six
 from marvin import config, marvindb
-from marvin.tools.results import Results
+from marvin.api.api import Interaction
+from marvin.core import marvin_pickle
+from marvin.core.exceptions import (MarvinBreadCrumb, MarvinError, MarvinUserWarning)
+from marvin.tools.results import Results, remote_mode_only
 from marvin.utils.datamodel.query import datamodel
 from marvin.utils.datamodel.query.base import query_params
 from marvin.utils.general import temp_setattr
-from marvin.api.api import Interaction
-from marvin.core import marvin_pickle
-from marvin.tools.results import remote_mode_only
-from sqlalchemy import bindparam
-from sqlalchemy.orm import aliased
+from marvin.utils.general.structs import string_folding_wrapper
+from sqlalchemy import bindparam, func
 from sqlalchemy.dialects import postgresql
+from sqlalchemy.orm import aliased
 from sqlalchemy.sql.expression import desc
-from operator import le, ge, gt, lt, eq, ne
-from collections import defaultdict, OrderedDict
-import datetime
-import numpy as np
-import warnings
-import os
-import re
-import six
-from functools import wraps
+from sqlalchemy_boolean_search import (BooleanSearchException, parse_boolean_search)
 
 try:
     import cPickle as pickle

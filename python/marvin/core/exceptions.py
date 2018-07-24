@@ -112,7 +112,11 @@ class MarvinWarning(Warning):
 
 class MarvinUserWarning(UserWarning, MarvinWarning):
     """The primary warning class."""
-    pass
+
+    def __init__(self, message=None):
+        message = ("Well, I wouldn't do it like that, but if that's "
+                   "how you want to do it, sure, go ahead.\n{0}".format(message or ''))
+        super(MarvinUserWarning, self).__init__(message)
 
 
 class MarvinSkippedTestWarning(MarvinUserWarning):

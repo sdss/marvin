@@ -1,11 +1,13 @@
 #!/usr/bin/env python
-# encoding: utf-8
+# -*- coding: utf-8 -*-
 #
-# @Author: José Sánchez-Gallego
-# @Date: Nov 8, 2017
+# @Author: Brian Cherinka, José Sánchez-Gallego, and Brett Andrews
+# @Date: 2017-11-08
 # @Filename: maps.py
-# @License: BSD 3-Clause
-# @Copyright: José Sánchez-Gallego
+# @License: BSD 3-clause (http://www.opensource.org/licenses/BSD-3-Clause)
+#
+# @Last modified by: José Sánchez-Gallego (gallegoj@uw.edu)
+# @Last modified time: 2018-07-20 18:25:03
 
 
 from __future__ import absolute_import, division, print_function
@@ -75,6 +77,8 @@ class Maps(MarvinToolsClass, NSAMixIn, DAPallMixIn, GetApertureMixIn):
 
     """
 
+    _qualflag = 'DAPQUAL'
+
     def __init__(self, input=None, filename=None, mangaid=None, plateifu=None,
                  mode=None, data=None, release=None,
                  drpall=None, download=None, nsa_source='auto',
@@ -88,6 +92,7 @@ class Maps(MarvinToolsClass, NSAMixIn, DAPallMixIn, GetApertureMixIn):
         # _set_datamodel will replace these strings with datamodel objects.
         self.bintype = bintype
         self.template = template
+
         self._bitmasks = None
 
         MarvinToolsClass.__init__(self, input=input, filename=filename,
@@ -432,7 +437,8 @@ class Maps(MarvinToolsClass, NSAMixIn, DAPallMixIn, GetApertureMixIn):
                 maps_quantities[dm.full()] = AnalysisProperty(data['value'],
                                                               unit=dm.unit,
                                                               ivar=data['ivar'],
-                                                              mask=data['mask'])
+                                                              mask=data['mask'],
+                                                              pixmask_flag=self.header['MASKNAME'])
 
         if self.data_origin == 'api':
 
@@ -456,7 +462,8 @@ class Maps(MarvinToolsClass, NSAMixIn, DAPallMixIn, GetApertureMixIn):
                 maps_quantities[dm.full()] = AnalysisProperty(data[dm.full()]['value'],
                                                               ivar=data[dm.full()]['ivar'],
                                                               mask=data[dm.full()]['mask'],
-                                                              unit=dm.unit)
+                                                              unit=dm.unit,
+                                                              pixmask_flag=self.header['MASKNAME'])
 
         return maps_quantities
 
@@ -495,19 +502,6 @@ class Maps(MarvinToolsClass, NSAMixIn, DAPallMixIn, GetApertureMixIn):
                                                 release=self.release,
                                                 bintype=self.bintype,
                                                 template=self.template)
-
-    @property
-    def quality_flag(self):
-        """Return Maps DAPQUAL flag."""
-
-        try:
-            dapqual = self._bitmasks['MANGA_DAPQUAL']
-        except KeyError:
-            dapqual = None
-        else:
-            dapqual.mask = int(self.header['DAPQUAL'])
-
-        return dapqual
 
     def getSpaxel(self, x=None, y=None, ra=None, dec=None,
                   drp=True, model=False, **kwargs):

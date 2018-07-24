@@ -1,22 +1,20 @@
 #!/usr/bin/env python
-# encoding: utf-8
+# -*- coding: utf-8 -*-
 #
-# @Author: José Sánchez-Gallego
-# @Date: Oct 30, 2017
+# @Author: José Sánchez-Gallego (gallegoj@uw.edu)
+# @Date: 2017-10-30
 # @Filename: spectrum.py
-# @License: BSD 3-Clause
-# @Copyright: José Sánchez-Gallego
+# @License: BSD 3-clause (http://www.opensource.org/licenses/BSD-3-Clause)
+#
+# @Last modified by: José Sánchez-Gallego (gallegoj@uw.edu)
+# @Last modified time: 2018-07-21 16:43:21
 
 
-from __future__ import division
-from __future__ import print_function
-from __future__ import absolute_import
-
-import numpy as np
+from __future__ import absolute_import, division, print_function
 
 import matplotlib.pyplot as plt
-
-from astropy.units import CompositeUnit, Quantity, Angstrom
+import numpy as np
+from astropy.units import Angstrom, CompositeUnit, Quantity
 
 from .base_quantity import QuantityMixIn
 
@@ -41,6 +39,9 @@ class Spectrum(Quantity, QuantityMixIn):
             The standard deviation associated with ``value``.
         mask (array-like, optional):
             The mask array for ``value``.
+        pixmask_flag (str):
+            The maskbit flag to be used to convert from mask bits to labels
+            (e.g., MANGA_DRP3PIXMASK).
         kwargs (dict):
             Keyword arguments to be passed to `~astropy.units.Quantity` when
             it is initialised.
@@ -54,7 +55,7 @@ class Spectrum(Quantity, QuantityMixIn):
 
     def __new__(cls, flux, wavelength, scale=None, unit=Angstrom,
                 wavelength_unit=Angstrom, ivar=None, std=None,
-                mask=None, dtype=None, copy=True, **kwargs):
+                mask=None, dtype=None, copy=True, pixmask_flag=None, **kwargs):
 
         flux = np.array(flux)
 
@@ -80,6 +81,8 @@ class Spectrum(Quantity, QuantityMixIn):
         else:
             obj.wavelength = np.array(wavelength) * wavelength_unit
 
+        obj.pixmask_flag = pixmask_flag
+
         return obj
 
     def __array_finalize__(self, obj):
@@ -91,6 +94,8 @@ class Spectrum(Quantity, QuantityMixIn):
         self._std = getattr(obj, '_std', None)
         self.mask = getattr(obj, 'mask', None)
         self.wavelength = getattr(obj, 'wavelength', None)
+
+        self.pixmask_flag = getattr(obj, 'pixmask_flag', None)
 
         self._set_unit(getattr(obj, 'unit', None))
 
@@ -110,20 +115,6 @@ class Spectrum(Quantity, QuantityMixIn):
             if self.wavelength is not None else self.wavelength
 
         return new_obj
-
-    @property
-    def error(self):
-        """The standard deviation of the measurement."""
-
-        if self._std is not None:
-            return self._std
-
-        if self.ivar is None:
-            return None
-
-        np.seterr(divide='ignore')
-
-        return np.sqrt(1. / self.ivar) * self.unit
 
     @property
     def std(self):
@@ -152,8 +143,8 @@ class Spectrum(Quantity, QuantityMixIn):
                 spectrum values will be shown as a shadowed area. ``n_sigma``
                 determines how many sigmas will be plotted.
             use_mask (bool):
-                If ``True``, the region in which the mask is non-zero will not
-                be shown in the plot.
+                If ``True``, the region in which the mask is set to
+                ``DONOTUSE`` will be masked out in the plot.
             show_units (bool):
                 If ``True``, the units will be added to the axis labels.
             n_sigma (float):
@@ -199,23 +190,24 @@ class Spectrum(Quantity, QuantityMixIn):
             ax = fig.add_subplot(111)
 
         if use_mask:
+            donotuse_mask = self.pixmask.get_mask('DONOTUSE') > 0
+
+        if use_mask:
             value = self.masked
-            wave = np.ma.array(self.wavelength.value, mask=(self.mask > 0))
+            wave = np.ma.array(self.wavelength.value, mask=donotuse_mask)
+            std = self.std.value
         else:
             value = self.value
             wave = self.wavelength.value
+            std = np.ma.array(self.std.value, mask=donotuse_mask)
 
         ax.plot(wave, value, **kwargs)
 
         if show_std and self.std is not None:
-            if use_mask is False:
-                std_masked = self.std.value
-            else:
-                std_masked = np.ma.array(self.std.value, mask=(self.mask > 0))
             assert n_sigma > 0, 'invalid n_sigma value.'
             ax.fill_between(wave,
-                            value + n_sigma * std_masked,
-                            value - n_sigma * std_masked,
+                            value + n_sigma * std,
+                            value - n_sigma * std,
                             facecolor='b', alpha=0.3)
 
         ax.set_xlim(xlim)

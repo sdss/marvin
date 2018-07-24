@@ -1,10 +1,12 @@
 #!/usr/bin/env python
-# encoding: utf-8
+# -*- coding: utf-8 -*-
 #
 # @Author: Brian Cherinka, José Sánchez-Gallego, and Brett Andrews
 # @Filename: core.py
-# @License: BSD 3-Clause
-# @Copyright: Brian Cherinka, José Sánchez-Gallego, and Brett Andrews
+# @License: BSD 3-clause (http://www.opensource.org/licenses/BSD-3-Clause)
+#
+# @Last modified by: José Sánchez-Gallego (gallegoj@uw.edu)
+# @Last modified time: 2018-07-20 18:25:35
 
 from __future__ import absolute_import, division, print_function
 
@@ -477,6 +479,22 @@ class MarvinToolsClass(object, six.with_metaclass(abc.ABCMeta)):
                 self.data.close()
             except Exception as ee:
                 warnings.warn('failed to close FITS instance: {0}'.format(ee), MarvinUserWarning)
+
+    @property
+    def quality_flag(self):
+        """Return quality flag."""
+
+        assert self._qualflag is not None, 'quality flag not set.'
+
+        try:
+            dapqual = self._bitmasks['MANGA_' + self._qualflag]
+        except KeyError:
+            warnings.warn('cannot find bitmask MANGA_{!r}'.format(self._qualflag))
+            dapqual = None
+        else:
+            dapqual.mask = int(self.header[self._qualflag])
+
+        return dapqual
 
     @property
     def manga_target1(self):
