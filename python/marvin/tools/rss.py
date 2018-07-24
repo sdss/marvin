@@ -7,7 +7,7 @@
 # @License: BSD 3-clause (http://www.opensource.org/licenses/BSD-3-Clause)
 #
 # @Last modified by: José Sánchez-Gallego (gallegoj@uw.edu)
-# @Last modified time: 2018-07-24 08:04:38
+# @Last modified time: 2018-07-24 08:11:26
 
 
 from __future__ import division, print_function
@@ -275,15 +275,9 @@ class RSSFiber(Spectrum):
         new_obj = super(RSSFiber, self).__getitem__(sl)
 
         for spectra_name in self._spectra:
-
-            current_value = getattr(self, spectra_name, None)
-
-            if current_value is None:
-                new_value = None
-            else:
-                new_value = current_value.__getitem__(sl)
-
-            setattr(new_obj, spectra_name, new_value)
+            current_spectrum = getattr(self, spectra_name, None)
+            new_spectrum = None if current_spectrum is None else current_spectrum.__getitem__(sl)
+            setattr(new_obj, spectra_name, new_spectrum)
 
         return new_obj
 
