@@ -5,21 +5,17 @@ Licensed under a 3-clause BSD license.
 '''
 
 from __future__ import print_function, division
-import sys
 import os
-import logging
 # Flask imports
-from flask_restful import Api
-from flask import Flask, Blueprint, send_from_directory
-from flask import session, request, render_template, g, jsonify, Response
+from flask import Flask, Blueprint, send_from_directory, request
 import flask_jsglue as jsg
 # Marvin imports
 from brain.utils.general.general import getDbMachine
-from marvin import config, log
-from marvin.web.web_utils import updateGlobalSession
+from marvin import config, log, marvindb
+from marvin.web.web_utils import updateGlobalSession, check_access, configFeatures
 from marvin.web.jinja_filters import jinjablue
 from marvin.web.error_handlers import errors
-from marvin.web.extensions import jsglue, flags, sentry, limiter, profiler, cache
+from marvin.web.extensions import jsglue, flags, sentry, limiter, profiler, cache, login_manager, jwt
 from marvin.web.settings import ProdConfig, DevConfig, CustomConfig
 # Web Views
 from marvin.web.controllers.index import index
@@ -29,6 +25,7 @@ from marvin.web.controllers.plate import plate
 from marvin.web.controllers.images import images
 from marvin.web.controllers.users import users
 # API Views
+from marvin.api.base import BaseView
 from marvin.api.cube import CubeView
 from marvin.api.maps import MapsView
 from marvin.api.modelcube import ModelCubeView
@@ -45,7 +42,7 @@ def create_app(debug=False, local=False, object_config=None):
 
     # ----------------------------------
     # Create App
-    marvin_base = os.environ.get('MARVIN_BASE', 'marvin2')
+    marvin_base = os.environ.get('MARVIN_BASE', 'marvin')
     app = Flask(__name__, static_url_path='/{0}/static'.format(marvin_base))
     api = Blueprint("api", __name__, url_prefix='/{0}/api'.format(marvin_base))
     app.debug = debug
@@ -66,7 +63,7 @@ def create_app(debug=False, local=False, object_config=None):
     # ----------------------------------
     # Set some other variables
     config._inapp = True
-    url_prefix = '/marvin2' if local else '/{0}'.format(marvin_base)
+    url_prefix = '/marvin' if local else '/{0}'.format(marvin_base)
 
     # ----------------------------------
     # Load the appropriate Flask configuration object for debug or production
@@ -89,7 +86,13 @@ def create_app(debug=False, local=False, object_config=None):
     @app.before_request
     def global_update():
         ''' updates the global session / config '''
-        updateGlobalSession()
+        pass
+
+        # # check login/access status
+        # check_access()
+
+        # # update the version/release info in the session
+        # updateGlobalSession()
 
     # ----------------------------------
     # Registration
@@ -113,7 +116,11 @@ def register_api(app, api):
     # SpaxelView.register(api)
     GeneralRequestsView.register(api)
     QueryView.register(api)
-    limiter.limit("200/minute")(api)
+
+    # set the API rate limiting
+    limiter.limit("400/minute")(api)
+
+    # register the API blueprint
     app.register_blueprint(api)
 
 
@@ -123,6 +130,7 @@ def register_extensions(app, app_base=None):
     jsg.JSGLUE_JS_PATH = '/{0}/jsglue.js'.format(app_base)
     jsglue.init_app(app)
     flags.init_app(app)
+    configFeatures(app)
     cache.init_app(app, config=app.config)
 
     limiter.init_app(app)
@@ -141,6 +149,11 @@ def register_extensions(app, app_base=None):
         except Exception as e:
             pass
 
+    # Initialize the Login Manager and JWT
+    login_manager.init_app(app)
+    login_manager.session_protection = "strong"
+    jwt.init_app(app)
+
 
 def register_blueprints(app, url_prefix=None):
     ''' Register the Flask Blueprints used '''
@@ -153,3 +166,8 @@ def register_blueprints(app, url_prefix=None):
     app.register_blueprint(users, url_prefix=url_prefix)
     app.register_blueprint(jinjablue)
     app.register_blueprint(errors)
+
+
+@login_manager.user_loader
+def load_user(pk):
+    return marvindb.session.query(marvindb.datadb.User).get(int(pk))

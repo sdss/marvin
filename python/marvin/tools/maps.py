@@ -1,27 +1,26 @@
 #!/usr/bin/env python
-# encoding: utf-8
+# -*- coding: utf-8 -*-
 #
-# @Author: José Sánchez-Gallego
-# @Date: Nov 8, 2017
+# @Author: Brian Cherinka, José Sánchez-Gallego, and Brett Andrews
+# @Date: 2017-11-08
 # @Filename: maps.py
-# @License: BSD 3-Clause
-# @Copyright: José Sánchez-Gallego
+# @License: BSD 3-clause (http://www.opensource.org/licenses/BSD-3-Clause)
+#
+# @Last modified by: José Sánchez-Gallego (gallegoj@uw.edu)
+# @Last modified time: 2018-07-20 18:25:03
 
 
-from __future__ import division
-from __future__ import print_function
-from __future__ import absolute_import
+from __future__ import absolute_import, division, print_function
 
 import copy
 import inspect
-import itertools
-import six
 import warnings
 
 import astropy.io.fits
 import astropy.wcs
 import numpy as np
 import pandas as pd
+import six
 
 import marvin
 import marvin.api.api
@@ -30,16 +29,16 @@ import marvin.tools.cube
 import marvin.tools.modelcube
 import marvin.tools.quantities.map
 import marvin.tools.spaxel
-import marvin.utils.general.general
 import marvin.utils.dap.bpt
-
-from marvin.core.core import MarvinToolsClass, NSAMixIn, DAPallMixIn
+import marvin.utils.general.general
 from marvin.utils.datamodel.dap import datamodel
-from marvin.utils.datamodel.dap.base import Property, Channel
+from marvin.utils.datamodel.dap.base import Channel, Property
 from marvin.utils.general import FuzzyDict, turn_off_ion
-from marvin.utils.general.maskbit import get_manga_target
 
+from .core import MarvinToolsClass
+from .mixins import DAPallMixIn, GetApertureMixIn, NSAMixIn
 from .quantities import AnalysisProperty
+
 
 try:
     import sqlalchemy
@@ -50,7 +49,7 @@ except ImportError:
 __all__ = ['Maps']
 
 
-class Maps(MarvinToolsClass, NSAMixIn, DAPallMixIn):
+class Maps(MarvinToolsClass, NSAMixIn, DAPallMixIn, GetApertureMixIn):
     """A class that represents a DAP MAPS file.
 
     Provides access to the data stored in a DAP MAPS file. In addition to
@@ -78,6 +77,8 @@ class Maps(MarvinToolsClass, NSAMixIn, DAPallMixIn):
 
     """
 
+    _qualflag = 'DAPQUAL'
+
     def __init__(self, input=None, filename=None, mangaid=None, plateifu=None,
                  mode=None, data=None, release=None,
                  drpall=None, download=None, nsa_source='auto',
@@ -91,6 +92,7 @@ class Maps(MarvinToolsClass, NSAMixIn, DAPallMixIn):
         # _set_datamodel will replace these strings with datamodel objects.
         self.bintype = bintype
         self.template = template
+
         self._bitmasks = None
 
         MarvinToolsClass.__init__(self, input=input, filename=filename,
@@ -435,7 +437,8 @@ class Maps(MarvinToolsClass, NSAMixIn, DAPallMixIn):
                 maps_quantities[dm.full()] = AnalysisProperty(data['value'],
                                                               unit=dm.unit,
                                                               ivar=data['ivar'],
-                                                              mask=data['mask'])
+                                                              mask=data['mask'],
+                                                              pixmask_flag=self.header['MASKNAME'])
 
         if self.data_origin == 'api':
 
@@ -459,7 +462,8 @@ class Maps(MarvinToolsClass, NSAMixIn, DAPallMixIn):
                 maps_quantities[dm.full()] = AnalysisProperty(data[dm.full()]['value'],
                                                               ivar=data[dm.full()]['ivar'],
                                                               mask=data[dm.full()]['mask'],
-                                                              unit=dm.unit)
+                                                              unit=dm.unit,
+                                                              pixmask_flag=self.header['MASKNAME'])
 
         return maps_quantities
 
@@ -498,39 +502,6 @@ class Maps(MarvinToolsClass, NSAMixIn, DAPallMixIn):
                                                 release=self.release,
                                                 bintype=self.bintype,
                                                 template=self.template)
-
-    @property
-    def manga_target1(self):
-        """Return MANGA_TARGET1 flag."""
-        return get_manga_target('1', self._bitmasks, self.header)
-
-    @property
-    def manga_target2(self):
-        """Return MANGA_TARGET2 flag."""
-        return get_manga_target('2', self._bitmasks, self.header)
-
-    @property
-    def manga_target3(self):
-        """Return MANGA_TARGET3 flag."""
-        return get_manga_target('3', self._bitmasks, self.header)
-
-    @property
-    def target_flags(self):
-        """Bundle MaNGA targeting flags."""
-        return [self.manga_target1, self.manga_target2, self.manga_target3]
-
-    @property
-    def quality_flag(self):
-        """Return Maps DAPQUAL flag."""
-
-        try:
-            dapqual = self._bitmasks['MANGA_DAPQUAL']
-        except KeyError:
-            dapqual = None
-        else:
-            dapqual.mask = int(self.header['DAPQUAL'])
-
-        return dapqual
 
     def getSpaxel(self, x=None, y=None, ra=None, dec=None,
                   drp=True, model=False, **kwargs):
@@ -585,6 +556,7 @@ class Maps(MarvinToolsClass, NSAMixIn, DAPallMixIn):
 
         channel = channel.name if isinstance(channel, Channel) else channel
 
+        channel = None if channel == 'None' else channel
         if channel is not None:
             property_name = property_name + '_' + channel
 

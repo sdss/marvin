@@ -1,39 +1,39 @@
 #!/usr/bin/env python
-# encoding: utf-8
+# -*- coding: utf-8 -*-
 #
-# @Author: José Sánchez-Gallego
-# @Date: Nov 1, 2017
+# @Author: Brian Cherinka, José Sánchez-Gallego, and Brett Andrews
+# @Date: 2017-11-01
 # @Filename: modelcube.py
-# @License: BSD 3-Clause
-# @Copyright: José Sánchez-Gallego
+# @License: BSD 3-clause (http://www.opensource.org/licenses/BSD-3-Clause)
+#
+# @Last modified by: José Sánchez-Gallego (gallegoj@uw.edu)
+# @Last modified time: 2018-07-21 16:03:52
 
 
-from __future__ import division
-from __future__ import print_function
-from __future__ import absolute_import
+from __future__ import absolute_import, division, print_function
 
 import distutils
 import warnings
 
+import numpy as np
 from astropy.io import fits
 from astropy.wcs import WCS
-import numpy as np
 
 import marvin
 import marvin.core.exceptions
+import marvin.tools.maps
 import marvin.tools.spaxel
 import marvin.utils.general.general
-import marvin.tools.maps
-
-from marvin.core.core import MarvinToolsClass, NSAMixIn, DAPallMixIn
 from marvin.core.exceptions import MarvinError
 from marvin.tools.quantities import DataCube, Spectrum
-from marvin.utils.datamodel.dap import datamodel, Model
+from marvin.utils.datamodel.dap import Model, datamodel
 from marvin.utils.general import FuzzyDict
-from marvin.utils.general.maskbit import get_manga_target
+
+from .core import MarvinToolsClass
+from .mixins import DAPallMixIn, GetApertureMixIn, NSAMixIn
 
 
-class ModelCube(MarvinToolsClass, NSAMixIn, DAPallMixIn):
+class ModelCube(MarvinToolsClass, NSAMixIn, DAPallMixIn, GetApertureMixIn):
     """A class to interface with MaNGA DAP model cubes.
 
     This class represents a DAP model cube, initialised either from a file,
@@ -62,6 +62,8 @@ class ModelCube(MarvinToolsClass, NSAMixIn, DAPallMixIn):
 
     """
 
+    _qualflag = 'DAPQUAL'
+
     def __init__(self, input=None, filename=None, mangaid=None, plateifu=None,
                  mode=None, data=None, release=None,
                  drpall=None, download=None, nsa_source='auto',
@@ -76,6 +78,7 @@ class ModelCube(MarvinToolsClass, NSAMixIn, DAPallMixIn):
         self.bintype = bintype
         self.template = template
         self.datamodel = None
+
         self._bitmasks = None
 
         MarvinToolsClass.__init__(self, input=input, filename=filename,
@@ -229,8 +232,9 @@ class ModelCube(MarvinToolsClass, NSAMixIn, DAPallMixIn):
             dm = datamodel[self.release]
             if dm.db_only:
                 if self.bintype not in dm.db_only:
-                    raise marvin.core.exceptions.MarvinError('Specified bintype {0} is not available in the DB'.format(self.bintype.name))
-
+                    raise marvin.core.exceptions.MarvinError(
+                        'Specified bintype {0} is not '
+                        'available in the DB'.format(self.bintype.name))
 
             if self.data:
                 assert isinstance(self.data, dapdb.ModelCube), \
@@ -299,40 +303,6 @@ class ModelCube(MarvinToolsClass, NSAMixIn, DAPallMixIn):
 
         self.plateifu = str(self.header['PLATEIFU'].strip())
         self.mangaid = str(self.header['MANGAID'].strip())
-
-    @property
-    def manga_target1(self):
-        """Return MANGA_TARGET1 flag."""
-        return get_manga_target('1', self._bitmasks, self.header)
-
-    @property
-    def manga_target2(self):
-        """Return MANGA_TARGET2 flag."""
-        return get_manga_target('2', self._bitmasks, self.header)
-
-    @property
-    def manga_target3(self):
-        """Return MANGA_TARGET3 flag."""
-        return get_manga_target('3', self._bitmasks, self.header)
-
-    @property
-    def target_flags(self):
-        """Bundle MaNGA targeting flags."""
-        return [self.manga_target1, self.manga_target2, self.manga_target3]
-
-    @property
-    def quality_flag(self):
-        """Return ModelCube DAPQUAL flag."""
-        dapqual = self._bitmasks['MANGA_DAPQUAL']
-        dapqual.mask = int(self.header['DAPQUAL'])
-        return dapqual
-
-    @property
-    def pixmask(self):
-        """Return the DAPSPECMASK flag."""
-        pixmask = self._bitmasks['MANGA_DAPSPECMASK']
-        pixmask.mask = getattr(self.binned_flux, 'mask', None)
-        return pixmask
 
     def getSpaxel(self, x=None, y=None, ra=None, dec=None,
                   drp=True, properties=True, **kwargs):
@@ -468,7 +438,8 @@ class ModelCube(MarvinToolsClass, NSAMixIn, DAPallMixIn):
                                                          ivar=data['ivar'],
                                                          mask=data['mask'],
                                                          wavelength=self._wavelength,
-                                                         unit=dm.unit)
+                                                         unit=dm.unit,
+                                                         pixmask_flag=self.header['MASKNAME'])
 
         if self.data_origin == 'api':
 
@@ -493,7 +464,8 @@ class ModelCube(MarvinToolsClass, NSAMixIn, DAPallMixIn):
                                                          ivar=data[dm.name]['ivar'],
                                                          mask=data[dm.name]['mask'],
                                                          wavelength=data['wavelength'],
-                                                         unit=dm.unit)
+                                                         unit=dm.unit,
+                                                         pixmask_flag=self.header['MASKNAME'])
 
         return modelcube_quantities
 
@@ -574,7 +546,8 @@ class ModelCube(MarvinToolsClass, NSAMixIn, DAPallMixIn):
                         mask=binned_flux_mask,
                         redcorr=self._redcorr,
                         binid=self.get_binid(model),
-                        unit=model.unit)
+                        unit=model.unit,
+                        pixmask_flag=self.header['MASKNAME'])
 
     @property
     def full_fit(self):
@@ -591,7 +564,8 @@ class ModelCube(MarvinToolsClass, NSAMixIn, DAPallMixIn):
                         mask=model_mask,
                         redcorr=self._redcorr,
                         binid=self.get_binid(model),
-                        unit=model.unit)
+                        unit=model.unit,
+                        pixmask_flag=self.header['MASKNAME'])
 
     @property
     def emline_fit(self):
@@ -608,7 +582,8 @@ class ModelCube(MarvinToolsClass, NSAMixIn, DAPallMixIn):
                         mask=emline_mask,
                         redcorr=self._redcorr,
                         binid=self.get_binid(model),
-                        unit=model.unit)
+                        unit=model.unit,
+                        pixmask_flag=self.header['MASKNAME'])
 
     @property
     def stellarcont_fit(self):
@@ -628,7 +603,8 @@ class ModelCube(MarvinToolsClass, NSAMixIn, DAPallMixIn):
                         mask=stellarcont_mask,
                         redcorr=self._redcorr,
                         binid=self.get_binid(model),
-                        unit=model.unit)
+                        unit=model.unit,
+                        pixmask_flag=self.header['MASKNAME'])
 
     def getCube(self):
         """Returns the associated `~marvin.tools.cube.Cube`."""

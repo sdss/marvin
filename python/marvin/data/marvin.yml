@@ -1,0 +1,20 @@
+
+# Default Marvin config
+
+# automatically check for access on startup
+check_access: False
+
+# use a valid API token
+use_token: ''
+
+# use the Sentry error logging
+use_sentry: True
+
+# add a message to submit a new Github Issue on all MarvinErrors
+add_github_message: True
+
+# globally set downloads for all Marvin Tools
+download: False
+
+# set the release to use when Marvin gets imported
+default_release: null

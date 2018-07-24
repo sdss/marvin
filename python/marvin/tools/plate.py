@@ -8,16 +8,19 @@
 #     Initial Version: 2016-05-17 10:17:35 by Brian Cherinka
 #     Last Modified On: 2016-05-17 10:17:35 by Brian
 
-from __future__ import print_function
-from __future__ import division
-from marvin.core.core import MarvinToolsClass
+from __future__ import division, print_function
+
+import inspect
+
+from astropy.io import fits
+
+from marvin import config, marvindb
 from marvin.core.exceptions import MarvinError
 from marvin.tools.cube import Cube
-from marvin import config, marvindb
 from marvin.utils.general.structs import FuzzyList
-from astropy.io import fits
-from brain.utils.general import checkPath
-import inspect
+
+from .core import MarvinToolsClass
+
 
 try:
     from sdss_access.path import Path
@@ -320,7 +323,9 @@ class Plate(MarvinToolsClass, FuzzyList):
             if not Path:
                 raise MarvinError('sdss_access is not installed')
             else:
-                sdss_path = Path()
+                is_public = 'DR' in self._release
+                path_release = self._release.lower() if is_public else None
+                sdss_path = Path(public=is_public, release=path_release)
 
             # try a cube
             full = sdss_path.full('mangacube', drpver=self._drpver, plate=self.plateid, ifu='*')

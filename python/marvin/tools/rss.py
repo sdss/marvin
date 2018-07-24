@@ -10,20 +10,18 @@
 #       Initial version
 
 
-from __future__ import division
-from __future__ import print_function
+from __future__ import division, print_function
 
 import warnings
 
-from astropy.io import fits
 import numpy as np
+from astropy.io import fits
 
 import marvin
-
-from marvin.core.core import MarvinToolsClass
 from marvin.core.exceptions import MarvinError, MarvinUserWarning
-
 from marvin.tools.quantities.spectrum import Spectrum
+
+from .core import MarvinToolsClass
 
 
 class RSS(MarvinToolsClass, list):
