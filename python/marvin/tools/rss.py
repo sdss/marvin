@@ -7,7 +7,7 @@
 # @License: BSD 3-clause (http://www.opensource.org/licenses/BSD-3-Clause)
 #
 # @Last modified by: José Sánchez-Gallego (gallegoj@uw.edu)
-# @Last modified time: 2018-07-24 08:12:15
+# @Last modified time: 2018-07-24 10:58:03
 
 
 from __future__ import division, print_function
@@ -38,8 +38,16 @@ class RSS(MarvinToolsClass, NSAMixIn, GetApertureMixIn, list):
 
     This class represents a fully reduced DRP row-stacked spectra object,
     initialised either from a file, a database, or remotely via the Marvin API.
+    Instances of `.RSS` are a list of `.RSSFiber` objects, one for each fibre
+    and exposure. `.RSSFiber` are initialised lazily, containing only basic
+    information. They need to be initialised by calling `.RSSFiber.load`
+    (unless `.RSS.autoload` is ``True``, in which case the instance is loaded
+    when first accessed).
 
-    See `~.MarvinToolsClass` and `~.NSAMixIn` for a list of input parameters.
+    In addition to the input arguments supported by `~.MarvinToolsClass` and
+    `~.NSAMixIn`, this class accepts an ``autoload`` keyword argument that
+    defines whether `.RSSFiber` objects should be automatically loaded when
+    they are accessed.
 
     """
 
