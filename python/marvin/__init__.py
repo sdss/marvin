@@ -139,6 +139,11 @@ class MarvinConfig(object):
 
         self._custom_config = config
 
+        # If the configuration file included a default release, we set it now
+        if 'default_release' in self._custom_config and self._custom_config['default_release']:
+            # We set _release because at this point the available versions are not yet set.
+            self._release = self._custom_config['default_release']
+
     def _checkPaths(self, name):
         ''' Check for the necessary path existence.
 
@@ -412,6 +417,10 @@ class MarvinConfig(object):
             # this toggles to latest DR when switching to public
             warnings.warn('Release {0} is not in the allowed releases.  '
                           'Switching to {1}'.format(self.release, latest), MarvinUserWarning)
+
+            # This is clunky but if we don't set self._release then setRelease can fail
+            # when it is called for the first time because the tree has not yet been planted.
+            self._release = latest
             self.setRelease(latest)
 
     def setRelease(self, version=None):
