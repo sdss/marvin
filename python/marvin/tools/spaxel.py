@@ -538,26 +538,6 @@ class SpaxelBase(six.with_metaclass(SpaxelABC, object)):
         return self._check_versions('template')
 
     @property
-    def manga_target1(self):
-        """Return MANGA_TARGET1 flag."""
-        return self.datamodel.drp.bitmasks['MANGA_TARGET1']
-
-    @property
-    def manga_target2(self):
-        """Return MANGA_TARGET2 flag."""
-        return self.datamodel.drp.bitmasks['MANGA_TARGET2']
-
-    @property
-    def manga_target3(self):
-        """Return MANGA_TARGET3 flag."""
-        return self.datamodel.drp.bitmasks['MANGA_TARGET3']
-
-    @property
-    def target_flags(self):
-        """Bundle MaNGA targeting flags."""
-        return [self.manga_target1, self.manga_target2, self.manga_target3]
-
-    @property
     def quality_flags(self):
         """Bundle Cube DRP3QUAL and Maps DAPQUAL flags."""
 
