@@ -7,7 +7,7 @@
 # @License: BSD 3-clause (http://www.opensource.org/licenses/BSD-3-Clause)
 #
 # @Last modified by: José Sánchez-Gallego (gallegoj@uw.edu)
-# @Last modified time: 2018-07-24 10:58:03
+# @Last modified time: 2018-07-24 12:16:14
 
 
 from __future__ import division, print_function
@@ -225,6 +225,27 @@ class RSS(MarvinToolsClass, NSAMixIn, GetApertureMixIn, list):
 
 
 class RSSFiber(Spectrum):
+    """A `~astropy.units.Quantity` representing a fibre observation.
+
+    Represents the spectral flux observed though a fibre, and associated with
+    an `.RSS` object. In addition to the flux, it contains information about
+    the inverse variance, mask, and other associated spectra defined in the
+    datamodel.
+
+    Parameters
+    ----------
+    fiberid : int
+        The fiberid (0-indexed row in the parent `.RSS` object) for this fibre
+        observation.
+    rss : `.RSS`
+        The parent `.RSS` object with which this fibre observation is
+        associated.
+    wavelength : numpy.ndarray
+        The wavelength positions of each array element, in Angstrom.
+    kwargs : dict
+        Additional keyword arguments to be passed to `.Spectrum`.
+
+    """
 
     def __new__(cls, fiberid, rss, wavelength, **kwargs):
 
