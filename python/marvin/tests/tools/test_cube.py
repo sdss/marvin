@@ -1,17 +1,25 @@
 #!/usr/bin/env python
+# -*- coding: utf-8 -*-
+#
+# @Author: Brian Cherinka, José Sánchez-Gallego, and Brett Andrews
+# @Filename: test_cube.py
+# @License: BSD 3-clause (http://www.opensource.org/licenses/BSD-3-Clause)
+#
+# @Last modified by: José Sánchez-Gallego (gallegoj@uw.edu)
+# @Last modified time: 2018-07-23 16:49:01
+
 
 import os
 import re
 
-import pytest
 import numpy as np
+import pytest
 from astropy import wcs
 
 from marvin import config, marvindb
 from marvin.core.exceptions import MarvinError, MarvinUserWarning
 from marvin.tests import marvin_test_if
 from marvin.tools.cube import Cube
-from marvin.tools.quantities import DataCube, Spectrum
 
 
 @pytest.fixture(autouse=True)
@@ -62,24 +70,6 @@ class TestCube(object):
         with pytest.raises(MarvinError) as cm:
             Cube(plateifu=plateifu, mode=mode)
         assert errmsg in str(cm.value)
-
-    @pytest.mark.slow
-    @marvin_test_if(mark='include', cube={'plateifu': '8485-1901'})
-    def test_cube_quantities(self, cube):
-
-        assert cube.flux is not None
-
-        assert isinstance(cube.flux, np.ndarray)
-        assert isinstance(cube.flux, DataCube)
-
-        assert isinstance(cube.spectral_resolution, Spectrum)
-
-        if cube.release in ['MPL-4', 'MPL-5']:
-            with pytest.raises(AssertionError) as ee:
-                cube.spectral_resolution_prepixel
-            assert 'spectral_resolution_prepixel is not present in his MPL version' in str(ee)
-        else:
-            assert isinstance(cube.spectral_resolution_prepixel, Spectrum)
 
     @marvin_test_if(mark='include', cube={'plateifu': '8485-1901',
                                           'release': 'MPL-6',
@@ -285,24 +275,11 @@ class TestPickling(object):
 
 class TestMaskbit(object):
 
-    def test_values_to_bits(self, cube):
-        assert cube.pixmask.values_to_bits(3) == [0, 1]
-
-    def test_values_to_labels(self, cube):
-        assert cube.pixmask.values_to_labels(3) == ['NOCOV', 'LOWCOV']
-
-    @pytest.mark.parametrize('names, expected',
-                             [(['NOCOV', 'LOWCOV'], 3),
-                              ('DONOTUSE', 1024)])
-    def test_labels_to_value(self, cube, names, expected):
-        assert cube.pixmask.labels_to_value(names) == expected
-
     @pytest.mark.parametrize('flag',
                              ['manga_target1',
                               'manga_target2',
                               'manga_target3',
                               'quality_flag',
-                              'target_flags',
-                              'pixmask'])
+                              'target_flags'])
     def test_flag(self, flag, cube):
         assert getattr(cube, flag, None) is not None

@@ -16,3 +16,5 @@ add_github_message: True
 # globally set downloads for all Marvin Tools
 download: False
 
+# set the release to use when Marvin gets imported
+default_release: null
