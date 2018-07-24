@@ -7,7 +7,7 @@
 # @License: BSD 3-clause (http://www.opensource.org/licenses/BSD-3-Clause)
 #
 # @Last modified by: José Sánchez-Gallego (gallegoj@uw.edu)
-# @Last modified time: 2018-07-23 01:05:25
+# @Last modified time: 2018-07-23 19:15:11
 
 
 from __future__ import division, print_function
@@ -18,11 +18,13 @@ import warnings
 import astropy.io.ascii
 import astropy.table
 import astropy.wcs
+import numpy
 from astropy.io import fits
 
 import marvin
 from marvin.core.exceptions import MarvinError, MarvinUserWarning
 from marvin.utils.datamodel.drp import datamodel_rss
+from marvin.utils.datamodel.drp.base import Spectrum as SpectrumDataModel
 
 from .core import MarvinToolsClass
 from .cube import Cube
@@ -30,7 +32,7 @@ from .mixins import GetApertureMixIn, NSAMixIn
 from .quantities.spectrum import Spectrum
 
 
-class RSS(MarvinToolsClass, NSAMixIn, GetApertureMixIn):
+class RSS(MarvinToolsClass, NSAMixIn, GetApertureMixIn, list):
     """A class to interface with a MaNGA DRP row-stacked spectra file.
 
     This class represents a fully reduced DRP data cube, initialised either
@@ -69,6 +71,10 @@ class RSS(MarvinToolsClass, NSAMixIn, GetApertureMixIn):
         assert header_drpver == self._drpver, ('mismatch between cube._drpver={0} '
                                                'and header drpver={1}'.format(self._drpver,
                                                                               header_drpver))
+
+        # Inits self as an empty list.
+        list.__init__(self, [])
+        self._populate_fibres()
 
     def _set_datamodel(self):
         """Sets the datamodel for DRP."""
@@ -180,76 +186,149 @@ class RSS(MarvinToolsClass, NSAMixIn, GetApertureMixIn):
 
         return
 
+    def _populate_fibres(self):
+        """Populates the internal list of fibres."""
+
+        for ii in range(self._nfibers):
+            self.append(RSSFiber(ii, self, load=False, pixmask_flag=self.header['MASKNAME']))
+
 
 class RSSFiber(Spectrum):
-    """A class to represent a MaNGA RSS fiber.
 
-    This class is basically a subclass of |spectrum| with additional
-    functionality. It is not intended to be initialised directly, but via
-    the :py:meth:`RSS._initFibers` method.
+    def __new__(cls, fiberid, rss, **kwargs):
 
-    Parameters:
-        args:
-            Arguments to pass to |spectrum| for initialisation.
-        kwargs:
-            Keyword arguments to pass to |spectrum| for initialisation.
+        # For now we instantiate a mostly empty Spectrum. Proper instantiation
+        # will happen in load().
 
-    Return:
-        rssfiber:
-            An object representing the RSS fiber entity.
+        array_size = len(rss._wavelength)
 
-    .. |spectrum| replace:: :class:`~marvin.tools.quantities.Spectrum`
+        obj = super(RSSFiber, cls).__new__(
+            cls, numpy.zeros(array_size, dtype=numpy.float64),
+            numpy.zeros(array_size, dtype=numpy.float64),
+            scale=None, unit=None)
 
-    """
+        obj._extra_attributes = ['fiberid', 'rss', 'loaded']
+        obj._spectra = []
 
-    def __init__(self, *args, **kwargs):
+        return obj
 
-        self.mangaid = kwargs.pop('mangaid', None)
-        self.plateifu = kwargs.pop('plateifu', None)
-        self.data_origin = kwargs.pop('data_origin', None)
+    def __init__(self, fiberid, rss, pixmask_flag=None, load=False):
 
-        flux_units = '1e-17 erg/s/cm^2/Ang/fiber'
-        wavelength_unit = 'Angstrom'
-        kwargs['units'] = flux_units
-        kwargs['wavelength_unit'] = wavelength_unit
+        self.fiberid = fiberid
+        self.rss = rss
 
-        # Spectrum.__init__(self, **kwargs)
+        self.pixmask_flag = pixmask_flag
+
+        self.loaded = False
+        if load:
+            self.load()
 
     def __repr__(self):
-        """Representation for RSSFiber."""
 
-        return ('<Marvin RSSFiber (mangaid={self.mangaid!r}, plateifu={self.plateifu!r}, '
-                'data_origin={self.data_origin!r})>'.format(self=self))
+        if not self.loaded:
+            return ('<RSSFiber (plateifu={self.rss.plateifu!r}, '
+                    'fiberid={self.fiberid!r}, loaded={self.loaded!r})>'.format(self=self))
+        else:
+            return super(RSSFiber, self).__repr__()
 
-    @classmethod
-    def _init_from_hdu(cls, hdulist, index):
-        """Initialises a RSSFiber object from a RSS HDUList."""
+    def __array_finalize__(self, obj):
 
-        assert index is not None, \
-            'if hdu is defined, an index is required.'
+        if obj is None:
+            return
 
-        mangaid = hdulist[0].header['MANGAID'].strip()
-        plateifu = '{0}-{1}'.format(hdulist[0].header['PLATEID'], hdulist[0].header['IFUDSGN'])
+        super(RSSFiber, self).__array_finalize__(obj)
 
-        flux = hdulist['FLUX'].data[index, :]
-        ivar = hdulist['IVAR'].data[index, :]
-        mask = hdulist['MASK'].data[index, :]
-        wave = hdulist['WAVE'].data
+        if hasattr(obj, '_extra_attributes'):
+            for attr in obj._extra_attributes:
+                setattr(self, attr, getattr(obj, attr, None))
+        self._extra_attributes = getattr(obj, '_extra_attributes', None)
 
-        obj = RSSFiber(flux, ivar=ivar, mask=mask, wavelength=wave, mangaid=mangaid,
-                       plateifu=plateifu, data_origin='file')
+        self._spectra = getattr(obj, '_spectra', None)
 
-        return obj
+    def __getitem__(self, sl):
 
-    @classmethod
-    def _init_from_db(cls, rssfiber):
-        """Initialites a RSS fiber from the DB."""
+        new_obj = super(RSSFiber, self).__getitem__(sl)
 
-        mangaid = rssfiber.cube.mangaid
-        plateifu = '{0}-{1}'.format(rssfiber.cube.plate, rssfiber.cube.ifu.name)
+        for spectra_name in self._spectra:
 
-        obj = RSSFiber(rssfiber.flux, ivar=rssfiber.ivar, mask=rssfiber.mask,
-                       wavelength=rssfiber.cube.wavelength.wavelength, mangaid=mangaid,
-                       plateifu=plateifu, data_origin='db')
+            current_value = getattr(self, spectra_name, None)
 
-        return obj
+            if current_value is None:
+                new_value = None
+            else:
+                new_value = current_value.__getitem__(sl)
+
+            setattr(new_obj, spectra_name, new_value)
+
+        return new_obj
+
+    def load(self):
+        """Loads the fibre information."""
+
+        assert self.loaded is False, 'object already loaded.'
+
+        datamodel_extensions = self.rss.datamodel.rss + self.rss.datamodel.spectra
+
+        self.wavelength = self.rss._wavelength
+
+        for extension in datamodel_extensions:
+
+            value, ivar, mask = self._get_extension_data(extension)
+
+            if extension.name == 'flux':
+
+                self.value[:] = value[:]
+                self.ivar = ivar
+                self.mask = mask
+                self._set_unit(extension.unit)
+
+            else:
+
+                new_spectrum = Spectrum(value, self.wavelength, ivar=ivar, mask=mask,
+                                        unit=extension.unit)
+                setattr(self, extension.name, new_spectrum)
+
+                self._spectra.append(extension.name)
+
+        self.loaded = True
+
+    def _get_extension_data(self, extension):
+        """Returns the value of an extension for this fibre, either from file or API.
+
+        Parameters
+        ----------
+        extension : datamodel object
+            The datamodel object containing the information for the extension
+            we want to retrieve.
+
+        """
+
+        if self.rss.data_origin == 'file':
+
+            data = self.rss.data
+
+            # Determine if this is an RSS datamodel object or an spectrum.
+            is_spectrum = isinstance(extension, SpectrumDataModel)
+
+            value = data[extension.fits_extension()].data
+
+            if extension.has_mask():
+                mask = data[extension.fits_extension('mask')].data
+            else:
+                mask = None
+
+            if hasattr(extension, 'has_ivar') and extension.has_ivar():
+                ivar = data[extension.fits_extension('ivar')].data
+            elif hasattr(extension, 'has_std') and extension.has_std():
+                std = data[extension.fits_extension('std')].data
+                ivar = 1. / (std**2)
+            else:
+                ivar = None
+
+            # If this is an RSS, gets the right row in the stacked spectra.
+            if not is_spectrum:
+                value = value[self.fiberid, :]
+                mask = mask[self.fiberid, :] if mask is not None else None
+                ivar = ivar[self.fiberid, :] if ivar is not None else None
+
+            return value, ivar, mask
