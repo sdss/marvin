@@ -7,7 +7,7 @@
 # @License: BSD 3-clause (http://www.opensource.org/licenses/BSD-3-Clause)
 #
 # @Last modified by: José Sánchez-Gallego (gallegoj@uw.edu)
-# @Last modified time: 2018-07-24 08:11:26
+# @Last modified time: 2018-07-24 08:12:15
 
 
 from __future__ import division, print_function
@@ -260,11 +260,13 @@ class RSSFiber(Spectrum):
 
         super(RSSFiber, self).__array_finalize__(obj)
 
+        # Adds _extra_attributes from the previous object.
         if hasattr(obj, '_extra_attributes'):
             for attr in obj._extra_attributes:
                 setattr(self, attr, getattr(obj, attr, None))
         self._extra_attributes = getattr(obj, '_extra_attributes', None)
 
+        # Adds the additional spectra from the previous object.
         if hasattr(obj, '_spectra'):
             for spectrum in obj._spectra:
                 setattr(self, spectrum, getattr(obj, spectrum, None))
