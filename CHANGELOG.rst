@@ -26,7 +26,7 @@ Changed
 - Added rawsql and return_params columns to history.query table in mangadb
 - Extra keyword arguments passed to ``Spectrum.plot`` are now forwarded to ``Axes.plot``.
 - Tools (e.g., ``Cube``, ``Maps``) can now be accessed from the ``marvin`` namespace (e.g., ``marvin.tools.Cube`` or ``marvin.tools.cube.Cube``).
-- `~marvin.tools.quantities.Spectrum.plot` now only masks part of the spectrum that have the ``DONOTUSE`` maskbit set.
+- `~marvin.tools.quantities.Spectrum.plot` now only masks part of the spectrum that have the ``DONOTUSE`` maskbit set (:issue:`455`).
 - ``pixmask`` is now available for all quantities (except ``AnalysisProprty``). The property ``masked`` now uses the bit ``DONOTUSE`` to determine what values must be masked out (:issue:`462`).
 
 Fixed
@@ -41,6 +41,7 @@ Fixed
 - Issue `#423 <https://github.com/sdss/marvin/issues/423>`_ - adding marvin.yml documentation
 - Issue `#431 <https://github.com/sdss/marvin/issues/431>`_ - adding login documentation
 - Issue `#151 <https://github.com/sdss/marvin/issues/151>`_ - adding web spectrum tooltips
+- Fixed typo by in method name ``Spectrum.derredden -> Spectrum.deredden``.
 
 Refactored
 ^^^^^^^^^^
