@@ -29,6 +29,7 @@ Changed
 - Moved ``yanny.py`` to ``extern/`` and added a readme file for the external packages (:issue:`468`).
 - `~marvin.tools.quantities.Spectrum.plot` now only masks part of the spectrum that have the ``DONOTUSE`` maskbit set (:issue:`455`).
 - ``pixmask`` is now available for all quantities (except ``AnalysisProprty``). The property ``masked`` now uses the bit ``DONOTUSE`` to determine what values must be masked out (:issue:`462`).
+- Removes targeting bits from ``Spaxel`` and ``Bin`` (:issue:`465`).
 
 Fixed
 ^^^^^
