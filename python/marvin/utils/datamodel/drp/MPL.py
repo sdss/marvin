@@ -14,7 +14,7 @@ from astropy import units as u
 
 from marvin.utils.datamodel.maskbit import get_maskbits
 
-from .base import DataCube, DRPCubeDataModel, DRPCubeDataModelList, RSSDatamodel, Spectrum
+from .base import RSS, DataCube, DRPCubeDataModel, DRPCubeDataModelList, Spectrum
 
 
 spaxel_unit = u.Unit('spaxel', represents=u.pixel, doc='A spectral pixel', parse_strict='silent')
@@ -56,12 +56,12 @@ MPL6_spectra = [
 ]
 
 RSS_extensions = [
-    RSSDatamodel('xpos', 'XPOS', extension_wave='WAVE', unit=u.arcsec,
-                 formats={'string': 'Fiber X-positions from the IFU center'},
-                 description='Array of fiber X-positions relative to the IFU center'),
-    RSSDatamodel('ypos', 'YPOS', extension_wave='WAVE', unit=u.arcsec,
-                 formats={'string': 'Fiber Y-positions from the IFU center'},
-                 description='Array of fiber Y-positions relative to the IFU center'),
+    RSS('xpos', 'XPOS', extension_wave='WAVE', unit=u.arcsec,
+        formats={'string': 'Fiber X-positions from the IFU center'},
+        description='Array of fiber X-positions relative to the IFU center'),
+    RSS('ypos', 'YPOS', extension_wave='WAVE', unit=u.arcsec,
+        formats={'string': 'Fiber Y-positions from the IFU center'},
+        description='Array of fiber Y-positions relative to the IFU center'),
 ]
 
 

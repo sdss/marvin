@@ -7,7 +7,7 @@
 # @License: BSD 3-clause (http://www.opensource.org/licenses/BSD-3-Clause)
 #
 # @Last modified by: José Sánchez-Gallego (gallegoj@uw.edu)
-# @Last modified time: 2018-07-22 20:26:37
+# @Last modified time: 2018-07-23 18:12:00
 
 from __future__ import absolute_import, division, print_function
 
@@ -130,6 +130,13 @@ class DRPCubeDataModelList(DataModelList):
     """A dictionary of DRP Cube datamodels."""
 
     base = {'DRPCubeDataModel': DRPCubeDataModel}
+
+    def copy(self):
+
+        copy_of_self = super(DRPCubeDataModelList, self).copy()
+        copy_of_self.__class__ = type('DRPRSSDataModelList', (DRPRSSDataModelList,), {})
+
+        return copy_of_self
 
 
 class DRPRSSDataModelList(DataModelList):
@@ -271,10 +278,10 @@ class RSSList(DataCubeList):
         append_obj = value if copy is False else copy_mod.deepcopy(value)
         append_obj.parent = self.parent
 
-        if isinstance(append_obj, RSSDatamodel):
+        if isinstance(append_obj, RSS):
             super(RSSList, self).append(append_obj)
         else:
-            raise ValueError('invalid datacube of type {!r}'.format(type(append_obj)))
+            raise ValueError('invalid RSS of type {!r}'.format(type(append_obj)))
 
     def write_csv(self, filename=None, path=None, overwrite=None, **kwargs):
         """Write the datamodel to a CSV"""
@@ -352,14 +359,14 @@ class DataCube(object):
         return copy_mod.deepcopy(self)
 
     def to_rss(self, new_parent):
-        """Creates a copy of this datacube as a `.RSSDatamodel` object."""
+        """Creates a copy of this datacube as a `.RSS` object."""
 
-        if isinstance(self, RSSDatamodel):
-            raise ValueError('this is already a RSSDatamodel')
+        if isinstance(self, RSS):
+            raise ValueError('this is already a RSS datamodel object.')
 
         assert isinstance(new_parent, DRPRSSDataModel)
         copy_of_self = self.copy()
-        copy_of_self.__class__ = type('RSSDatamodel', (RSSDatamodel,), {})
+        copy_of_self.__class__ = type('RSS', (RSS,), {})
         copy_of_self.parent = new_parent
 
         return copy_of_self
@@ -447,11 +454,11 @@ class DataCube(object):
             return string
 
 
-class RSSDatamodel(DataCube):
+class RSS(DataCube):
 
     def __repr__(self):
 
-        return '<RSSDatamodel {!r}, release={!r}, unit={!r}>'.format(
+        return '<RSS {!r}, release={!r}, unit={!r}>'.format(
             self.name, self.parent.release if self.parent else None,
             self.unit.to_string())
 
@@ -590,6 +597,8 @@ class Spectrum(object):
         extension_std (str):
             The FITS extension containing the standard deviation for this
             spectrum.
+        extension_mask (str):
+            The FITS extension containing the mask for this spectrum.
         db_table (str):
             The DB table in which the spectrum is stored. Defaults to
             ``cube``.
@@ -606,14 +615,15 @@ class Spectrum(object):
     """
 
     def __init__(self, name, extension_name, extension_wave=None, extension_std=None,
-                 db_table='cube', unit=u.dimensionless_unscaled, scale=1, formats={},
-                 description=''):
+                 extension_mask=None, db_table='cube', unit=u.dimensionless_unscaled,
+                 scale=1, formats={}, description=''):
 
         self.name = name
 
         self._extension_name = extension_name
         self._extension_wave = extension_wave
         self._extension_std = extension_std
+        self._extension_mask = extension_mask
 
         self.db_table = db_table
 
