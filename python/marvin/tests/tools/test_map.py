@@ -1,12 +1,14 @@
 #!/usr/bin/env python
-# encoding: utf-8
+# -*- coding: utf-8 -*-
 #
-# test_map.py
+# @Author: Brian Cherinka, José Sánchez-Gallego, and Brett Andrews
+# @Date: 2017-07-02
+# @Filename: test_map.py
+# @License: BSD 3-clause (http://www.opensource.org/licenses/BSD-3-Clause)
 #
-# @Author: Brett Andrews <andrews>
-# @Date:   2017-07-02 13:08:00
 # @Last modified by: José Sánchez-Gallego (gallegoj@uw.edu)
-# @Last modified time: 2018-07-19 14:28:48
+# @Last modified time: 2018-07-20 19:12:32
+
 
 import operator
 from copy import deepcopy

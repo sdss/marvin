@@ -15,6 +15,7 @@ Added
 - New marvin.yml config file for customization of configuration options
 - Adds User table into the history schema of mangadb.  Tracks user logins.
 - ``Map`` has a new method ``getSpaxel`` to retrieve an ``Spaxel`` using the parent ``Maps``.
+- New configuration option in ``marvin.yml``, ``default_release``, to set the release to be used when Marvin gets imported (:issue:`463`).
 
 Changed
 ^^^^^^^
@@ -25,23 +26,28 @@ Changed
 - Added rawsql and return_params columns to history.query table in mangadb
 - Extra keyword arguments passed to ``Spectrum.plot`` are now forwarded to ``Axes.plot``.
 - Tools (e.g., ``Cube``, ``Maps``) can now be accessed from the ``marvin`` namespace (e.g., ``marvin.tools.Cube`` or ``marvin.tools.cube.Cube``).
+- Moved ``yanny.py`` to ``extern/`` and added a readme file for the external packages (:issue:`468`).
+- `~marvin.tools.quantities.Spectrum.plot` now only masks part of the spectrum that have the ``DONOTUSE`` maskbit set (:issue:`455`).
+- ``pixmask`` is now available for all quantities (except ``AnalysisProprty``). The property ``masked`` now uses the bit ``DONOTUSE`` to determine what values must be masked out (:issue:`462`).
 
 Fixed
 ^^^^^
 - Issue `#421 <https://github.com/sdss/marvin/issues/421>`_ - query returning spaxel props returns wrong total count
 - Bugfix - Python 3 xrange syntax bug in buildImageDict
 - ``Bin._create_spaxels`` instantiating spaxels with the wrong ``(i,j)`` values for the bin. The ``(i, j)`` values from the ``binid`` map were being swapped twice before sending them to ``SpaxelBase`` (:issue:`457`).
+- A bug in the calculation of the deredden inverse variance in a `~marvin.tools.quantities.datacube.DataCube`.
 - Issue with setting drpall path on initial import/set of release before tree has been planted
 - Issue `#456 <https://github.com/sdss/marvin/issues/456>`_ - spectrum web display shows incorrect RA, Dec
 - Issue `#422 <https://github.com/sdss/marvin/issues/422>`_ - ensuring config auto checks access to netrc
 - Issue `#423 <https://github.com/sdss/marvin/issues/423>`_ - adding marvin.yml documentation
 - Issue `#431 <https://github.com/sdss/marvin/issues/431>`_ - adding login documentation
 - Issue `#151 <https://github.com/sdss/marvin/issues/151>`_ - adding web spectrum tooltips
+- Fixed typo by in method name ``Spectrum.derredden -> Spectrum.deredden``.
 
 Refactored
 ^^^^^^^^^^
 - Moved `marvin.core.core` to `marvin.tools.core` and split the mixins into `marvin.tools.mixins`.
-- Reimplemented `~marvin.tools.mixins.aperture.GetApertureMixIn.getAperture` as a mixin using photutils apertures (:issues:`3,315`).
+- Reimplemented `~marvin.tools.mixins.aperture.GetApertureMixIn.getAperture` as a mixin using photutils apertures (:issue:`3,315`).
 
 
 [2.2.5] - 2018/04/26
