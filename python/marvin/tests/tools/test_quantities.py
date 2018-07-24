@@ -7,7 +7,7 @@
 # @License: BSD 3-clause (http://www.opensource.org/licenses/BSD-3-Clause)
 #
 # @Last modified by: José Sánchez-Gallego (gallegoj@uw.edu)
-# @Last modified time: 2018-07-22 01:58:11
+# @Last modified time: 2018-07-23 17:00:44
 
 
 import matplotlib
@@ -111,25 +111,25 @@ class TestDataCube(object):
 
     def test_redcorr(self, datacube):
 
-        derr = datacube.derredden()
-        assert isinstance(derr, DataCube)
+        der = datacube.deredden()
+        assert isinstance(der, DataCube)
 
-        numpy.testing.assert_allclose(derr.value, datacube.value * 1.5)
-        numpy.testing.assert_allclose(derr.ivar, datacube.ivar / 1.5**2)
-        numpy.testing.assert_allclose(derr.mask, datacube.mask)
+        numpy.testing.assert_allclose(der.value, datacube.value * 1.5)
+        numpy.testing.assert_allclose(der.ivar, datacube.ivar / 1.5**2)
+        numpy.testing.assert_allclose(der.mask, datacube.mask)
 
-        assert derr.redcorr is None
-        assert derr.pixmask_flag == datacube.pixmask_flag
+        assert der.redcorr is None
+        assert der.pixmask_flag == datacube.pixmask_flag
 
         new_redcorr = (numpy.ones(1000) * 2.)
-        new_derr = datacube.derredden(redcorr=new_redcorr)
+        new_der = datacube.deredden(redcorr=new_redcorr)
 
-        numpy.testing.assert_allclose(new_derr.value, datacube.value * 2)
-        numpy.testing.assert_allclose(new_derr.ivar, datacube.ivar / 2**2)
+        numpy.testing.assert_allclose(new_der.value, datacube.value * 2)
+        numpy.testing.assert_allclose(new_der.ivar, datacube.ivar / 2**2)
 
         datacube.redcorr = None
         with pytest.raises(ValueError):
-            datacube.derredden()
+            datacube.deredden()
 
     def test_slice_datacube(self, datacube):
 
