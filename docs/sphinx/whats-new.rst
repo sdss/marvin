@@ -23,12 +23,15 @@ This section summarises the most important new features a bugfixes in Marvin. Fo
 
 .. attention:: This is a critical bugfix release that corrects a problem that could affect your science results. Please update as soon as possible and check whether your analysis is impacted by this bug.
 
-This version fixes a critical bug when retrieving the spaxels associated with a bin. It also simplifies the library namespace allowing for easier access to the most used Tools.
+This version fixes a critical bug when retrieving the spaxels associated with a bin, as well as a problem with the calculation of the inverse variance for deredden datacubes. It also simplifies the library namespace allowing for easier access to the most used Tools.
+
+Critical bugfixes
+*****************
 
 Spaxels associated with a bin
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-In version 2.2 we introduced the concept of :ref:`Bin <marvin-bin>` as a collection of spaxels that belong to the same binning unit. As part of the API, one can use `~marvin.tools.spaxel.Bin.spaxels` attribute to access a list of the spaxels that are included in the bin. The bug now fixed caused a list of incorrect spaxels to be associated with the bin, due to an inversion in the ``(x, y)`` order of the spaxels. For example, *before* 2.2.6 one would get ::
+In version 2.2 we introduced the concept of :ref:`Bin <marvin-bin>` as a collection of spaxels that belong to the same binning unit. As part of the API, one can use `~marvin.tools.spaxel.Bin.spaxels` attribute to access a list of the spaxels that are included in the bin. The bug now fixed caused a list of incorrect spaxels to be associated with the bin, due to an inversion in the ``(x, y)`` order of the spaxels. *Before* 2.2.6 one would get ::
 
     >>> cube = Cube('8485-1901')
     >>> maps = cube.getMaps('HYB10')
@@ -49,7 +52,7 @@ where the x and y values should be
      <Marvin Spaxel (x=14, y=22, loaded=False)]
 
 Simplifying the namespace
-^^^^^^^^^^^^^^^^^^^^^^^^^
+**************************
 
 Prior to 2.2.6 accessing different Tools classes was inconvenient since one would need to import them independently (e.g., ``from marvin.tools.cube import Cube``, ``from marvin.tools.maps import Maps``, etc.) This version makes access easier by exposing all the Tools from the ``marvin.tools`` namespace so that you can now do ::
 
