@@ -418,9 +418,6 @@ class MarvinConfig(object):
             warnings.warn('Release {0} is not in the allowed releases.  '
                           'Switching to {1}'.format(self.release, latest), MarvinUserWarning)
 
-            # This is clunky but if we don't set self._release then setRelease can fail
-            # when it is called for the first time because the tree has not yet been planted.
-            self._release = latest
             self.setRelease(latest)
 
     def setRelease(self, version=None):
@@ -637,6 +634,11 @@ class MarvinConfig(object):
 
         # yield the value (a release)
         yield value
+
+        # return early if the tree isn't set up or _release is None
+        # this should only occur during the initial imports
+        if not hasattr(self, '_tree') or self._release is None:
+            return
 
         # set tree_config
         tree_config = 'sdsswork' if 'MPL' in value else value.lower() if 'DR' in value else None
