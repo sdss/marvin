@@ -7,7 +7,7 @@
 # @License: BSD 3-clause (http://www.opensource.org/licenses/BSD-3-Clause)
 #
 # @Last modified by: José Sánchez-Gallego (gallegoj@uw.edu)
-# @Last modified time: 2018-07-21 21:51:06
+# @Last modified time: 2018-07-24 18:31:52
 
 import copy
 import itertools
@@ -172,7 +172,7 @@ def data_origin(request):
     return request.param
 
 
-@pytest.fixture(params=modes)
+@pytest.fixture(scope='session', params=modes)
 def mode(request):
     """Yield a data mode."""
     if travis and request.param not in travis.new_modes:
