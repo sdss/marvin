@@ -16,6 +16,7 @@ Added
 - Adds User table into the history schema of mangadb.  Tracks user logins.
 - ``Map`` has a new method ``getSpaxel`` to retrieve an ``Spaxel`` using the parent ``Maps``.
 - New configuration option in ``marvin.yml``, ``default_release``, to set the release to be used when Marvin gets imported (:issue:`463`).
+- Applying a NumPy ufunc (except ``np.log10()``) raises ``NotImplementedError`` because ivar propagation is not implemented yet.
 
 Changed
 ^^^^^^^
@@ -43,6 +44,7 @@ Fixed
 - Issue `#431 <https://github.com/sdss/marvin/issues/431>`_ - adding login documentation
 - Issue `#151 <https://github.com/sdss/marvin/issues/151>`_ - adding web spectrum tooltips
 - Fixed typo by in method name ``Spectrum.derredden -> Spectrum.deredden``.
+- Fixed `#305 <https://github.com/sdss/marvin/issues/305>`_ - adding ivar propogation for np.log10(Map)
 
 Refactored
 ^^^^^^^^^^

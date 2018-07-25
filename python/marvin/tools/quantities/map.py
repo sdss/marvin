@@ -6,8 +6,8 @@
 # @Filename: map.py
 # @License: BSD 3-clause (http://www.opensource.org/licenses/BSD-3-Clause)
 #
-# @Last modified by: José Sánchez-Gallego (gallegoj@uw.edu)
-# @Last modified time: 2018-07-22 02:10:42
+# @Last modified by:   andrews
+# @Last modified time: 2018-07-25 15:07:30
 
 
 from __future__ import absolute_import, division, print_function
@@ -158,6 +158,32 @@ class Map(units.Quantity, QuantityMixIn):
         self.pixmask_flag = getattr(obj, 'pixmask_flag', None)
 
         self._set_unit(getattr(obj, 'unit', None))
+
+    def __array_ufunc__(self, ufunc, method, *inputs, **kwargs):
+
+        ivar = self._ivar_ufunc(ufunc, *inputs, **kwargs)
+
+        return EnhancedMap(
+            value=ufunc(self.value),
+            ivar=ivar,
+            mask=self.mask,
+            unit=self.unit,  # unit
+            datamodel=self._datamodel,
+            pixmask_flag=self.pixmask_flag,
+            copy=True,
+        )
+
+    def _ivar_ufunc(self, ufunc, *inputs, **kwargs):
+
+        if ufunc in [np.log10]:
+            compute_ivar = getattr(self, '_{}_ivar'.format(ufunc.__name__))
+            ivar = compute_ivar(ivar=inputs[0].ivar, value=inputs[0].value, **kwargs)
+
+        else:
+            raise NotImplementedError('np.{0} is not implemented for {1}.'
+                                      .format(ufunc.__name__, self.__class__.__name__))
+
+        return ivar
 
     def getMaps(self):
         """Returns the associated `~marvin.tools.maps.Maps`."""
@@ -394,6 +420,10 @@ class Map(units.Quantity, QuantityMixIn):
             ivar = 1 / sig_out**2.
             ivar[np.isnan(ivar) | np.isinf(ivar)] = 0
             return ivar
+
+    @staticmethod
+    def _log10_ivar(ivar, value):
+        return np.log10(np.e) * ivar**-0.5 / value
 
     @staticmethod
     def _unit_propagation(unit1, unit2, op):
