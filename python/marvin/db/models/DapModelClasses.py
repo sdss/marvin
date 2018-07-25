@@ -432,4 +432,8 @@ dap_cache = RelationshipCache(File.cube).\
 for classname, class_model in spaxel_tables.items():
     dap_cache = dap_cache.and_(RelationshipCache(class_model.file))
 
+# delete extra classes from the various loops
+del class_model
+del cleanclass
+del newclass
 
