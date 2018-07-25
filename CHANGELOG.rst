@@ -44,6 +44,7 @@ Fixed
 - Issue `#431 <https://github.com/sdss/marvin/issues/431>`_ - adding login documentation
 - Issue `#151 <https://github.com/sdss/marvin/issues/151>`_ - adding web spectrum tooltips
 - Fixed typo by in method name ``Spectrum.derredden -> Spectrum.deredden``.
+- A bug when explicitly returning default parameters in a query (:issue:`484`)
 
 Refactored
 ^^^^^^^^^^
