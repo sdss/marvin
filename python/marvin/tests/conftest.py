@@ -6,7 +6,7 @@
 # @Filename: conftest.py
 # @License: BSD 3-clause (http://www.opensource.org/licenses/BSD-3-Clause)
 #
-# @Last modified by: José Sánchez-Gallego (gallegoj@uw.edu)
+# @Last modified by:   Brian Cherinka
 # @Last modified time: 2018-07-21 21:51:06
 
 import copy
@@ -632,7 +632,7 @@ def maps_release_only(release):
 
 
 @pytest.fixture(scope='function')
-def query(request, release, mode, db):
+def query(request, monkeyauth, release, mode, db):
     ''' Yields a Query that loops over all modes and db options '''
     data = query_data[release]
     set_the_config(release)
