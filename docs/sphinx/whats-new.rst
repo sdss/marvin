@@ -51,6 +51,11 @@ where the x and y values should be
      <Marvin Spaxel (x=13, y=22, loaded=False),
      <Marvin Spaxel (x=14, y=22, loaded=False)]
 
+Inverse variance for deredden datacubes
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The `~marvin.tools.quantities.datacube.DataCube` quantity includes a `~marvin.tools.quantities.datacube.DataCube.deredden` method that applies the reddening correction to the flux and inverse variance in the datacube. The inverse variance associated to the derredden flux had a bug in its calculation and was incorrect in all cases. That has now been fixed. It also fixes the spelling of ``deredden`` (😅).
+
 Simplifying the namespace
 **************************
 
