@@ -7,7 +7,7 @@
 # @License: BSD 3-clause (http://www.opensource.org/licenses/BSD-3-Clause)
 #
 # @Last modified by: José Sánchez-Gallego (gallegoj@uw.edu)
-# @Last modified time: 2018-07-24 12:16:14
+# @Last modified time: 2018-07-25 08:48:17
 
 
 from __future__ import division, print_function
@@ -29,11 +29,11 @@ from marvin.utils.datamodel.drp.base import Spectrum as SpectrumDataModel
 
 from .core import MarvinToolsClass
 from .cube import Cube
-from .mixins import GetApertureMixIn, NSAMixIn
+from .mixins import NSAMixIn
 from .quantities.spectrum import Spectrum
 
 
-class RSS(MarvinToolsClass, NSAMixIn, GetApertureMixIn, list):
+class RSS(MarvinToolsClass, NSAMixIn, list):
     """A class to interface with a MaNGA DRP row-stacked spectra file.
 
     This class represents a fully reduced DRP row-stacked spectra object,
