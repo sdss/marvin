@@ -21,7 +21,7 @@ This section summarises the most important new features a bugfixes in Marvin. Fo
 2.2.6 (July 2019)
 ------------------
 
-.. attention:: This is a critical bugfix release that corrects a problem that could affect your science results. Please update as soon as possible and check whether your analysis is impacted by this bug.
+.. attention:: This is a critical bugfix release that corrects a problem that could affect your science results. Please update as soon as possible and check whether your analysis has been impacted by this bug.
 
 This version fixes a critical bug when retrieving the spaxels associated with a bin, as well as a problem with the calculation of the inverse variance for deredden datacubes. It also simplifies the library namespace allowing for easier access to the most used Tools.
 
@@ -31,7 +31,7 @@ Critical bugfixes
 Spaxels associated with a bin
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-In version 2.2 we introduced the concept of :ref:`Bin <marvin-bin>` as a collection of spaxels that belong to the same binning unit. As part of the API, one can use `~marvin.tools.spaxel.Bin.spaxels` attribute to access a list of the spaxels that are included in the bin. The bug now fixed caused a list of incorrect spaxels to be associated with the bin, due to an inversion in the ``(x, y)`` order of the spaxels. *Before* 2.2.6 one would get ::
+In version 2.2 we introduced the concept of :ref:`Bin <marvin-bin>` as a collection of spaxels that belong to the same binning unit. As part of the API, one can use the `~marvin.tools.spaxel.Bin.spaxels` attribute to access a list of the spaxels that are included in the bin. The bug now fixed caused a list of incorrect spaxels to be associated with the bin, due to an inversion in the ``(x, y)`` order of the spaxels. *Before* 2.2.6 one would get ::
 
     >>> cube = Cube('8485-1901')
     >>> maps = cube.getMaps('HYB10')
