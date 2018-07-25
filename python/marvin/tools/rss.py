@@ -7,7 +7,7 @@
 # @License: BSD 3-clause (http://www.opensource.org/licenses/BSD-3-Clause)
 #
 # @Last modified by: José Sánchez-Gallego (gallegoj@uw.edu)
-# @Last modified time: 2018-07-25 08:48:17
+# @Last modified time: 2018-07-25 11:05:54
 
 
 from __future__ import division, print_function
@@ -50,6 +50,8 @@ class RSS(MarvinToolsClass, NSAMixIn, list):
     they are accessed.
 
     """
+
+    _qualflag = 'DRP3QUAL'
 
     def __init__(self, input=None, filename=None, mangaid=None, plateifu=None,
                  mode=None, data=None, release=None, autoload=True,
