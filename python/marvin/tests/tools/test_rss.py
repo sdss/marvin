@@ -7,9 +7,10 @@
 # @License: BSD 3-clause (http://www.opensource.org/licenses/BSD-3-Clause)
 #
 # @Last modified by: José Sánchez-Gallego (gallegoj@uw.edu)
-# @Last modified time: 2018-07-24 18:32:20
+# @Last modified time: 2018-07-25 11:34:45
 
 import astropy.io.fits
+import astropy.table
 import numpy
 import pytest
 
@@ -84,6 +85,8 @@ class TestRSS(object):
         assert isinstance(rss, marvin.tools.mixins.NSAMixIn)
         assert isinstance(rss, list)
 
+        assert isinstance(rss.obsinfo, astropy.table.Table)
+
         if rss.mode == 'file':
             assert isinstance(rss.data, astropy.io.fits.HDUList)
 
@@ -115,6 +118,25 @@ class TestRSS(object):
         rss.load_all()
         assert all([rss_fiber.loaded is True for rss_fiber in rss])
 
+    def test_obsinfo_to_rssfiber(self, rss):
+
+        # We get it in this complicated way so that it is a different way of
+        # obtianing it than in the _populate_fibres method.
+        ifusize = int(str(rss.ifu)[0:-2])
+
+        exp_idx = 0
+        n_fiber = 1
+        for rssfiber in rss:
+
+            assert numpy.all(rss.obsinfo[exp_idx] == rssfiber.obsinfo)
+
+            n_fiber += 1
+            if n_fiber > ifusize:
+                n_fiber = 1
+                exp_idx += 1
+
+
+
 
 @pytest.mark.usefixtures('monkeyauth')
 class TestRSSFiber(object):
@@ -122,6 +144,8 @@ class TestRSSFiber(object):
     def test_rssfiber_spectra(self, rssfiber):
 
         assert isinstance(rssfiber.rss, marvin.tools.RSS)
+
+        assert isinstance(rssfiber.obsinfo, astropy.table.Table)
 
         assert hasattr(rssfiber, 'ivar')
         assert isinstance(rssfiber.ivar, numpy.ndarray)
@@ -180,6 +204,8 @@ class TestRSSFiber(object):
             spectrum_sliced = getattr(sliced, dm_element.name, None)
             assert len(spectrum_sliced) == n_elements
 
+        assert sliced.obsinfo is not None
+
     def test_rssfiber_masked(self, rssfiber):
 
         assert numpy.sum(rssfiber.masked.mask) > 0
@@ -188,3 +214,5 @@ class TestRSSFiber(object):
 
         descaled = rssfiber.descale()
         numpy.testing.assert_allclose(descaled.value, rssfiber.value * rssfiber.unit.scale)
+
+        assert descaled.obsinfo is not None

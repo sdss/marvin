@@ -7,7 +7,7 @@
 # @License: BSD 3-clause (http://www.opensource.org/licenses/BSD-3-Clause)
 #
 # @Last modified by: José Sánchez-Gallego (gallegoj@uw.edu)
-# @Last modified time: 2018-07-25 11:05:54
+# @Last modified time: 2018-07-25 11:19:49
 
 
 from __future__ import division, print_function
@@ -221,9 +221,14 @@ class RSS(MarvinToolsClass, NSAMixIn, list):
     def _populate_fibres(self):
         """Populates the internal list of fibres."""
 
-        for ii in range(self._nfibers):
-            self.append(RSSFiber(ii, self, self._wavelength, load=False,
-                                 pixmask_flag=self.header['MASKNAME']))
+        n_exposures = len(self.obsinfo)
+        n_fibres_per_exposure = self._nfibers // n_exposures
+
+        for fiberid in range(self._nfibers):
+            exp_index = fiberid // n_fibres_per_exposure
+            exp_obsinfo = self.obsinfo[[exp_index]]
+            self.append(RSSFiber(fiberid, self, self._wavelength, load=False,
+                                 obsinfo=exp_obsinfo, pixmask_flag=self.header['MASKNAME']))
 
 
 class RSSFiber(Spectrum):
@@ -244,12 +249,20 @@ class RSSFiber(Spectrum):
         associated.
     wavelength : numpy.ndarray
         The wavelength positions of each array element, in Angstrom.
+    load : bool
+        Whether the information in the `.RSSFiber` should be loaded during
+        instantiation. Defaults to lazy loading (use `.RSSFiber.load` to
+        load the fibre information).
+    obsinfo : astropy.table.Table
+        A `~astropy.table.Table` with the information for the exposure to
+        which this fibre observation belongs.
     kwargs : dict
         Additional keyword arguments to be passed to `.Spectrum`.
 
     """
 
-    def __new__(cls, fiberid, rss, wavelength, **kwargs):
+    def __new__(cls, fiberid, rss, wavelength, pixmask_flag=None, load=False,
+                obsinfo=None, **kwargs):
 
         # For now we instantiate a mostly empty Spectrum. Proper instantiation
         # will happen in load().
@@ -258,17 +271,19 @@ class RSSFiber(Spectrum):
 
         obj = super(RSSFiber, cls).__new__(
             cls, numpy.zeros(array_size, dtype=numpy.float64), wavelength,
-            scale=None, unit=None)
+            scale=None, unit=None,)
 
-        obj._extra_attributes = ['fiberid', 'rss', 'loaded']
+        obj._extra_attributes = ['fiberid', 'rss', 'loaded', 'obsinfo']
         obj._spectra = []
 
         return obj
 
-    def __init__(self, fiberid, rss, wavelength, pixmask_flag=None, load=False):
+    def __init__(self, fiberid, rss, wavelength, pixmask_flag=None, load=False,
+                 obsinfo=None, **kwargs):
 
         self.fiberid = fiberid
         self.rss = rss
+        self.obsinfo = obsinfo
 
         self.pixmask_flag = pixmask_flag
 
