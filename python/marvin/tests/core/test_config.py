@@ -6,15 +6,16 @@
 # @Author: Brian Cherinka
 # @Date:   2018-03-08 18:08:34
 # @Last modified by:   Brian Cherinka
-# @Last Modified time: 2018-07-10 13:18:52
+# @Last Modified time: 2018-07-24 13:49:36
 
 from __future__ import print_function, division, absolute_import
 from marvin import config
-from marvin.core.exceptions import MarvinError
+from marvin.core.exceptions import MarvinError, MarvinUserWarning
 from brain import bconfig
 from brain.core.exceptions import BrainError, BrainUserWarning
 import pytest
 import os
+import warnings
 
 
 @pytest.fixture()
@@ -48,6 +49,12 @@ def write(host):
     netstr += '    password test\n'
     netstr += '\n'
     return netstr
+
+
+@pytest.fixture()
+def initconfig(monkeypatch):
+    monkeypatch.delattr(config, '_tree')
+    monkeypatch.setattr(config, '_release', None)
 
 
 class TestVars(object):
@@ -171,4 +178,14 @@ class TestConfig(object):
             config.login()
         assert 'You must have collaboration access to login.' in str(cm.value)
 
+    @pytest.mark.parametrize('defrel, exprel',
+                             [('DR20', 'MPL-7'), ('bad_release', 'MPL-7')])
+    def test_bad_default_release(self, initconfig, defrel, exprel):
+        ''' this tests some initial conditions on config '''
+        config._release = defrel
+        config._check_access()
+        msg = 'Release {0} is not in the allowed releases.  Switching to {1}'.format(defrel, exprel)
+        with pytest.warns(MarvinUserWarning):
+            warnings.warn(msg, MarvinUserWarning)
+        assert config.release == exprel
 

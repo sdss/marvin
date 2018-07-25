@@ -6,8 +6,8 @@
 # @Filename: test_maps.py
 # @License: BSD 3-clause (http://www.opensource.org/licenses/BSD-3-Clause)
 #
-# @Last modified by: José Sánchez-Gallego (gallegoj@uw.edu)
-# @Last modified time: 2018-07-20 20:12:53
+# @Last modified by:   andrews
+# @Last modified time: 2018-07-24 14:07:23
 
 
 from __future__ import absolute_import, division, print_function
@@ -180,6 +180,15 @@ class TestMaps(object):
 
                 else:
                     assert value == value2, attr
+
+    def test_getMapRatio(self, galaxy):
+        maps = Maps(galaxy.plateifu)
+        map_ratio = maps.getMapRatio('emline_gflux', 'nii_6585', 'ha_6564')
+        map_arith = maps.emline_gflux_nii_6585 / maps.emline_gflux_ha_6564
+
+        assert map_ratio.value == pytest.approx(map_arith.value, nan_ok=True)
+        assert map_ratio.ivar == pytest.approx(map_arith.ivar, nan_ok=True)
+        assert map_ratio.mask == pytest.approx(map_arith.mask, nan_ok=True)
 
 
 class TestMaskbit(object):
