@@ -7,7 +7,7 @@
 # @License: BSD 3-clause (http://www.opensource.org/licenses/BSD-3-Clause)
 #
 # @Last modified by: José Sánchez-Gallego (gallegoj@uw.edu)
-# @Last modified time: 2018-07-25 18:01:55
+# @Last modified time: 2018-07-25 18:50:10
 
 import astropy.io.fits
 import astropy.table
@@ -151,6 +151,7 @@ class TestRSSFiber(object):
 
     def test_rssfiber_spectra(self, rssfiber):
 
+        assert isinstance(rssfiber, marvin.tools.RSSFiber)
         assert isinstance(rssfiber.rss, marvin.tools.RSS)
 
         assert isinstance(rssfiber.obsinfo, astropy.table.Table)
@@ -224,3 +225,29 @@ class TestRSSFiber(object):
         numpy.testing.assert_allclose(descaled.value, rssfiber.value * rssfiber.unit.scale)
 
         assert descaled.obsinfo is not None
+
+
+class TestPickling(object):
+
+    def test_pickling_file(self, temp_scratch, rss):
+
+        if rss.data_origin == 'file':
+            assert rss.data is not None
+
+        rss_file = temp_scratch.join('test_rss.mpf')
+        rss.save(str(rss_file))
+        assert rss_file.check() is True
+
+        rss_restored = marvin.tools.RSS.restore(str(rss_file))
+
+        assert rss_restored.data_origin == rss.data_origin
+        assert isinstance(rss_restored, marvin.tools.RSS)
+
+        assert len(rss_restored) > 0
+        assert isinstance(rss_restored[0], marvin.tools.RSSFiber)
+        assert numpy.sum(rss_restored[0].value) > 0
+
+        if rss.data_origin == 'file':
+            assert rss_restored.data is not None
+        else:
+            assert rss_restored.data is None
