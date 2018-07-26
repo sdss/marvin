@@ -5,9 +5,8 @@
 # @Date: 2017-11-08
 # @Filename: maps.py
 # @License: BSD 3-clause (http://www.opensource.org/licenses/BSD-3-Clause)
-#
 # @Last modified by:   Brian Cherinka
-# @Last modified time: 2018-07-20 18:25:03
+# @Last modified time: 2018-07-24 14:07:01
 
 
 from __future__ import absolute_import, division, print_function
@@ -615,26 +614,10 @@ class Maps(MarvinToolsClass, NSAMixIn, DAPallMixIn, GetApertureMixIn):
                 The channels to use.
 
         """
-
-        # TODO extend to allow for different property names and make channel optional
         map_1 = self.getMap(property_name, channel=channel_1)
         map_2 = self.getMap(property_name, channel=channel_2)
 
-        map_1.value /= map_2.value
-
-        # TODO: do the error propogation (BHA)
-        map_1.ivar = None
-
-        map_1.mask &= map_2.mask
-
-        map_1.channel = '{0}/{1}'.format(channel_1, channel_2)
-
-        if map_1.unit != map_2.unit:
-            map_1.unit = '{0}/{1}'.format(map_1.unit, map_2.unit)
-        else:
-            map_1.unit = ''
-
-        return map_1
+        return map_1 / map_2
 
     def is_binned(self):
         """Returns True if the Maps is not unbinned."""
