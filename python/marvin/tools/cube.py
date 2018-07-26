@@ -7,7 +7,7 @@
 # @License: BSD 3-clause (http://www.opensource.org/licenses/BSD-3-Clause)
 #
 # @Last modified by: José Sánchez-Gallego (gallegoj@uw.edu)
-# @Last modified time: 2018-07-21 15:46:36
+# @Last modified time: 2018-07-25 17:57:12
 
 
 from __future__ import absolute_import, division, print_function
@@ -575,6 +575,12 @@ class Cube(MarvinToolsClass, NSAMixIn, GetApertureMixIn):
                                                       cube=self,
                                                       maps=properties,
                                                       modelcube=models, **kwargs)
+
+    def getRSS(self):
+        """Returns the `~marvin.tools.rss.RSS` associated with this Cube."""
+
+        return marvin.tools.RSS(plateifu=self.plateifu, mode=self.mode,
+                                release=self.release)
 
     def getMaps(self, **kwargs):
         """Retrieves the DAP :class:`~marvin.tools.maps.Maps` for this cube.

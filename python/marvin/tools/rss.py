@@ -7,7 +7,7 @@
 # @License: BSD 3-clause (http://www.opensource.org/licenses/BSD-3-Clause)
 #
 # @Last modified by: José Sánchez-Gallego (gallegoj@uw.edu)
-# @Last modified time: 2018-07-25 11:19:49
+# @Last modified time: 2018-07-25 17:54:27
 
 
 from __future__ import division, print_function
@@ -132,6 +132,11 @@ class RSS(MarvinToolsClass, NSAMixIn, list):
         plate, ifu = self.plateifu.split('-')
 
         return super(RSS, self).download('mangarss', ifu=ifu, drpver=self._drpver, plate=plate)
+
+    def getCube(self):
+        """Returns the `~marvin.tools.cube.Cube` associated with this RSS."""
+
+        return Cube(plateifu=self.plateifu, mode=self.mode, release=self.release)
 
     def load_all(self):
         """Loads all the `.RSSFiber` associated to this `.RSS` instance."""

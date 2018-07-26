@@ -7,7 +7,7 @@
 # @License: BSD 3-clause (http://www.opensource.org/licenses/BSD-3-Clause)
 #
 # @Last modified by: José Sánchez-Gallego (gallegoj@uw.edu)
-# @Last modified time: 2018-07-25 11:34:45
+# @Last modified time: 2018-07-25 18:01:55
 
 import astropy.io.fits
 import astropy.table
@@ -135,7 +135,15 @@ class TestRSS(object):
                 n_fiber = 1
                 exp_idx += 1
 
+    def test_getcube(self, rss):
 
+        cube = rss.getCube()
+
+        assert isinstance(cube, marvin.tools.Cube)
+        assert cube.mode == rss.mode
+        assert cube.plateifu == rss.plateifu
+        assert cube.mangaid == rss.mangaid
+        assert cube.release == rss.release
 
 
 @pytest.mark.usefixtures('monkeyauth')
