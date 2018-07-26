@@ -17,6 +17,9 @@ This section summarises the most important new features a bugfixes in Marvin. Fo
 2.3.0 (unreleased)
 ------------------
 
+Support for public data releases
+********************************
+
 Reimplemented `~marvin.tools.rss.RSS`
 *************************************
 
@@ -24,6 +27,17 @@ The :ref:`RSS Tool <marvin-rss>` had never been a totally functional :ref:`Galax
 
 The new `~marvin.tools.rss.RSS` class is well tested but given the magnitude of the refactoring we are offering it in beta state. We appreciate your bug reports and any suggestions on how to improve it.
 
+Extracting all the spaxels in an aperture
+*****************************************
+
+Early versions of Marvin included a ``Cube.getAperture`` method that allowed to extract the spaxels contained in a geometrical aperture. That feature was deemed not science-ready and removed in following releases. In this version we are reintroducing it as a mixin, `~marvin.tools.mixins.aperture.GetApertureMixIn`, that provides the `~marvin.tools.mixins.aperture.GetApertureMixIn.getAperture` method to Cubes, Maps, and ModelCubes. The mixin makes heavy use of `photutils <http://photutils.readthedocs.io/en/stable/>`_ to define geometric regions (elliptical, circular, rectangular) either in the image frame or using on-sky coordinates. Selecting the spaxels within a circular region around a set of coordinates is now as easy as doing ::
+
+    >>> ap = cube.getAperture((232.546173, 48.6892288), 5, aperture_type='circular')
+    >>> spaxels = ap.getSpaxels()
+
+Full documentation is available :ref:`here <marvin-get-aperture>`. As with the `~marvin.tools.rss.RSS` class, please double check any result before using it for science publications. We welcome any feedback on how to improve this feature.
+
+|
 
 2.2.6 (July 2019)
 ------------------
