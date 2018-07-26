@@ -1,3 +1,6 @@
+
+.. warning:: This is an old version of the Cube documentation. It should be adapted to talk only about features and subtleties of the Cube, without repeating everything already explained in the main section of the Galaxy Tools.
+
 .. _marvin-cube:
 
 Cube

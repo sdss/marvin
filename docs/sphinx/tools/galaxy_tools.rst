@@ -21,10 +21,12 @@ Marvin Tools provide:
 .. todo:: Add links in this list once all the documentation is in place.
 
 - Access DRP :ref:`Cubes <marvin-cube>` and their spectra.
+- Access :ref:`Row-stacked Spectra <marvin-rss>` files.
 - Access DAP :ref:`Maps <marvin-maps>` and :ref:`ModelCubes <marvin-modelcube>`.
 - Convenient access to all the DRP and DAP properties for a given :ref:`Spaxel or Bin <marvin-subregion-tools>`.
-- Data is delivered as :ref:`quantities <marvin-quantities>` with attached variance and mask.
-- DAP Map arithmetic.
+- The data is delivered as :ref:`quantities <marvin-quantities>` with attached variance and mask, as well ass associated properties.
+- Easy handling of maskbits and labels.
+- DAP :ref:`Map arithmetic <marvin-enhanced-map>`.
 - Autocompletion of properties and channels (powered by a datamodel).
 - Extract all spaxels within a region.
 - Access to NSA and DRPall data.
@@ -33,9 +35,9 @@ Marvin Tools provide:
 Getting started
 ---------------
 
-We call Marvin galaxy Tools to the three main classes (`~cube.Cube`, `~maps.Maps`, and `~modelcube.ModelCube`) associated to the analogous DRP and DAP data products, the `quantities <marvin-quantities>` representing multidimensional data, and a variety of utilities and mixins that provide additional functionality. Sub-region galaxy tools (`~spaxel.Spaxel` and `~spaxel.Bin`) are explained `in their own section <marvin-subregion-tools>`. The three main Tools classes inherit from `~tools.core.MarvinToolsClass` and thus much of their functionality and logic is shared. In this section we will prominently use the `~cube.Cube` but most of what we explain here can also be applied to the `~maps.Maps` and `~modelcube.ModelCube`.
+We call Marvin galaxy Tools to the four main classes (`~cube.Cube`, `~rss.RSS`, `~maps.Maps`, and `~modelcube.ModelCube`) associated to the analogous DRP and DAP data products, the `quantities <marvin-quantities>` representing multidimensional data, and a variety of utilities and mixins that provide additional functionality. Sub-region galaxy tools (`~spaxel.Spaxel` and `~spaxel.Bin`) are explained `in their own section <marvin-subregion-tools>`. The four main Tools classes inherit from `~tools.core.MarvinToolsClass` and thus much of their functionality and logic is shared. In this section we will prominently use the `~cube.Cube` but most of what we explain here also applies to the remaining Tools.
 
-All the Tools classes can be accessed from the :ref:`marvin.tools <marvin-tools-ref>` module. Let's load a DRP cube ::
+All the Tools classes can be accessed from the :ref:`marvin.tools <marvin-tools-ref>` module. Let's load a DRP Cube ::
 
     >>> import marvin
     >>> my_cube = marvin.tools.Cube('7443-12703')
@@ -334,20 +336,15 @@ Datamodels
 
     datamodel
 
-Using Maps and ModelCubes
-^^^^^^^^^^^^^^^^^^^^^^^^^
+Advanced use of Galaxy Tools
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. toctree::
     :maxdepth: 2
 
+    cube
+    rss
     dap_tools
-
-The Plate class
-^^^^^^^^^^^^^^^
-
-.. toctree::
-    :maxdepth: 2
-
     plate
 
 Plotting

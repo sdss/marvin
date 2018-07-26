@@ -17,18 +17,52 @@ This section summarises the most important new features a bugfixes in Marvin. Fo
 2.3.0 (unreleased)
 ------------------
 
+.. todo:: Fix link to authentication.
+
+We are excited to introduce Marvin 2.3.0, the first version of Marvin that provides support for public releases of MaNGA data. With this change, that coincides with the release of `SDSS DR15 <http://www.sdss.org>`__, Marvin ceases to be just an internal collaboration tool and becomes available to the whole astronomical and educational communities.
+
+While Marvin now allows unrestricted access to DR15 data, it still supports access to proprietary MaNGA data (MPL-4 to MPL-7). This double access mode makes necessary the implementation of a new :ref:`authentication <marvin-authentication>` framework.
+
+This version brings new and exciting features, such as an improved `~marvin.tools.rss.RSS` and a reimplemented `~marvin.tools.mixins.aperture.GetApertureMixIn.getAperture` method. We have also restructured (and in many cases rewritten) the `online documentation <http://sdss-marvin.readthedocs.io/en/stable/>`__; we hope this new structure will lower the learning curve for new users, and make advance features easily accessible to those who are more proficient. Finally, many (many) bugs have been squashed and we have implemented numerous small improvements. A full list is available in the :ref:`changelog <marvin-2.3.0>`.
+
+The following subsections describe some of the major changes in detail. As always, full documentation for the new features is available.
+
+Support for public data releases
+********************************
+
+Reimplemented `~marvin.tools.rss.RSS`
+*************************************
+
+The :ref:`RSS Tool <marvin-rss>` had never been a totally functional :ref:`Galaxy Tool <galaxy-tools>`. In this version we have completely refactored the `RSS class <marvin.tools.rss.RSS>` and it is now working great! Instances of `~marvin.tools.rss.RSS` consist of a list of `~marvin.tools.rss.RSSFiber` (basically a `~marvin.tools.quantities.spectrum.Spectrum` with additional attributes), one for each IFU fibre and observation. Observing information is available via the `~marvin.tools.rss.RSS.obsinfo` attribute. See the :ref:`documentation <marvin-rss>` for further details.
+
+The new `~marvin.tools.rss.RSS` class is well tested but given the magnitude of the refactoring we are offering it in beta state. We appreciate your bug reports and any suggestions on how to improve it.
+
+Extracting all the spaxels in an aperture
+*****************************************
+
+Early versions of Marvin included a ``Cube.getAperture`` method that allowed to extract the spaxels contained in a geometrical aperture. That feature was deemed not science-ready and removed in following releases. In this version we are reintroducing it as a mixin, `~marvin.tools.mixins.aperture.GetApertureMixIn`, that provides the `~marvin.tools.mixins.aperture.GetApertureMixIn.getAperture` method to Cubes, Maps, and ModelCubes. The mixin makes heavy use of `photutils <http://photutils.readthedocs.io/en/stable/>`_ to define geometric regions (elliptical, circular, rectangular) either in the image frame or using on-sky coordinates. Selecting the spaxels within a circular region around a set of coordinates is now as easy as doing ::
+
+    >>> ap = cube.getAperture((232.546173, 48.6892288), 5, aperture_type='circular')
+    >>> spaxels = ap.getSpaxels()
+
+Full documentation is available :ref:`here <marvin-get-aperture>`. As with the `~marvin.tools.rss.RSS` class, please double check any result before using it for science publications. We welcome any feedback on how to improve this feature.
+
+|
 
 2.2.6 (July 2019)
 ------------------
 
-.. attention:: This is a critical bugfix release that corrects a problem that could affect your science results. Please update as soon as possible and check whether your analysis is impacted by this bug.
+.. attention:: This is a critical bugfix release that corrects a problem that could affect your science results. Please update as soon as possible and check whether your analysis has been impacted by this bug.
 
-This version fixes a critical bug when retrieving the spaxels associated with a bin. It also simplifies the library namespace allowing for easier access to the most used Tools.
+This version fixes a critical bug when retrieving the spaxels associated with a bin, as well as a problem with the calculation of the inverse variance for deredden datacubes. It also simplifies the library namespace allowing for easier access to the most used Tools.
+
+Critical bugfixes
+*****************
 
 Spaxels associated with a bin
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-In version 2.2 we introduced the concept of :ref:`Bin <marvin-bin>` as a collection of spaxels that belong to the same binning unit. As part of the API, one can use `~marvin.tools.spaxel.Bin.spaxels` attribute to access a list of the spaxels that are included in the bin. The bug now fixed caused a list of incorrect spaxels to be associated with the bin, due to an inversion in the ``(x, y)`` order of the spaxels. For example, *before* 2.2.6 one would get ::
+In version 2.2 we introduced the concept of :ref:`Bin <marvin-bin>` as a collection of spaxels that belong to the same binning unit. As part of the API, one can use the `~marvin.tools.spaxel.Bin.spaxels` attribute to access a list of the spaxels that are included in the bin. The bug now fixed caused a list of incorrect spaxels to be associated with the bin, due to an inversion in the ``(x, y)`` order of the spaxels. *Before* 2.2.6 one would get ::
 
     >>> cube = Cube('8485-1901')
     >>> maps = cube.getMaps('HYB10')
@@ -48,14 +82,28 @@ where the x and y values should be
      <Marvin Spaxel (x=13, y=22, loaded=False),
      <Marvin Spaxel (x=14, y=22, loaded=False)]
 
+Inverse variance for deredden datacubes
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The `~marvin.tools.quantities.datacube.DataCube` quantity includes a `~marvin.tools.quantities.datacube.DataCube.deredden` method that applies the reddening correction to the flux and inverse variance in the datacube. The inverse variance associated to the derredden flux had a bug in its calculation and was incorrect in all cases. That has now been fixed. It also fixes the spelling of ``deredden`` (😅).
+
 Simplifying the namespace
-^^^^^^^^^^^^^^^^^^^^^^^^^
+**************************
 
 Prior to 2.2.6 accessing different Tools classes was inconvenient since one would need to import them independently (e.g., ``from marvin.tools.cube import Cube``, ``from marvin.tools.maps import Maps``, etc.) This version makes access easier by exposing all the Tools from the ``marvin.tools`` namespace so that you can now do ::
 
     import marvin
     cube = marvin.tools.Cube('8485-1901')
     maps = marvin.tools.Maps('7443-12701')
+
+Passing keyword arguments to `Spectrum.plot <marvin.tools.quantities.spectrum.Spectrum.plot>`
+*********************************************************************************************
+
+Extra arguments passed to `Spectrum.plot <marvin.tools.quantities.spectrum.Spectrum.plot>` are now redirected to `matplotlib.axes.Axes.plot`. This provides extra flexibility for your plots. For instance, you can now set labels for the legend associated with your plot ::
+
+    ax = spectrum.plot(use_std=True, label='flux')
+    ax.plot(spectrum.wavelength, model_flux, label='model')
+    ax.legend()
 
 |
 
