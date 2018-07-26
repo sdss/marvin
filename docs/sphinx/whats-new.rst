@@ -17,6 +17,13 @@ This section summarises the most important new features a bugfixes in Marvin. Fo
 2.3.0 (unreleased)
 ------------------
 
+Reimplemented `~marvin.tools.rss.RSS`
+*************************************
+
+The :ref:`RSS Tool <marvin-rss>` had never been a totally functional :ref:`Galaxy Tool <galaxy-tools>`. In this version we have completely refactored the `RSS class <marvin.tools.rss.RSS>` and it is now working great! Instances of `~marvin.tools.rss.RSS` consist of a list of `~marvin.tools.rss.RSSFiber` (basically a `~marvin.tools.quantities.spectrum.Spectrum` with additional attributes), one for each IFU fibre and observation. Observing information is available via the `~marvin.tools.rss.RSS.obsinfo` attribute. See the :ref:`documentation <marvin-rss>` for further details.
+
+The new `~marvin.tools.rss.RSS` class is well tested but given the magnitude of the refactoring we are offering it in beta state. We appreciate your bug reports and any suggestions on how to improve it.
+
 
 2.2.6 (July 2019)
 ------------------
@@ -64,6 +71,15 @@ Prior to 2.2.6 accessing different Tools classes was inconvenient since one woul
     import marvin
     cube = marvin.tools.Cube('8485-1901')
     maps = marvin.tools.Maps('7443-12701')
+
+Passing keyword arguments to `Spectrum.plot <marvin.tools.quantities.spectrum.Spectrum.plot>`
+*********************************************************************************************
+
+Extra arguments passed to `Spectrum.plot <marvin.tools.quantities.spectrum.Spectrum.plot>` are now redirected to `matplotlib.axes.Axes.plot`. This provides extra flexibility for your plots. For instance, you can now set labels for the legend associated with your plot ::
+
+    ax = spectrum.plot(use_std=True, label='flux')
+    ax.plot(spectrum.wavelength, model_flux, label='model')
+    ax.legend()
 
 |
 
