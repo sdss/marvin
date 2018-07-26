@@ -150,7 +150,8 @@ def buildMapDict(cube, params, dapver, bintemp=None):
 
     anybad = [m['data'] is None for m in mapdict]
     if any(anybad):
-        raise MarvinError('Could not get map for one of supplied parameters')
+        bad_params = ', '.join([p for i, p in enumerate(params) if anybad[i]])
+        raise MarvinError('Could not get map for: {0}.  Please select another.'.format(bad_params))
 
     return mapdict
 

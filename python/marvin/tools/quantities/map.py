@@ -520,7 +520,7 @@ class Map(units.Quantity, QuantityMixIn):
                     'Instrumental broadening correction not implemented for MPL-4.')
             elif 'MPL-6' in self._datamodel.parent.aliases:
                 raise marvin.core.exceptions.MarvinError(
-                    'The stellar sigma corrections in MPL-6 are unreliable. Please use to MPL-7.')
+                    'The stellar sigma corrections in MPL-6 are unreliable. Please use MPL-7.')
 
             map_corr = self.getMaps()['stellar_sigmacorr']
 
