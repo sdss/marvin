@@ -7,7 +7,7 @@
 # @License: BSD 3-clause (http://www.opensource.org/licenses/BSD-3-Clause)
 #
 # @Last modified by: José Sánchez-Gallego (gallegoj@uw.edu)
-# @Last modified time: 2018-07-23 18:12:00
+# @Last modified time: 2018-07-25 18:32:35
 
 from __future__ import absolute_import, division, print_function
 
@@ -98,7 +98,7 @@ class DRPCubeDataModel(object):
         delattr(copy_of_self, 'datacubes')
 
         # Chances the type and converts datacubes to RSSDatamodel
-        copy_of_self.__class__ = type('DRPRSSDataModel', (DRPRSSDataModel,), {})
+        copy_of_self.__class__ = DRPRSSDataModel
         copy_of_self.rss = self.datacubes.to_rss(copy_of_self)
 
         # Resets the parent of the copied spectra
@@ -134,7 +134,7 @@ class DRPCubeDataModelList(DataModelList):
     def copy(self):
 
         copy_of_self = super(DRPCubeDataModelList, self).copy()
-        copy_of_self.__class__ = type('DRPRSSDataModelList', (DRPRSSDataModelList,), {})
+        copy_of_self.__class__ = DRPRSSDataModelList
 
         return copy_of_self
 
@@ -186,7 +186,7 @@ class DataCubeList(FuzzyList):
 
         # Copies selef and resets the type to RSSList
         copy_of_self = self.copy()
-        copy_of_self.__class__ = type('RSSList', (RSSList,), {})
+        copy_of_self.__class__ = RSSList
         copy_of_self.parent = new_parent
 
         # Replaces each datacube in itself with a RSSDatamodel
@@ -366,7 +366,7 @@ class DataCube(object):
 
         assert isinstance(new_parent, DRPRSSDataModel)
         copy_of_self = self.copy()
-        copy_of_self.__class__ = type('RSS', (RSS,), {})
+        copy_of_self.__class__ = RSS
         copy_of_self.parent = new_parent
 
         return copy_of_self
