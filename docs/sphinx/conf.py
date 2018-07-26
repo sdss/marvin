@@ -59,11 +59,11 @@ extensions = [
     'sphinx.ext.todo', 'sphinx.ext.viewcode', 'sphinx.ext.mathjax',
     'matplotlib.sphinxext.only_directives',
     'matplotlib.sphinxext.plot_directive',
-    'sphinxcontrib.httpdomain', 'sphinxcontrib.autohttp.flask',
+    'sphinxcontrib.httpdomain',
+    'sphinxcontrib.autohttp.flask',
     'sphinxcontrib.autohttp.flaskqref',
-    'sphinx.ext.inheritance_diagram', 'sphinx.ext.graphviz',
-    'IPython.sphinxext.ipython_console_highlighting',
-    'IPython.sphinxext.ipython_directive', 'sphinx.ext.intersphinx', 'docudatamodel',
+    'sphinx.ext.inheritance_diagram',
+    'sphinx.ext.intersphinx', 'docudatamodel',
     'sphinx_issues']
 
 # Add any paths that contain templates here, relative to this directory.
@@ -103,6 +103,9 @@ release = marvin_version
 language = None
 
 highlight_language = 'default'
+
+# Include TODOs when todolist:: is used?
+todo_include_todos = True
 
 # There are two options for replacing |today|: either, you set today to some
 # non-false value, then it is used:

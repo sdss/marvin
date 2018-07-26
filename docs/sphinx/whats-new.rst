@@ -17,6 +17,16 @@ This section summarises the most important new features a bugfixes in Marvin. Fo
 2.3.0 (unreleased)
 ------------------
 
+.. todo:: Fix link to authentication.
+
+We are excited to introduce Marvin 2.3.0, the first version of Marvin that provides support for public releases of MaNGA data. With this change, that coincides with the release of `SDSS DR15 <http://www.sdss.org>`__, Marvin ceases to be just an internal collaboration tool and becomes available to the whole astronomical and educational communities.
+
+While Marvin now allows unrestricted access to DR15 data, it still supports access to proprietary MaNGA data (MPL-4 to MPL-7). This double access mode makes necessary the implementation of a new :ref:`authentication <marvin-authentication>` framework.
+
+This version brings new and exciting features, such as an improved `~marvin.tools.rss.RSS` and a reimplemented `~marvin.tools.mixins.aperture.GetApertureMixIn.getAperture` method. We have also restructured (and in many cases rewritten) the `online documentation <http://sdss-marvin.readthedocs.io/en/stable/>`__; we hope this new structure will lower the learning curve for new users, and make advance features easily accessible to those who are more proficient. Finally, many (many) bugs have been squashed and we have implemented numerous small improvements. A full list is available in the :ref:`changelog <marvin-2.3.0>`.
+
+The following subsections describe some of the major changes in detail. As always, full documentation for the new features is available.
+
 Support for public data releases
 ********************************
 
