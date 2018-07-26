@@ -8,6 +8,7 @@ Catalogue mixins
 In addition to the raw data, Marvin provides additional catalogue information about the object via several attributes that are available for most Tools classes.
 
 .. _nsa:
+
 DRPall / NSA
 ------------
 
@@ -40,7 +41,7 @@ How much NSA information is available depends on the mode in which the object wa
 DAPall
 ------
 
-The `DAPall file <https://www.sdss.org/dr15/manga/manga-data/catalogs/#DAPALLFile>`_  contains galaxy-summed, derived information from the Data Analysis Pipeline, such as total fluxes, SFR, etc. Similarly to the :ref:`NSA <marvin-nsa>` data, it can be accessed from `~maps.Maps` and `~modelcube.ModelCube` objects via the `~marvin.tools.mixins.dapall.DAPallMixIn.dapall` attribute in the `~marvin.tools.mixins.dapall.DAPallMixIn` ::
+The `DAPall file <https://www.sdss.org/dr15/manga/manga-data/catalogs/#DAPALLFile>`_  contains galaxy-summed, derived information from the Data Analysis Pipeline, such as total fluxes, SFR, etc. Similarly to the :ref:`NSA <nsa>` data, it can be accessed from `~maps.Maps` and `~modelcube.ModelCube` objects via the `~marvin.tools.mixins.dapall.DAPallMixIn.dapall` attribute in the `~marvin.tools.mixins.dapall.DAPallMixIn` ::
 
     >>> maps.dapall
     {'plate': 8485,
