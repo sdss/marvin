@@ -783,6 +783,8 @@ def downloadList(inputlist, dltype='cube', **kwargs):
         NA: Downloads
     """
 
+    assert isinstance(inputlist, (list, np.ndarray)), 'inputlist must be a list or numpy array'
+
     # Get some possible keywords
     # Necessary rsync variables:
     #   drpver, plate, ifu, dir3d, [mpl, dapver, bintype, n, mode]

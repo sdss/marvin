@@ -5,8 +5,7 @@
 # @Date: 2017-11-08
 # @Filename: maps.py
 # @License: BSD 3-clause (http://www.opensource.org/licenses/BSD-3-Clause)
-#
-# @Last modified by:   andrews
+# @Last modified by:   Brian Cherinka
 # @Last modified time: 2018-07-24 14:07:01
 
 
@@ -593,6 +592,11 @@ class Maps(MarvinToolsClass, NSAMixIn, DAPallMixIn, GetApertureMixIn):
             best = property_name
         else:
             best = self._match_properties(property_name, channel=channel, exact=exact)
+
+        # raise error when property is MPL-6 stellar_sigmacorr
+        if best.full() == 'stellar_sigmacorr' and self.release == 'MPL-6':
+            raise marvin.core.exceptions.MarvinError('stellar_sigmacorr is unreliable in MPL-6. '
+                                                     'Please use MPL-7.')
 
         return marvin.tools.quantities.Map.from_maps(self, best)
 

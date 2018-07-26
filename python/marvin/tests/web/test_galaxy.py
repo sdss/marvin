@@ -10,8 +10,8 @@
 
 from __future__ import print_function, division, absolute_import
 from marvin.web.controllers.galaxy import make_nsa_dict
+from marvin.web.controllers.galaxy import getWebMap
 from marvin.tools.cube import Cube
-from marvin import config
 from marvin.tests.conftest import set_the_config
 import pytest
 
@@ -61,5 +61,31 @@ class TestNSA(object):
         page.load_page('post', page.url)
         template, context = get_templates[0]
         page.route_no_valid_webparams(template, context, 'plateifu', reqtype='post', errmsg=errmsg)
+
+
+class TestWebMap(object):
+
+    @pytest.mark.parametrize('parameter, channel',
+                             [('emline_gflux', 'ha_6564'),
+                              ('emline_gsigma', 'ha_6564'),
+                              ('stellar_sigma', None)],
+                             ids=['gflux', 'gsigma', 'stellarsigma'])
+    def test_getmap(self, cube, parameter, channel):
+        webmap, mapmsg = getWebMap(cube, parameter=parameter, channel=channel)
+
+        assert isinstance(webmap, dict)
+        assert 'values' in webmap
+        assert isinstance(webmap['values'], list)
+        assert parameter in mapmsg
+        if 'sigma' in parameter and cube.release != 'MPL-6':
+            assert 'Corrected' in mapmsg
+
+    def test_getmap_failed(self, cube):
+        webmap, mapmsg = getWebMap(cube, parameter='crap')
+        assert webmap is None
+        assert 'Could not get map' in mapmsg
+
+
+
 
 

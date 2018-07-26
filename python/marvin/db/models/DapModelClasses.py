@@ -194,7 +194,7 @@ class Structure(Base):
     __table_args__ = {'autoload': True, 'schema': 'mangadapdb'}
 
     def __repr__(self):
-        return '<Structure (pk={0})'.format(self.pk)
+        return '<Structure (pk={0}, bintype={1}, template={3})'.format(self.pk, self.bintype.name, self.template_kin.name)
 
 
 class BinId(Base):
