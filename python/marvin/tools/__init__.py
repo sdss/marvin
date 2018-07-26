@@ -5,5 +5,5 @@ from .cube import Cube
 from .maps import Maps
 from .modelcube import ModelCube
 from .plate import Plate
-from .rss import RSS
+from .rss import RSS, RSSFiber
 from .spaxel import Bin, Spaxel
