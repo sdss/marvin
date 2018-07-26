@@ -43,23 +43,21 @@
 
 """Functions for colorbars."""
 
-from __future__ import (division, print_function, absolute_import, unicode_literals)
+from __future__ import absolute_import, division, print_function, unicode_literals
 
 import os
 from os.path import join
 
+import matplotlib.cm as cm
 import numpy as np
 import scipy.interpolate as interpolate
-
-import matplotlib.cm as cm
-from matplotlib.ticker import MaxNLocator
-from matplotlib.colors import LinearSegmentedColormap
-from matplotlib.colors import ListedColormap
-from matplotlib.colors import from_levels_and_colors
-
 from astropy.stats import sigma_clip
+from matplotlib.colors import LinearSegmentedColormap, ListedColormap, from_levels_and_colors
+from matplotlib.ticker import MaxNLocator
+from mpl_toolkits.axes_grid1 import make_axes_locatable
 
 import marvin
+from brain.utils.general.general import merge
 from marvin.core.exceptions import MarvinError
 
 
@@ -256,8 +254,17 @@ def _set_cbticks(cbrange, cb_kws):
     return cbrange, ticks
 
 
-def _draw_colorbar(fig, mappable, ax=None, axloc=None, cbrange=None, ticks=None, log_cb=False,
-                  label_kws=None, tick_params_kws=None, **extras):
+def _draw_colorbar(fig,
+                   mappable,
+                   ax=None,
+                   axloc=None,
+                   cbrange=None,
+                   ticks=None,
+                   log_cb=False,
+                   label_kws=None,
+                   tick_params_kws=None,
+                   divider_kws=None,
+                   **extras):
     """Make colorbar.
 
     Parameters:
@@ -282,6 +289,8 @@ def _draw_colorbar(fig, mappable, ax=None, axloc=None, cbrange=None, ticks=None,
             Keyword args to set colorbar label. Default is ``None``.
         tick_params_kws (dict):
             Keyword args to set colorbar tick parameters. Default is ``None``.
+        divider_kws (dict):
+            Keyword args to set colorbar location. Default is ``None``.
 
     Returns:
         fig, ax (tuple):
@@ -290,16 +299,26 @@ def _draw_colorbar(fig, mappable, ax=None, axloc=None, cbrange=None, ticks=None,
     """
     label_kws = label_kws or {}
     tick_params_kws = tick_params_kws or {}
+    divider_kws = divider_kws or {}
+    divider_kws = merge(divider_kws, {'position': 'right', 'size': '5%', 'pad': 0.1})
 
     cax = (fig.add_axes(axloc) if axloc is not None else None)
+    if cax is None:
+        divider = make_axes_locatable(ax)
+        cax = divider.append_axes(**divider_kws)
+
     try:
         cb = fig.colorbar(mappable=mappable, cax=cax, ax=ax, ticks=ticks)
+
     except ValueError:
         cb = None
+
     else:
         cb.ax.tick_params(**tick_params_kws)
+
         if label_kws.get('label') is not None:
             cb.set_label(**label_kws)
+
         if log_cb:
             cb.set_ticklabels([_log_tick_format(tick) for tick in ticks])
 
