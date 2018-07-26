@@ -7,7 +7,7 @@
 # @License: BSD 3-clause (http://www.opensource.org/licenses/BSD-3-Clause)
 #
 # @Last modified by: José Sánchez-Gallego (gallegoj@uw.edu)
-# @Last modified time: 2018-07-24 18:31:52
+# @Last modified time: 2018-07-25 18:49:21
 
 import copy
 import itertools
@@ -418,7 +418,7 @@ def monkeyauth(monkeypatch):
 
 # Temp Dir/File-based FIXTURES
 # ----------------------------
-@pytest.fixture(scope='session')
+@pytest.fixture(scope='function')
 def temp_scratch(tmpdir_factory):
     """Create a temporary scratch space for reading/writing.
 
