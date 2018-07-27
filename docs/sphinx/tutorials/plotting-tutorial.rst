@@ -9,8 +9,6 @@ Plotting Tutorial
 General Tips
 ------------
 
-Hola
-
 Matplotlib Style Sheets
 ```````````````````````
 
