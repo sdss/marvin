@@ -7,7 +7,7 @@
 # @License: BSD 3-clause (http://www.opensource.org/licenses/BSD-3-Clause)
 #
 # @Last modified by: José Sánchez-Gallego (gallegoj@uw.edu)
-# @Last modified time: 2018-07-14 21:49:28
+# @Last modified time: 2018-07-26 21:46:20
 
 import astropy.coordinates
 import astropy.units
@@ -183,10 +183,11 @@ class GetApertureMixIn(object):
         30 degrees we do ::
 
             >>> ap_ell = cube.getAperture([(232.546173, 48.6892288), (232.544069, 48.6906177)],
-                                          (3, 1, 30), aperture_type='elliptical')
+                                          (3, 1, 30), aperture_type='elliptical', coord_type='sky')
             >>> ap_ell
-            <MarvinAperture([[232.546173 ,  48.6892288],
-                 [232.544069 ,  48.6906177]], a=3.0, b=1.0, theta=30.0)>
+            <MarvinAperture(<SkyCoord (ICRS): (ra, dec) in deg
+                [(232.546173, 48.6892288), (232.544069, 48.6906177)]>,
+                a=3.0 arcsec, b=1.0 arcsec, theta=30.0 deg)>
 
         """
 
