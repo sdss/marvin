@@ -7,7 +7,7 @@
 # @License: BSD 3-clause (http://www.opensource.org/licenses/BSD-3-Clause)
 #
 # @Last modified by: José Sánchez-Gallego (gallegoj@uw.edu)
-# @Last modified time: 2018-07-26 21:46:20
+# @Last modified time: 2018-07-27 12:55:29
 
 import astropy.coordinates
 import astropy.units
@@ -100,6 +100,7 @@ class MarvinAperture(photutils.Aperture if photutils else object):
 
 
 class GetApertureMixIn(object):
+    """A mixin that allows to define geometrical apertures."""
 
     def getAperture(self, coords, aperture_params, aperture_type='circular',
                     coord_type='pixel'):
