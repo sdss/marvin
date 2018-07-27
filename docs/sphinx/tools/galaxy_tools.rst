@@ -390,6 +390,7 @@ Tools
 .. autosummary::
 
    marvin.tools.cube.Cube
+   marvin.tools.rss.RSS
    marvin.tools.maps.Maps
    marvin.tools.modelcube.ModelCube
 
@@ -401,6 +402,7 @@ Quantities
     marvin.tools.quantities.analysis_props.AnalysisProperty
     marvin.tools.quantities.spectrum.Spectrum
     marvin.tools.quantities.map.Map
+    marvin.tools.rss.RSSFiber
     marvin.tools.quantities.datacube.DataCube
 
 MixIns
@@ -409,5 +411,5 @@ MixIns
 .. autosummary::
 
     marvin.tools.mixins.nsa.NSAMixIn
-    marvin.tools.mixins.dapall.DAPAllMixIn
+    marvin.tools.mixins.dapall.DAPallMixIn
     marvin.tools.mixins.aperture.GetApertureMixIn
