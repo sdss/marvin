@@ -376,12 +376,7 @@ def get_test_data():
 
     url = 'https://sas.sdss.org/marvin/data/sas_rtd.tar.bz2'
 
-    sas_path = os.path.expanduser('~/sas')
-
-    if not os.path.exists(sas_path):
-        os.mkdir(sas_path)
-
-    os.chdir(sas_path)
+    os.chdir(os.path.expanduser('~/'))
 
     subprocess.run(['wget', url, os.path.expanduser('~/')])
     ret = subprocess.run(['tar', 'xhvf', 'sas_rtd.tar.bz2'])
