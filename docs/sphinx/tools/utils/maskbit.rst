@@ -209,7 +209,7 @@ You might want to produce a mask (e.g., to produce a custom mask for plotting):
 .. .. image:: ../_static/custom_mask.png
 
 
-See the :doc:`../tutorials/plotting-tutorial` (e.g., :ref:`marvin-plotting-custom-map-axes`) for more about custom masks.
+See the :ref:`marvin-plotting-tutorial` (e.g., :ref:`marvin-plotting-custom-map-axes`) for more about custom masks.
 
 
 Reference/API
@@ -219,9 +219,11 @@ Reference/API
 
 .. inheritance-diagram:: marvin.utils.general.maskbit.Maskbit
 
-.. rubric:: Module
+.. rubric:: Classes
 
-.. autosummary:: marvin.utils.general.maskbit.
+.. autosummary::
+
+    marvin.utils.general.maskbit.Maskbit
 
 .. rubric:: Functions
 
