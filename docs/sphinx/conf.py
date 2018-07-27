@@ -384,7 +384,7 @@ def get_test_data():
     os.chdir(sas_path)
 
     subprocess.run(['wget', url, os.path.expanduser('~/sas')])
-    ret = subprocess.run(['tar', 'xvf', 'mangawork_rtd.tar.gz'])
+    ret = subprocess.run(['tar', 'xvf', 'mangawork_rtd.tar.bz2'])
 
     assert ret.returncode == 0, 'failed to download or uncompress the test data.'
 
