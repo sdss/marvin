@@ -57,7 +57,7 @@ sys.path.insert(0, os.path.abspath('../../python/marvin/utils/datamodel/'))
 extensions = [
     'sphinx.ext.autodoc', 'sphinx.ext.napoleon', 'sphinx.ext.autosummary',
     'sphinx.ext.todo', 'sphinx.ext.viewcode', 'sphinx.ext.mathjax',
-    'sphinx.ext.inheritance_diagram',
+    'sphinx.ext.inheritance_diagram', 'sphinx.ext.graphviz',
     'matplotlib.sphinxext.only_directives',
     'matplotlib.sphinxext.plot_directive',
     'sphinxcontrib.httpdomain',
