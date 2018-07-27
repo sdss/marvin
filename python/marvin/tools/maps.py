@@ -199,7 +199,7 @@ class Maps(MarvinToolsClass, NSAMixIn, DAPallMixIn, GetApertureMixIn):
         params = self._getPathParams()
         path_type = params.pop('path_type')
 
-        return MarvinToolsClass._getFullPath(self, path_type, **params)
+        return super(Maps, self)._getFullPath(path_type, **params)
 
     def download(self):
         """Downloads the maps using sdss_access - Rsync"""
