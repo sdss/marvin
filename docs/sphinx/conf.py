@@ -371,7 +371,9 @@ GoogleDocstring._unpatched_parse = GoogleDocstring._parse
 GoogleDocstring._parse = patched_parse
 
 
-plot_pre_code = """
+if os.environ.get('READTHEDOCS') != 'True':
+
+    plot_pre_code = """
 import matplotlib
 matplotlib.use('agg')
 """
