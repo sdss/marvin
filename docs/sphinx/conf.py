@@ -13,6 +13,7 @@
 # serve to show the default.
 
 import os
+import re
 import subprocess
 import sys
 
@@ -370,7 +371,12 @@ GoogleDocstring._unpatched_parse = GoogleDocstring._parse
 GoogleDocstring._parse = patched_parse
 
 
-extensions += [matplotlib.sphinxext.plot_directive.__name__]
+plot_pre_code = """
+import matplotlib
+matplotlib.use('agg')
+"""
+
+plot_formats = [('png', 100), ('pdf', 100)]
 
 
 def get_test_data():
