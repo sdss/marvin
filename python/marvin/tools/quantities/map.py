@@ -139,7 +139,6 @@ class Map(units.Quantity, QuantityMixIn):
         new_map.manga_target3 = deepcopy(self.manga_target3)
         new_map.target_flags = deepcopy(self.target_flags)
 
-        new_map.quality_flag = deepcopy(self.quality_flag)
         new_map.pixmask_flag = deepcopy(self.pixmask_flag)
 
         return new_map
@@ -216,8 +215,7 @@ class Map(units.Quantity, QuantityMixIn):
         obj.manga_target3 = maps.manga_target3
         obj.target_flags = maps.target_flags
 
-        obj.quality_flag = maps.quality_flag
-        obj.pixmask_flag = maps.header['MASKNAME']
+        obj.pixmask_flag = prop.pixmask_flag
 
         return obj
 
