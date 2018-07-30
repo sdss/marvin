@@ -24,7 +24,7 @@ import os
 import requests
 import sys
 
-if sys.version_info == 2:
+if sys.version_info.major == 2:
     from cStringIO import StringIO as stringio
 else:
     from io import BytesIO as stringio
