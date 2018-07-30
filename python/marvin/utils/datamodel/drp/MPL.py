@@ -8,14 +8,13 @@
 # @Copyright: Brian Cherinka, José Sánchez-Gallego, Brett Andrews
 
 
-from __future__ import division
-from __future__ import print_function
-from __future__ import absolute_import
+from __future__ import absolute_import, division, print_function
 
 from astropy import units as u
 
 from marvin.utils.datamodel.maskbit import get_maskbits
-from .base import DRPDataModel, DataCube, Spectrum, DRPDataModelList
+
+from .base import DataCube, DRPDataModel, DRPDataModelList, Spectrum
 
 
 spaxel_unit = u.Unit('spaxel', represents=u.pixel, doc='A spectral pixel', parse_strict='silent')
@@ -59,26 +58,31 @@ MPL6_spectra = [
 MPL4 = DRPDataModel('MPL-4', aliases=['MPL4', 'v1_5_1'],
                     datacubes=MPL4_datacubes,
                     spectra=MPL4_spectra,
-                    bitmasks=get_maskbits('MPL-4'))
+                    bitmasks=get_maskbits('MPL-4'),
+                    qual_flag='DRP3QUAL')
 
 MPL5 = DRPDataModel('MPL-5', aliases=['MPL5', 'v2_0_1'],
                     datacubes=MPL4_datacubes,
                     spectra=MPL4_spectra,
-                    bitmasks=get_maskbits('MPL-5'))
+                    bitmasks=get_maskbits('MPL-5'),
+                    qual_flag='DRP3QUAL')
 
 DR14 = DRPDataModel('DR14', aliases=['DR14', 'v2_1_2'],
                     datacubes=MPL4_datacubes,
                     spectra=MPL4_spectra,
-                    bitmasks=get_maskbits('MPL-5'))
+                    bitmasks=get_maskbits('MPL-5'),
+                    qual_flag='DRP3QUAL')
 
 MPL6 = DRPDataModel('MPL-6', aliases=['MPL6', 'v2_3_1'],
                     datacubes=MPL4_datacubes + MPL6_datacubes,
                     spectra=MPL4_spectra + MPL6_spectra,
-                    bitmasks=get_maskbits('MPL-6'))
+                    bitmasks=get_maskbits('MPL-6'),
+                    qual_flag='DRP3QUAL')
 
 MPL7 = DRPDataModel('MPL-7', aliases=['MPL7', 'v2_4_3', 'DR15'],
                     datacubes=MPL4_datacubes + MPL6_datacubes,
                     spectra=MPL4_spectra + MPL6_spectra,
-                    bitmasks=get_maskbits('MPL-7'))
+                    bitmasks=get_maskbits('MPL-7'),
+                    qual_flag='DRP3QUAL')
 
 datamodel = DRPDataModelList([MPL4, MPL5, MPL6, MPL7, DR14])
