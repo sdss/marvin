@@ -90,7 +90,7 @@ class MarvinToolsClass(object, six.with_metaclass(abc.ABCMeta)):
             The path to the
             `drpall <https://trac.sdss.org/wiki/MANGA/TRM/TRM_MPL-5/metadata#DRP:DRPall>`_
             file to use. If not set it will use the default path for the file
-            based on the ``release``
+            based on the ``release``.
         download (bool):
             If ``True``, the data will be downloaded on instantiation. See
             :ref:`marvin-download-objects`.
