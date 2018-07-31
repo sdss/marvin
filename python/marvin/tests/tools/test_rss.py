@@ -7,7 +7,7 @@
 # @License: BSD 3-clause (http://www.opensource.org/licenses/BSD-3-Clause)
 #
 # @Last modified by: José Sánchez-Gallego (gallegoj@uw.edu)
-# @Last modified time: 2018-07-25 18:50:10
+# @Last modified time: 2018-07-30 19:36:41
 
 import astropy.io.fits
 import astropy.table
@@ -144,6 +144,25 @@ class TestRSS(object):
         assert cube.plateifu == rss.plateifu
         assert cube.mangaid == rss.mangaid
         assert cube.release == rss.release
+
+    def test_select_fibers(self, rss):
+
+        # Skipping for API or it will take forever. Should not matter since
+        # we have already tested slicing for API.
+        if rss.data_origin == 'api':
+            pytest.skip()
+
+        fibers_expnum = rss.select_fibers(exposure_no=198575)
+        assert len(fibers_expnum) == 19
+        assert fibers_expnum[0].obsinfo['EXPNUM'][0] == 198575
+
+        fibers_mjd = rss.select_fibers(mjd=1234)
+        assert len(fibers_mjd) == 0
+
+        fibers_mjd = rss.select_fibers(mjd=57132)
+        assert len(fibers_mjd) == (9 * 19)
+        assert fibers_mjd[0].obsinfo['MJD'][0] == 57132
+
 
 
 @pytest.mark.usefixtures('monkeyauth')

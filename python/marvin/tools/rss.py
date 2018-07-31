@@ -7,7 +7,7 @@
 # @License: BSD 3-clause (http://www.opensource.org/licenses/BSD-3-Clause)
 #
 # @Last modified by: José Sánchez-Gallego (gallegoj@uw.edu)
-# @Last modified time: 2018-07-25 17:54:27
+# @Last modified time: 2018-07-30 19:42:17
 
 
 from __future__ import division, print_function
@@ -87,6 +87,9 @@ class RSS(MarvinToolsClass, NSAMixIn, list):
                                                'and header drpver={1}'.format(self._drpver,
                                                                               header_drpver))
 
+        # EXPNUM in obsinfo is a string. Cast it to int
+        self.obsinfo['EXPNUM'] = self.obsinfo['EXPNUM'].astype(numpy.int32)
+
         # Inits self as an empty list.
         list.__init__(self, [])
         self._populate_fibres()
@@ -144,6 +147,54 @@ class RSS(MarvinToolsClass, NSAMixIn, list):
         for rssfiber in self:
             if not rssfiber.loaded:
                 rssfiber.load()
+
+    def select_fibers(self, exposure_no=None, set=None, mjd=None):
+        """Selects fibres that match one or multiple of the input parameters.
+
+        Parameters
+        ----------
+        exposure_no : int
+            The exposure number. Ignored if ``None``.
+        set : int
+            The set id of the exposure. Ignored if ``None``.
+        mjd : int
+            The MJD of the exposure. Ignored if ``None``.
+
+        Returns
+        -------
+        rssfibers : list
+            A list of `.RSSFiber` instances whose obsinfo matches all the input
+            parameters. The `.RSS.autoload` option is respected.
+
+        Example
+        -------
+
+            >>> rss = marvin.tools.RSS('8485-1901')
+            >>> fibers = rss.select_fibers(set=2)
+            >>> fibers
+            [<RSSFiber [ 2.22306705, 11.84955406,  9.65761662, ...,  0.        ,
+                         0.        ,  0.        ] 1e-17 erg / (Angstrom cm2 fiber s)>,
+            <RSSFiber [2.18669987, 1.4861778 , 2.55065155, ..., 0.        , 0.        ,
+                       0.        ] 1e-17 erg / (Angstrom cm2 fiber s)>,
+            <RSSFiber [2.75228763, 5.53485441, 2.31695175, ..., 0.        , 0.        ,
+                       0.        ] 1e-17 erg / (Angstrom cm2 fiber s)>]
+
+        """
+
+        mask_exp = (self.obsinfo['EXPNUM'].astype(int) == exposure_no) if exposure_no else True
+        mask_set = (self.obsinfo['SET'].astype(int) == set) if set else True
+        mask_mjd = (self.obsinfo['MJD'].astype(int) == mjd) if mjd else True
+
+        mask = mask_exp & mask_set & mask_mjd
+        valid_exposures = numpy.where(mask)[0]
+
+        n_exposures = len(self.obsinfo)
+        n_fibres_per_exposure = self._nfibers // n_exposures
+        fibre_to_exposure = numpy.arange(self._nfibers) // n_fibres_per_exposure
+
+        fibres_in_valid_exposures = numpy.where(numpy.in1d(fibre_to_exposure, valid_exposures))[0]
+
+        return [self[ii] for ii in fibres_in_valid_exposures]
 
     def _load_rss_from_file(self, data=None):
         """Initialises the RSS object from a file."""
