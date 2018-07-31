@@ -24,7 +24,7 @@ from matplotlib.collections import EllipseCollection
 from astropy.io import fits
 from marvin.tools.mixins import MMAMixIn
 from marvin.core.exceptions import MarvinError, MarvinWarning
-from marvin.utils.general import getWCSFromPng, Bundle
+from marvin.utils.general import getWCSFromPng, Bundle, Cutout
 try:
     from sdss_access import HttpAccess
 except ImportError:
@@ -72,11 +72,8 @@ class Image(MMAMixIn, object):
         elif self.data_origin == 'api':
             self._load_image_from_api()
 
-        # initialize
-        self.header = fits.header.Header(self.data.info)
-        self.ra = self.header["RA"]
-        self.dec = self.header["DEC"]
-        self.wcs = getWCSFromPng(image=self.data)
+        # initialize attributes
+        self._init_attributes()
 
         # create the hex bundle
         self.bundle = Bundle(self.ra, self.dec, plateifu=self.plateifu, size=int(str(self.ifu)[:-2]))
@@ -84,6 +81,13 @@ class Image(MMAMixIn, object):
     def __repr__(self):
         '''Image representation.'''
         return '<Marvin Image (plateifu={0}, mode={1}, data-origin={2})>'.format(repr(self.plateifu), repr(self.mode), repr(self.data_origin))
+
+    def _init_attributes(self):
+        ''' Initialize some attributes '''
+        self.header = fits.header.Header(self.data.info)
+        self.ra = float(self.header["RA"])
+        self.dec = float(self.header["DEC"])
+        self.wcs = getWCSFromPng(image=self.data)
 
     def _getFullPath(self):
         """Returns the full path of the file in the tree."""
@@ -196,9 +200,11 @@ class Image(MMAMixIn, object):
             ax (Axis):
                 The matplotlib axis object
             diameter (float):
-                The fiber diameter in arcsec
+                The fiber diameter in arcsec. Default is 2".
             skies (bool):
-                Set to True to additionally overlay the sky fibers
+                Set to True to additionally overlay the sky fibers. Default if False
+            return_figure (bool):
+                If True, returns the figure axis object.  Default is True
             kwargs:
                 Any keyword arguments accepted by Matplotlib EllipseCollection
         """
@@ -235,6 +241,8 @@ class Image(MMAMixIn, object):
         Parameters:
             ax (Axis):
                 The matplotlib axis object
+            return_figure (bool):
+                If True, returns the figure axis object.  Default is True
             kwargs:
                 Any keyword arguments accepted by Matplotlib plot
         """
@@ -262,6 +270,8 @@ class Image(MMAMixIn, object):
                 The matplotlib axis object
             diameter (float):
                 The fiber diameter in arcsec
+            return_figure (bool):
+                If True, returns the figure axis object.  Default is True
             kwargs:
                 Any keyword arguments accepted by Matplotlib EllipseCollection
         """
@@ -279,7 +289,8 @@ class Image(MMAMixIn, object):
         fiber_pix = self.wcs.wcs_world2pix(self.bundle.skies, 1)
         outside_range = ((fiber_pix < 0) | (fiber_pix > self.data.size[0])).any()
         if outside_range:
-            raise MarvinError('Cannot overlay sky fibers.  Image is too small.  Please retrieve a bigger image cutout')
+            raise MarvinError('Cannot overlay sky fibers.  Image is too small.  '
+                              'Please retrieve a bigger image cutout')
 
         # some matplotlib kwargs
         kwargs['edgecolor'] = kwargs.get('edgecolor', 'Orange')
@@ -301,6 +312,13 @@ class Image(MMAMixIn, object):
 
         if return_figure:
             return ax
+
+    def get_new_cutout(self, width, height, scale=None, **kwargs):
+        ''' Get a new Image Cutout using Skyserver '''
+
+        cutout = Cutout(self.ra, self.dec, width, height, scale=scale, **kwargs)
+        self.data = cutout.image
+        self._init_attributes()
 
     def get_by_plate(self):
         pass

@@ -16,18 +16,22 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 
 import os
 import sys
-
+import PIL
 import numpy as np
 import requests
+import warnings
+
 from astropy import table
 from astropy.io import ascii
-from marvin.core.exceptions import MarvinError
+from astropy.wcs import WCS
+from marvin.core.exceptions import MarvinError, MarvinUserWarning
 from marvin.extern import yanny
 
 if sys.version_info.major == 2:
     from cStringIO import StringIO as stringio
 else:
     from io import StringIO as stringio
+    from io import BytesIO as bytesio
 
 
 # cached yanny metrology and plateholes objects
@@ -53,6 +57,8 @@ class Bundle(object):
                 The Declination of the target
             size (int):
                 The fiber size of the IFU, e.g. 19 or 127
+            plateifu (str):
+                The plateifu of the target
             use_envelope (bool):
                 Expands the hexagon area to include an envelope surrounding the hex border
             local (bool):
@@ -81,7 +87,20 @@ class Bundle(object):
         return '<Bundle (ra={0}, dec={1}, ifu={2})>'.format(self.ra, self.dec, self.size)
 
     def _get_a_file(self, filename, local=None):
-        ''' Retrieve a file served locally or remotely over the internet '''
+        ''' Retrieve a file served locally or remotely over the internet
+
+        Will retrieve a local filename or grab the file
+        contents remotely from the SAS
+
+        Parameters:
+            filename (str):
+                Full filepath to load
+            local (bool):
+                If True, does a local system check
+
+        Returns:
+            A file object to be read in by Yanny
+        '''
 
         if local:
             if not os.path.exists(filename):
@@ -98,7 +117,19 @@ class Bundle(object):
         return fileobj
 
     def _read_in_yanny(self, filename, local=None):
-        ''' Read in a yanny file object '''
+        ''' Read in a yanny file object
+
+        Reads in a local or remote data object as a Yanny file
+
+        Parameters:
+            filename (str):
+                Full filepath to load
+            local (bool):
+                If True, does a local system check
+
+        Returns:
+            A Yanny object
+        '''
 
         fileobj = self._get_a_file(filename, local=local)
 
@@ -110,7 +141,18 @@ class Bundle(object):
         return data
 
     def _get_simbmap_file(self, local=None):
-        ''' Retrieves the metrology file locally or remotely '''
+        ''' Retrieves the metrology file locally or remotely
+
+        Reads in fresh metrology data or grabs it from
+        cache if available
+
+        Parameters:
+            local (bool):
+                If True, does a local system check
+
+        Returns:
+            The metrology object data
+        '''
 
         # create the file path
         rel_path = u'metrology/fiducial/manga_simbmap_127.par'
@@ -124,13 +166,26 @@ class Bundle(object):
         # read in the Yanny object
         global SIMOBJ
         if SIMOBJ is None:
-            simbmap_data = self._read_in_yanny(self.simbMapFile)
+            simbmap_data = self._read_in_yanny(self.simbMapFile, local=local)
             SIMOBJ = simbmap_data['SIMBMAP']
 
         return SIMOBJ
 
     def _get_plateholes_file(self, plate=None, local=None):
-        ''' Retrieves the platesholes file locally or remotely '''
+        ''' Retrieves the platesholes file locally or remotely
+
+        Reads in fresh plateHoles data or grabs it from
+        cache if available
+
+        Parameters:
+            plate (int):
+                The plateid to load the plateHoles file for
+            local (bool):
+                If True, does a local system check
+
+        Returns:
+            The plateHoles object data
+        '''
 
         # check for plate
         if not plate and not self.plateifu:
@@ -158,14 +213,29 @@ class Bundle(object):
 
     @staticmethod
     def _get_sky_fibers(data, ifu):
-        """Return the sky fibers associated with each galaxy."""
+        """ Return the sky fibers associated with each galaxy.
+
+        Parameters:
+            data (object):
+                the plateHoles object data
+            ifu (int):
+                The ifu design of the target
+
+        Returns:
+            A numpy array of tuples of sky fiber RA, Dec coordinates
+        """
         sky_fibers = data[data['targettype'] == 'SKY']
         sky_block = sky_fibers['block'] == int(ifu)
         skies = np.array(zip(sky_fibers[sky_block]['target_ra'], sky_fibers[sky_block]['target_dec']))
         return skies
 
     def get_sky_coordinates(self, plateifu=None):
-        ''' Returns the RA, Dec coordinates of the sky fibers '''
+        ''' Returns the RA, Dec coordinates of the sky fibers
+
+        Parameters:
+            plateifu (str):
+                The plateifu of the target
+        '''
 
         plateifu = plateifu or self.plateifu
         if not plateifu:
@@ -177,7 +247,7 @@ class Bundle(object):
         self.skies = self._get_sky_fibers(data, ifu)
 
     def get_fiber_coordinates(self):
-        """Returns the RA, Dec coordinates for each fibre."""
+        """ Returns the RA, Dec coordinates for each fiber. """
 
         fibreWorld = np.zeros((len(self.simbMap), 3), float)
 
@@ -192,7 +262,7 @@ class Bundle(object):
         return fibreWorld
 
     def _calculate_hexagon(self, use_envelope=True):
-        """Calculates the vertices of the bundle hexagon."""
+        """ Calculates the vertices of the bundle hexagon. """
 
         simbMapSize = self.simbMap[self.simbMap['fnumdesign'] <= self.size]
 
@@ -288,3 +358,205 @@ global color=green font="helvetica 10 normal roman" wcs=wcs
                          dtype=[float, float])
         ascii.write(tt, format='fixed_width_two_line',
                     formats={'RA': '{0:.12f}', 'Dec': '{0:.12f}'})
+
+
+class Cutout(object):
+    """ A Generic SDSS Cutout Image
+
+    Tool which allows to generate an image using the SDSS Skyserver
+    Image Cutout service.  See http://skyserver.sdss.org/public/en/help/docs/api.aspx#imgcutout
+    for details.
+
+    Parameters:
+        ra (float):
+            The central Right Ascension of the cutout
+        dec (float):
+            The central Declination of the cutout
+        width (int):
+           width of cutout in arcsec
+        height (int):
+            height in cutout in arcsec
+        scale (float):
+            pixel scale in arcsec/pixel.  Default is 0.198 "/pix.
+        kwargs:
+            Allowed boolean keyword arguments to the SDSS Image Cutout Service. Set desired
+            keyword parameters to True to enable.
+
+            Available kwargs are:
+             - 'photo': PhotoObjs
+             - 'bound': BoundingBox
+             - 'masks': Masks
+             - 'grid': Grid
+             - 'outline': Outline
+             - 'target': TargetObjs
+             - 'fields': Fields
+             - 'invert': Invert Image
+             - 'spectra': SpecObjs
+             - 'label': Label
+             - 'plates': Plates
+
+    Attributes:
+        rawurl (str):
+            The raw url of the cutout
+        wcs (WCS):
+            The WCS of the generated image
+        image (PIL.Image):
+            The cutout image object
+        size (int):
+            The image size in arcsec
+        size_pix (int):
+            The image size in pixels
+        center (tuple):
+            The image center RA, Dec
+
+    """
+
+    def __init__(self, ra, dec, width, height, scale=None, **kwargs):
+        self.rawurl = ("http://skyserver.sdss.org/public/SkyServerWS/ImgCutout/getjpeg?"
+                       "ra={ra}&dec={dec}&scale={scale}&width={width_pix}&height={height_pix}&opt={opts}&query=")
+        self.ra = ra
+        self.dec = dec
+        self.scale = scale or 0.198  # default arcsec/pixel
+        self.image = None
+        self.center = np.array([ra, dec])
+        self.size = np.array([width, height], dtype=int)
+        self.coords = {'ra': ra, 'dec': dec,
+                       'width': width, 'height': height,
+                       'scale': self.scale}
+        self._get_pix_size()
+        if max(self.size_pix) >= 2048:
+            raise MarvinError('Requested image size is too large. '
+                              'The Skyserver image cutout can only return a size up to 2048 pixels')
+
+        self._define_wcs()
+        self._get_cutout(**kwargs)
+
+    def __repr__(self):
+        return ('<Cutout (ra={0}, dec={1}, scale={2}, height={3}, '
+                'width={4})>'.format(self.ra, self.dec, self.scale, *self.size_pix))
+
+    def _get_pix_size(self):
+        """height,width converted from arcsec->pixels"""
+        self.coords['height_pix'] = int(round(self.coords['height'] / self.scale))
+        self.coords['width_pix'] = int(round(self.coords['width'] / self.scale))
+        self.size_pix = np.array((self.coords['height_pix'], self.coords['width_pix']))
+
+    def _define_wcs(self):
+        """
+        Given what we know about the scale of the image,
+        define a nearly-correct world coordinate system to use with it.
+        """
+        w = WCS(naxis=2)
+        w.wcs.crpix = self.size_pix / 2
+        w.wcs.crval = self.center
+        w.wcs.cd = np.array([[-1, 0], [0, 1]]) * self.scale / 3600.
+        w.wcs.ctype = ['RA---TAN', 'DEC--TAN']
+        w.wcs.cunit = ['deg', 'deg']
+        w.wcs.radesys = 'FK5'
+        w.wcs.equinox = 2000.0
+        self.wcs = w
+
+    def _wcs_to_dict(self):
+        ''' Convert and return the WCS as a dictionary'''
+        wcshdr = None
+        if self.wcs:
+            wcshdr = self.wcs.to_header()
+            wcshdr = dict(wcshdr)
+            wcshdr = {key: str(val) for key, val in wcshdr.items()}
+        return wcshdr
+
+    def _make_metadata(self, filetype=None):
+        ''' Make the meta data for the image '''
+
+        if 'png' in filetype:
+            meta = PIL.PngImagePlugin.PngInfo()
+        else:
+            meta = None
+            warnings.warn('Can only save WCS metadata with PNG filetype', MarvinUserWarning)
+
+        if meta:
+            info = {key: str(val) for key, val in self.image.info.items()}
+            for row in info:
+                meta.add_text(row, info[row])
+
+        return meta
+
+    def _update_info(self):
+        ''' Update the image info dictionary '''
+
+        for key, value in self.image.info.items():
+            if isinstance(value, tuple):
+                self.image.info[key] = value[0]
+
+        wcsdict = self._wcs_to_dict()
+        self.image.info = wcsdict
+        self.image.info.update(self.coords)
+        self.image.info['wdthpix'] = self.image.info.pop('width_pix')
+        self.image.info['hghtpix'] = self.image.info.pop('height_pix')
+
+    def _add_options(self, **kwargs):
+
+        allowed = {'grid': 'G', 'label': 'L', 'photo': 'P', 'spectra': 'S',
+                   'target': 'T', 'outline': 'O', 'bound': 'B', 'fields': 'F',
+                   'masks': 'M', 'plates': 'Q', 'invert': 'I'}
+
+        opts = []
+        for key, value in kwargs.items():
+            assert key in allowed.keys(), 'Cutout keyword must be one of: {0}'.format(allowed.keys())
+            assert isinstance(value, (bool, type(None))), 'Cutout value can only be a Boolean'
+            if value:
+                opts.append(allowed[key])
+
+        self.coords['opts'] = ''.join(opts)
+
+    def _get_cutout(self, **kwargs):
+        """ Gets an image cutout
+
+        Get a cutout around a point, centered at some RA, Dec (in decimal
+        degrees), and spanning width,height (in arcseconds) in size.
+
+        Parameters:
+            kwargs:
+                Allowed keywords into the SDSS Skyserver Image Cutout
+
+        """
+        # add options
+        self._add_options(**kwargs)
+        # retrieve the image
+        url = self.rawurl.format(**self.coords)
+        response = requests.get(url)
+        if not response.ok:
+            raise MarvinError('Cannot retrieve image cutout')
+        else:
+            base_image = response.content
+            ioop = stringio if sys.version_info.major == 2 else bytesio
+            self.image = PIL.Image.open(ioop(base_image))
+            self._update_info()
+
+    def save(self, filename, filetype='png'):
+        ''' Save the image cutout to a file
+
+        If the filetype is PNG, it will also save the WCS and coordinate
+        information as metadata in the image.
+
+        Parameters:
+            filename (str):
+                The output filename
+            filetype (str):
+                The output file extension
+        '''
+
+        filename, fileext = os.path.splitext(filename)
+        extlist = ['.png', '.bmp', '.jpg', '.jpeg', '.tiff', '.gif', '.ppm']
+        assert fileext.lower() in extlist, 'Specified filename not of allowed image type: png, gif, tiff, jpeg, bmp'
+
+        meta = self._make_metadata(filetype=filetype)
+        self.image.save(filename, filetype, pnginfo=meta)
+
+    def show(self):
+        ''' Show the image cutout '''
+        if self.image:
+            self.image.show()
+
+
+
