@@ -68,7 +68,8 @@ __all__ = ('convertCoords', 'parseIdentifier', 'mangaid2plateifu', 'findClosestV
            'invalidArgs', 'missingArgs', 'getRequiredArgs', 'getKeywordArgs',
            'isCallableWithArgs', 'map_bins_to_column', '_sort_dir',
            'get_dapall_file', 'temp_setattr', 'map_dapall', 'turn_off_ion', 'memory_usage',
-           'validate_jwt', 'target_status', 'target_is_observed', 'get_drpall_file')
+           'validate_jwt', 'target_status', 'target_is_observed', 'get_drpall_file',
+           'target_is_mastar')
 
 drpTable = {}
 
@@ -1630,3 +1631,27 @@ def target_is_observed(mangaid, mode='auto', source='nsa', drpall=None, drpver=N
     # check the target status
     status = target_status(mangaid, source=source, mode=mode, drpver=drpver, drpall=drpall)
     return status == 'observed'
+
+
+def target_is_mastar(plateifu, drpver=None, drpall=None):
+    ''' Check if a target is bright-time MaStar target
+
+    Uses the local drpall file to check if a plateifu is a MaStar target
+
+    Parameters:
+        plateifu (str):
+            The plateifu of the target
+        drpver (str):
+            The drpver version to check against
+        drpall (str):
+            The drpall file path
+
+    Returns:
+        True if it is
+
+    '''
+
+    row = get_drpall_row(plateifu, drpver=drpver, drpall=drpall)
+    return row['srvymode'] == 'APOGEE lead'
+
+

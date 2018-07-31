@@ -23,8 +23,8 @@ from matplotlib.collections import EllipseCollection
 
 from astropy.io import fits
 from marvin.tools.mixins import MMAMixIn
-from marvin.core.exceptions import MarvinError, MarvinWarning
-from marvin.utils.general import getWCSFromPng, Bundle, Cutout
+from marvin.core.exceptions import MarvinError, MarvinUserWarning
+from marvin.utils.general import getWCSFromPng, Bundle, Cutout, target_is_mastar
 try:
     from sdss_access import HttpAccess
 except ImportError:
@@ -76,7 +76,8 @@ class Image(MMAMixIn, object):
         self._init_attributes()
 
         # create the hex bundle
-        self.bundle = Bundle(self.ra, self.dec, plateifu=self.plateifu, size=int(str(self.ifu)[:-2]))
+        if self.ra and self.dec:
+            self.bundle = Bundle(self.ra, self.dec, plateifu=self.plateifu, size=int(str(self.ifu)[:-2]))
 
     def __repr__(self):
         '''Image representation.'''
@@ -84,10 +85,47 @@ class Image(MMAMixIn, object):
 
     def _init_attributes(self):
         ''' Initialize some attributes '''
-        self.header = fits.header.Header(self.data.info)
-        self.ra = float(self.header["RA"])
-        self.dec = float(self.header["DEC"])
-        self.wcs = getWCSFromPng(image=self.data)
+
+        self.ra = None
+        self.dec = None
+
+        # try to create a header
+        try:
+            self.header = fits.header.Header(self.data.info)
+        except Exception as e:
+            warnings.warn('No proper header found image', MarvinUserWarning)
+            self.header = None
+
+        # try to set the RA, Dec
+        if self.header:
+            self.ra = float(self.header["RA"]) if 'RA' in self.header else None
+            self.dec = float(self.header["DEC"]) if 'DEC' in self.header else None
+
+        # try to set the WCS
+        try:
+            self.wcs = getWCSFromPng(image=self.data)
+        except MarvinError as e:
+            self.wcs = None
+            warnings.warn('No proper WCS info for this image')
+
+    def _get_image_dir(self):
+        ''' Gets the correct images directory by release and mastar target '''
+
+        # all images in MPL-4 are in stack dirs
+        if self.release == 'MPL-4':
+            return 'stack'
+
+        # get the appropriate image directory
+        is_mastar = target_is_mastar(self.plateifu, drpver=self._drpver)
+        image_dir = 'mastar' if is_mastar else 'stack'
+        return image_dir
+
+    def _old_version(self):
+        ''' Checks if the version if less than MPL-8 '''
+        from distutils.version import StrictVersion
+        drpstrict = StrictVersion(self._drpver.strip('v').replace('_', '.'))
+        mpl8strict = StrictVersion('2.5.0')
+        return drpstrict < mpl8strict
 
     def _getFullPath(self):
         """Returns the full path of the file in the tree."""
@@ -96,8 +134,12 @@ class Image(MMAMixIn, object):
             return None
 
         plate, ifu = self.plateifu.split('-')
+        dir3d = self._get_image_dir()
 
-        return super(Image, self)._getFullPath('mangaimage', ifu=ifu, dir3d='stack',
+        # use version to toggle old/new images path
+        name = 'mangaimage' if self._old_version() else 'newmangaimage'
+
+        return super(Image, self)._getFullPath(name, ifu=ifu, dir3d=dir3d,
                                                drpver=self._drpver, plate=plate)
 
     def download(self):
@@ -107,8 +149,12 @@ class Image(MMAMixIn, object):
             return None
 
         plate, ifu = self.plateifu.split('-')
+        dir3d = self._get_image_dir()
 
-        return super(Image, self).download('mangaimage', ifu=ifu, dir3d='stack',
+        # use version to toggle old/new images path
+        name = 'mangaimage' if self._old_version() else 'newmangaimage'
+
+        return super(Image, self).download(name, ifu=ifu, dir3d=dir3d,
                                            drpver=self._drpver, plate=plate)
 
     def _load_image_from_file(self):
@@ -126,7 +172,7 @@ class Image(MMAMixIn, object):
 
         filepath = self._getFullPath()
         if not HttpAccess:
-            raise MarvinError('Cannot get ')
+            raise MarvinError('sdss_access not installed')
 
         http = HttpAccess(verbose=False)
         url = http.url("", full=filepath)
@@ -144,7 +190,7 @@ class Image(MMAMixIn, object):
         try:
             image = PIL.Image.open(fileobj)
         except IOError as e:
-            warnings.warn('Error: cannot open image', MarvinWarning)
+            warnings.warn('Error: cannot open image', MarvinUserWarning)
             image = None
         else:
             image.filename = filepath or fileobj
@@ -209,6 +255,9 @@ class Image(MMAMixIn, object):
                 Any keyword arguments accepted by Matplotlib EllipseCollection
         """
 
+        if self.wcs is None:
+            raise MarvinError('No WCS found.  Cannot overlay fibers.')
+
         # check the diameter
         if diameter:
             assert isinstance(diameter, (float, int)), 'diameter must be a number'
@@ -247,6 +296,9 @@ class Image(MMAMixIn, object):
                 Any keyword arguments accepted by Matplotlib plot
         """
 
+        if self.wcs is None:
+            raise MarvinError('No WCS found.  Cannot overlay hexagon.')
+
         # get IFU hexagon pixel coordinates
         hexagon_pix = self.wcs.wcs_world2pix(self.bundle.hexagon, 1)
         # reconnect the last point to the first point.
@@ -275,6 +327,9 @@ class Image(MMAMixIn, object):
             kwargs:
                 Any keyword arguments accepted by Matplotlib EllipseCollection
         """
+
+        if self.wcs is None:
+            raise MarvinError('No WCS found.  Cannot overlay sky fibers.')
 
         # check for sky coordinates
         if self.bundle.skies is None:
@@ -314,20 +369,78 @@ class Image(MMAMixIn, object):
             return ax
 
     def get_new_cutout(self, width, height, scale=None, **kwargs):
-        ''' Get a new Image Cutout using Skyserver '''
+        ''' Get a new Image Cutout using Skyserver
+
+        Replaces the current Image with a new image cutout.  The
+        data, header, and wcs attributes are updated accordingly.
+
+        Parameters:
+            width (int):
+                Cutout image width in arcsec
+            height (int):
+                Cutout image height in arcsec
+            scale (float):
+                arcsec/pixel scale of the image
+            kwargs:
+                Any additional keywords for Cutout
+
+        '''
 
         cutout = Cutout(self.ra, self.dec, width, height, scale=scale, **kwargs)
         self.data = cutout.image
         self._init_attributes()
 
-    def get_by_plate(self):
-        pass
-
     @classmethod
     def from_list(cls, values):
+        ''' Generate a list of Marvin Image objects
+
+        Class method to generate a list of Marvin Images from an
+        input list of targets
+
+        Parameters:
+            values (list):
+                A list of target ids (i.e. plateifus, mangaids, or filenames)
+
+        Returns:
+            a list of Marvin Image objects
+
+        Example:
+            >>> from marvin.tools.image import Image
+            >>> targets = ['8485-1901', '7443-1201']
+            >>> images = Image.from_list(targets)
+
+        '''
         images = []
         for item in values:
             images.append(cls(item))
+        return images
+
+    @classmethod
+    def by_plate(cls, plateid, minis=None):
+        ''' Generate a list of Marvin Images by plate
+
+        Class method to generate a list of Marvin Images from
+        a single plateid.
+
+        Parameters:
+            plateid (int):
+                The plate id to grab
+            minis (bool):
+                If True, includes the mini-bundles
+
+        Returns:
+            a list of Marvin Image objects
+
+        Example:
+            >>> from marvin.tools.image import Image
+            >>> images = Image.by_plate(8485)
+        '''
+        ifus = cls._get_ifus()
+        if minis:
+            plateifus = ['{0}-{1}'.format(plateid, i) for i in ifus]
+        else:
+            plateifus = ['{0}-{1}'.format(plateid, i) for i in ifus if not i.startswith('7')]
+        images = cls.from_list(plateifus)
         return images
 
     def get_random(self):

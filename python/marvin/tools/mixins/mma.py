@@ -6,7 +6,7 @@
 # @Author: Brian Cherinka
 # @Date:   2018-07-28 17:26:41
 # @Last modified by:   Brian Cherinka
-# @Last Modified time: 2018-07-29 17:33:20
+# @Last Modified time: 2018-07-31 14:09:54
 
 from __future__ import absolute_import, division, print_function
 
@@ -167,6 +167,15 @@ class MMAMixIn(object, six.with_metaclass(abc.ABCMeta)):
             return_dict['plate'] = value
 
         return return_dict
+
+    @staticmethod
+    def _get_ifus():
+        ''' Returns a list of all the allowed IFU designs ids '''
+
+        # Number of IFUs per size
+        n_ifus = {19: 2, 37: 4, 61: 4, 91: 2, 127: 5, 7: 12}
+        ifus = ['{0}{1:02d}'.format(key, i + 1) for key, value in n_ifus.items() for i in range(value)]
+        return ifus
 
     def _doLocal(self):
         """Tests if it's possible to load the data locally."""
