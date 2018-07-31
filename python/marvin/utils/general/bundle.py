@@ -30,15 +30,16 @@ else:
     from io import StringIO as stringio
 
 
-# cached yanny metrology object
+# cached yanny metrology and plateholes objects
 SIMOBJ = None
+PLATEHOLES = None
 
 
 class Bundle(object):
     """The location, size, and shape of a MaNGA IFU bundle."""
 
-    def __init__(self, ra, dec, size=127, simbmap=None, use_envelope=True,
-                 local=None, **kwargs):
+    def __init__(self, ra, dec, size=127, use_envelope=True,
+                 local=None, plateifu=None, **kwargs):
         """
         A bundle of a given size at the RA/Dec coordinates.
 
@@ -52,8 +53,6 @@ class Bundle(object):
                 The Declination of the target
             size (int):
                 The fiber size of the IFU, e.g. 19 or 127
-            simbmap (str):
-                The full filepath to the IFU metrology file
             use_envelope (bool):
                 Expands the hexagon area to include an envelope surrounding the hex border
             local (bool):
@@ -63,13 +62,16 @@ class Bundle(object):
         self.ra = float(ra)
         self.dec = float(dec)
         self.size = size
+        self.plateifu = plateifu
         self.simbMapFile = None
+        self.plateholes_file = None
         if self.size not in [7, 19, 37, 61, 91, 127]:
             self.hexagon = None
             return
 
-        self.simbMap = self._get_the_simbmap_file(simbmap, local=local)
+        self.simbMap = self._get_simbmap_file(local=local)
 
+        self.skies = None
         self.fibers = self.get_fiber_coordinates()
         self.fibers = self.fibers[self.fibers[:, 0] <= size]
 
@@ -78,43 +80,101 @@ class Bundle(object):
     def __repr__(self):
         return '<Bundle (ra={0}, dec={1}, ifu={2})>'.format(self.ra, self.dec, self.size)
 
-    def _get_the_simbmap_file(self, simbmap, local=None):
+    def _get_a_file(self, filename, local=None):
+        ''' Retrieve a file served locally or remotely over the internet '''
+
+        if local:
+            if not os.path.exists(filename):
+                raise MarvinError('No {0} file found locally.'.format(filename))
+            else:
+                fileobj = filename
+        else:
+            r = requests.get(filename)
+            if not r.ok:
+                raise MarvinError('Could not retrieve {0} file remotely'.format(filename))
+            else:
+                fileobj = stringio(r.content.decode())
+
+        return fileobj
+
+    def _read_in_yanny(self, filename, local=None):
+        ''' Read in a yanny file object '''
+
+        fileobj = self._get_a_file(filename, local=local)
+
+        try:
+            data = yanny.yanny(fileobj, np=True)
+        except Exception as e:
+            raise MarvinError('Cannot read file {0}. {1}'.format(filename, e))
+
+        return data
+
+    def _get_simbmap_file(self, local=None):
         ''' Retrieves the metrology file locally or remotely '''
 
         # create the file path
-        if simbmap is None or simbmap == '':
-            rel_path = u'metrology/fiducial/manga_simbmap_127.par'
-            if local:
-                base_path = os.environ['MANGACORE_DIR']
-            else:
-                base_path = u'https://svn.sdss.org/public/repo/manga/mangacore/tags/v1_2_3'
-
-            self.simbMapFile = os.path.join(base_path, rel_path)
-
-        # retrieve the file object
+        rel_path = u'metrology/fiducial/manga_simbmap_127.par'
         if local:
-            if not os.path.exists(self.simbMapFile):
-                raise MarvinError('No simbmap metrology file found locally.')
-            else:
-                simobj = self.simbMapFile
+            base_path = os.environ['MANGACORE_DIR']
         else:
-            r = requests.get(self.simbMapFile)
-            if not r.ok:
-                raise MarvinError('Could not retrieve metrology file remotely')
-            else:
-                simobj = stringio(r.content.decode())
+            base_path = u'https://svn.sdss.org/public/repo/manga/mangacore/tags/v1_2_3'
+
+        self.simbMapFile = os.path.join(base_path, rel_path)
 
         # read in the Yanny object
         global SIMOBJ
         if SIMOBJ is None:
-            try:
-                simbMap = yanny.yanny(simobj, np=True)['SIMBMAP']
-            except Exception as e:
-                raise MarvinError('Cannot read simbmap. {0}'.format(e))
-            else:
-                SIMOBJ = simbMap
+            simbmap_data = self._read_in_yanny(self.simbMapFile)
+            SIMOBJ = simbmap_data['SIMBMAP']
 
         return SIMOBJ
+
+    def _get_plateholes_file(self, plate=None, local=None):
+        ''' Retrieves the platesholes file locally or remotely '''
+
+        # check for plate
+        if not plate and not self.plateifu:
+            raise MarvinError('Must have the plate id to get the correct plateholes file')
+        elif not plate and self.plateifu:
+            plate, ifu = self.plateifu.split('-')
+
+        # create the file path
+        pltgrp = '{:04d}XX'.format(int(plate) // 100)
+        rel_path = u'platedesign/plateholes/{0}/plateHolesSorted-{1:06d}.par'.format(pltgrp, int(plate))
+        if local:
+            base_path = os.environ['MANGACORE_DIR']
+        else:
+            base_path = u'https://svn.sdss.org/public/repo/manga/mangacore/tags/v1_2_3'
+
+        self.platesholes_file = os.path.join(base_path, rel_path)
+
+        # read in the Yanny object
+        global PLATEHOLES
+        if PLATEHOLES is None:
+            plateholes_data = self._read_in_yanny(self.platesholes_file)
+            PLATEHOLES = plateholes_data['STRUCT1']
+
+        return PLATEHOLES
+
+    @staticmethod
+    def _get_sky_fibers(data, ifu):
+        """Return the sky fibers associated with each galaxy."""
+        sky_fibers = data[data['targettype'] == 'SKY']
+        sky_block = sky_fibers['block'] == int(ifu)
+        skies = np.array(zip(sky_fibers[sky_block]['target_ra'], sky_fibers[sky_block]['target_dec']))
+        return skies
+
+    def get_sky_coordinates(self, plateifu=None):
+        ''' Returns the RA, Dec coordinates of the sky fibers '''
+
+        plateifu = plateifu or self.plateifu
+        if not plateifu:
+            raise MarvinError('Need the plateifu to get the corresponding sky fibers')
+        else:
+            plate, ifu = plateifu.split('-')
+
+        data = self._get_plateholes_file(plate=plate)
+        self.skies = self._get_sky_fibers(data, ifu)
 
     def get_fiber_coordinates(self):
         """Returns the RA, Dec coordinates for each fibre."""
