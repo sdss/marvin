@@ -24,6 +24,7 @@ import matplotlib.pyplot as plt
 from matplotlib.collections import EllipseCollection
 
 from astropy.io import fits
+import marvin
 from marvin.tools.mixins import MMAMixIn
 from marvin.core.exceptions import MarvinError, MarvinUserWarning
 from marvin.utils.general import getWCSFromPng, Bundle, Cutout, target_is_mastar, get_plates
@@ -209,7 +210,7 @@ class Image(MMAMixIn, object):
         if self.data:
             self.data.save(filename, format=filetype, **kwargs)
 
-    def plot(self, return_figure=True, dpi=100, fibers=None, skies=None, **kwargs):
+    def plot(self, return_figure=True, dpi=100, with_axes=None, fibers=None, skies=None, **kwargs):
         ''' Creates a Matplotlib plot the image
 
         Parameters:
@@ -221,18 +222,28 @@ class Image(MMAMixIn, object):
                 If True, returns the figure axis object.  Default is True
             dpi (int):
                 The dots per inch for the matplotlib figure
+            with_axes (bool):
+                If True, plots the image with axes
             kwargs:
                 Keyword arguments for overlay_fibers and overlay_skies
         '''
-        pix_size = np.array(self.data.size)
-        fig = plt.figure(figsize=pix_size / dpi, frameon=False)
-        ax = plt.Axes(fig, [0., 0., 1., 1.])
-        ax.set_axis_off()
-        plt.axis('off')
-        fig.add_axes(ax)
 
-        ax.imshow(self.data, origin='upper', aspect='auto')
-        ax.autoscale(False)
+        pix_size = np.array(self.data.size)
+        figsize = np.ceil(pix_size / dpi)
+        if with_axes:
+            fig = plt.figure()
+            ax = plt.subplot(projection=self.wcs)
+            ax.set_xlabel('Declination')
+            ax.set_ylabel('Right Ascension')
+            aspect = None
+        else:
+            fig = plt.figure(figsize=figsize)
+            ax = fig.add_axes([0., 0., 1., 1.], projection=self.wcs)
+            ax.set_axis_off()
+            plt.axis('off')
+            aspect = 'auto'
+
+        ax.imshow(self.data, origin='lower', aspect=aspect)
 
         # overlay the IFU fibers
         if fibers:
@@ -474,4 +485,25 @@ class Image(MMAMixIn, object):
         images = cls.from_list(plateifus, release=release)
         return images
 
+    def getCube(self):
+        """Returns the :class:`~marvin.tools.cube.Cube` for this Image."""
+
+        return marvin.tools.cube.Cube(plateifu=self.plateifu,
+                                      release=self.release)
+
+    def getMaps(self, **kwargs):
+        """Retrieves the DAP :class:`~marvin.tools.maps.Maps` for this Image.
+
+        If called without additional ``kwargs``, :func:`getMaps` will initialize
+        the :class:`~marvin.tools.maps.Maps` using the ``plateifu`` of this
+        :class:`~marvin.tools.image.Image`. Otherwise, the ``kwargs`` will be
+        passed when initialising the :class:`~marvin.tools.maps.Maps`.
+
+        """
+
+        if len(kwargs.keys()) == 0 or 'filename' not in kwargs:
+            kwargs.update({'plateifu': self.plateifu, 'release': self._release})
+
+        maps = marvin.tools.maps.Maps(**kwargs)
+        return maps
 

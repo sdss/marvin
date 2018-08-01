@@ -520,3 +520,11 @@ class MarvinToolsClass(MMAMixIn):
     def target_flags(self):
         """Bundle MaNGA targeting flags."""
         return [self.manga_target1, self.manga_target2, self.manga_target3]
+
+    def getImage(self):
+        ''' Retrieves the Image :class:`~marvin.tools.image.Image` for this object '''
+
+        image = marvin.tools.image.Image(plateifu=self.plateifu, release=self.release)
+        return image
+
+
