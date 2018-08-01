@@ -34,7 +34,9 @@ By default, :meth:`~marvin.tools.maps.Maps.get_bpt` produces and returns a matpl
 
 See :meth:`~marvin.tools.maps.Maps.get_bpt` for the API reference of how to generate a BPT diagram from within :ref:`marvin-tools-maps`.  See :ref:`marvin-utils-bpt` for the API reference guide on the BPT utility code.
 
-.. code-block:: python
+.. plot::
+    :align: center
+    :include-source: True
 
     # get a map
     from marvin.tools.maps import Maps
@@ -390,14 +392,18 @@ Here we have added a title to the plot, modified the font size of all the texts 
 
     The ``bind_to_figure()`` method is highly experimental. At best it is hacky; at worst unreliable. You should be careful when using it and critically review all plots that you generate. Note that some elements such as legends will be copied, but the styles will not be maintained. All texts and symbols maintain their original sizes, which may not be optimal for the new plot.
 
-Ultimately, you can use the masks to generate brand-new plots with your preferred styles and additional data. The :ref:`BPT module <marvin-utils-bpt>` contains functions to help producing the |kewley2006|_ classification lines. As an example, let us create a simple plot showing the :math:`\rm [NII]/H\alpha` vs :math:`\rm [OIII]/H\beta` classification ::
+Ultimately, you can use the masks to generate brand-new plots with your preferred styles and additional data. The :ref:`BPT module <marvin-utils-bpt>` contains functions to help producing the |kewley2006|_ classification lines. As an example, let us create a simple plot showing the :math:`\rm [NII]/H\alpha` vs :math:`\rm [OIII]/H\beta` classification
+
+.. plot::
+    :align: center
+    :include-source: True
 
     from marvin.tools.maps import Maps
     from matplotlib import pyplot as plt
     from marvin.utils.dap.bpt import kewley_sf_nii, kewley_comp_nii
     import numpy as np
 
-    mm = Maps(plateifu='8263-6104')
+    mm = Maps('8485-1901')
 
     masks, fig, axes = mm.get_bpt(show_plot=False)
 
@@ -437,13 +443,6 @@ Ultimately, you can use the masks to generate brand-new plots with your preferre
 
     ax.set_xlabel(r'log([NII]/H$\alpha$)')
     ax.set_ylabel(r'log([OIII]/H$\beta$)')
-
-    fig.savefig('nii_custom.png')
-
-.. image:: ../_static/nii_custom.png
-    :width: 800px
-    :align: center
-    :alt: nii_custom
 
 
 ..    Things to Try
