@@ -6,13 +6,11 @@
 # @Author: Brian Cherinka
 # @Date:   2018-08-01 17:50:48
 # @Last modified by:   Brian Cherinka
-# @Last Modified time: 2018-08-01 18:29:39
+# @Last Modified time: 2018-08-01 18:38:15
 
 from __future__ import print_function, division, absolute_import
 
 import pytest
-
-from marvin.core.exceptions import MarvinError, MarvinUserWarning
 from marvin.tools.image import Image
 
 
