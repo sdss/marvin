@@ -121,6 +121,7 @@ API/Code Reference
    api/general
    api/api
    api/tools
+   api/mixins
    api/quantities
    api/queries
    api/utils

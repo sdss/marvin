@@ -15,9 +15,9 @@ from __future__ import absolute_import, division, print_function
 import os
 import sys
 import warnings
-import requests
 import random
 import itertools
+import requests
 import PIL
 import numpy as np
 import matplotlib.pyplot as plt

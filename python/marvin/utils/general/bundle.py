@@ -1,25 +1,21 @@
-#!/usr/bin/env python
-# encoding: utf-8
-"""
-Identify the locations and sizes of MaNGA IFU bundles and individual fibers.
-
-Created by José Sánchez-Gallego on 18 Apr 2014.
-Licensed under a 3-clause BSD license.
-
-Revision history:
-    18 Apr 2014 J. Sánchez-Gallego
-      Initial version
-
-"""
+# !usr/bin/env python
+# -*- coding: utf-8 -*-
+#
+# Licensed under a 3-clause BSD license.
+#
+# @Author: José Sánchez-Gallego
+# @Date:   2014-04-18 00:21:02
+# @Last modified by:   Brian Cherinka
+# @Last Modified time: 2018-08-01 03:45:57
 
 from __future__ import absolute_import, division, print_function, unicode_literals
 
 import os
 import sys
-import PIL
 import numpy as np
 import requests
 import warnings
+import PIL
 
 from astropy import table
 from astropy.io import ascii
@@ -206,7 +202,7 @@ class Bundle(object):
         # read in the Yanny object
         global PLATEHOLES
         if PLATEHOLES is None:
-            plateholes_data = self._read_in_yanny(self.platesholes_file)
+            plateholes_data = self._read_in_yanny(self.platesholes_file, local=local)
             PLATEHOLES = plateholes_data['STRUCT1']
 
         return PLATEHOLES

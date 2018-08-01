@@ -85,3 +85,13 @@ Scatter/Histogram Plotting Utilities
    :members:
    :undoc-members:
    :show-inheritance:
+
+.. _marvin-utils-bundle:
+
+Bundle Utilities
+-----------------
+
+.. automodule:: marvin.utils.general.bundle
+   :members:
+   :undoc-members:
+   :show-inheritance:

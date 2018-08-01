@@ -6,7 +6,7 @@
 # @Author: Brian Cherinka
 # @Date:   2018-07-28 17:26:41
 # @Last modified by:   Brian Cherinka
-# @Last Modified time: 2018-07-31 23:00:43
+# @Last Modified time: 2018-08-01 03:17:24
 
 from __future__ import absolute_import, division, print_function
 
@@ -36,6 +36,64 @@ __all__ = ['MMAMixIn']
 
 
 class MMAMixIn(object, six.with_metaclass(abc.ABCMeta)):
+    """A mixin that provides multi-modal data access.
+
+    Add this mixin to any new class object to provide that class with
+    the Multi-Modal Data Access System for using local files, database,
+    or remote connection when initializing new objects.  See :ref:`decision tree <marvin-dma>`
+
+    Parameters:
+        input (str):
+            A string that can be a filename, plate-ifu, or mangaid. It will be
+            automatically identified based on its unique format. This argument
+            is always the first one, so it can be defined without the keyword
+            for convenience.
+        filename (str):
+            The path of the file containing the file to load. If set,
+            ``input`` is ignored.
+        mangaid (str):
+            The mangaid of the file to load. If set, ``input`` is ignored.
+        plateifu (str):
+            The plate-ifu of the data cube to load. If set, ``input`` is
+            ignored.
+        mode ({'local', 'remote', 'auto'}):
+            The load mode to use. See :ref:`mode-decision-tree`.
+        data (:class:`~astropy.io.fits.HDUList`, SQLAlchemy object, or None):
+            An astropy ``HDUList`` or a SQLAlchemy object, to be used for
+            initialisation. If ``None``, the :ref:`normal <marvin-dma>`` mode
+            will be used.
+        release (str):
+            The MPL/DR version of the data to use.
+        drpall (str):
+            The path to the
+            `drpall <https://trac.sdss.org/wiki/MANGA/TRM/TRM_MPL-5/metadata#DRP:DRPall>`_
+            file to use. If not set it will use the default path for the file
+            based on the ``release``
+        download (bool):
+            If ``True``, the data will be downloaded on instantiation. See
+            :ref:`marvin-download-objects`.
+        ignore_db (bool):
+            If ``True``, the local data-origin `db` will be ignored.
+
+    Attributes:
+        data (:class:`~astropy.io.fits.HDUList`, SQLAlchemy object, or dict):
+            Depending on the access mode, ``data`` is populated with the
+            |HDUList| from the FITS file, a
+            `SQLAlchemy <http://www.sqlalchemy.org>`_ object, or a dictionary
+            of values returned by an API call.
+        data_origin ({'file', 'db', 'api'}):
+            Indicates the origin of the data, either from a file, the DB, or
+            an API call.
+        filename (str):
+            The path of the file used, if any.
+        mangaid (str):
+            The mangaid of the target.
+        plateifu:
+            The plateifu of the target
+        release:
+            The data release
+
+    """
 
     def __init__(self, input=None, filename=None, mangaid=None, plateifu=None,
                  mode=None, data=None, release=None, drpall=None, download=None,

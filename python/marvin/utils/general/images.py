@@ -1,16 +1,14 @@
-#!/usr/bin/env python
-# encoding: utf-8
+# !usr/bin/env python
+# -*- coding: utf-8 -*-
+#
+# Licensed under a 3-clause BSD license.
+#
+# @Author: Brian Cherinka
+# @Date:   2018-07-31 23:52:31
+# @Last modified by:   Brian Cherinka
+# @Last Modified time: 2018-08-01 03:34:02
 
-'''
-Created by Brian Cherinka on 2016-04-29 00:04:16
-Licensed under a 3-clause BSD license.
-
-Revision History:
-    Initial Version: 2016-04-29 00:04:16 by Brian Cherinka
-    Last Modified On: 2016-04-29 00:04:16 by Brian
-
-'''
-from __future__ import division, print_function
+from __future__ import print_function, division, absolute_import
 
 import os
 import sys
