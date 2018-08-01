@@ -16,6 +16,8 @@ import os
 import sys
 import warnings
 import requests
+import random
+import itertools
 import PIL
 import numpy as np
 import matplotlib.pyplot as plt
@@ -24,7 +26,7 @@ from matplotlib.collections import EllipseCollection
 from astropy.io import fits
 from marvin.tools.mixins import MMAMixIn
 from marvin.core.exceptions import MarvinError, MarvinUserWarning
-from marvin.utils.general import getWCSFromPng, Bundle, Cutout, target_is_mastar
+from marvin.utils.general import getWCSFromPng, Bundle, Cutout, target_is_mastar, get_plates
 try:
     from sdss_access import HttpAccess
 except ImportError:
@@ -391,7 +393,7 @@ class Image(MMAMixIn, object):
         self._init_attributes()
 
     @classmethod
-    def from_list(cls, values):
+    def from_list(cls, values, release=None):
         ''' Generate a list of Marvin Image objects
 
         Class method to generate a list of Marvin Images from an
@@ -400,6 +402,8 @@ class Image(MMAMixIn, object):
         Parameters:
             values (list):
                 A list of target ids (i.e. plateifus, mangaids, or filenames)
+            release (str):
+                The release of Images to get
 
         Returns:
             a list of Marvin Image objects
@@ -412,11 +416,11 @@ class Image(MMAMixIn, object):
         '''
         images = []
         for item in values:
-            images.append(cls(item))
+            images.append(cls(item, release=release))
         return images
 
     @classmethod
-    def by_plate(cls, plateid, minis=None):
+    def by_plate(cls, plateid, minis=None, release=None):
         ''' Generate a list of Marvin Images by plate
 
         Class method to generate a list of Marvin Images from
@@ -427,6 +431,8 @@ class Image(MMAMixIn, object):
                 The plate id to grab
             minis (bool):
                 If True, includes the mini-bundles
+            release (str):
+                The release of Images to get
 
         Returns:
             a list of Marvin Image objects
@@ -435,13 +441,37 @@ class Image(MMAMixIn, object):
             >>> from marvin.tools.image import Image
             >>> images = Image.by_plate(8485)
         '''
-        ifus = cls._get_ifus()
-        if minis:
-            plateifus = ['{0}-{1}'.format(plateid, i) for i in ifus]
-        else:
-            plateifus = ['{0}-{1}'.format(plateid, i) for i in ifus if not i.startswith('7')]
-        images = cls.from_list(plateifus)
+        ifus = cls._get_ifus(minis=minis)
+        plateifus = ['{0}-{1}'.format(plateid, i) for i in ifus]
+        images = cls.from_list(plateifus, release=release)
         return images
 
-    def get_random(self):
-        pass
+    @classmethod
+    def get_random(cls, num=5, minis=None, release=None):
+        ''' Generate a set of random Marvin Images
+
+        Class method to generate a randome list of Marvin Images
+
+        Parameters:
+            num (int):
+                The number to grab. Default is 5
+            minis (bool):
+                If True, includes the mini-bundles
+            release (str):
+                The release of Images to get
+
+        Returns:
+            a list of Marvin Image objects
+
+        Example:
+            >>> from marvin.tools.image import Image
+            >>> images = Image.get_random(5)
+        '''
+        ifus = cls._get_ifus(minis=minis)
+        plates = get_plates(release=release)
+        rand_samp = random.sample(list(itertools.product(map(str, plates), ifus)), num)
+        plateifus = ['-'.join(r) for r in rand_samp]
+        images = cls.from_list(plateifus, release=release)
+        return images
+
+

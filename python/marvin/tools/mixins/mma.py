@@ -6,7 +6,7 @@
 # @Author: Brian Cherinka
 # @Date:   2018-07-28 17:26:41
 # @Last modified by:   Brian Cherinka
-# @Last Modified time: 2018-07-31 14:09:54
+# @Last Modified time: 2018-07-31 23:00:43
 
 from __future__ import absolute_import, division, print_function
 
@@ -169,11 +169,25 @@ class MMAMixIn(object, six.with_metaclass(abc.ABCMeta)):
         return return_dict
 
     @staticmethod
-    def _get_ifus():
-        ''' Returns a list of all the allowed IFU designs ids '''
+    def _get_ifus(minis=None):
+        ''' Returns a list of all the allowed IFU designs ids
+
+        Parameters:
+            minis (bool):
+                If True, includes the mini-bundles
+
+        Returns:
+            A list of IFU designs
+
+        '''
 
         # Number of IFUs per size
         n_ifus = {19: 2, 37: 4, 61: 4, 91: 2, 127: 5, 7: 12}
+
+        # Pop the minis
+        if not minis:
+            __ = n_ifus.pop(7)
+
         ifus = ['{0}{1:02d}'.format(key, i + 1) for key, value in n_ifus.items() for i in range(value)]
         return ifus
 

@@ -10,19 +10,21 @@ Revision History:
     Last Modified On: 2016-04-29 00:04:16 by Brian
 
 '''
-from __future__ import print_function
-from __future__ import division
-from marvin.core.exceptions import MarvinError, MarvinUserWarning
-import numpy as np
-from functools import wraps
-import marvin
-import warnings
-from distutils.version import StrictVersion
-from marvin.utils.general import parseIdentifier, mangaid2plateifu
-import PIL
+from __future__ import division, print_function
+
 import os
-import requests
 import sys
+import warnings
+from functools import wraps
+from distutils.version import StrictVersion
+
+import numpy as np
+import PIL
+import requests
+import marvin
+from marvin.core.exceptions import MarvinDeprecationWarning, MarvinError, MarvinUserWarning
+from marvin.utils.general import mangaid2plateifu, parseIdentifier
+
 
 if sys.version_info.major == 2:
     from cStringIO import StringIO as stringio
@@ -36,7 +38,8 @@ except ImportError:
     RsyncAccess = None
     HttpAccess = None
 
-__all__ = ['getRandomImages', 'getImagesByPlate', 'getImagesByList', 'showImage']
+__all__ = ['getRandomImages', 'getImagesByPlate', 'getImagesByList', 'showImage',
+           'show_image', 'get_random_images', 'get_images_by_plate', 'get_images_by_list']
 
 
 # Decorators
@@ -102,6 +105,9 @@ def getDir3d(inputid, mode=None, release=None):
 def getRandomImages(num=10, download=False, mode=None, as_url=None, verbose=None, release=None):
     ''' Get a list of N random images from SAS
 
+    .. deprecated:: 2.3.0
+       Use :class:`marvin.utils.general.images.get_random_images` instead.
+
     Retrieve a random set of images from either your local filesystem SAS
     or the Utah SAS.  Optionally can download the images by rsync using
     sdss_access.
@@ -135,6 +141,9 @@ def getRandomImages(num=10, download=False, mode=None, as_url=None, verbose=None
             The list of images
 
     '''
+    warnings.warn('getRandomImages is deprecated as of Marvin 2.3.0. '
+                  'Please use get_randome_images', MarvinDeprecationWarning)
+
     release = release if release else marvin.config.release
     drpver, __ = marvin.config.lookUpVersions(release=release)
     is_public = 'DR' in release
@@ -182,6 +191,9 @@ def getRandomImages(num=10, download=False, mode=None, as_url=None, verbose=None
 def getImagesByPlate(plateid, download=False, mode=None, as_url=None, verbose=None, release=None):
     ''' Get all images belonging to a given plate ID
 
+    .. deprecated:: 2.3.0
+       Use :class:`marvin.utils.general.images.get_images_by_plate` instead.
+
     Retrieve all images belonging to a given plate ID from either your local filesystem SAS
     or the Utah SAS.  Optionally can download the images by rsync using
     sdss_access.
@@ -216,12 +228,15 @@ def getImagesByPlate(plateid, download=False, mode=None, as_url=None, verbose=No
 
     '''
 
+    warnings.warn('getImagesByPlate is deprecated as of Marvin 2.3.0. '
+                  'Please use get_images_by_plate', MarvinDeprecationWarning)
+
     assert str(plateid).isdigit(), 'Plateid must be a numeric integer value'
 
     # setup marvin inputs
     release = release if release else marvin.config.release
     drpver, __ = marvin.config.lookUpVersions(release=release)
-    dir3d = getDir3d(plateid, mode=mode, release=release)
+    #dir3d = getDir3d(plateid, mode=mode, release=release)
 
     # setup Rsync Access
     is_public = 'DR' in release
@@ -237,7 +252,7 @@ def getImagesByPlate(plateid, download=False, mode=None, as_url=None, verbose=No
 
     # do a local or remote thing
     if mode == 'local':
-        full = rsync_access.full('mangaimage', plate=plateid, drpver=drpver, ifu='*', dir3d=dir3d)
+        full = rsync_access.full('mangaimage', plate=plateid, drpver=drpver, ifu='*', dir3d='*')
         listofimages = rsync_access.expand('', full=full, as_url=as_url)
 
         # if download, issue warning that cannot do it
@@ -247,7 +262,7 @@ def getImagesByPlate(plateid, download=False, mode=None, as_url=None, verbose=No
         return listofimages
     elif mode == 'remote':
         rsync_access.remote()
-        rsync_access.add('mangaimage', plate=plateid, drpver=drpver, ifu='*', dir3d=dir3d)
+        rsync_access.add('mangaimage', plate=plateid, drpver=drpver, ifu='*', dir3d='*')
 
         # set the stream
         try:
@@ -268,6 +283,9 @@ def getImagesByPlate(plateid, download=False, mode=None, as_url=None, verbose=No
 @setMode
 def getImagesByList(inputlist, download=False, mode=None, as_url=None, verbose=None, release=None):
     ''' Get all images from a list of ids
+
+    .. deprecated:: 2.3.0
+       Use :class:`marvin.utils.general.images.get_images_by_list` instead.
 
     Retrieve a list of images from either your local filesystem SAS
     or the Utah SAS.  Optionally can download the images by rsync using
@@ -302,6 +320,10 @@ def getImagesByList(inputlist, download=False, mode=None, as_url=None, verbose=N
             The list of images you have requested
 
     '''
+
+    warnings.warn('getImagesByList is deprecated as of Marvin 2.3.0. '
+                  'Please use get_images_by_list', MarvinDeprecationWarning)
+
     # Check inputs
     assert isinstance(inputlist, (list, np.ndarray)), 'Input must be of type list or Numpy array'
     idtype = parseIdentifier(inputlist[0])
@@ -378,6 +400,9 @@ def getImagesByList(inputlist, download=False, mode=None, as_url=None, verbose=N
 def showImage(path=None, plateifu=None, release=None, return_image=True, show_image=True, mode=None):
     ''' Crudely and coarsely show a galaxy image that has been downloaded
 
+    .. deprecated:: 2.3.0
+       Use :class:`marvin.tools.image.Image` or :func:`show_image` instead.
+
     This utility function quickly allows you to display a PNG IFU image that is located in your
     local SAS or from the remote Utah SAS.  A PIL Image object is also returned which allows you to
     manipulate the image after the fact.  See :ref:`marvin-image-show` for example usage.
@@ -404,6 +429,9 @@ def showImage(path=None, plateifu=None, release=None, return_image=True, show_im
             If return_image is set, returns a PIL Image object to allow for image manipulation, else returns None.
 
     '''
+
+    warnings.warn('showImage is deprecated as of Marvin 2.3.0. '
+                  'Please use marvin.tools.image.Image instead.', MarvinDeprecationWarning)
 
     # check inputs
     release = release if release else marvin.config.release
@@ -491,6 +519,119 @@ def showImage(path=None, plateifu=None, release=None, return_image=True, show_im
         return image
     else:
         return None
+
+
+def show_image(input, **kwargs):
+    ''' Shows a Marvin Image
+
+    This is a thin wrapper for :func:`marvin.tools.image.Image.show`
+    See :class:`marvin.tools.image.Image` for a full list of
+    inputs and keywords.  This is meant to replace showImage
+
+    '''
+    from marvin.tools.image import Image
+    image = Image(input, **kwargs)
+    image.show()
+
+
+def _download_images(images, label='get_images'):
+    ''' Download a set of images '''
+    rsync = RsyncAccess(label=label)
+    rsync.remote()
+    for image in images:
+        full = image._getFullPath()
+        rsync.add('', full=full)
+    rsync.set_stream()
+    rsync.commit()
+
+
+def get_images_by_plate(plateid, download=None, release=None):
+    ''' Get Images by Plate
+
+    Gets Marvin Images by a plate id.  Optionally can download them
+    in bulk.
+
+    Parameters:
+        plateid (int):
+            The plate id to grab images for
+        download (bool):
+            If True, also downloads all the images locally
+        release (str):
+            The release of the data to grab images for
+
+    Returns:
+        A list of Marvin Images
+
+    '''
+
+    from marvin.tools.image import Image
+    assert str(plateid).isdigit(), 'Plateid must be a numeric integer value'
+
+    images = Image.by_plate(plateid, release=release)
+
+    if download:
+        _download_images(images, label='by_plate')
+
+    return images
+
+
+def get_images_by_list(inputlist, release=None, download=None):
+    ''' Get Images by List
+
+    Gets Marvin Images by an input list.  Optionally can download them
+    in bulk.
+
+    Parameters:
+        inputlist (int):
+            The list of ids to grab images for
+        download (bool):
+            If True, also downloads all the images locally
+        release (str):
+            The release of the data to grab images for
+
+    Returns:
+        A list of Marvin Images
+
+    '''
+
+    from marvin.tools.image import Image
+    assert isinstance(inputlist, (list, np.ndarray)), 'Input must be of type list or Numpy array'
+
+    images = Image.from_list(inputlist, release=release)
+
+    if download:
+        _download_images(images, label='by_list')
+
+    return images
+
+
+def get_random_images(num, release=None, download=None):
+    ''' Get a random set of Images
+
+    Gets a random set of Marvin Images.  Optionally can download them
+    in bulk.
+
+    Parameters:
+        num (int):
+            The number of random images to grab
+        download (bool):
+            If True, also downloads all the images locally
+        release (str):
+            The release of the data to grab images for
+
+    Returns:
+        A list of Marvin Images
+
+    '''
+
+    from marvin.tools.image import Image
+
+    images = Image.get_random(num=num, release=release)
+
+    if download:
+        _download_images(images, label='by_random')
+
+    return images
 
 
 
