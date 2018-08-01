@@ -16,6 +16,9 @@ Added
 - Adds User table into the history schema of mangadb.  Tracks user logins.
 - ``Map`` has a new method ``getSpaxel`` to retrieve an ``Spaxel`` using the parent ``Maps``.
 - New configuration option in ``marvin.yml``, ``default_release``, to set the release to be used when Marvin gets imported (:issue:`463`).
+- New Marvin Image Tool to load optical images using the MMA (:issue:`22`)
+- New Bundle and Cutout utility classes
+- New MMAMixIn for providing multi-modal data access
 
 Changed
 ^^^^^^^
@@ -52,6 +55,7 @@ Refactored
 ^^^^^^^^^^
 - Moved `marvin.core.core` to `marvin.tools.core` and split the mixins into `marvin.tools.mixins`.
 - Reimplemented `~marvin.tools.mixins.aperture.GetApertureMixIn.getAperture` as a mixin using photutils apertures (:issue:`3,315`).
+- Moved pieces of MarvinToolsClass into `marvin.tools.mixins`.
 
 
 [2.2.5] - 2018/04/26
