@@ -1487,7 +1487,8 @@ class Results(object):
 
                 self.objects.append(self._get_object(ModelCube, **mapkwargs))
 
-    def _get_object(self, obj, **kwargs):
+    @staticmethod
+    def _get_object(obj, **kwargs):
         ''' Return a Marvin object or an error message
 
         To preserve the lengths of self.results and self.objects, it will
@@ -1508,8 +1509,8 @@ class Results(object):
         except MarvinError as e:
             plateifu = kwargs.get('plateifu', '')
             inst = 'Error creating {0} for {1}: {2}'.format(obj.__name__, plateifu, e)
-        else:
-            return inst
+
+        return inst
 
     def plot(self, x_name, y_name, **kwargs):
         ''' Make a scatter plot from two columns of results
