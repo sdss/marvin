@@ -146,7 +146,7 @@ class Image(MMAMixIn, object):
                                                drpver=self._drpver, plate=plate)
 
     def download(self):
-        """Downloads the cube using sdss_access - Rsync,"""
+        """Downloads the image using sdss_access - Rsync,"""
 
         if not self.plateifu:
             return None
@@ -205,8 +205,24 @@ class Image(MMAMixIn, object):
         if self.data:
             self.data.show()
 
-    def save(self, filename, filetype=None, **kwargs):
-        ''' Save the image '''
+    def save(self, filename, filetype='png', **kwargs):
+        ''' Save the image to a file
+
+        This only saves the original image.  To save the Matplotlib plot, use
+        the savefig method on the matplotlib.pyplot.figure object
+
+        Parameters:
+            filename (str):
+                The filename of the output image
+            filetype (str):
+                The filetype, e.g. png
+            kwargs:
+                Additional keyword arguments to the PIL.Image.save method
+
+        '''
+        __, fileext = os.path.splitext(filename)
+        assert filetype or fileext, 'Filename must have an extension or specify the filetype'
+
         if self.data:
             self.data.save(filename, format=filetype, **kwargs)
 

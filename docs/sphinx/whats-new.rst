@@ -5,7 +5,7 @@ What's new in Marvin
 
 2.3.0 (unreleased)
 ------------------
-
+* A new Marvin :ref:`marvin-image` Tool for interfacing with the MaNGA optical images.
 
 2.2.6 (July 2019)
 ------------------
