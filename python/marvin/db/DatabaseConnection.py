@@ -102,7 +102,7 @@ def clearSearchPathCallback(dbapi_con, connection_record):
     connection_record - type: sqlalchemy.pool._ConnectionRecord
     '''
     cursor = dbapi_con.cursor()
-    cursor.execute('SET search_path TO "$user",functions')
+    cursor.execute('SET search_path TO "$user",functions,public')
     dbapi_con.commit()
 
 listen(Pool, 'connect', clearSearchPathCallback)
