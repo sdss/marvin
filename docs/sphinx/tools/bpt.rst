@@ -332,20 +332,12 @@ Spaxels that cannot be classified as ``sf``, ``agn``, ``seyfert``, or ``liner`` 
 Modifying the Plot
 ^^^^^^^^^^^^^^^^^^
 
-.. plot::
-    :align: center
-    :include-source: True
-
-    from marvin.tools import Maps
-    mm = Maps('8485-1901')
-    masks, fig, axes = mm.get_bpt()
-
-
-Once you return the BPT figure, you are free to modify it anyway you like. There are different strategies you can try, depending on the complexity of what you want to accomplish. In general, manually modifying the plots requires some knowledge of `matplotlib <https://matplotlib.org/>`_. Let us start by creating a BPT diagram
+Once you return the BPT figure, you are free to modify it anyway you like. There are different strategies you can try, depending on the complexity of what you want to accomplish. In general, manually modifying the plots requires some knowledge of `matplotlib <https://matplotlib.org/>`_. Let us start by creating a BPT diagram:
 
 .. plot::
     :align: center
     :include-source: True
+    :context: True
 
     >>> from marvin.tools import Maps
     >>> mm = Maps('8485-1901')
@@ -357,13 +349,7 @@ Once you return the BPT figure, you are free to modify it anyway you like. There
      <mpl_toolkits.axes_grid1.axes_divider.LocatableAxes object at 0x1192f8a20>,
      <mpl_toolkits.axes_grid1.axes_divider.LocatableAxes object at 0x1193ae6d8>,
      <mpl_toolkits.axes_grid1.axes_divider.LocatableAxes object at 0x119481cc0>]
-    >>> fig.axes[1].lines[0].set_linestyle('--')
-    >>> nii_ax = axes[0]
-    >>> new_fig = nii_ax.bind_to_figure()
-    >>> ax = new_fig.axes[0]
-    >>> ax.set_title('A custom plot')
-    >>> for text in ax.texts:
-    >>>     text.set_fontsize(20)
+
 
 As we can see, the returned figure is a matplolib `figure <http://https://matplotlib.org/api/figure_api.html?highlight=figure#module-matplotlib.figure>`_ object, while the ``axes`` are a list of ``LocatableAxes``. Matplotlib documentation on ``LocatableAxes`` is scarce, but to most effects they can be considered as normal `axes <https://matplotlib.org/api/axes_api.html#matplotlib.axes.Axes>`_ objects.
 
@@ -372,6 +358,7 @@ If you want to modify something in the plot but without changing its main struct
 .. plot::
     :align: center
     :include-source: True
+    :context: True
 
     >>> print(fig.axes)
     [<mpl_toolkits.axes_grid1.axes_divider.LocatableAxes at 0x111323d30>,
@@ -392,6 +379,7 @@ Alternatively, you may want to grab one of the axes and modify it, then saving i
 .. plot::
     :align: center
     :include-source: True
+    :context: True
 
     >>> nii_ax = axes[0]
     >>> new_fig = nii_ax.bind_to_figure()
@@ -401,6 +389,7 @@ Alternatively, you may want to grab one of the axes and modify it, then saving i
 .. plot::
     :align: center
     :include-source: True
+    :context: True
 
     >>> ax = new_fig.axes[0]
     >>> ax.set_title('A custom plot')
@@ -425,6 +414,7 @@ Ultimately, you can use the masks to generate brand-new plots with your preferre
 .. plot::
     :align: center
     :include-source: True
+    :context: False
 
     from marvin.tools import Maps
     from matplotlib import pyplot as plt
