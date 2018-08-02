@@ -398,7 +398,7 @@ Ultimately, you can use the masks to generate brand-new plots with your preferre
     :align: center
     :include-source: True
 
-    from marvin.tools.maps import Maps
+    from marvin.tools import Maps
     from matplotlib import pyplot as plt
     from marvin.utils.dap.bpt import kewley_sf_nii, kewley_comp_nii
     import numpy as np
