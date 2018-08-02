@@ -78,3 +78,13 @@ Bin
    :members: Bin
    :undoc-members:
    :show-inheritance:
+
+.. _marvin-tools-image:
+
+Image
+-----
+
+.. automodule:: marvin.tools.image
+   :members:
+   :undoc-members:
+   :show-inheritance:

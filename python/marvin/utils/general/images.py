@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 #!/usr/bin/env python
 # encoding: utf-8
 
@@ -14,6 +15,23 @@ from __future__ import print_function
 from __future__ import division
 from marvin.core.exceptions import MarvinError, MarvinUserWarning
 import numpy as np
+=======
+# !usr/bin/env python
+# -*- coding: utf-8 -*-
+#
+# Licensed under a 3-clause BSD license.
+#
+# @Author: Brian Cherinka
+# @Date:   2018-07-31 23:52:31
+# @Last modified by:   Brian Cherinka
+# @Last Modified time: 2018-08-01 03:34:02
+
+from __future__ import print_function, division, absolute_import
+
+import os
+import sys
+import warnings
+>>>>>>> 866da78... cleaning up and adding some docs
 from functools import wraps
 import marvin
 import warnings
