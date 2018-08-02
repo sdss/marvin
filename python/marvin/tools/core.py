@@ -5,7 +5,7 @@
 # @Filename: core.py
 # @License: BSD 3-clause (http://www.opensource.org/licenses/BSD-3-Clause)
 #
-# @Last modified by: José Sánchez-Gallego (gallegoj@uw.edu)
+# @Last modified by:   Brian Cherinka
 # @Last modified time: 2018-07-20 18:25:35
 
 from __future__ import absolute_import, division, print_function
@@ -119,7 +119,6 @@ class MarvinToolsClass(object, six.with_metaclass(abc.ABCMeta)):
     def __init__(self, input=None, filename=None, mangaid=None, plateifu=None,
                  mode=None, data=None, release=None, drpall=None, download=None):
 
-<<<<<<< HEAD
         self.data = data
         self.data_origin = None
 
@@ -138,11 +137,6 @@ class MarvinToolsClass(object, six.with_metaclass(abc.ABCMeta)):
 
         # Sets filename, plateifu, and mangaid depending on the values the input parameters.
         self._determine_inputs(input)
-=======
-        MMAMixIn.__init__(self, input=input, filename=filename, mangaid=mangaid,
-                          plateifu=plateifu, mode=mode, data=data, release=release,
-                          download=download)
->>>>>>> 866da78... cleaning up and adding some docs
 
         self.datamodel = None
         self._set_datamodel()
@@ -151,7 +145,6 @@ class MarvinToolsClass(object, six.with_metaclass(abc.ABCMeta)):
         breadcrumb.drop(message='Initializing MarvinTool {0}'.format(self.__class__),
                         category=self.__class__)
 
-<<<<<<< HEAD
         assert self.mode in ['auto', 'local', 'remote']
         assert self.filename is not None or self.plateifu is not None, 'no inputs set.'
 
@@ -302,15 +295,12 @@ class MarvinToolsClass(object, six.with_metaclass(abc.ABCMeta)):
             self.mode = 'remote'
             self.data_origin = 'api'
 
-=======
->>>>>>> 866da78... cleaning up and adding some docs
     @abc.abstractmethod
     def _set_datamodel(self):
         """Sets the datamodel for this object. Must be overridden by each subclass."""
 
         pass
 
-<<<<<<< HEAD
     def download(self, pathType=None, **pathParams):
         """Download using sdss_access Rsync"""
 
@@ -360,8 +350,6 @@ class MarvinToolsClass(object, six.with_metaclass(abc.ABCMeta)):
 
         return fullpath
 
-=======
->>>>>>> 866da78... cleaning up and adding some docs
     def _toolInteraction(self, url, params=None):
         """Runs an Interaction and passes self._release."""
 
@@ -459,7 +447,6 @@ class MarvinToolsClass(object, six.with_metaclass(abc.ABCMeta)):
 
         return marvin_pickle.restore(path, delete=delete)
 
-<<<<<<< HEAD
     @property
     def release(self):
         """Returns the release."""
@@ -484,8 +471,6 @@ class MarvinToolsClass(object, six.with_metaclass(abc.ABCMeta)):
 
         return int(self.plateifu.split('-')[1])
 
-=======
->>>>>>> 866da78... cleaning up and adding some docs
     def __del__(self):
         """Destructor for closing FITS files."""
 
