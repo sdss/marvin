@@ -332,6 +332,12 @@ Spaxels that cannot be classified as ``sf``, ``agn``, ``seyfert``, or ``liner`` 
 Modifying the Plot
 ^^^^^^^^^^^^^^^^^^
 
+.. plot::
+    :include-source: True
+
+    import matplotlib
+    print(matplotlib.__version__)
+
 Once you return the BPT figure, you are free to modify it anyway you like. There are different strategies you can try, depending on the complexity of what you want to accomplish. In general, manually modifying the plots requires some knowledge of `matplotlib <https://matplotlib.org/>`_. Let us start by creating a BPT diagram:
 
 .. plot::
