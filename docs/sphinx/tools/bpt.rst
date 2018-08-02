@@ -39,8 +39,8 @@ See :meth:`~marvin.tools.maps.Maps.get_bpt` for the API reference of how to gene
     :include-source: True
 
     # get a map
-    from marvin.tools.maps import Maps
-    maps = Maps(plateifu='8485-1901')
+    from marvin.tools import Maps
+    maps = Maps('8485-1901')
 
     # make a standard 3-plot BPT and retrieve the classifications
     masks, fig, axes = maps.get_bpt()
@@ -60,11 +60,6 @@ See :meth:`~marvin.tools.maps.Maps.get_bpt` for the API reference of how to gene
 
     # give me the masks and figures, but don't show me the plot (good for batch jobs)
     masks, fig, axes = maps.get_bpt(show_plot=False)
-
-.. image:: ../_static/bpt.png
-    :width: 800px
-    :align: center
-    :alt: BPT
 
 
 Minimum Signal-To-Noise Ratio
