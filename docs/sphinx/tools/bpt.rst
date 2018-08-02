@@ -332,9 +332,14 @@ Spaxels that cannot be classified as ``sf``, ``agn``, ``seyfert``, or ``liner`` 
 Modifying the Plot
 ^^^^^^^^^^^^^^^^^^
 
-Once you return the BPT figure, you are free to modify it anyway you like. There are different strategies you can try, depending on the complexity of what you want to accomplish. In general, manually modifying the plots requires some knowledge of `matplotlib <https://matplotlib.org/>`_. Let us start by creating a BPT diagram ::
+Once you return the BPT figure, you are free to modify it anyway you like. There are different strategies you can try, depending on the complexity of what you want to accomplish. In general, manually modifying the plots requires some knowledge of `matplotlib <https://matplotlib.org/>`_. Let us start by creating a BPT diagram
 
-    >>> mm = Maps(plateifu='8485-1901')
+.. plot::
+    :align: center
+    :include-source: True
+
+    from marvin.tools import Maps
+    >>> mm = Maps('8485-1901')
     >>> masks, fig, axes = mm.get_bpt()
     >>> print(fig)
     Figure(850x1000)
@@ -343,10 +348,21 @@ Once you return the BPT figure, you are free to modify it anyway you like. There
      <mpl_toolkits.axes_grid1.axes_divider.LocatableAxes object at 0x1192f8a20>,
      <mpl_toolkits.axes_grid1.axes_divider.LocatableAxes object at 0x1193ae6d8>,
      <mpl_toolkits.axes_grid1.axes_divider.LocatableAxes object at 0x119481cc0>]
+    >>> fig.axes[1].lines[0].set_linestyle('--')
+    >>> nii_ax = axes[0]
+    >>> new_fig = nii_ax.bind_to_figure()
+    >>> ax = new_fig.axes[0]
+    >>> ax.set_title('A custom plot')
+    >>> for text in ax.texts:
+    >>>     text.set_fontsize(20)
 
 As we can see, the returned figure is a matplolib `figure <http://https://matplotlib.org/api/figure_api.html?highlight=figure#module-matplotlib.figure>`_ object, while the ``axes`` are a list of ``LocatableAxes``. Matplotlib documentation on ``LocatableAxes`` is scarce, but to most effects they can be considered as normal `axes <https://matplotlib.org/api/axes_api.html#matplotlib.axes.Axes>`_ objects.
 
-If you want to modify something in the plot but without changing its main structure, you can use the returned figure. For instance, here we will modify the star forming boundary line in the :math:`\rm [SII]/H\alpha` diagram from solid to dashed, and save the resulting plot as a PNG image ::
+If you want to modify something in the plot but without changing its main structure, you can use the returned figure. For instance, here we will modify the star forming boundary line in the :math:`\rm [SII]/H\alpha` diagram from solid to dashed, and save the resulting plot as a PNG image
+
+.. plot::
+    :align: center
+    :include-source: True
 
     >>> print(fig.axes)
     [<mpl_toolkits.axes_grid1.axes_divider.LocatableAxes at 0x111323d30>,
@@ -358,16 +374,24 @@ If you want to modify something in the plot but without changing its main struct
      <mpl_toolkits.axes_grid1.axes_divider.LocatableAxes at 0x1119de358>,
      <mpl_toolkits.axes_grid1.axes_grid.CbarAxes at 0x111aa0fd0>]
     >>> fig.axes[1].lines[0].set_linestyle('--')
-    >>> fig.savefig('/Users/albireo/Downloads/bpt_new.png')
+    # fig.savefig('/Users/albireo/Downloads/bpt_new.png')
 
 ``fig.axes`` returns a list of four ``LocatableAxes`` (the three BPT diagrams and the 2D representation of the masks) plus a number of ``CbarAxes``. Normally, you can ignore the latter ones. Also, note that if you use the option ``use_oi=False`` when creating the BPT diagram, you will only see three ``LocatableAxes``. We select the  :math:`\rm [SII]/H\alpha` as ``fig.axes[1]``. From there, we can access all the axes attributes and methods. For instance, we can select the first line in the plot ``.lines[0]`` and change its style to dashed ``.set_linestyle('--')``.
 
-Alternatively, you may want to grab one of the axes and modify it, then saving it as a new figure. By itself, matplotlib does not allow to reuse axes in a different figure, so Marvin includes some black magic under the hood to facilitate this ::
+Alternatively, you may want to grab one of the axes and modify it, then saving it as a new figure. By itself, matplotlib does not allow to reuse axes in a different figure, so Marvin includes some black magic under the hood to facilitate this
+
+.. plot::
+    :align: center
+    :include-source: True
 
     >>> nii_ax = axes[0]
     >>> new_fig = nii_ax.bind_to_figure()
 
-``new_fig`` is now an independent figure that contains the axes for the :math:`\rm [SII]/H\alpha` plot. Let us modify it a bit ::
+``new_fig`` is now an independent figure that contains the axes for the :math:`\rm [SII]/H\alpha` plot. Let us modify it a bit
+
+.. plot::
+    :align: center
+    :include-source: True
 
     >>> ax = new_fig.axes[0]
     >>> ax.set_title('A custom plot')
@@ -377,10 +401,10 @@ Alternatively, you may want to grab one of the axes and modify it, then saving i
 
 Here we have added a title to the plot, modified the font size of all the texts in the axes, and then saved it as a new image.
 
-.. image:: ../_static/nii_new.png
-    :width: 800px
-    :align: center
-    :alt: nii_new
+.. .. image:: ../_static/nii_new.png
+..     :width: 800px
+..     :align: center
+..     :alt: nii_new
 
 .. admonition:: Warning
     :class: warning
