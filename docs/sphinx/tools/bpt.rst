@@ -332,13 +332,22 @@ Spaxels that cannot be classified as ``sf``, ``agn``, ``seyfert``, or ``liner`` 
 Modifying the Plot
 ^^^^^^^^^^^^^^^^^^
 
+.. plot::
+    :align: center
+    :include-source: True
+
+    from marvin.tools import Maps
+    mm = Maps('8485-1901')
+    masks, fig, axes = mm.get_bpt()
+
+
 Once you return the BPT figure, you are free to modify it anyway you like. There are different strategies you can try, depending on the complexity of what you want to accomplish. In general, manually modifying the plots requires some knowledge of `matplotlib <https://matplotlib.org/>`_. Let us start by creating a BPT diagram
 
 .. plot::
     :align: center
     :include-source: True
 
-    from marvin.tools import Maps
+    >>> from marvin.tools import Maps
     >>> mm = Maps('8485-1901')
     >>> masks, fig, axes = mm.get_bpt()
     >>> print(fig)
