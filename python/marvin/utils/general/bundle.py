@@ -6,7 +6,7 @@
 # @Author: José Sánchez-Gallego
 # @Date:   2014-04-18 00:21:02
 # @Last modified by:   Brian Cherinka
-# @Last Modified time: 2018-08-01 03:45:57
+# @Last Modified time: 2018-08-01 16:12:26
 
 from __future__ import absolute_import, division, print_function, unicode_literals
 
@@ -36,31 +36,38 @@ PLATEHOLES = None
 
 
 class Bundle(object):
-    """The location, size, and shape of a MaNGA IFU bundle."""
+    """The location, size, and shape of a MaNGA IFU bundle.
+
+    A bundle of a given size at the RA/Dec coordinates.
+
+    Setting envelope creates the hexagon at the outer boundry of the fibers,
+    otherwise the hexagon runs through the centers of the outer fibers.
+
+    Parameters:
+        ra (float):
+            The Right Ascension of the target
+        dec (float):
+            The Declination of the target
+        size (int):
+            The fiber size of the IFU, e.g. 19 or 127
+        plateifu (str):
+            The plateifu of the target
+        use_envelope (bool):
+            Expands the hexagon area to include an envelope surrounding the hex border
+        local (bool):
+            If True, grabs the fiducial metrology file from a local MANGACORE
+
+    Attributes:
+        fibers (ndarray):
+            An Nx3 array of IFU fiber coordinates
+        skies (ndarray):
+            An Nx2 array of sky fiber coordinates.  Default is unloaded.  Use :meth:`get_sky_coordinates` to load.
+        hexagon (ndarray):
+            An Nx2 array of coordinates defining the hexagon vertices
+    """
 
     def __init__(self, ra, dec, size=127, use_envelope=True,
                  local=None, plateifu=None, **kwargs):
-        """
-        A bundle of a given size at the RA/Dec coordinates.
-
-        Setting envelope creates the hexagon at the outer boundry of the fibers,
-        otherwise the hexagon runs through the centers of the outer fibers.
-
-        Parameters:
-            ra (float):
-                The Right Ascension of the target
-            dec (float):
-                The Declination of the target
-            size (int):
-                The fiber size of the IFU, e.g. 19 or 127
-            plateifu (str):
-                The plateifu of the target
-            use_envelope (bool):
-                Expands the hexagon area to include an envelope surrounding the hex border
-            local (bool):
-                If True, grabs the fiducial metrology file from a local MANGACORE
-        """
-
         self.ra = float(ra)
         self.dec = float(dec)
         self.size = size
@@ -73,11 +80,12 @@ class Bundle(object):
 
         self.simbMap = self._get_simbmap_file(local=local)
 
+        # get the fiber coordinates
         self.skies = None
-        self.fibers = self.get_fiber_coordinates()
-        self.fibers = self.fibers[self.fibers[:, 0] <= size]
+        self.fibers = self.get_fiber_coordinates(size=size)
 
-        self._calculate_hexagon(use_envelope=use_envelope)
+        # get the hexagon coordinates
+        self.hexagon = self._calculate_hexagon(use_envelope=use_envelope)
 
     def __repr__(self):
         return '<Bundle (ra={0}, dec={1}, ifu={2})>'.format(self.ra, self.dec, self.size)
@@ -228,6 +236,9 @@ class Bundle(object):
     def get_sky_coordinates(self, plateifu=None):
         ''' Returns the RA, Dec coordinates of the sky fibers
 
+        An Nx2 numpy array, with each row the [RA, Dec] coordinate of
+        the sky fiber.
+
         Parameters:
             plateifu (str):
                 The plateifu of the target
@@ -242,8 +253,16 @@ class Bundle(object):
         data = self._get_plateholes_file(plate=plate)
         self.skies = self._get_sky_fibers(data, ifu)
 
-    def get_fiber_coordinates(self):
-        """ Returns the RA, Dec coordinates for each fiber. """
+    def get_fiber_coordinates(self, size=None):
+        """ Returns the RA, Dec coordinates for each fiber.
+
+        Parameters:
+            size (int):
+                The IFU size.  This extracts only the fibers for the given size
+
+        Returns:
+            An Nx3 numpy array, each row containing [fiberid, RA, Dec]
+        """
 
         fibreWorld = np.zeros((len(self.simbMap), 3), float)
 
@@ -254,6 +273,10 @@ class Bundle(object):
         fibreWorld[:, 0] = self.simbMap['fnumdesign']
         fibreWorld[:, 1] = self.ra + raOffDeg
         fibreWorld[:, 2] = self.dec + decOffDeg
+
+        # extract only the fibers for the specified IFU size
+        if size:
+            fibreWorld = fibreWorld[fibreWorld[:, 0] <= size]
 
         return fibreWorld
 
@@ -305,8 +328,6 @@ class Bundle(object):
         hexagon = hexagonOff.copy()
         hexagon[:, 0] = self.ra + raOffDeg
         hexagon[:, 1] = self.dec + decOffDeg
-
-        self.hexagon = hexagon
 
         return hexagon
 
