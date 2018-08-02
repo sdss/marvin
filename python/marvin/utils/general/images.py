@@ -1,28 +1,26 @@
-#!/usr/bin/env python
-# encoding: utf-8
+# !usr/bin/env python
+# -*- coding: utf-8 -*-
+#
+# Licensed under a 3-clause BSD license.
+#
+# @Author: Brian Cherinka
+# @Date:   2018-07-31 23:52:31
+# @Last modified by:   Brian Cherinka
+# @Last Modified time: 2018-08-02 10:59:57
 
-'''
-Created by Brian Cherinka on 2016-04-29 00:04:16
-Licensed under a 3-clause BSD license.
+from __future__ import absolute_import, division, print_function
 
-Revision History:
-    Initial Version: 2016-04-29 00:04:16 by Brian Cherinka
-    Last Modified On: 2016-04-29 00:04:16 by Brian
-
-'''
-from __future__ import print_function
-from __future__ import division
-from marvin.core.exceptions import MarvinError, MarvinUserWarning
-import numpy as np
-from functools import wraps
-import marvin
-import warnings
-from distutils.version import StrictVersion
-from marvin.utils.general import parseIdentifier, mangaid2plateifu
-import PIL
 import os
-import requests
 import sys
+import warnings
+from functools import wraps
+from distutils.version import StrictVersion
+
+import PIL
+import requests
+import marvin
+from marvin.utils.general import mangaid2plateifu, parseIdentifier
+
 
 if sys.version_info == 2:
     from cStringIO import StringIO as stringio
@@ -491,6 +489,3 @@ def showImage(path=None, plateifu=None, release=None, return_image=True, show_im
         return image
     else:
         return None
-
-
-

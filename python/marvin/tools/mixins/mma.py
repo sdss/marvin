@@ -1,12 +1,12 @@
-#!/usr/bin/env python
+# !usr/bin/env python
 # -*- coding: utf-8 -*-
 #
-# @Author: Brian Cherinka, José Sánchez-Gallego, and Brett Andrews
-# @Filename: core.py
-# @License: BSD 3-clause (http://www.opensource.org/licenses/BSD-3-Clause)
+# Licensed under a 3-clause BSD license.
 #
+# @Author: Brian Cherinka
+# @Date:   2018-07-28 17:26:41
 # @Last modified by:   Brian Cherinka
-# @Last modified time: 2018-07-20 18:25:35
+# @Last Modified time: 2018-08-01 03:17:24
 
 from __future__ import absolute_import, division, print_function
 
@@ -16,18 +16,11 @@ import re
 import time
 import warnings
 
-import astropy.io.fits
 import six
-
-import marvin
-import marvin.api.api
-from marvin.core import marvin_pickle
-from marvin.core.exceptions import (MarvinBreadCrumb, MarvinError,
-                                    MarvinMissingDependency, MarvinUserWarning)
+from marvin import config, marvindb
+from marvin.core.exceptions import (MarvinError, MarvinMissingDependency, MarvinUserWarning)
 from marvin.utils.db import testDbConnection
 from marvin.utils.general.general import mangaid2plateifu
-from marvin.utils.general.maskbit import get_manga_target
-
 
 try:
     from sdss_access.path import Path
@@ -39,30 +32,15 @@ try:
 except ImportError:
     RsyncAccess = None
 
-
-__ALL__ = ['MarvinToolsClass']
-
-
-def kwargsGet(kwargs, key, replacement):
-    """As kwargs.get but uses replacement if the value is None."""
-
-    if key not in kwargs:
-        return replacement
-    elif key in kwargs and kwargs[key] is None:
-        return replacement
-    else:
-        return kwargs[key]
+__all__ = ['MMAMixIn']
 
 
-breadcrumb = MarvinBreadCrumb()
+class MMAMixIn(object, six.with_metaclass(abc.ABCMeta)):
+    """A mixin that provides multi-modal data access.
 
-
-class MarvinToolsClass(object, six.with_metaclass(abc.ABCMeta)):
-    """Marvin tools main base class.
-
-    This super class implements the :ref:`decision tree <marvin-dma>`
-    for using local files, database, or remote connection when
-    initialising a Marvin tools object.
+    Add this mixin to any new class object to provide that class with
+    the Multi-Modal Data Access System for using local files, database,
+    or remote connection when initializing new objects.  See :ref:`decision tree <marvin-dma>`
 
     Parameters:
         input (str):
@@ -94,6 +72,8 @@ class MarvinToolsClass(object, six.with_metaclass(abc.ABCMeta)):
         download (bool):
             If ``True``, the data will be downloaded on instantiation. See
             :ref:`marvin-download-objects`.
+        ignore_db (bool):
+            If ``True``, the local data-origin `db` will be ignored.
 
     Attributes:
         data (:class:`~astropy.io.fits.HDUList`, SQLAlchemy object, or dict):
@@ -101,9 +81,6 @@ class MarvinToolsClass(object, six.with_metaclass(abc.ABCMeta)):
             |HDUList| from the FITS file, a
             `SQLAlchemy <http://www.sqlalchemy.org>`_ object, or a dictionary
             of values returned by an API call.
-        datamodel:
-            A datamodel object, whose type depends on the subclass that
-            initialises the datamodel.
         data_origin ({'file', 'db', 'api'}):
             Indicates the origin of the data, either from a file, the DB, or
             an API call.
@@ -113,37 +90,32 @@ class MarvinToolsClass(object, six.with_metaclass(abc.ABCMeta)):
             The mangaid of the target.
         plateifu:
             The plateifu of the target
+        release:
+            The data release
 
     """
 
     def __init__(self, input=None, filename=None, mangaid=None, plateifu=None,
-                 mode=None, data=None, release=None, drpall=None, download=None):
-
+                 mode=None, data=None, release=None, drpall=None, download=None,
+                 ignore_db=False):
         self.data = data
         self.data_origin = None
+        self.ignore_db = ignore_db
 
         self.filename = filename
         self.mangaid = mangaid
         self.plateifu = plateifu
 
-        self.mode = mode if mode is not None else marvin.config.mode
+        self.mode = mode if mode is not None else config.mode
 
-        self._release = release if release is not None else marvin.config.release
+        self._release = release if release is not None else config.release
 
-        self._drpver, self._dapver = marvin.config.lookUpVersions(release=self._release)
-        self._drpall = marvin.config._getDrpAllPath(self._drpver) if drpall is None else drpall
+        self._drpver, self._dapver = config.lookUpVersions(release=self._release)
+        self._drpall = config._getDrpAllPath(self._drpver) if drpall is None else drpall
 
-        self._forcedownload = download if download is not None else marvin.config.download
+        self._forcedownload = download if download is not None else config.download
 
-        # Sets filename, plateifu, and mangaid depending on the values the input parameters.
         self._determine_inputs(input)
-
-        self.datamodel = None
-        self._set_datamodel()
-
-        # drop breadcrumb
-        breadcrumb.drop(message='Initializing MarvinTool {0}'.format(self.__class__),
-                        category=self.__class__)
 
         assert self.mode in ['auto', 'local', 'remote']
         assert self.filename is not None or self.plateifu is not None, 'no inputs set.'
@@ -156,6 +128,7 @@ class MarvinToolsClass(object, six.with_metaclass(abc.ABCMeta)):
             try:
                 self._doLocal()
             except Exception as ee:
+
                 if self.filename:
                     # If the input contains a filename we don't want to go into remote mode.
                     raise(ee)
@@ -253,6 +226,29 @@ class MarvinToolsClass(object, six.with_metaclass(abc.ABCMeta)):
 
         return return_dict
 
+    @staticmethod
+    def _get_ifus(minis=None):
+        ''' Returns a list of all the allowed IFU designs ids
+
+        Parameters:
+            minis (bool):
+                If True, includes the mini-bundles
+
+        Returns:
+            A list of IFU designs
+
+        '''
+
+        # Number of IFUs per size
+        n_ifus = {19: 2, 37: 4, 61: 4, 91: 2, 127: 5, 7: 12}
+
+        # Pop the minis
+        if not minis:
+            __ = n_ifus.pop(7)
+
+        ifus = ['{0}{1:02d}'.format(key, i + 1) for key, value in n_ifus.items() for i in range(value)]
+        return ifus
+
     def _doLocal(self):
         """Tests if it's possible to load the data locally."""
 
@@ -266,9 +262,9 @@ class MarvinToolsClass(object, six.with_metaclass(abc.ABCMeta)):
 
         elif self.plateifu:
 
-            testDbConnection(marvin.marvindb.session)
+            testDbConnection(marvindb.session)
 
-            if marvin.marvindb.db:
+            if marvindb.db and not self.ignore_db:
                 self.mode = 'local'
                 self.data_origin = 'db'
             else:
@@ -294,12 +290,6 @@ class MarvinToolsClass(object, six.with_metaclass(abc.ABCMeta)):
         else:
             self.mode = 'remote'
             self.data_origin = 'api'
-
-    @abc.abstractmethod
-    def _set_datamodel(self):
-        """Sets the datamodel for this object. Must be overridden by each subclass."""
-
-        pass
 
     def download(self, pathType=None, **pathParams):
         """Download using sdss_access Rsync"""
@@ -350,103 +340,6 @@ class MarvinToolsClass(object, six.with_metaclass(abc.ABCMeta)):
 
         return fullpath
 
-    def _toolInteraction(self, url, params=None):
-        """Runs an Interaction and passes self._release."""
-
-        params = params or {'release': self._release}
-        return marvin.api.api.Interaction(url, params=params)
-
-    @staticmethod
-    def _check_file(header, data, objtype):
-        ''' Check the file input to ensure correct tool '''
-
-        # get/check various header keywords
-        bininhdr = ('binkey' in header) or ('bintype' in header)
-        dapinhdr = 'dapfrmt' in header
-        dapfrmt = header['DAPFRMT'] if dapinhdr else None
-
-        # check the file
-        if objtype == 'Maps' or objtype == 'ModelCube':
-            # get indices in daptype
-            daptype = ['MAPS', 'LOGCUBE']
-            dapindex = daptype.index("MAPS") if objtype == 'Maps' else daptype.index("LOGCUBE")
-            altdap = 1 - dapindex
-
-            # check for emline_gflux extension
-            gfluxindata = 'EMLINE_GFLUX' in data
-            wronggflux = (gfluxindata and objtype == 'ModelCube') or \
-                         (not gfluxindata and objtype == 'Maps')
-
-            if not bininhdr:
-                raise MarvinError('Trying to open a non DAP file with Marvin {0}'.format(objtype))
-            else:
-                if (dapfrmt and dapfrmt != daptype[dapindex]) or (wronggflux):
-                    raise MarvinError('Trying to open a DAP {0} with Marvin {1}'
-                                      .format(daptype[altdap], objtype))
-        elif objtype == 'Cube':
-            if bininhdr or dapinhdr:
-                raise MarvinError('Trying to open a DAP file with Marvin Cube')
-
-    def __getstate__(self):
-
-        if self.data_origin == 'db':
-            raise MarvinError('objects with data_origin=\'db\' cannot be saved.')
-
-        odict = self.__dict__.copy()
-        del odict['data']
-
-        return odict
-
-    def __setstate__(self, idict):
-
-        data = None
-        if idict['data_origin'] == 'file':
-            try:
-                data = astropy.io.fits.open(idict['filename'])
-            except Exception as ee:
-                warnings.warn('there was a problem reloading the FITS object: {0}. '
-                              'The object has been unpickled but not all the functionality '
-                              'will be available.'.format(str(ee)), MarvinUserWarning)
-
-        self.__dict__.update(idict)
-        self.data = data
-
-    def save(self, path=None, overwrite=False):
-        """Pickles the object.
-
-        If ``path=None``, uses the default location of the file in the tree
-        but changes the extension of the file to ``.mpf``. Returns the path
-        of the saved pickle file.
-
-        Parameters:
-            obj:
-                Marvin object to pickle.
-            path (str):
-                Path of saved file. Default is ``None``.
-            overwrite (bool):
-                If ``True``, overwrite existing file. Default is ``False``.
-
-        Returns:
-            str:
-                Path of saved file.
-
-        """
-
-        return marvin_pickle.save(self, path=path, overwrite=overwrite)
-
-    @classmethod
-    def restore(cls, path, delete=False):
-        """Restores a MarvinToolsClass object from a pickled file.
-
-        If ``delete=True``, the pickled file will be removed after it has been
-        unplickled. Note that, for objects with ``data_origin='file'``, the
-        original file must exists and be in the same path as when the object
-        was first created.
-
-        """
-
-        return marvin_pickle.restore(path, delete=delete)
-
     @property
     def release(self):
         """Returns the release."""
@@ -471,47 +364,3 @@ class MarvinToolsClass(object, six.with_metaclass(abc.ABCMeta)):
 
         return int(self.plateifu.split('-')[1])
 
-    def __del__(self):
-        """Destructor for closing FITS files."""
-
-        if self.data_origin == 'file' and isinstance(self.data, astropy.io.fits.HDUList):
-            try:
-                self.data.close()
-            except Exception as ee:
-                warnings.warn('failed to close FITS instance: {0}'.format(ee), MarvinUserWarning)
-
-    @property
-    def quality_flag(self):
-        """Return quality flag."""
-
-        assert self._qualflag is not None, 'quality flag not set.'
-
-        try:
-            dapqual = self._bitmasks['MANGA_' + self._qualflag]
-        except KeyError:
-            warnings.warn('cannot find bitmask MANGA_{!r}'.format(self._qualflag))
-            dapqual = None
-        else:
-            dapqual.mask = int(self.header[self._qualflag])
-
-        return dapqual
-
-    @property
-    def manga_target1(self):
-        """Return MANGA_TARGET1 flag."""
-        return get_manga_target('1', self._bitmasks, self.header)
-
-    @property
-    def manga_target2(self):
-        """Return MANGA_TARGET2 flag."""
-        return get_manga_target('2', self._bitmasks, self.header)
-
-    @property
-    def manga_target3(self):
-        """Return MANGA_TARGET3 flag."""
-        return get_manga_target('3', self._bitmasks, self.header)
-
-    @property
-    def target_flags(self):
-        """Bundle MaNGA targeting flags."""
-        return [self.manga_target1, self.manga_target2, self.manga_target3]

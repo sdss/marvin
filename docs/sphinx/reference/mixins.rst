@@ -1,6 +1,9 @@
 Mixins
 ======
 
+.. automodule:: marvin.tools.mixins.mma
+   :members:
+
 .. automodule:: marvin.tools.mixins.nsa
    :members:
 

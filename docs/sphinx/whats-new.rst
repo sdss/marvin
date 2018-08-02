@@ -47,7 +47,15 @@ Early versions of Marvin included a ``Cube.getAperture`` method that allowed to 
 
 Full documentation is available :ref:`here <marvin-get-aperture>`. As with the `~marvin.tools.rss.RSS` class, please double check any result before using it for science publications. We welcome any feedback on how to improve this feature.
 
-|
+A new tool for handling MaNGA images
+************************************
+
+A new :ref:`Marvin Image <marvin-image>` Tool is now available for interacting with MaNGA optical images.  This tool utilizes the Marvin MMA system for easier access to images locally or remotely.  The new tool provides plotting as a Matplotlib figure, which includes the image WCS information, as well as options for overlaying individual IFU or sky fibers, and customizing the IFU hexagon.  You can also
+
+  >>> from marvin.tools import Image
+  >>> im = Image('8485-1901')
+
+The old image utility functions documented :ref:`here <marvin-images>` remain but have now been deprecated by the new `~marvin.tools.image.Image` class.  Replacement utility functions are now available, with more information located :ref:`here<image-utils>`.
 
 2.2.6 (July 2019)
 ------------------

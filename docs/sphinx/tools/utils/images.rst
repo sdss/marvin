@@ -4,6 +4,13 @@
 Image Utilities
 ===============
 
+.. admonition:: Warning
+    :class: warning
+
+    .. deprecated:: 2.3.0
+        These utility functions have been deprecated.  Use :ref:`image-utils` instead.
+
+
 If you want to grab the postage stamp PNG cutout images of the MaNGA galaxies, Marvin currently provides a few ways of doing so:
 
 * **By PlateID**: Returns a list of images of galaxies observed on a given plate.
