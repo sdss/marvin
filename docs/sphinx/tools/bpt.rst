@@ -332,21 +332,12 @@ Spaxels that cannot be classified as ``sf``, ``agn``, ``seyfert``, or ``liner`` 
 Modifying the Plot
 ^^^^^^^^^^^^^^^^^^
 
-.. plot::
-    :include-source: True
-
-    import matplotlib
-    import matplotlib.pyplot as plt
-    fig, ax = plt.subplots()
-    ax.text(0, 0, matplotlib.__version__)
-
-
 Once you return the BPT figure, you are free to modify it anyway you like. There are different strategies you can try, depending on the complexity of what you want to accomplish. In general, manually modifying the plots requires some knowledge of `matplotlib <https://matplotlib.org/>`_. Let us start by creating a BPT diagram:
 
 .. plot::
     :align: center
     :include-source: True
-    :context: True
+    :context:
 
     >>> from marvin.tools import Maps
     >>> mm = Maps('8485-1901')
@@ -367,7 +358,7 @@ If you want to modify something in the plot but without changing its main struct
 .. plot::
     :align: center
     :include-source: True
-    :context: True
+    :context:
 
     >>> print(fig.axes)
     [<mpl_toolkits.axes_grid1.axes_divider.LocatableAxes at 0x111323d30>,
@@ -388,7 +379,7 @@ Alternatively, you may want to grab one of the axes and modify it, then saving i
 .. plot::
     :align: center
     :include-source: True
-    :context: True
+    :context:
 
     >>> nii_ax = axes[0]
     >>> new_fig = nii_ax.bind_to_figure()
@@ -398,7 +389,7 @@ Alternatively, you may want to grab one of the axes and modify it, then saving i
 .. plot::
     :align: center
     :include-source: True
-    :context: True
+    :context:
 
     >>> ax = new_fig.axes[0]
     >>> ax.set_title('A custom plot')
@@ -423,7 +414,7 @@ Ultimately, you can use the masks to generate brand-new plots with your preferre
 .. plot::
     :align: center
     :include-source: True
-    :context: False
+    :context: reset
 
     from marvin.tools import Maps
     from matplotlib import pyplot as plt
