@@ -337,7 +337,7 @@ Once you return the BPT figure, you are free to modify it anyway you like. There
 .. plot::
     :align: center
     :include-source: True
-    :context:
+    :context: reset
 
     >>> from marvin.tools import Maps
     >>> mm = Maps('8485-1901')
