@@ -6,7 +6,7 @@
 # @Filename: map.py
 # @License: BSD 3-clause (http://www.opensource.org/licenses/BSD-3-Clause)
 #
-# @Last modified by: José Sánchez-Gallego (gallegoj@uw.edu)
+# @Last modified by:   Brian Cherinka
 # @Last modified time: 2018-07-22 02:10:42
 
 
@@ -512,11 +512,15 @@ class Map(units.Quantity, QuantityMixIn):
         Correct observed stellar or emission line velocity dispersion
         for instrumental broadening.
         """
+
         if self.datamodel.name == 'stellar_sigma':
 
-            if self._datamodel.parent.release == 'MPL-4':
+            if 'MPL-4' in self._datamodel.parent.aliases:
                 raise marvin.core.exceptions.MarvinError(
                     'Instrumental broadening correction not implemented for MPL-4.')
+            elif 'MPL-6' in self._datamodel.parent.aliases:
+                raise marvin.core.exceptions.MarvinError(
+                    'The stellar sigma corrections in MPL-6 are unreliable. Please use MPL-7.')
 
             map_corr = self.getMaps()['stellar_sigmacorr']
 
@@ -543,7 +547,7 @@ class Map(units.Quantity, QuantityMixIn):
         """
         if self.datamodel.name == 'specindex':
 
-            if self._datamodel.parent.release == 'MPL-4':
+            if 'MPL-4' in self._datamodel.parent.aliases:
                 raise marvin.core.exceptions.MarvinError(
                     'Velocity dispersion correction not implemented for MPL-4.')
 

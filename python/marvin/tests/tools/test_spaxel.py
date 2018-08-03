@@ -382,16 +382,6 @@ class TestMaskbit(object):
         sp = maps.getSpaxel(0, 0, model=True)
         assert len(sp.quality_flags) == 2
 
-    @pytest.mark.parametrize('flag',
-                             ['manga_target1',
-                              'manga_target2',
-                              'manga_target3',
-                              'target_flags'])
-    def test_flag(self, flag, galaxy):
-        maps = Maps(plateifu=galaxy.plateifu)
-        sp = maps[0, 0]
-        assert getattr(sp, flag, None) is not None
-
 
 class TestCubeGetSpaxel(object):
 

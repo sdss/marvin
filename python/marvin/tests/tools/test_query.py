@@ -6,7 +6,7 @@
 # @Author: Brian Cherinka
 # @Date:   2017-05-25 10:11:21
 # @Last modified by:   Brian Cherinka
-# @Last Modified time: 2018-07-14 12:33:05
+# @Last Modified time: 2018-07-24 17:30:24
 
 from __future__ import print_function, division, absolute_import
 from marvin.tools.query import Query, doQuery
@@ -182,6 +182,16 @@ class TestQueryReturnParams(object):
             res = query.run()
         assert cm.type == error
         assert errmsg in str(cm.value)
+
+    @pytest.mark.parametrize('query', [('nsa.z < 0.1')], indirect=True)
+    @pytest.mark.parametrize('rps', [(['absmag_g_r', 'cube.plate', 'cube.plateifu'])])
+    def test_skipdefault(self, query, rps):
+        query = Query(searchfilter=query.searchfilter, returnparams=rps, mode=query.mode)
+        assert len(query._returnparams) == len(rps)
+        assert len(query.params) == 6
+        res = query.run()
+        assert len(res.returnparams) == len(rps)
+        assert len(res.columns) == 6
 
 
 class TestQueryReturnType(object):

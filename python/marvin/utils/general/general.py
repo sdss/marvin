@@ -18,6 +18,7 @@ import sys
 import warnings
 import contextlib
 import re
+import os
 
 from collections import OrderedDict
 from builtins import range
@@ -67,7 +68,7 @@ __all__ = ('convertCoords', 'parseIdentifier', 'mangaid2plateifu', 'findClosestV
            'invalidArgs', 'missingArgs', 'getRequiredArgs', 'getKeywordArgs',
            'isCallableWithArgs', 'map_bins_to_column', '_sort_dir',
            'get_dapall_file', 'temp_setattr', 'map_dapall', 'turn_off_ion', 'memory_usage',
-           'validate_jwt', 'target_status', 'target_is_observed')
+           'validate_jwt', 'target_status', 'target_is_observed', 'get_drpall_file')
 
 drpTable = {}
 
@@ -343,6 +344,9 @@ def mangaid2plateifu(mangaid, mode='auto', drpall=None, drpver=None):
     drpall = drpall if drpall else config._getDrpAllPath(drpver=drpver)
 
     if mode == 'drpall':
+
+        # get the drpall file
+        get_drpall_file(drpall=drpall, drpver=drpver)
 
         if not drpall:
             raise ValueError('no drpall file can be found.')
@@ -783,6 +787,8 @@ def downloadList(inputlist, dltype='cube', **kwargs):
         NA: Downloads
     """
 
+    assert isinstance(inputlist, (list, np.ndarray)), 'inputlist must be a list or numpy array'
+
     # Get some possible keywords
     # Necessary rsync variables:
     #   drpver, plate, ifu, dir3d, [mpl, dapver, bintype, n, mode]
@@ -872,10 +878,54 @@ def downloadList(inputlist, dltype='cube', **kwargs):
     rsync_access.commit(limit=limit)
 
 
+def get_drpall_file(drpall=None, drpver=None):
+    ''' Check for/download the drpall file
+
+    Checks for existence of a local drpall file for the
+    current release set.  If not found, uses sdss_access
+    to download it.
+
+    Parameters:
+        drpall (str):
+            The local path to the drpall file
+        drpver (str):
+            The DRP version
+    '''
+    from marvin import config
+
+    # check for public release
+    is_public = 'DR' in config.release
+    release = config.release.lower() if is_public else None
+
+    # get drpver
+    config_drpver, __ = config.lookUpVersions()
+    drpver = drpver if drpver else config_drpver
+
+    if not drpall:
+        drpall = config._getDrpAllPath(drpver=drpver)
+
+    if not os.path.isfile(drpall):
+        warnings.warn('drpall file not found. Downloading it.', MarvinUserWarning)
+        rsync = RsyncAccess(label='get_drpall', public=is_public, release=release)
+        rsync.remote()
+        rsync.add('drpall', drpver=drpver)
+        try:
+            rsync.set_stream()
+        except Exception as e:
+            raise MarvinError('Could not download the drpall file with sdss_access: '
+                              '{0}\nTry manually downloading it for version {1} and '
+                              'placing it {2}'.format(e, drpver, drpall))
+        else:
+            rsync.commit()
+
+
 def get_drpall_row(plateifu, drpver=None, drpall=None):
     """Returns a dictionary from drpall matching the plateifu."""
 
     from marvin import config
+
+    # get the drpall file
+    get_drpall_file(drpall=drpall, drpver=drpver)
 
     if drpall:
         drpall_table = table.Table.read(drpall)
