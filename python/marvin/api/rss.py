@@ -7,13 +7,14 @@
 # @License: BSD 3-clause (http://www.opensource.org/licenses/BSD-3-Clause)
 #
 # @Last modified by: José Sánchez-Gallego (gallegoj@uw.edu)
-# @Last modified time: 2018-07-24 01:05:01
+# @Last modified time: 2018-08-04 14:06:38
 
 
 from __future__ import division, print_function
 
 import io
 import os
+import sys
 
 import numpy
 from brain.core.exceptions import BrainError
@@ -148,7 +149,7 @@ class RSSView(BaseView):
             wavelength = (rss._wavelength.tolist() if isinstance(rss._wavelength, numpy.ndarray)
                           else rss._wavelength)
 
-            obsinfo = io.StringIO()
+            obsinfo = io.StringIO() if sys.version_info.major >= 3 else io.BytesIO()
             rss.obsinfo.write(format='ascii', filename=obsinfo)
             obsinfo.seek(0)
 
