@@ -93,7 +93,7 @@ MPL7 = DRPCubeDataModel('MPL-7', aliases=['MPL7', 'v2_4_3', 'DR15'],
 # The DRP Cube Datamodel
 datamodel = DRPCubeDataModelList([MPL4, MPL5, MPL6, MPL7, DR14])
 
-# Define the RSS Datamodel. Start by convert the Cube datamodel for convenience.
+# Define the RSS Datamodel. Start by copying the Cube datamodel for convenience.
 datamodel_rss = datamodel.copy()
 for release in datamodel_rss:
     datamodel_rss[release] = datamodel_rss[release].to_rss()

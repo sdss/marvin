@@ -6,7 +6,7 @@
 # @Author: Brian Cherinka
 # @Date:   2017-09-20 10:31:11
 # @Last modified by: José Sánchez-Gallego (gallegoj@uw.edu)
-# @Last modified time: 2018-07-22 20:40:30
+# @Last modified time: 2018-08-04 13:22:38
 
 from __future__ import absolute_import, division, print_function
 
@@ -79,7 +79,10 @@ class DataModelList(six.with_metaclass(MetaDataModel, OrderedDict)):
         self[dm.release] = dm
 
     def copy(self):
-        return copy.deepcopy(self)
+        return self.__deepcopy__(self)
+
+    def __deepcopy__(self, memo):
+        return memo.__class__(models=[copy.deepcopy(model) for model in memo.values()])
 
 
 class DataModelLookup(object):
