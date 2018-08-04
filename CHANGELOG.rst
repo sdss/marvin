@@ -16,6 +16,7 @@ Added
 - Adds User table into the history schema of mangadb.  Tracks user logins.
 - ``Map`` has a new method ``getSpaxel`` to retrieve an ``Spaxel`` using the parent ``Maps``.
 - New configuration option in ``marvin.yml``, ``default_release``, to set the release to be used when Marvin gets imported (:issue:`463`).
+- ``qual_flag`` and ``pixmask_flag`` are now stored in the datamodel (:issue:`479,482`).
 
 Changed
 ^^^^^^^
