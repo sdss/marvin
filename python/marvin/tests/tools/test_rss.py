@@ -7,7 +7,7 @@
 # @License: BSD 3-clause (http://www.opensource.org/licenses/BSD-3-Clause)
 #
 # @Last modified by: José Sánchez-Gallego (gallegoj@uw.edu)
-# @Last modified time: 2018-07-30 19:36:41
+# @Last modified time: 2018-08-04 13:35:39
 
 import astropy.io.fits
 import astropy.table
@@ -39,7 +39,7 @@ def galaxy(get_params, plateifu):
 def rss_session(galaxy, mode):
     # These get created only once per session.
 
-    if mode == 'auto' or galaxy.bintype != 'SPX':
+    if mode == 'auto' or str(galaxy.bintype) != 'SPX':
         pytest.skip()
 
     if mode == 'local':
