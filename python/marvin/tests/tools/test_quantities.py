@@ -7,7 +7,7 @@
 # @License: BSD 3-clause (http://www.opensource.org/licenses/BSD-3-Clause)
 #
 # @Last modified by: José Sánchez-Gallego (gallegoj@uw.edu)
-# @Last modified time: 2018-07-23 17:00:44
+# @Last modified time: 2018-08-04 15:04:31
 
 
 import matplotlib
@@ -27,7 +27,8 @@ spaxel_unit = u.Unit('spaxel', represents=u.pixel, doc='A spectral pixel', parse
 def datacube():
     """Produces a simple 3D array for datacube testing."""
 
-    flux = numpy.tile([numpy.arange(1, 1001)], (100, 1)).T.reshape(1000, 10, 10)
+    flux = numpy.tile([numpy.arange(1, 1001, dtype=numpy.float32)],
+                      (100, 1)).T.reshape(1000, 10, 10)
     ivar = (1. / (flux / 100))**2
     mask = numpy.zeros(flux.shape, dtype=numpy.int)
     wave = numpy.arange(1, 1001)
@@ -50,7 +51,7 @@ def datacube():
 def spectrum():
     """Produces a simple 1D array for datacube testing."""
 
-    flux = numpy.arange(1, 1001)
+    flux = numpy.arange(1, 1001, dtype=numpy.float32)
     ivar = (1. / (flux / 100))**2
     mask = numpy.zeros(flux.shape, dtype=numpy.int)
     wave = numpy.arange(1, 1001)
