@@ -358,7 +358,7 @@ If you want to modify something in the plot but without changing its main struct
 .. plot::
     :align: center
     :include-source: True
-    :context:
+    :context: close-figs
 
     >>> print(fig.axes)
     [<mpl_toolkits.axes_grid1.axes_divider.LocatableAxes at 0x111323d30>,
