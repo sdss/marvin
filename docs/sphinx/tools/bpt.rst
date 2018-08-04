@@ -381,7 +381,7 @@ Alternatively, you may want to grab one of the axes and modify it, then saving i
     :include-source: True
     :context:
 
-    >>> nii_ax = axes[0]
+    >>> nii_ax = axes[1]
     >>> new_fig = nii_ax.bind_to_figure()
 
 ``new_fig`` is now an independent figure that contains the axes for the :math:`\rm [SII]/H\alpha` plot. Let us modify it a bit
@@ -395,14 +395,9 @@ Alternatively, you may want to grab one of the axes and modify it, then saving i
     >>> ax.set_title('A custom plot')
     >>> for text in ax.texts:
     >>>     text.set_fontsize(20)
-    >>> new_fig.savefig('/Users/albireo/Downloads/nii_new.png')
+    >>> new_fig.savefig('nii_new.png')
 
 Here we have added a title to the plot, modified the font size of all the texts in the axes, and then saved it as a new image.
-
-.. .. image:: ../_static/nii_new.png
-..     :width: 800px
-..     :align: center
-..     :alt: nii_new
 
 .. admonition:: Warning
     :class: warning
