@@ -700,8 +700,9 @@ class MarvinConfig(object):
 config = MarvinConfig()
 
 # Inits the Database session and ModelClasses
-from marvin.db.marvindb import MarvinDB
-marvindb = MarvinDB(dbtype=config.db)
+if config.db:
+    from marvin.db.marvindb import MarvinDB
+    marvindb = MarvinDB(dbtype=config.db)
 
 # Init MARVIN_DIR
 marvindir = os.environ.get('MARVIN_DIR', None)

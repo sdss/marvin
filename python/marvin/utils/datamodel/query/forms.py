@@ -16,6 +16,7 @@ import sys
 from collections import OrderedDict
 from marvin import marvindb, config
 from marvin.core.exceptions import MarvinError, MarvinUserWarning
+from marvin.utils.general.structs import FuzzyDict, FuzzyList
 from collections import defaultdict
 from wtforms import StringField, Field, FieldList, validators
 from wtforms import SelectMultipleField, ValidationError, SubmitField
@@ -355,7 +356,7 @@ class MarvinForm(object):
         '''
 
         self._release = kwargs.get('release', config.release)
-        self._modelclasses = marvindb.buildUberClassDict(release=self._release)
+        self._modelclasses = FuzzyDict(marvindb.buildUberClassDict(release=self._release))
         self._param_form_lookup = ParamFormLookupDict(**kwargs)
         self._param_fxn_lookup = ParamFxnLookupDict()
         self._paramtree = tree()
@@ -424,7 +425,7 @@ class MarvinForm(object):
             The value is the method call that lives in Query
 
         '''
-        self._param_fxn_lookup['npergood'] = 'getPercent'
+        self._param_fxn_lookup['npergood'] = 'get_percent'
 
     def _getDapKeys(self):
         ''' Returns the DAP keys from the Junk tables
@@ -447,3 +448,18 @@ class MarvinForm(object):
 
         # make new dictionary
         self._param_form_lookup = new
+
+    def look_up_table(self, table):
+        ''' Look up a database table and return the ModelClass '''
+
+        try:
+            table_class = self._modelclasses[table]
+        except (ValueError, TypeError) as e:
+            table_class = None
+
+        return table_class
+
+
+
+
+
