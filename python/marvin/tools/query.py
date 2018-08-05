@@ -6,12 +6,13 @@
 # @Author: Brian Cherinka
 # @Date:   2018-08-04 20:09:38
 # @Last modified by:   Brian Cherinka
-# @Last Modified time: 2018-08-04 20:21:50
+# @Last Modified time: 2018-08-05 14:27:04
 
 from __future__ import print_function, division, absolute_import, unicode_literals
 
 import re
 import warnings
+import datetime
 from collections import Counter, defaultdict
 from functools import wraps
 from operator import eq, ge, gt, le, lt, ne
@@ -21,11 +22,13 @@ import six
 from marvin import config
 from marvin.api.api import Interaction
 from marvin.core.exceptions import MarvinError, MarvinUserWarning
-
+from marvin.tools.results import Results
 
 if config.db:
     from marvin import marvindb
     from marvin.utils.datamodel.query import datamodel
+    from marvin.utils.datamodel.query.base import query_params
+    from marvin.utils.general.structs import string_folding_wrapper
     from sqlalchemy import bindparam, func
     from sqlalchemy.dialects import postgresql
     from sqlalchemy.orm import aliased
@@ -38,7 +41,7 @@ __all__ = ['Query', 'doQuery']
 opdict = {'<=': le, '>=': ge, '>': gt, '<': lt, '!=': ne, '=': eq, '==': eq}
 
 
-def doQuery(*args, **kwargs):
+def doQuery(**kwargs):
     """Convenience function for building a Query and retrieving the Results.
 
     Parameters:
@@ -54,7 +57,8 @@ def doQuery(*args, **kwargs):
     """
     start = kwargs.pop('start', None)
     end = kwargs.pop('end', None)
-    q = Query(*args, **kwargs)
+    print(kwargs)
+    q = Query(**kwargs)
     try:
         res = q.run(start=start, end=end)
     except TypeError as e:
@@ -64,29 +68,29 @@ def doQuery(*args, **kwargs):
     return q, res
 
 
-def check_for_db(f):
-    """Decorator that checks for the existence of a database and imports the necessary packages """
+# def check_for_db(f):
+#     """Decorator that checks for the existence of a database and imports the necessary packages """
 
-    @wraps(f)
-    def wrapper(self, *args, **kwargs):
-        if config.db:
-            # import packages
-            from marvin import marvindb
-            from marvin.utils.datamodel.query import datamodel
-            from sqlalchemy import bindparam, func
-            from sqlalchemy.dialects import postgresql
-            from sqlalchemy.orm import aliased
-            from sqlalchemy.sql.expression import desc
-            from sqlalchemy_boolean_search import (BooleanSearchException, parse_boolean_search)
+#     @wraps(f)
+#     def wrapper(self, *args, **kwargs):
+#         if config.db:
+#             # import packages
+#             from marvin import marvindb
+#             from marvin.utils.datamodel.query import datamodel
+#             from sqlalchemy import bindparam, func
+#             from sqlalchemy.dialects import postgresql
+#             from sqlalchemy.orm import aliased
+#             from sqlalchemy.sql.expression import desc
+#             from sqlalchemy_boolean_search import (BooleanSearchException, parse_boolean_search)
 
-            # set some attributes
-            self.datamodel = datamodel[self.release]
-            self._marvinform = self.datamodel._marvinform
-            self.session = marvindb.session
-            self._modelgraph = marvindb.modelgraph
+#             # set some attributes
+#             self.datamodel = datamodel[self.release]
+#             self._marvinform = self.datamodel._marvinform
+#             self.session = marvindb.session
+#             self._modelgraph = marvindb.modelgraph
 
-        return f(self, *args, **kwargs)
-    return wrapper
+#         return f(self, *args, **kwargs)
+#     return wrapper
 
 
 def update_config(f):
@@ -107,21 +111,33 @@ def tree():
 class Query(object):
 
     def __init__(self, search_filter=None, return_params=None, return_type=None, mode=None,
-                 return_all=None, default_params=None, nexus='cube', **kwargs):
+                 return_all=None, default_params=None, nexus='cube', sort='mangaid', order='asc',
+                 caching=True, limit=100, count_threshold=1000, verbose=False, **kwargs):
 
+        # basic parameters
         self.release = kwargs.pop('release', config.release)
         self._drpver, self._dapver = config.lookUpVersions(release=self.release)
         self.mode = mode if mode is not None else config.mode
         self.data_origin = None
 
+        # main parameters
         self.search_filter = search_filter
         self.return_params = return_params
         self.return_type = return_type
-        self.return_all = return_all
         self.default_params = default_params
         self.filter_params = {}
         self.params = []
         self._nexus = nexus
+        self._results = None
+
+        # optional parameters
+        self.return_all = return_all
+        self.sort = sort
+        self.order = order
+        self._caching = caching
+        self.count_threshold = count_threshold
+        self.limit = limit
+        self.verbose = verbose
 
         # add db specific parameters
         if config.db:
@@ -129,6 +145,10 @@ class Query(object):
             self._marvinform = self.datamodel._marvinform
             self.session = marvindb.session
             self._modelgraph = marvindb.modelgraph
+
+        # timings
+        self._run_time = None
+        self._final_time = None
 
         # define the Query MMA
         self._set_mma()
@@ -191,7 +211,6 @@ class Query(object):
             self.mode = 'remote'
             self.data_origin = 'api'
 
-    @check_for_db
     def _init_local_query(self):
         ''' Initialize a local database query '''
 
@@ -215,17 +234,22 @@ class Query(object):
         self._remote_params = {'searchfilter': self.search_filter,
                                'params': returns,
                                'returntype': self.return_type,
-                               'release': self.release}
+                               'release': self.release,
+                               'limit': self.limit,
+                               'return_all': self.return_all,
+                               'caching': self._caching}
 
-    def run(self):
+    def run(self, start=None, end=None, raw=None, orm=None, core=None):
         ''' Runs a Query '''
 
         if self.data_origin == 'api':
-            self._run_remote()
+            results = self._run_remote()
         elif self.data_origin == 'db':
-            self._run_local()
+            results = self._run_local(start=start, end=end, raw=raw, orm=orm, core=core)
 
-    def _run_remote(self):
+        return results
+
+    def _run_remote(self, start=None, end=None):
         ''' Run a remote Query '''
 
         if self.return_all:
@@ -234,6 +258,9 @@ class Query(object):
         # Get the query route
         url = config.urlmap['api']['querycubes']['url']
 
+        # Update the remote params
+        self._remote_params.update({'start': start, 'end': end})
+
         # Request the query
         try:
             ii = Interaction(route=url, params=self._remote_params, stream=True)
@@ -241,13 +268,269 @@ class Query(object):
             raise MarvinError('API Query call failed: {0}'.format(e))
         else:
             results = ii.getData()
-            # do more stuff
+            # retrive and set some parameters
+            self._query_params_order = ii.results['queryparams_order']
+            self.params = ii.results['params']
+            self.query = ii.results['query']
+            count = ii.results['count']
+            chunk = int(ii.results['chunk'])
+            totalcount = ii.results['totalcount']
+            query_runtime = ii.results['runtime']
+            resp_runtime = ii.response_time
 
         # do results stuff here
+        if self.return_all:
+            msg = 'Returning all {0} results'.format(totalcount)
+        else:
+            msg = 'Only returning the first {0} results.'.format(count)
 
-    def _run_local(self):
+        if self.verbose:
+            print('Results contain of a total of {0}. {1}'.format(totalcount, msg))
+
+        # get Marvin Results
+        final = Results(results=results, query=self.query, mode=self.mode, queryobj=self, count=count,
+                        returntype=self.return_type, totalcount=totalcount, chunk=chunk,
+                        runtime=query_runtime, response_time=resp_runtime, start=start, end=end)
+
+        return final
+
+    def _run_local(self, start=None, end=None, raw=None, orm=None, core=None):
         ''' Run a local database Query '''
-        pass
+
+        # Check for adding a sort
+        self._sort_query()
+
+        # Check to add the cache
+        if self._caching:
+            from marvin.core.caching_query import FromCache
+            self.query = self.query.options(FromCache("default")).\
+                options(*marvindb.cache_bits)
+
+        # turn on streaming of results
+        self.query = self.query.execution_options(stream_results=True)
+
+        # set the start time of query
+        starttime = datetime.datetime.now()
+
+        # check for query and get count
+        totalcount = self._get_query_count()
+
+        # slice the query
+        query = self._slice_query(start=start, end=end, totalcount=totalcount)
+
+        # run the query and get the results
+        results = self._get_results(query, raw=raw, orm=orm, core=core, totalcount=totalcount)
+
+        # get the runtime
+        endtime = datetime.datetime.now()
+        self._run_time = (endtime - starttime)
+
+        # clear the session
+        self.session.close()
+
+        # convert to Marvin Results
+        final = Results(results=results, query=query, count=self._count, mode=self.mode,
+                        returntype=self.return_type, queryobj=self, totalcount=totalcount,
+                        chunk=self.limit, runtime=self._run_time, start=self._start, end=self._end)
+
+        # get the final time
+        posttime = datetime.datetime.now()
+        self._final_time = (posttime - starttime)
+
+        return final
+
+    def _sort_query(self):
+        ''' Sort the query by a given parameter '''
+
+        if not isinstance(self.sort, type(None)):
+            # set the sort variable ModelClass parameter
+            if '.' in self.sort:
+                param = self.datamodel.parameters[str(self.sort)].full
+            else:
+                param = self.datamodel.parameters.get_full_from_remote(self.sort)
+            sortparam = self._marvinform._param_form_lookup.mapToColumn(param)
+
+            # If order is specified, then do the sort
+            if self.order:
+                assert self.order in ['asc', 'desc'], 'Sort order parameter must be either "asc" or "desc"'
+
+                # Check if order by already applied
+                if 'ORDER' in str(self.query.statement):
+                    self.query = self.query.order_by(None)
+                # Do the sorting
+                if 'desc' in self.order:
+                    self.query = self.query.order_by(desc(sortparam))
+                else:
+                    self.query = self.query.order_by(sortparam)
+
+    def _get_query_count(self):
+        ''' Get the query count of rows '''
+
+        totalcount = None
+        if marvindb.isdbconnected:
+            qm = self._check_history(check_only=True)
+            totalcount = qm.count if qm else None
+
+        # run count if it doesn't exist
+        if totalcount is None:
+            totalcount = self.query.count()
+
+        return totalcount
+
+    def _check_history(self, check_only=None, totalcount=None):
+        ''' Check the query against the query history schema
+
+        Looks up the current query in the query table of
+        the history schema and if found, returns the SQLA object
+
+        Parameters:
+            check_only (bool):
+                If True, only checks the history schema but does not write to it
+
+        Returns:
+            The SQLAlchemy row from the query table of the history schema
+
+        '''
+
+        sqlcol = self._marvinform._param_form_lookup.mapToColumn('sql')
+        stringfilter = self.search_filter.strip().replace(' ', '')
+        rawsql = self.show().strip()
+        returns = ','.join(self.return_params) if self.return_params else ''
+        qm = self.session.query(sqlcol.class_).\
+            filter(sqlcol == rawsql, sqlcol.class_.release == self.release).one_or_none()
+
+        if check_only:
+            return qm
+
+        with self.session.begin():
+            if not qm:
+                qm = sqlcol.class_(searchfilter=stringfilter, n_run=1, release=self.release,
+                                   count=totalcount, sql=rawsql, return_params=returns)
+                self.session.add(qm)
+            else:
+                qm.n_run += 1
+
+        return qm
+
+    def _slice_query(self, start=None, end=None, totalcount=None):
+        ''' Slice the query '''
+
+        # get the new count if start and end exist
+        if start and end:
+            count = (end - start)
+        else:
+            count = totalcount
+
+        # # run the query
+        # res = self.query.slice(start, end).all()
+        # count = len(res)
+        # self.totalcount = count if not self.totalcount else self.totalcount
+
+        # check history
+        if marvindb.isdbconnected:
+            __ = self._check_history(totalcount=totalcount)
+
+        if count > self.count_threshold and self.return_all is False:
+            # res = res[0:self.limit]
+            start = 0
+            end = self.limit
+            count = (end - start)
+            warnings.warn('Results contain more than {0} entries.  '
+                          'Only returning first {1}'.format(self.count_threshold, self.limit), MarvinUserWarning)
+        elif self.return_all is True:
+            warnings.warn('Warning: Attempting to return all results. This may take a long time or crash.', MarvinUserWarning)
+            start = None
+            end = None
+        elif start and end:
+            warnings.warn('Getting subset of data {0} to {1}'.format(start, end), MarvinUserWarning)
+
+        # slice the query
+        query = self.query.slice(start, end)
+
+        # set updated start, end, count, and total
+        self._start = start
+        self._end = end
+        self._count = count
+        self._total = totalcount
+
+        return query
+
+    def _get_results(self, query, raw=None, orm=None, core=None, totalcount=None):
+        ''' Get the raw results of the query '''
+
+        # # check for cached raw results
+        # if self._results is not None:
+        #     return self._results
+
+        # run the query
+        if not any([raw, core, orm]):
+            raw = True
+
+        if raw:
+            # use the db api cursor
+            sql = str(self._get_sql(query))
+            conn = marvindb.db.engine.raw_connection()
+            cursor = conn.cursor('query_cursor')
+            cursor.execute(sql)
+            res = self._fetch_data(cursor)
+            conn.close()
+        elif core:
+            # use the core connection
+            sql = str(self._get_sql(query))
+            with marvindb.db.engine.connect() as conn:
+                results = conn.execution_options(stream_results=True).execute(sql)
+                res = self._fetch_data(results)
+        elif orm:
+            # use the orm query
+            yield_num = int(10**(np.floor(np.log10(totalcount))))
+            results = string_folding_wrapper(query.yield_per(yield_num), keys=self.params)
+            res = list(results)
+
+        # # cache the raw results
+        # self._results = res
+
+        return res
+
+    def _fetch_data(self, obj, n_rows=100000):
+        ''' Fetch query results using fetchall or fetchmany
+
+        Parameters:
+            obj (object):
+                SQLAlchemy connection object or Pyscopg2 cursor object
+            n_rows (int):
+                The number of rows to fetch at a time
+
+        Returns:
+            A list of results from a query
+
+        '''
+
+        res = []
+
+        if not self.return_all:
+            res = obj.fetchall()
+        else:
+            while True:
+                rows = obj.fetchmany(n_rows)
+                if rows:
+                    res.extend(rows)
+                else:
+                    break
+        return res
+
+    @staticmethod
+    def _get_sql(query):
+        ''' Get the sql for a given query
+
+        Parameters:
+            query (object):
+                An SQLAlchemy Query object
+
+        Returms:
+            A raw sql string
+        '''
+
+        return query.statement.compile(dialect=postgresql.dialect(), compile_kwargs={'literal_binds': True})
 
     def show(self, prop='query'):
         ''' Prints into the console
@@ -277,7 +560,10 @@ class Query(object):
             elif prop == 'joins':
                 sql = self._joins
             elif prop == 'filter':
-                sql = self.query.whereclause.compile(dialect=postgresql.dialect(), compile_kwargs={'literal_binds': True})
+                if hasattr(self.query, 'whereclause'):
+                    sql = self.query.whereclause.compile(dialect=postgresql.dialect(), compile_kwargs={'literal_binds': True})
+                else:
+                    sql = 'cannot extract filter from where clause'
             else:
                 sql = self.__getattribute__(prop)
 
@@ -286,19 +572,28 @@ class Query(object):
             sql = self.search_filter
             return sql
 
-    @staticmethod
-    def _get_sql(query):
-        ''' Get the sql for a given query
+    def get_available_params(self, paramdisplay='best'):
+        ''' Retrieve the available parameters to query on
+
+        Retrieves a list of the available query parameters.
+        Can either retrieve a list of all the parameters or only the vetted parameters.
 
         Parameters:
-            query (object):
-                An SQLAlchemy Query object
+            paramdisplay (str {all|best}):
+                String indicating to grab either all or just the vetted parameters.
+                Default is to only return 'best', i.e. vetted parameters
 
-        Returms:
-            A raw sql string
+        Returns:
+            qparams (list):
+                a list of all of the available queryable parameters
         '''
+        assert paramdisplay in ['all', 'best'], 'paramdisplay can only be either "all" or "best"!'
 
-        return query.statement.compile(dialect=postgresql.dialect(), compile_kwargs={'literal_binds': True})
+        if paramdisplay == 'all':
+            qparams = self.datamodel.groups.list_params('full')
+        elif paramdisplay == 'best':
+            qparams = query_params
+        return qparams
 
     #
     # This section describes the methods that run for local database queries
@@ -655,7 +950,8 @@ class Query(object):
         if not params:
             params = [d for d in self.default_params if 'spaxelprop' not in d]
 
-        newdefaults = self._marvinform._param_form_lookup.mapToColumn(params)
+        #newdefaults = self._marvinform._param_form_lookup.mapToColumn(params)
+        newdefaults = [d for d in self._query_params if str(d).lower() in params]
         self.params = params
         newq = self.query.from_self(*newdefaults).group_by(*newdefaults)
         return newq
@@ -665,6 +961,26 @@ class Query(object):
 
         qstate = str(self.query.statement.compile(compile_kwargs={'literal_binds': True}))
         return name in qstate
+
+    def _update_params(self, param):
+        ''' Update the input parameters '''
+        param = {key: val.decode('UTF-8') if '*' not in val.decode('UTF-8') else
+                 val.replace('*', '%').decode('UTF-8') for key, val in param.items()
+                 if key in self.filter_params.keys()}
+        self.filter_params.update(param)
+
+    def _already_in_filter(self, names):
+        ''' Checks if the parameter name already added into the filter '''
+
+        infilter = None
+        if names:
+            if not isinstance(self.query, type(None)):
+                if not isinstance(self.query.whereclause, type(None)):
+                    wc = str(self.query.whereclause.compile(dialect=postgresql.dialect(),
+                             compile_kwargs={'literal_binds': True}))
+                    infilter = any([name in wc for name in names])
+
+        return infilter
 
     #
     # Methods specific to DAP zonal queries
@@ -746,7 +1062,7 @@ class Query(object):
 
         return valcount
 
-    def get_percent(self, fxn, **kwargs):
+    def _get_percent(self, fxn, **kwargs):
         ''' Query - Computes count comparisons
 
         Retrieves the number of objects that have satisfy a given expression

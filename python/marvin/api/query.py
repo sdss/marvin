@@ -17,9 +17,8 @@ def _run_query(searchfilter, **kwargs):
     release = kwargs.pop('release', None)
     kwargs['returnparams'] = kwargs.pop('params', None)
     kwargs['returntype'] = kwargs.pop('rettype', None)
-
     try:
-        q, r = doQuery(searchfilter=searchfilter, release=release, **kwargs)
+        q, r = doQuery(search_filter=searchfilter, release=release, **kwargs)
     except Exception as e:
         raise MarvinError('Query failed with {0}: {1}'.format(e.__class__.__name__, e))
     else:
@@ -28,7 +27,7 @@ def _run_query(searchfilter, **kwargs):
 
 def _get_runtime(query):
     ''' Retrive a dictionary of the runtime to pass back in JSON '''
-    runtime = {'days': query.runtime.days, 'seconds': query.runtime.seconds, 'microseconds': query.runtime.microseconds}
+    runtime = {'days': query._run_time.days, 'seconds': query._run_time.seconds, 'microseconds': query._run_time.microseconds}
     return runtime
 
 
@@ -57,7 +56,7 @@ def _getCubes(searchfilter, **kwargs):
     # set up the output
     output = dict(data=results, query=r.showQuery(), chunk=limit,
                   filter=searchfilter, params=q.params, returnparams=params, runtime=_get_runtime(q),
-                  queryparams_order=q.queryparams_order, count=len(results), totalcount=r.totalcount)
+                  queryparams_order=q._query_params_order, count=len(results), totalcount=r.totalcount)
     return output
 
 
@@ -174,8 +173,8 @@ class QueryView(BaseView):
         q = Query(searchfilter=searchfilter, release=release, **args)
 
         output = dict(data=None, chunk=q.limit, query=q.show(),
-                      filter=searchfilter, params=q.params, returnparams=q._returnparams, runtime=None,
-                      queryparams_order=q.queryparams_order, count=None, totalcount=None)
+                      filter=searchfilter, params=q.params, returnparams=q.return_params, runtime=None,
+                      queryparams_order=q._query_params_order, count=None, totalcount=None)
 
         return Response(stream_with_context(gen(q.query, compression=compression)), mimetype='application/{0}'.format(mimetype))
 
@@ -262,9 +261,11 @@ class QueryView(BaseView):
         except MarvinError as e:
             self.results['error'] = str(e)
             self.results['traceback'] = get_traceback(asstring=True)
+            print('self.results', self.results)
         else:
             self.results['status'] = 1
             self.update_results(res)
+            print('self.results', self.results)
 
         # pack the data
         compression = args.pop('compression', config.compression)

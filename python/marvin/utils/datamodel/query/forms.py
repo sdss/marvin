@@ -425,7 +425,7 @@ class MarvinForm(object):
             The value is the method call that lives in Query
 
         '''
-        self._param_fxn_lookup['npergood'] = 'get_percent'
+        self._param_fxn_lookup['npergood'] = '_get_percent'
 
     def _getDapKeys(self):
         ''' Returns the DAP keys from the Junk tables

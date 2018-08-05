@@ -126,7 +126,7 @@ def marvintuple(name, params=None, **kwargs):
     results = kwargs.pop('results', None)
 
     # create default namedtuple and find new columns
-    default = namedtuple(name, 'mangaid, plate, plateifu, ifu_name')
+    default = namedtuple(name, 'mangaid, plateifu')
     newcols = [col for col in params if col not in default._fields] if params else None
     finalfields = default._fields + tuple(newcols) if newcols else default._fields
     nt = namedtuple(name, finalfields, **kwargs)
@@ -429,12 +429,12 @@ class Results(object):
     def _updateQueryObj(self, **kwargs):
         ''' update parameters using the _queryobj '''
         self.query = self._queryobj.query if self._queryobj else kwargs.get('query', None)
-        self.returntype = self._queryobj.returntype if self._queryobj else kwargs.get('returntype', None)
-        self.searchfilter = self._queryobj.searchfilter if self._queryobj else kwargs.get('searchfilter', None)
-        self.returnparams = self._queryobj._returnparams if self._queryobj else kwargs.get('returnparams', [])
+        self.returntype = self._queryobj.return_type if self._queryobj else kwargs.get('returntype', None)
+        self.searchfilter = self._queryobj.search_filter if self._queryobj else kwargs.get('searchfilter', None)
+        self.returnparams = self._queryobj.return_params if self._queryobj else kwargs.get('returnparams', [])
         self.limit = self._queryobj.limit if self._queryobj else kwargs.get('limit', None)
         self._params = self._queryobj.params if self._queryobj else kwargs.get('params', None)
-        self._release = self._queryobj._release if self._queryobj else kwargs.get('release', None)
+        self._release = self._queryobj.release if self._queryobj else kwargs.get('release', None)
 
     def __repr__(self):
         return ('Marvin Results(query={0}, totalcount={1}, count={2}, mode={3})'.format(self.searchfilter, self.totalcount, self.count, self.mode))

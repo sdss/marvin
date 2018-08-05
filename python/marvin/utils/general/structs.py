@@ -230,7 +230,7 @@ class StringFolder(object):
         :return: a string or unicode object.
         """
         # If s is not a string or unicode object, return it unchanged
-        if not isinstance(s, basestring):
+        if not isinstance(s, six.string_types):
             return s
 
         # If s is already a string, then str() has no effect.
@@ -238,7 +238,7 @@ class StringFolder(object):
         # If s is Unicode and can't be encoded as a string, this try
         # will raise a UnicodeEncodeError.
         try:
-            return intern(str(s))
+            return six.moves.intern(str(s))
         except UnicodeEncodeError:
             # Fall through and handle s as Unicode
             pass
