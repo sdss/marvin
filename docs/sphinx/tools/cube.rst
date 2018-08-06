@@ -20,7 +20,7 @@ To initialize a `Cube`, you can specify either a **mangaid**, **plateifu**, or *
     :include-source: True
     :context:
 
-    from marvin.tools.cube import Cube
+    from marvin.tools import Cube
     cube = Cube(mangaid='1-209232')
 
     print(cube)
@@ -36,7 +36,7 @@ You can quickly grab a spaxel by slicing the `Cube` like an array.
     # grab the central spaxel
     spax_cen = cube[17, 17]
     print(spax_cen)
-    <Marvin Spaxel (plateifu=8485-1901, x=17, y=17; x_cen=0, y_cen=0)>
+    <Marvin Bin (plateifu=8485-1901, x=17, y=17; x_cen=0, y_cen=0, n_spaxels=1, loaded=cube/maps)>
 
 The `flux` is available as an attribute.  It is represented as a Marvin Spectrum, which is a Quantity.  To quickly plot the flux, use the `plot` method on the `flux`.
 
@@ -45,10 +45,13 @@ The `flux` is available as an attribute.  It is represented as a Marvin Spectrum
     :include-source: True
     :context:
 
+    from marvin.tools import Cube
+    cube = Cube(mangaid='1-209232')
+    spax_cen = cube[17, 17]
     # look at the flux
     spax_cen.flux
-    <Spectrum [ 0.54676276, 0.46566465, 0.4622981 ,...,  0.        ,
-                0.        , 0.        ] 1e-17 erg / (Angstrom cm2 s spaxel)>
+    <Spectrum [0.547274, 0.466324, 0.463318,..., 0.      ,
+                0.      ,0.      ] 1e-17 erg / (Angstrom cm2 s spaxel)>
 
     # plot the flux
     spax_cen.flux.plot()
