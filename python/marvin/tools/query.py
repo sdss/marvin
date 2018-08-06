@@ -6,7 +6,7 @@
 # @Author: Brian Cherinka
 # @Date:   2018-08-04 20:09:38
 # @Last modified by:   Brian Cherinka
-# @Last Modified time: 2018-08-05 14:27:04
+# @Last Modified time: 2018-08-05 19:15:35
 
 from __future__ import print_function, division, absolute_import, unicode_literals
 
@@ -111,7 +111,7 @@ def tree():
 class Query(object):
 
     def __init__(self, search_filter=None, return_params=None, return_type=None, mode=None,
-                 return_all=None, default_params=None, nexus='cube', sort='mangaid', order='asc',
+                 return_all=False, default_params=None, nexus='cube', sort='mangaid', order='asc',
                  caching=True, limit=100, count_threshold=1000, verbose=False, **kwargs):
 
         # basic parameters
@@ -239,17 +239,17 @@ class Query(object):
                                'return_all': self.return_all,
                                'caching': self._caching}
 
-    def run(self, start=None, end=None, raw=None, orm=None, core=None):
+    def run(self, start=None, end=None, query_type=None):
         ''' Runs a Query '''
 
         if self.data_origin == 'api':
-            results = self._run_remote()
+            results = self._run_remote(start=start, end=end, query_type=query_type)
         elif self.data_origin == 'db':
-            results = self._run_local(start=start, end=end, raw=raw, orm=orm, core=core)
+            results = self._run_local(start=start, end=end, query_type=query_type)
 
         return results
 
-    def _run_remote(self, start=None, end=None):
+    def _run_remote(self, start=None, end=None, query_type=None):
         ''' Run a remote Query '''
 
         if self.return_all:
@@ -259,7 +259,10 @@ class Query(object):
         url = config.urlmap['api']['querycubes']['url']
 
         # Update the remote params
-        self._remote_params.update({'start': start, 'end': end})
+        self._remote_params.update({'start': start, 'end': end, 'query_type': query_type})
+
+        # set the start time of query
+        starttime = datetime.datetime.now()
 
         # Request the query
         try:
@@ -292,9 +295,13 @@ class Query(object):
                         returntype=self.return_type, totalcount=totalcount, chunk=chunk,
                         runtime=query_runtime, response_time=resp_runtime, start=start, end=end)
 
+        # get the final time
+        posttime = datetime.datetime.now()
+        self._final_time = (posttime - starttime)
+
         return final
 
-    def _run_local(self, start=None, end=None, raw=None, orm=None, core=None):
+    def _run_local(self, start=None, end=None, query_type=None):
         ''' Run a local database Query '''
 
         # Check for adding a sort
@@ -319,7 +326,7 @@ class Query(object):
         query = self._slice_query(start=start, end=end, totalcount=totalcount)
 
         # run the query and get the results
-        results = self._get_results(query, raw=raw, orm=orm, core=core, totalcount=totalcount)
+        results = self._get_results(query, query_type=query_type, totalcount=totalcount)
 
         # get the runtime
         endtime = datetime.datetime.now()
@@ -455,18 +462,16 @@ class Query(object):
 
         return query
 
-    def _get_results(self, query, raw=None, orm=None, core=None, totalcount=None):
+    def _get_results(self, query, query_type=None, totalcount=None):
         ''' Get the raw results of the query '''
 
-        # # check for cached raw results
-        # if self._results is not None:
-        #     return self._results
+        if query_type:
+            assert query_type in ['raw', 'core', 'orm'], 'Query Type can only be raw, core, or orm.'
+        else:
+            query_type = 'raw'
 
         # run the query
-        if not any([raw, core, orm]):
-            raw = True
-
-        if raw:
+        if query_type == 'raw':
             # use the db api cursor
             sql = str(self._get_sql(query))
             conn = marvindb.db.engine.raw_connection()
@@ -474,20 +479,17 @@ class Query(object):
             cursor.execute(sql)
             res = self._fetch_data(cursor)
             conn.close()
-        elif core:
+        elif query_type == 'core':
             # use the core connection
             sql = str(self._get_sql(query))
             with marvindb.db.engine.connect() as conn:
                 results = conn.execution_options(stream_results=True).execute(sql)
                 res = self._fetch_data(results)
-        elif orm:
+        elif query_type == 'orm':
             # use the orm query
             yield_num = int(10**(np.floor(np.log10(totalcount))))
             results = string_folding_wrapper(query.yield_per(yield_num), keys=self.params)
             res = list(results)
-
-        # # cache the raw results
-        # self._results = res
 
         return res
 

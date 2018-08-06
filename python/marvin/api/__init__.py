@@ -65,7 +65,8 @@ params = {'query': {'searchfilter': fields.String(allow_none=True),
                     'params': fields.DelimitedList(fields.String(), allow_none=True),
                     'return_all': fields.Boolean(allow_none=True),
                     'format_type': fields.String(allow_none=True, validate=validate.OneOf(['list', 'listdict', 'dictlist'])),
-                    'caching': fields.Boolean(allow_none=True)
+                    'caching': fields.Boolean(allow_none=True),
+                    'query_type': fields.String(allow_none=True, validate=validate.OneOf(['raw', 'core', 'orm']))
                     },
           'search': {'searchbox': fields.String(required=True),
                      'parambox': fields.DelimitedList(fields.String(), allow_none=True)

@@ -168,9 +168,9 @@ class QueryView(BaseView):
         mimetype = 'json' if compression == 'json' else 'octet-stream'
 
         release = args.pop('release', None)
-        args['returnparams'] = args.pop('params', None)
-        args['returntype'] = args.pop('rettype', None)
-        q = Query(searchfilter=searchfilter, release=release, **args)
+        args['return_params'] = args.pop('params', None)
+        args['return_type'] = args.pop('rettype', None)
+        q = Query(search_filter=searchfilter, release=release, **args)
 
         output = dict(data=None, chunk=q.limit, query=q.show(),
                       filter=searchfilter, params=q.params, returnparams=q.return_params, runtime=None,
