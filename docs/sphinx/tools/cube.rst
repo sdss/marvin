@@ -15,7 +15,10 @@ Getting Started
 
 To initialize a `Cube`, you can specify either a **mangaid**, **plateifu**, or **filename** as input.  Marvin will attempt to open the file locally from a file, a database, or remotely over the API.
 
-.. code-block:: python
+.. plot::
+    :align: center
+    :include-source: True
+    :context:
 
     from marvin.tools.cube import Cube
     cube = Cube(mangaid='1-209232')
@@ -25,7 +28,10 @@ To initialize a `Cube`, you can specify either a **mangaid**, **plateifu**, or *
 
 You can quickly grab a spaxel by slicing the `Cube` like an array.
 
-.. code-block:: python
+.. plot::
+    :align: center
+    :include-source: True
+    :context:
 
     # grab the central spaxel
     spax_cen = cube[17, 17]
