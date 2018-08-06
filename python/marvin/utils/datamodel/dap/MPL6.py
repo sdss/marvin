@@ -6,7 +6,7 @@
 # @Author: Brian Cherinka
 # @Date:   2017-09-13 16:05:56
 # @Last modified by: José Sánchez-Gallego (gallegoj@uw.edu)
-# @Last modified time: 2018-07-30 11:45:09
+# @Last modified time: 2018-08-06 11:45:33
 
 from __future__ import absolute_import, division, print_function
 
@@ -250,7 +250,7 @@ MPL6_maps = [
                                                     'latex': r'99^{th} percentile'}, idx=1)],
                          formats={'string': 'Fractional residual growth'},
                          description='68%% and 99%% growth of the fractional residuals between '
-                                     'the model and data'),
+                                     'the model and data.'),
     Property('stellar_cont_rchi2', ivar=False, mask=False,
              formats={'string': 'Stellar continuum reduced chi-square',
                       'latex': r'Stellar\ continuum\ reduced\ \chi^2'},
@@ -285,7 +285,8 @@ MPL6_maps = [
                          formats={'string': 'Emission line Gaussian EW'},
                          unit=u.Angstrom,
                          binid=binid_properties[3],
-                         description='Gaussian-fitted equivalent widths measurements (based on EMLINE_GFLUX)'),
+                         description='Gaussian-fitted equivalent widths measurements '
+                                     '(based on EMLINE_GFLUX).'),
     MultiChannelProperty('emline_gsigma', ivar=True, mask=True,
                          channels=[oii_channel] + MPL6_emline_channels,
                          formats={'string': 'Emission line Gaussian sigma',
@@ -293,7 +294,7 @@ MPL6_maps = [
                          unit=u.km / u.s,
                          binid=binid_properties[3],
                          description='Gaussian profile velocity dispersion for emission lines; '
-                                     'must be corrected using EMLINE_INSTSIGMA'),
+                                     'must be corrected using EMLINE_INSTSIGMA.'),
     MultiChannelProperty('emline_instsigma', ivar=False, mask=False,
                          channels=[oii_channel] + MPL6_emline_channels,
                          formats={'string': 'Emission line instrumental sigma',
@@ -307,7 +308,8 @@ MPL6_maps = [
                                   'latex': r'Emission line template instrumental $\sigma$'},
                          unit=u.km / u.s,
                          binid=binid_properties[3],
-                         description='The dispersion of each emission line used in the template spectra'),
+                         description='The dispersion of each emission line used in '
+                                     'the template spectra'),
     MultiChannelProperty('specindex', ivar=True, mask=True,
                          channels=MPL6_specindex_channels,
                          formats={'string': 'Spectral index'},

@@ -119,7 +119,7 @@ MPL4_maps = [
                          formats={'string': 'Emission line instrumental sigma',
                                   'latex': r'Emission line instrumental $\sigma$'},
                          description='Instrumental velocity dispersion at the line centroids '
-                                     'for emission lines (based on a single Gaussian fit.'),
+                                     'for emission lines (based on a single Gaussian fit).'),
     MultiChannelProperty('emline_ew', ivar=True, mask=True, channels=MPL4_emline_channels,
                          unit=u.Angstrom,
                          formats={'string': 'Emission line EW'},

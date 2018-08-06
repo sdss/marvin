@@ -149,7 +149,7 @@ MPL5_maps = [
                                                     'latex': r'99^{th} percentile'}, idx=1)],
                          formats={'string': 'Fractional residual growth'},
                          description='68%% and 99%% growth of the fractional residuals between '
-                                     'the model and data'),
+                                     'the model and data.'),
     Property('stellar_cont_rchi2', ivar=False, mask=False,
              formats={'string': 'Stellar continuum reduced chi-square',
                       'latex': r'Stellar\ continuum\ reduced\ \chi^2'},
@@ -181,7 +181,7 @@ MPL5_maps = [
                                   'latex': r'Emission line Gaussian $\sigma$'},
                          unit=u.km / u.s,
                          description='Gaussian profile velocity dispersion for emission lines; '
-                                     'must be corrected using EMLINE_INSTSIGMA'),
+                                     'must be corrected using EMLINE_INSTSIGMA.'),
     MultiChannelProperty('emline_instsigma', ivar=False, mask=False,
                          channels=MPL5_emline_channels,
                          formats={'string': 'Emission line instrumental sigma',
