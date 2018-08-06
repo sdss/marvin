@@ -6,8 +6,8 @@
 # @Filename: test_map.py
 # @License: BSD 3-clause (http://www.opensource.org/licenses/BSD-3-Clause)
 #
-# @Last modified by:   Brian Cherinka
-# @Last modified time: 2018-07-20 19:12:32
+# @Last modified by: José Sánchez-Gallego (gallegoj@uw.edu)
+# @Last modified time: 2018-08-06 11:47:35
 
 
 import operator
@@ -212,6 +212,12 @@ class TestMap(object):
         scvalue = galaxy.dap['stellar_sigmacorr'][galaxy.bintype.name]
         assert ssvalue == pytest.approx(ss[x, y].value, 1e-4)
         assert scvalue == pytest.approx(sc[x, y].value, 1e-4)
+
+    def test_datamodel(self, maps):
+
+        gew_ha = maps.emline_gew_ha_6564
+        assert gew_ha.datamodel.description == ('Gaussian-fitted equivalent widths measurements '
+                                                '(based on EMLINE_GFLUX). Channel = H-alpha 6564.')
 
 
 class TestMapArith(object):
