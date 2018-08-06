@@ -15,7 +15,7 @@ Getting Started
 
 To initialize a `Cube`, you can specify either a **mangaid**, **plateifu**, or **filename** as input.  Marvin will attempt to open the file locally from a file, a database, or remotely over the API.
 
-::
+.. code-block:: python
 
     from marvin.tools.cube import Cube
     cube = Cube(mangaid='1-209232')
@@ -24,7 +24,8 @@ To initialize a `Cube`, you can specify either a **mangaid**, **plateifu**, or *
     <Marvin Cube (plateifu='8485-1901', mode='local', data_origin='db')>
 
 You can quickly grab a spaxel by slicing the `Cube` like an array.
-::
+
+.. code-block:: python
 
     # grab the central spaxel
     spax_cen = cube[17, 17]
@@ -32,7 +33,11 @@ You can quickly grab a spaxel by slicing the `Cube` like an array.
     <Marvin Spaxel (plateifu=8485-1901, x=17, y=17; x_cen=0, y_cen=0)>
 
 The `flux` is available as an attribute.  It is represented as a Marvin Spectrum, which is a Quantity.  To quickly plot the flux, use the `plot` method on the `flux`.
-::
+
+.. plot::
+    :align: center
+    :include-source: True
+    :context:
 
     # look at the flux
     spax_cen.flux
@@ -42,7 +47,7 @@ The `flux` is available as an attribute.  It is represented as a Marvin Spectrum
     # plot the flux
     spax_cen.flux.plot()
 
-.. image:: ../_static/spec_8485-1901_17-17.png
+.. .. image:: ../_static/spec_8485-1901_17-17.png
 
 The `Cube` data quality and targeting flags are available as the `quality_flag` and `target_flags` attributes, respectively.  These are represented as a :ref:`Maskbit <marvin-utils-maskbit>` objects.  A **good** quality `Cube` has an empty (0) bit list.
 
