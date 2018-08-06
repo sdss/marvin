@@ -6,7 +6,7 @@
 # @Author: Brian Cherinka
 # @Date:   2018-08-04 20:09:38
 # @Last modified by:   Brian Cherinka
-# @Last Modified time: 2018-08-05 19:15:35
+# @Last Modified time: 2018-08-05 22:11:15
 
 from __future__ import print_function, division, absolute_import, unicode_literals
 
@@ -57,40 +57,15 @@ def doQuery(**kwargs):
     """
     start = kwargs.pop('start', None)
     end = kwargs.pop('end', None)
-    print(kwargs)
+    query_type = kwargs.pop('query_type', None)
     q = Query(**kwargs)
     try:
-        res = q.run(start=start, end=end)
+        res = q.run(start=start, end=end, query_type=query_type)
     except TypeError as e:
         warnings.warn('Cannot run, query object is None: {0}.'.format(e), MarvinUserWarning)
         res = None
 
     return q, res
-
-
-# def check_for_db(f):
-#     """Decorator that checks for the existence of a database and imports the necessary packages """
-
-#     @wraps(f)
-#     def wrapper(self, *args, **kwargs):
-#         if config.db:
-#             # import packages
-#             from marvin import marvindb
-#             from marvin.utils.datamodel.query import datamodel
-#             from sqlalchemy import bindparam, func
-#             from sqlalchemy.dialects import postgresql
-#             from sqlalchemy.orm import aliased
-#             from sqlalchemy.sql.expression import desc
-#             from sqlalchemy_boolean_search import (BooleanSearchException, parse_boolean_search)
-
-#             # set some attributes
-#             self.datamodel = datamodel[self.release]
-#             self._marvinform = self.datamodel._marvinform
-#             self.session = marvindb.session
-#             self._modelgraph = marvindb.modelgraph
-
-#         return f(self, *args, **kwargs)
-#     return wrapper
 
 
 def update_config(f):
@@ -109,6 +84,53 @@ def tree():
 
 
 class Query(object):
+    ''' A class to perform queries on the MaNGA dataset.
+
+    This class is the main way of performing a query.  A query works by minimally
+    specifying a string filter a string filter condition in a natural language SQL format,
+    as well as, a list of desired parameters to return.
+
+    Query will use a local database if it finds on.  Otherwise a remote query uses
+    the API to run a query on the Utah Server and return the results.
+
+    The Query returns a list of tupled parameters and passed them into the
+    Marvin Results object.  The parameters are a combination of user-defined
+    return parameters, parameters used in the filter condition, and a set of pre-defined
+    default parameters.  The object plateifu or mangaid is always returned by default.
+    For queries involving DAP properties, the bintype, template, and spaxel x and y are
+    also returned by default.
+
+    Parameters:
+        search_filter (str):
+            A (natural language) string containing the filter conditions
+            in the query.
+        return_params (list):
+            A list of string parameter names desired to be returned in the query
+        return_type (str):
+            The requested Marvin Tool object that the results are converted into
+        mode ({'local', 'remote', 'auto'}):
+            The load mode to use. See :doc:`Mode secision tree</mode_decision>`.
+        return_all (bool):
+            If True, attempts to return the entire set of results. Default is False.
+        default_params (list):
+            Optionally specify additional parameters as defaults
+        sort (str):
+            The parameter name to sort the query on
+        order ({'asc', 'desc'}):
+            The sort order.  Can be either ascending or descending.
+        limit (int):
+            The number limit on the number of returned results
+        count_threshold (int):
+            The threshold number to begin paginating results.  Default is 1000.
+        nexus (str):
+            The name of the database table to use as the nexus point for building
+            the join table tree.  Can only be set in local mode.
+        caching (bool):
+            If True, turns on the dogpile memcache caching of results. Default is True.
+        verbose (bool):
+            If True, turns on verbosity.
+
+    '''
 
     def __init__(self, search_filter=None, return_params=None, return_type=None, mode=None,
                  return_all=False, default_params=None, nexus='cube', sort='mangaid', order='asc',
@@ -176,7 +198,7 @@ class Query(object):
         self._nexus = value
 
     def _set_mma(self):
-        ''' Sets up the Query MMA '''
+        ''' Sets up the Query MMA system '''
 
         if self.mode == 'local':
             self._do_local()
@@ -193,7 +215,7 @@ class Query(object):
         assert self.data_origin in ['file', 'db', 'api'], 'data_origin is not properly set.'
 
     def _do_local(self):
-        ''' Tests if it is possible to perform queries locally. '''
+        ''' Sets up to perform queries locally. '''
 
         if not config.db:
             warnings.warn('No local database found. Cannot perform queries.', MarvinUserWarning)
@@ -240,7 +262,30 @@ class Query(object):
                                'caching': self._caching}
 
     def run(self, start=None, end=None, query_type=None):
-        ''' Runs a Query '''
+        ''' Runs a Query
+
+        Runs a query either locally or remotely.
+
+        Parameters:
+            start (int):
+                A starting index when slicing the query
+            end (int):
+                An ending index when slicing the query
+            query_type (str):
+                The type of SQLAlchemy to submit. Can be "raw", "core", "orm"
+
+        Returns:
+            An instance of the :class:`~marvin.tools.query.results.Results`
+            class containing the results of your Query.
+
+        Example:
+            >>> # filter of "NSA redshift less than 0.1 and stellar mass > 1.e10"
+            >>> searchfilter = 'nsa.z < 0.1 and nsa.elpetro_mass > 1.e10'
+            >>> returnparams = ['cube.ra', 'cube.dec']
+            >>> q = Query(search_filter=searchfilter, return_params=returnparams)
+            >>> results = q.run()
+
+        '''
 
         if self.data_origin == 'api':
             results = self._run_remote(start=start, end=end, query_type=query_type)
@@ -250,7 +295,25 @@ class Query(object):
         return results
 
     def _run_remote(self, start=None, end=None, query_type=None):
-        ''' Run a remote Query '''
+        ''' Run a remote Query
+
+        Runs a query remotely.  Creates a dictionary of all input parameters and
+        performs the appropriate API call.  On return, converts the JSON results
+        into a Marvin Results object.
+
+        Parameters:
+            start (int):
+                A starting index when slicing the query
+            end (int):
+                An ending index when slicing the query
+            query_type (str):
+                The type of SQLAlchemy to submit. Can be "raw", "core", "orm"
+
+        Returns:
+            An instance of the :class:`~marvin.tools.query.results.Results`
+            class containing the results of your Query.
+
+        '''
 
         if self.return_all:
             warnings.warn('Warning: Attempting to return all results. This may take a while or crash.')
@@ -266,7 +329,7 @@ class Query(object):
 
         # Request the query
         try:
-            ii = Interaction(route=url, params=self._remote_params, stream=True)
+            ii = Interaction(route=url, params=self._remote_params, stream=True, datastream=self.return_all)
         except Exception as e:
             raise MarvinError('API Query call failed: {0}'.format(e))
         else:
@@ -302,7 +365,21 @@ class Query(object):
         return final
 
     def _run_local(self, start=None, end=None, query_type=None):
-        ''' Run a local database Query '''
+        ''' Run a local database Query
+
+        Parameters:
+            start (int):
+                A starting index when slicing the query
+            end (int):
+                An ending index when slicing the query
+            query_type (str):
+                The type of SQLAlchemy to submit. Can be "raw", "core", "orm"
+
+        Returns:
+            An instance of the :class:`~marvin.tools.query.results.Results`
+            class containing the results of your Query.
+
+        '''
 
         # Check for adding a sort
         self._sort_query()
@@ -347,7 +424,7 @@ class Query(object):
         return final
 
     def _sort_query(self):
-        ''' Sort the query by a given parameter '''
+        ''' Sort the SQLA query object by a given parameter '''
 
         if not isinstance(self.sort, type(None)):
             # set the sort variable ModelClass parameter
@@ -371,7 +448,15 @@ class Query(object):
                     self.query = self.query.order_by(sortparam)
 
     def _get_query_count(self):
-        ''' Get the query count of rows '''
+        ''' Get the SQL query count of rows
+
+        First checks the query history table to look up if this query has
+        already been run and a count produced.
+
+        Returns:
+            The total count of rows for the query
+
+        '''
 
         totalcount = None
         if marvindb.isdbconnected:
@@ -393,6 +478,8 @@ class Query(object):
         Parameters:
             check_only (bool):
                 If True, only checks the history schema but does not write to it
+            totalcount (int):
+                The total count of rows to add, when adding a new query to the table
 
         Returns:
             The SQLAlchemy row from the query table of the history schema
@@ -420,7 +507,20 @@ class Query(object):
         return qm
 
     def _slice_query(self, start=None, end=None, totalcount=None):
-        ''' Slice the query '''
+        ''' Slice the SQLA query object
+
+        Parameters:
+            start (int):
+                A starting index when slicing the query
+            end (int):
+                An ending index when slicing the query
+            totalcount (int):
+                The total count of rows of the query
+
+        Returns:
+            A new SQLA query object that has been sliced
+
+        '''
 
         # get the new count if start and end exist
         if start and end:
@@ -463,7 +563,27 @@ class Query(object):
         return query
 
     def _get_results(self, query, query_type=None, totalcount=None):
-        ''' Get the raw results of the query '''
+        ''' Get the raw results of the query
+
+        Runs the SQLAlchemy query.  query_type will determine how the query is run.
+        "raw" means the query is run using the psycopg2 cursor object. "core" means
+        the query is run using the SQLA connection object.  The "raw" and "core" methods
+        will submit the raw sql string and retrieve the results in chunks using `fetchall`.
+        orm" means the query is running using the SQLA query object.  This uses yield_per
+        to generate the results in chunk.  It also folds similar strings together.
+
+        Parameters:
+            query (object):
+                The current SQLA query object
+            query_type (str):
+                The type of SQLAlchemy to submit. Can be "raw", "core", "orm". Default is raw.
+            totalcount (int):
+                The total count of rows of the query
+
+        Returns:
+            A list of tupled results
+
+        '''
 
         if query_type:
             assert query_type in ['raw', 'core', 'orm'], 'Query Type can only be raw, core, or orm.'
@@ -528,7 +648,7 @@ class Query(object):
             query (object):
                 An SQLAlchemy Query object
 
-        Returms:
+        Returns:
             A raw sql string
         '''
 
@@ -538,19 +658,19 @@ class Query(object):
         ''' Prints into the console
 
         Displays the query to the console with parameter variables plugged in.
-        Works only in local mode.  Input prop can be one of Can be one of query,
-        tables, joins, or filter.
-
-        Only works in LOCAL mode.
+        Works only in local mode.  Input prop can be one of query, joins, or filter.
 
         Allowed Values for Prop:
-            query - displays the entire query (default if nothing specified)
-            joins - displays the tables that have been joined in the query
-            filter - displays only the filter used on the query
+            - query: displays the entire query (default if nothing specified)
+            - joins: displays the tables that have been joined in the query
+            - filter: displays only the filter used on the query
 
         Parameters:
             prop (str):
-                The type of info to print.
+                The type of info to print.  Can be 'query', 'joins', or 'filter'.
+
+        Returns:
+            The SQL string
 
         '''
 
@@ -577,8 +697,8 @@ class Query(object):
     def get_available_params(self, paramdisplay='best'):
         ''' Retrieve the available parameters to query on
 
-        Retrieves a list of the available query parameters.
-        Can either retrieve a list of all the parameters or only the vetted parameters.
+        Retrieves a list of the available query parameters. Can either
+        retrieve a list of all the parameters or only the vetted parameters.
 
         Parameters:
             paramdisplay (str {all|best}):
@@ -586,8 +706,7 @@ class Query(object):
                 Default is to only return 'best', i.e. vetted parameters
 
         Returns:
-            qparams (list):
-                a list of all of the available queryable parameters
+            A list of all of the available queryable parameters
         '''
         assert paramdisplay in ['all', 'best'], 'paramdisplay can only be either "all" or "best"!'
 
@@ -671,8 +790,6 @@ class Query(object):
     def _parse_sql_string(self):
         ''' Parse the SQL string '''
 
-        #from sqlalchemy_boolean_search import (BooleanSearchException, parse_boolean_search)
-
         # if params is a string, then parse and filter
         if not isinstance(self.search_filter, six.string_types):
             raise MarvinError('Input parameters must be a natural language string!')
@@ -716,14 +833,6 @@ class Query(object):
         # Triggers for only one filter and it is a function condition
         if hasattr(parsed, 'fxn'):
             parsed.functions = [parsed]
-
-        # Checks for shortcut names and replaces them in params
-        # now redundant after pre-check on searchfilter
-        # for key, val in parsed.params.items():
-        #     if key in self._marvinform._param_form_lookup._nameShortcuts.keys():
-        #         newkey = self._marvinform._param_form_lookup._nameShortcuts[key]
-        #         parsed.params.pop(key)
-        #         parsed.params.update({newkey: val})
 
         self._parsed = parsed
 

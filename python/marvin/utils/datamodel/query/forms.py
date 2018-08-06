@@ -426,6 +426,7 @@ class MarvinForm(object):
 
         '''
         self._param_fxn_lookup['npergood'] = '_get_percent'
+        self._param_fxn_lookup['radial'] = '_radial_query'
 
     def _getDapKeys(self):
         ''' Returns the DAP keys from the Junk tables

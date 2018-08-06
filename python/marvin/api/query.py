@@ -15,8 +15,8 @@ def _run_query(searchfilter, **kwargs):
     ''' Run the query and return the query and results '''
 
     release = kwargs.pop('release', None)
-    kwargs['returnparams'] = kwargs.pop('params', None)
-    kwargs['returntype'] = kwargs.pop('rettype', None)
+    kwargs['return_params'] = kwargs.pop('params', None)
+    kwargs['return_type'] = kwargs.pop('rettype', None)
     try:
         q, r = doQuery(search_filter=searchfilter, release=release, **kwargs)
     except Exception as e:
@@ -261,11 +261,9 @@ class QueryView(BaseView):
         except MarvinError as e:
             self.results['error'] = str(e)
             self.results['traceback'] = get_traceback(asstring=True)
-            print('self.results', self.results)
         else:
             self.results['status'] = 1
             self.update_results(res)
-            print('self.results', self.results)
 
         # pack the data
         compression = args.pop('compression', config.compression)
