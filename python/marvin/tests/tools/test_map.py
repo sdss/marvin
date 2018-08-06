@@ -6,8 +6,8 @@
 # @Filename: test_map.py
 # @License: BSD 3-clause (http://www.opensource.org/licenses/BSD-3-Clause)
 #
-# @Last modified by:   Brian Cherinka
-# @Last modified time: 2018-07-20 19:12:32
+# @Last modified by: José Sánchez-Gallego (gallegoj@uw.edu)
+# @Last modified time: 2018-08-06 11:59:10
 
 
 import operator
@@ -520,11 +520,6 @@ class TestMaskbit(object):
     def test_labels_to_value(self, maps_release_only, names, expected):
         ha = maps_release_only['emline_gflux_ha_6564']
         assert ha.pixmask.labels_to_value(names) == expected
-
-    @marvin_test_if(mark='skip', maps_release_only=dict(release=['MPL-4']))
-    def test_quality_flag(self, maps_release_only):
-        ha = maps_release_only['emline_gflux_ha_6564']
-        assert ha.quality_flag is not None
 
     @pytest.mark.parametrize('flag',
                              ['manga_target1',

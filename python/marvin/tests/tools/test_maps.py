@@ -6,8 +6,8 @@
 # @Filename: test_maps.py
 # @License: BSD 3-clause (http://www.opensource.org/licenses/BSD-3-Clause)
 #
-# @Last modified by:   andrews
-# @Last modified time: 2018-07-24 14:07:23
+# @Last modified by: José Sánchez-Gallego (gallegoj@uw.edu)
+# @Last modified time: 2018-08-06 12:12:16
 
 
 from __future__ import absolute_import, division, print_function
@@ -197,11 +197,6 @@ class TestMaskbit(object):
     def test_quality_flag_mpl4(self, maps_release_only):
         ha = maps_release_only['emline_gflux_ha_6564']
         assert ha.quality_flag is None
-
-    # @marvin_test_if(mark='skip', maps_release_only=dict(release=['MPL-4']))
-    def test_quality_flag(self, maps_release_only):
-        ha = maps_release_only['emline_gflux_ha_6564']
-        assert ha.quality_flag.mask == 0
 
     @pytest.mark.parametrize('flag',
                              ['manga_target1',
