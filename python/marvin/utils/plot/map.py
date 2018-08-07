@@ -190,8 +190,8 @@ def _set_extent(cube_size, sky_coords):
     """
     if sky_coords:
         spaxel_size = 0.5  # arcsec
-        extent = np.array([-(cube_size[0] * spaxel_size), (cube_size[0] * spaxel_size),
-                           -(cube_size[1] * spaxel_size), (cube_size[1] * spaxel_size)])
+        extent = np.array([-(cube_size[0] / 2 * spaxel_size), (cube_size[0] / 2 * spaxel_size),
+                           -(cube_size[1] / 2 * spaxel_size), (cube_size[1] / 2 * spaxel_size)])
     else:
         extent = np.array([0, cube_size[0] - 1, 0, cube_size[1] - 1])
 
