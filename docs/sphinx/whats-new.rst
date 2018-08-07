@@ -46,6 +46,11 @@ Prior to 2.2.6 accessing different Tools classes was inconvenient since one woul
     cube = marvin.tools.Cube('8485-1901')
     maps = marvin.tools.Maps('7443-12701')
 
+Stellar Sigma Correction
+^^^^^^^^^^^^^^^^^^^^^^^^
+
+For MPL-6, we now raise an explicit error when attempting to apply the correction to `stellar_sigma`, using the `inst_sigma_correction` method.  The error message now suggests to upgrade to MPL-7 data.  For the web display of the `stellar_sigma` and `emline_gsigma` maps, we now apply the sigma correction automatically.  The corrected map is indicated via **Corrected: stellar_sigma** map title.
+
 |
 
 2.2 (January 2018)

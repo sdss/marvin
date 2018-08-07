@@ -5,9 +5,8 @@
 # @Date: 2017-11-08
 # @Filename: maps.py
 # @License: BSD 3-clause (http://www.opensource.org/licenses/BSD-3-Clause)
-#
-# @Last modified by:   andrews
-# @Last modified time: 2018-07-24 14:07:01
+# @Last modified by: José Sánchez-Gallego (gallegoj@uw.edu)
+# @Last modified time: 2018-07-30 11:34:04
 
 
 from __future__ import absolute_import, division, print_function
@@ -76,8 +75,6 @@ class Maps(MarvinToolsClass, NSAMixIn, DAPallMixIn, GetApertureMixIn):
             The WCS solution for this plate
 
     """
-
-    _qualflag = 'DAPQUAL'
 
     def __init__(self, input=None, filename=None, mangaid=None, plateifu=None,
                  mode=None, data=None, release=None,
@@ -200,7 +197,7 @@ class Maps(MarvinToolsClass, NSAMixIn, DAPallMixIn, GetApertureMixIn):
         params = self._getPathParams()
         path_type = params.pop('path_type')
 
-        return MarvinToolsClass._getFullPath(self, path_type, **params)
+        return super(Maps, self)._getFullPath(path_type, **params)
 
     def download(self):
         """Downloads the maps using sdss_access - Rsync"""
@@ -438,7 +435,7 @@ class Maps(MarvinToolsClass, NSAMixIn, DAPallMixIn, GetApertureMixIn):
                                                               unit=dm.unit,
                                                               ivar=data['ivar'],
                                                               mask=data['mask'],
-                                                              pixmask_flag=self.header['MASKNAME'])
+                                                              pixmask_flag=dm.pixmask_flag)
 
         if self.data_origin == 'api':
 
@@ -463,7 +460,7 @@ class Maps(MarvinToolsClass, NSAMixIn, DAPallMixIn, GetApertureMixIn):
                                                               ivar=data[dm.full()]['ivar'],
                                                               mask=data[dm.full()]['mask'],
                                                               unit=dm.unit,
-                                                              pixmask_flag=self.header['MASKNAME'])
+                                                              pixmask_flag=dm.pixmask_flag)
 
         return maps_quantities
 
@@ -593,6 +590,11 @@ class Maps(MarvinToolsClass, NSAMixIn, DAPallMixIn, GetApertureMixIn):
             best = property_name
         else:
             best = self._match_properties(property_name, channel=channel, exact=exact)
+
+        # raise error when property is MPL-6 stellar_sigmacorr
+        if best.full() == 'stellar_sigmacorr' and self.release == 'MPL-6':
+            raise marvin.core.exceptions.MarvinError('stellar_sigmacorr is unreliable in MPL-6. '
+                                                     'Please use MPL-7.')
 
         return marvin.tools.quantities.Map.from_maps(self, best)
 

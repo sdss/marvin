@@ -5,32 +5,33 @@
 #
 
 from __future__ import print_function
-from marvin.core.exceptions import MarvinError, MarvinUserWarning, MarvinBreadCrumb
-from marvin.tools.cube import Cube
-from marvin.tools.maps import Maps
-from marvin.tools.rss import RSS
-from marvin.tools.modelcube import ModelCube
-from marvin.tools.spaxel import Spaxel
-from marvin.utils.datamodel.query import datamodel
-from marvin.utils.datamodel.query.base import ParameterGroup
-from marvin import config, log
-from marvin.utils.general import getImagesByList, downloadList, map_bins_to_column
-from marvin.utils.general import temp_setattr, turn_off_ion
-from marvin.api.api import Interaction
-from marvin.core import marvin_pickle
-import marvin.utils.plot.scatter
-from operator import add
-import warnings
+
+import copy
+import datetime
 import json
 import os
-import datetime
+import warnings
+from collections import namedtuple
+from functools import wraps
+from operator import add
+
 import numpy as np
 import six
-import copy
+from astropy.table import Table, hstack, vstack
 from fuzzywuzzy import process
-from functools import wraps
-from astropy.table import Table, vstack, hstack
-from collections import namedtuple
+import marvin.utils.plot.scatter
+from marvin import config, log
+from marvin.api.api import Interaction
+from marvin.core import marvin_pickle
+from marvin.core.exceptions import (MarvinBreadCrumb, MarvinError, MarvinUserWarning)
+from marvin.tools.cube import Cube
+from marvin.tools.maps import Maps
+from marvin.tools.modelcube import ModelCube
+from marvin.tools.rss import RSS
+from marvin.utils.datamodel.query import datamodel
+from marvin.utils.datamodel.query.base import ParameterGroup
+from marvin.utils.general import (downloadList, getImagesByList, map_bins_to_column, temp_setattr,
+                                  turn_off_ion)
 
 try:
     import cPickle as pickle
@@ -1429,7 +1430,7 @@ class Results(object):
 
         print('Converting results to Marvin {0} objects'.format(tooltype.title()))
         if tooltype == 'cube':
-            self.objects = [Cube(plateifu=res.plateifu, mode=mode) for res in self.results[0:limit]]
+            self.objects = [self._get_object(Cube, plateifu=res.plateifu, mode=mode) for res in self.results[0:limit]]
         elif tooltype == 'maps':
 
             isbin = 'bintype.name' in paramlist
@@ -1447,7 +1448,7 @@ class Results(object):
                     tempval = res.template_name
                     mapkwargs['template_kin'] = tempval
 
-                self.objects.append(Maps(**mapkwargs))
+                self.objects.append(self._get_object(Maps, **mapkwargs))
         elif tooltype == 'spaxel':
 
             assert 'spaxelprop.x' in paramlist and 'spaxelprop.y' in paramlist, \
@@ -1455,22 +1456,18 @@ class Results(object):
 
             self.objects = []
 
-            load = kwargs.get('load', True)
-            maps = kwargs.get('maps', True)
-            modelcube = kwargs.get('modelcube', True)
-
             tab = self.toTable()
             uniq_plateifus = list(set(self.getListOf('plateifu')))
 
             for plateifu in uniq_plateifus:
-                c = Cube(plateifu=plateifu, mode=mode)
+                c = self._get_object(Cube, plateifu=plateifu, mode=mode)
                 univals = tab['cube.plateifu'] == plateifu
                 x = tab[univals]['spaxelprop.x'].tolist()
                 y = tab[univals]['spaxelprop.y'].tolist()
                 spaxels = c[y, x]
                 self.objects.extend(spaxels)
         elif tooltype == 'rss':
-            self.objects = [RSS(plateifu=res.plateifu, mode=mode) for res in self.results[0:limit]]
+            self.objects = [self._get_object(RSS, plateifu=res.plateifu, mode=mode) for res in self.results[0:limit]]
         elif tooltype == 'modelcube':
 
             isbin = 'bintype.name' in paramlist
@@ -1488,7 +1485,32 @@ class Results(object):
                     tempval = res.template_name
                     mapkwargs['template_kin'] = tempval
 
-                self.objects.append(ModelCube(**mapkwargs))
+                self.objects.append(self._get_object(ModelCube, **mapkwargs))
+
+    @staticmethod
+    def _get_object(obj, **kwargs):
+        ''' Return a Marvin object or an error message
+
+        To preserve the lengths of self.results and self.objects, it will
+        either return an instance or an error message in its place
+
+        Parameters:
+            obj (object):
+                A Marvin Class object
+            kwargs:
+                Any set of parameters to instantiate a Marvin object
+
+        Returns:
+            The Marvin instance or an error message if it failed
+        '''
+
+        try:
+            inst = obj(**kwargs)
+        except MarvinError as e:
+            plateifu = kwargs.get('plateifu', '')
+            inst = 'Error creating {0} for {1}: {2}'.format(obj.__name__, plateifu, e)
+
+        return inst
 
     def plot(self, x_name, y_name, **kwargs):
         ''' Make a scatter plot from two columns of results
@@ -1621,4 +1643,3 @@ class Results(object):
             output = (hdata,) + output[1:] if return_figure else hdata
 
         return output
-

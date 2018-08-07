@@ -7,7 +7,7 @@
 # @License: BSD 3-clause (http://www.opensource.org/licenses/BSD-3-Clause)
 #
 # @Last modified by: José Sánchez-Gallego (gallegoj@uw.edu)
-# @Last modified time: 2018-07-21 15:46:36
+# @Last modified time: 2018-07-30 11:33:31
 
 
 from __future__ import absolute_import, division, print_function
@@ -53,8 +53,6 @@ class Cube(MarvinToolsClass, NSAMixIn, GetApertureMixIn):
             The WCS solution for this plate
 
     """
-
-    _qualflag = 'DRP3QUAL'
 
     def __init__(self, input=None, filename=None, mangaid=None, plateifu=None,
                  mode=None, data=None, release=None,
@@ -275,7 +273,7 @@ class Cube(MarvinToolsClass, NSAMixIn, GetApertureMixIn):
                             np.array(self._wavelength),
                             ivar=self._get_extension_data(name, 'ivar'),
                             mask=self._get_extension_data(name, 'mask'),
-                            unit=model.unit, pixmask_flag=self.header['MASKNAME'])
+                            unit=model.unit, pixmask_flag=model.pixmask_flag)
 
         return datacube
 
@@ -293,7 +291,7 @@ class Cube(MarvinToolsClass, NSAMixIn, GetApertureMixIn):
                             wavelength=np.array(self._wavelength),
                             std=self._get_extension_data(name, 'std'),
                             unit=model.unit,
-                            pixmask_flag=self.header['MASKNAME'])
+                            pixmask_flag=model.pixmask_flag)
 
         return spectrum
 
@@ -502,7 +500,7 @@ class Cube(MarvinToolsClass, NSAMixIn, GetApertureMixIn):
                                                     std=data['std'],
                                                     wavelength=self._wavelength,
                                                     unit=dm.unit,
-                                                    pixmask_flag=self.header['MASKNAME'])
+                                                    pixmask_flag=dm.pixmask_flag)
 
         if self.data_origin == 'api':
 
@@ -532,7 +530,7 @@ class Cube(MarvinToolsClass, NSAMixIn, GetApertureMixIn):
                                                     mask=data[dm.name]['mask'],
                                                     wavelength=data['wavelength'],
                                                     unit=dm.unit,
-                                                    pixmask_flag=self.header['MASKNAME'])
+                                                    pixmask_flag=dm.pixmask_flag)
 
         return cube_quantities
 

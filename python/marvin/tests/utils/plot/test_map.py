@@ -7,17 +7,16 @@
 # @Date:   2017-05-01 09:07:00
 
 # @Last modified by:   andrews
-# @Last modified time: 2018-08-07 16:08:15
+# @Last modified time: 2018-08-07 16:08:71
 
-import numpy as np
 import matplotlib
+import numpy as np
 import pytest
 
+import marvin.utils.plot.map as mapplot
 from marvin import config
 from marvin.tests import marvin_test_if
-import marvin.utils.plot.map as mapplot
 from marvin.utils.datamodel.dap import datamodel
-
 
 matplotlib_2 = pytest.mark.skipif(int(matplotlib.__version__.split('.')[0]) <= 1,
                                   reason='matplotlib-2.0 or higher required')
@@ -198,7 +197,7 @@ class TestMapPlot(object):
 
     @matplotlib_2
     def test_ax_facecolor(self):
-        fig, ax = mapplot.ax_setup(sky_coords=True, fig=None, ax=None, facecolor='#A8A8A8')
+        fig, ax = mapplot._ax_setup(sky_coords=True, fig=None, ax=None, facecolor='#A8A8A8')
         assert ax.get_facecolor() == (0.6588235294117647, 0.6588235294117647, 0.6588235294117647,
                                       1.0)
 
