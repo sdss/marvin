@@ -41,7 +41,7 @@ else:
 __all__ = ['Image']
 
 
-class Image(MMAMixIn, object):
+class Image(MMAMixIn):
     '''A class to interface with MaNGA images.
 
     This class represents a MaNGA image object initialised either

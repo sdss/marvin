@@ -19,6 +19,7 @@ Added
 - New ``Marvin Image`` Tool to load optical images using the MMA (:issue:`22`)
 - New ``Bundle`` and ``Cutout`` utility classes
 - New ``MMAMixIn`` for providing multi-modal data access
+- ``qual_flag`` and ``pixmask_flag`` are now stored in the datamodel (:issue:`479,482`).
 
 Changed
 ^^^^^^^

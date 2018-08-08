@@ -6,13 +6,24 @@
 # @Author: Brian Cherinka
 # @Date:   2018-08-01 17:50:48
 # @Last modified by:   Brian Cherinka
-# @Last Modified time: 2018-08-01 18:38:15
+# @Last Modified time: 2018-08-08 14:01:33
 
 from __future__ import print_function, division, absolute_import
 
+import numpy as np
 import pytest
 from marvin.tools.image import Image
 
+
+IMCOORDS = np.array([[275.38201798, 275.38201798],
+                     [275.38201798, 281.0],
+                     [275.38201798, 286.61798202],
+                     [281.0, 275.38201798],
+                     [281.0, 281.0],
+                     [281.0, 286.61798202],
+                     [286.61798202, 275.38201798],
+                     [286.61798202, 281.0],
+                     [286.61798202, 286.61798202]])
 
 @pytest.fixture(scope='session')
 def image():
@@ -57,6 +68,27 @@ class TestImage(object):
             assert im.header is not None
             assert im.ra is not None
             assert hasattr(im, 'bundle')
+
+    @pytest.mark.parametrize('cubecoord, imcoord',
+                             [((17, 17), (281, 281)),
+                              ((18, 18), (286.61798202, 286.61798202)),
+                              ((9.99826865, 6.34193863), (241.66439915, 221.12320284))],
+                             ids=['center', 'off', 'hexedge'])
+    def test_wcs(self, image, cubecoord, imcoord):
+        cube = image.getCube()
+        wcs = cube.wcs.celestial
+        cube_radec = wcs.all_pix2world([cubecoord], 0)
+        im_radec = image.wcs.all_pix2world([imcoord], 1)
+        assert im_radec == pytest.approx(cube_radec, rel=1e-6)
+
+    def test_wcs_aperture(self, image):
+        cube = image.getCube()
+        wcs = cube.wcs.celestial
+        aper = cube.getAperture((17, 17), 1)
+        coords = zip(*np.where(aper.mask))
+        im_radec = image.wcs.all_pix2world(IMCOORDS, 1)
+        cube_radec = wcs.all_pix2world(coords, 0)
+        assert im_radec == pytest.approx(cube_radec, rel=1e-6)
 
     def test_saveimage(self, image, temp_scratch):
         file = temp_scratch.join('test_image.png')

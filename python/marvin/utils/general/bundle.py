@@ -6,7 +6,7 @@
 # @Author: José Sánchez-Gallego
 # @Date:   2014-04-18 00:21:02
 # @Last modified by:   Brian Cherinka
-# @Last Modified time: 2018-08-01 16:12:26
+# @Last Modified time: 2018-08-08 14:05:43
 
 from __future__ import absolute_import, division, print_function, unicode_literals
 
@@ -469,7 +469,7 @@ class Cutout(object):
         w.wcs.cd = np.array([[-1, 0], [0, 1]]) * self.scale / 3600.
         w.wcs.ctype = ['RA---TAN', 'DEC--TAN']
         w.wcs.cunit = ['deg', 'deg']
-        w.wcs.radesys = 'FK5'
+        w.wcs.radesys = 'ICRS'
         w.wcs.equinox = 2000.0
         self.wcs = w
 

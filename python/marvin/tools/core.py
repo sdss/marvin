@@ -5,8 +5,8 @@
 # @Filename: core.py
 # @License: BSD 3-clause (http://www.opensource.org/licenses/BSD-3-Clause)
 #
-# @Last modified by:   Brian Cherinka
-# @Last modified time: 2018-07-20 18:25:35
+# @Last modified by: José Sánchez-Gallego (gallegoj@uw.edu)
+# @Last modified time: 2018-07-30 11:06:39
 
 from __future__ import absolute_import, division, print_function
 
@@ -91,7 +91,7 @@ class MarvinToolsClass(MMAMixIn):
             The path to the
             `drpall <https://trac.sdss.org/wiki/MANGA/TRM/TRM_MPL-5/metadata#DRP:DRPall>`_
             file to use. If not set it will use the default path for the file
-            based on the ``release``
+            based on the ``release``.
         download (bool):
             If ``True``, the data will be downloaded on instantiation. See
             :ref:`marvin-download-objects`.
@@ -247,15 +247,16 @@ class MarvinToolsClass(MMAMixIn):
     def quality_flag(self):
         """Return quality flag."""
 
-        assert self._qualflag is not None, 'quality flag not set.'
+        if self.datamodel.qual_flag is None:
+            return None
 
         try:
-            dapqual = self._bitmasks['MANGA_' + self._qualflag]
+            dapqual = self._bitmasks['MANGA_' + self.datamodel.qual_flag]
         except KeyError:
-            warnings.warn('cannot find bitmask MANGA_{!r}'.format(self._qualflag))
+            warnings.warn('cannot find bitmask MANGA_{!r}'.format(self.datamodel.qual_flag))
             dapqual = None
         else:
-            dapqual.mask = int(self.header[self._qualflag])
+            dapqual.mask = int(self.header[self.datamodel.qual_flag])
 
         return dapqual
 
