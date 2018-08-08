@@ -6,7 +6,7 @@
 # @Author: Brian Cherinka
 # @Date:   2018-08-04 20:09:38
 # @Last modified by:   Brian Cherinka
-# @Last Modified time: 2018-08-05 22:11:15
+# @Last Modified time: 2018-08-08 18:23:26
 
 from __future__ import print_function, division, absolute_import, unicode_literals
 
@@ -867,9 +867,11 @@ class Query(object):
         # add PipelineInfo
         self._add_pipeline()
 
+        # check if the query filter is functional
+        self._run_functional_queries()
+
         # check if the query filter is against the DAP
         if self._check_for(self.filter_params.keys(), schema='dapdb'):
-            self._build_dap_query()
             self._check_dapall_query()
 
     def _set_query_parameters(self):
@@ -897,7 +899,7 @@ class Query(object):
     def _join_tables(self):
         ''' Build the join statement from the input parameters '''
 
-        #from marvin import marvindb
+        # from marvin import marvindb
         ifu = marvindb.datadb.IFUDesign
 
         self._joins = []
@@ -1073,7 +1075,7 @@ class Query(object):
         qstate = str(self.query.statement.compile(compile_kwargs={'literal_binds': True}))
         return name in qstate
 
-    def _update_params(self, param):
+    def _update_filter_params(self, param):
         ''' Update the input parameters '''
         param = {key: val.decode('UTF-8') if '*' not in val.decode('UTF-8') else
                  val.replace('*', '%').decode('UTF-8') for key, val in param.items()
@@ -1094,14 +1096,11 @@ class Query(object):
         return infilter
 
     #
-    # Methods specific to DAP zonal queries
+    # Methods specific to functional queries
     #
-    def _build_dap_query(self):
-        ''' Builds a DAP zonal query '''
-
-        # get the appropriate SpaxelProp ModelClass
-        self._spaxelclass = self._marvinform._param_form_lookup['spaxelprop.file'].Meta.model
-
+    def _run_functional_queries(self):
+        ''' Checks for functional filter conditions and runs them '''
+        print('functions', self._parsed.functions)
         # check for additional modifier criteria
         if self._parsed.functions:
             # loop over all functions
@@ -1196,6 +1195,9 @@ class Query(object):
             >>> 20% of their (good) spaxels.
         '''
 
+        # get the appropriate SpaxelProp ModelClass
+        self._spaxelclass = self._marvinform._param_form_lookup['spaxelprop.file'].Meta.model
+
         # parse the function into name, condition, operator, and value
         name, condition, ops, value = self._parse_fxn(fxn)
         percent = float(value) / 100.
@@ -1228,4 +1230,42 @@ class Query(object):
         isdapall = self._check_query('dapall')
         if isdapall:
             self.query = self._group_by()
+
+    def _radial_query(self, fxn, **kwargs):
+        ''' Runs a radial cone search around an RA, Dec
+
+        Performs a radial cone search around an RA, Dec point
+        within some specified radial distance in units of degrees.
+
+        Syntax: radial(ra, dec, radius)
+
+        Parameters:
+            fxn (str):
+                The function condition used in the query filter
+
+        Example:
+            >>> fxn = 'radial(232.5447, 48.6902, 1)'
+            >>> Syntax: radial() - function name
+            >>>         radial(ra, dec, radius)
+            >>>
+            >>> Select objects that are within 1 degree of
+            >>> RA, Dec = (232.5447, 48.6902)
+
+        '''
+
+        # extract the RA, Dec and search radius
+        ra, dec = map(float, (fxn.coords))
+        radius = float(fxn.value)
+
+        # add RA, Dec as returned columns
+        self.params.extend(['cube.ra', 'cube.dec'])
+        self.query = self.query.add_column(self._marvinform._param_form_lookup.mapToColumn('cube.ra'))
+        self.query = self.query.add_column(self._marvinform._param_form_lookup.mapToColumn('cube.dec'))
+
+        # Join to the main query
+        cone_filter = func.q3c_radial_query(marvindb.datadb.Cube.ra, marvindb.datadb.Cube.dec, ra, dec, radius)
+        self.query = self.query.filter(cone_filter)
+
+
+
 
