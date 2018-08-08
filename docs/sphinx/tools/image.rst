@@ -88,13 +88,25 @@ Displaying
 ^^^^^^^^^^
 
 While ``Image.show`` produces a raw image, you have finer control over the image as a Matplotlib figure, using ``Image.plot``.  This renders the image using ``matplotlib.pyplot.imshow``.
-::
+
+.. plot::
+    :align: center
+    :include-source: True
 
     # plot the image and return the axis object
+    from marvin.tools.image import Image
+    im = Image('8485-1901')
     ax = im.plot()
 
 Once you have the plot, you can overlay additional features, such as the IFU or sky fibers, or change the hexagon.
-::
+
+.. plot::
+    :align: center
+    :include-source: True
+
+    from marvin.tools.image import Image
+    im = Image('8485-1901')
+    ax = im.plot()
 
     # overlay the IFU fibers
     im.overlay_fibers(ax)
@@ -115,7 +127,13 @@ Generating a new Image Cutout
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 There is a new utility class, :class:`marvin.utils.general.bundle.Cutout` which provides the ability to generate a new SDSS image cutout using the `SDSS SkyServer Image Cutout Service <http://skyserver.sdss.org/public/en/help/docs/api.aspx#imgcutout>`_.
-::
+
+.. plot::
+    :align: center
+    :include-source: True
+
+    from marvin.tools.image import Image
+    im = Image('8485-1901')
 
     # generate a new image
     # inputs are height and width in arcsec, and a arcsec/pixel scale
