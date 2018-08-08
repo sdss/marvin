@@ -23,6 +23,7 @@ organization\:
 - :ref:`marvin-tools-bin`: Explore a bin of spaxels
 - :ref:`marvin-tools-modelcube`: Interface to the MaNGA DAP Modelcube object
 - :doc:`tools/plate`: Explore all cubes for a given Plate
+- :ref:`marvin-tools-image`: Interface to MaNGA images
 
 **Helper Tools**: Not importable but still usable
 
