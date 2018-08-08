@@ -47,7 +47,7 @@ An example of a class that uses both `.NSAMixIn` and `.DAPallMixIn` would be
 
 note that we use a direct call to ``__init__`` instead of `super` to make sure that both parent classes are initialised.
 
-.. automodule:: marvin.core.core
+.. automodule:: marvin.tools.core
    :members: NSAMixIn, DAPallMixIn
 
 
