@@ -379,7 +379,7 @@ Alternatively, you may want to grab one of the axes and modify it, then saving i
 .. plot::
     :align: center
     :include-source: True
-    :context:
+    :context: close-figs
 
     >>> nii_ax = axes[1]
     >>> new_fig = nii_ax.bind_to_figure()
@@ -389,7 +389,7 @@ Alternatively, you may want to grab one of the axes and modify it, then saving i
 .. plot::
     :align: center
     :include-source: True
-    :context:
+    :context: close-figs
 
     >>> ax = new_fig.axes[0]
     >>> ax.set_title('A custom plot')
