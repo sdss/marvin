@@ -48,6 +48,7 @@ Fixed
 - Issue `#151 <https://github.com/sdss/marvin/issues/151>`_ - adding web spectrum tooltips
 - Fixed typo by in method name ``Spectrum.derredden -> Spectrum.deredden``.
 - A bug when explicitly returning default parameters in a query (:issue:`484`)
+- Fixed `#510 <https://github.com/sdss/marvin/issues/510>`_ - fixes incorrect conversion to sky coordinates in map plotting.
 
 Refactored
 ^^^^^^^^^^
