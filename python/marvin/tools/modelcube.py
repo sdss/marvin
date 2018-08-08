@@ -7,7 +7,7 @@
 # @License: BSD 3-clause (http://www.opensource.org/licenses/BSD-3-Clause)
 #
 # @Last modified by: José Sánchez-Gallego (gallegoj@uw.edu)
-# @Last modified time: 2018-07-21 16:03:52
+# @Last modified time: 2018-07-30 11:44:24
 
 
 from __future__ import absolute_import, division, print_function
@@ -61,8 +61,6 @@ class ModelCube(MarvinToolsClass, NSAMixIn, DAPallMixIn, GetApertureMixIn):
             The WCS solution for this plate
 
     """
-
-    _qualflag = 'DAPQUAL'
 
     def __init__(self, input=None, filename=None, mangaid=None, plateifu=None,
                  mode=None, data=None, release=None,
@@ -439,7 +437,7 @@ class ModelCube(MarvinToolsClass, NSAMixIn, DAPallMixIn, GetApertureMixIn):
                                                          mask=data['mask'],
                                                          wavelength=self._wavelength,
                                                          unit=dm.unit,
-                                                         pixmask_flag=self.header['MASKNAME'])
+                                                         pixmask_flag=dm.pixmask_flag)
 
         if self.data_origin == 'api':
 
@@ -465,7 +463,7 @@ class ModelCube(MarvinToolsClass, NSAMixIn, DAPallMixIn, GetApertureMixIn):
                                                          mask=data[dm.name]['mask'],
                                                          wavelength=data['wavelength'],
                                                          unit=dm.unit,
-                                                         pixmask_flag=self.header['MASKNAME'])
+                                                         pixmask_flag=dm.pixmask_flag)
 
         return modelcube_quantities
 
@@ -547,7 +545,7 @@ class ModelCube(MarvinToolsClass, NSAMixIn, DAPallMixIn, GetApertureMixIn):
                         redcorr=self._redcorr,
                         binid=self.get_binid(model),
                         unit=model.unit,
-                        pixmask_flag=self.header['MASKNAME'])
+                        pixmask_flag=model.pixmask_flag)
 
     @property
     def full_fit(self):
@@ -565,7 +563,7 @@ class ModelCube(MarvinToolsClass, NSAMixIn, DAPallMixIn, GetApertureMixIn):
                         redcorr=self._redcorr,
                         binid=self.get_binid(model),
                         unit=model.unit,
-                        pixmask_flag=self.header['MASKNAME'])
+                        pixmask_flag=model.pixmask_flag)
 
     @property
     def emline_fit(self):
@@ -583,7 +581,7 @@ class ModelCube(MarvinToolsClass, NSAMixIn, DAPallMixIn, GetApertureMixIn):
                         redcorr=self._redcorr,
                         binid=self.get_binid(model),
                         unit=model.unit,
-                        pixmask_flag=self.header['MASKNAME'])
+                        pixmask_flag=model.pixmask_flag)
 
     @property
     def stellarcont_fit(self):
@@ -604,7 +602,7 @@ class ModelCube(MarvinToolsClass, NSAMixIn, DAPallMixIn, GetApertureMixIn):
                         redcorr=self._redcorr,
                         binid=self.get_binid(model),
                         unit=model.unit,
-                        pixmask_flag=self.header['MASKNAME'])
+                        pixmask_flag=model.pixmask_flag)
 
     def getCube(self):
         """Returns the associated `~marvin.tools.cube.Cube`."""
