@@ -7,7 +7,7 @@
 # @License: BSD 3-clause (http://www.opensource.org/licenses/BSD-3-Clause)
 #
 # @Last modified by: José Sánchez-Gallego (gallegoj@uw.edu)
-# @Last modified time: 2018-08-06 12:14:25
+# @Last modified time: 2018-08-09 16:08:28
 
 
 import operator
@@ -199,6 +199,7 @@ class TestMap(object):
         assert spaxel is not None
         assert spaxel.x == 10 and spaxel.y == 10
 
+    @marvin_test_if(mark='skip', galaxy=dict(release=['MPL-6']))
     def test_stellar_sigma_values(self, maps, galaxy):
         ''' Assert values for stellar_sigma and stellar_sigmacorr are different (issue #411) '''
 
@@ -218,6 +219,11 @@ class TestMap(object):
         gew_ha = maps.emline_gew_ha_6564
         assert gew_ha.datamodel.description == ('Gaussian-fitted equivalent widths measurements '
                                                 '(based on EMLINE_GFLUX). Channel = H-alpha 6564.')
+    @marvin_test_if(mark='include', galaxy=dict(release=['MPL-6']))
+    def test_stellar_sigma_mpl6(self, maps, galaxy):
+        with pytest.raises(MarvinError) as cm:
+            __ = maps.stellar_sigmacorr
+        assert 'stellar_sigmacorr is unreliable in MPL-6. Please use MPL-7.' in str(cm.value)
 
 
 class TestMapArith(object):
@@ -420,7 +426,7 @@ class TestMapArith(object):
         if galaxy.release == 'MPL-4':
             errmsg = 'Instrumental broadening correction not implemented for MPL-4.'
         elif galaxy.release == 'MPL-6':
-            errmsg = 'The stellar sigma corrections in MPL-6 are wrong. Please upgrade to MPL-7.'
+            errmsg = 'The stellar sigma corrections in MPL-6 are unreliable. Please use MPL-7.'
 
         with pytest.raises(MarvinError) as ee:
             stsig.inst_sigma_correction()
