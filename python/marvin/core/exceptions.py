@@ -38,14 +38,14 @@ class MarvinSentry(object):
         if Client:
             os.environ['SENTRY_DSN'] = 'https://98bc7162624049ffa3d8d9911e373430:1a6b3217d10e4207908d8e8744145421@sentry.io/107924'
             self.client = Client(
-                    dsn=os.environ.get('SENTRY_DSN'),
-                    release=version,
-                    site='Marvin',
-                    environment=sys.version.rsplit('|', 1)[0],
-                    processors=(
-                            'raven.processors.SanitizePasswordsProcessor',
-                        )
+                dsn=os.environ.get('SENTRY_DSN'),
+                release=version,
+                site='Marvin',
+                environment=sys.version.rsplit('|', 1)[0],
+                processors=(
+                    'raven.processors.SanitizePasswordsProcessor',
                 )
+            )
             try:
                 self.client.context.merge({'user': {'name': pwd.getpwuid(os.getuid())[0],
                                                     'system': '_'.join(os.uname())}})
@@ -53,7 +53,7 @@ class MarvinSentry(object):
                 warnings.warn('cannot initiate Sentry error reporting: {0}.'.format(str(ee)),
                               UserWarning)
                 self.client = None
-            except:
+            except Exception as ee:
                 warnings.warn('cannot initiate Sentry error reporting: unknown error.',
                               UserWarning)
                 self.client = None
@@ -65,6 +65,7 @@ ms = MarvinSentry(version=marvin.__version__)
 
 
 class MarvinError(Exception):
+    ''' Main Marvin Error '''
     def __init__(self, message=None):
 
         from marvin import config
@@ -112,11 +113,16 @@ class MarvinWarning(Warning):
 
 class MarvinUserWarning(UserWarning, MarvinWarning):
     """The primary warning class."""
+    pass
+
+
+class MarvinPassiveAggressiveWarning(MarvinUserWarning):
+    """The passive aggressive warning class."""
 
     def __init__(self, message=None):
         message = ("Well, I wouldn't do it like that, but if that's "
                    "how you want to do it, sure, go ahead.\n{0}".format(message or ''))
-        super(MarvinUserWarning, self).__init__(message)
+        super(MarvinPassiveAggressiveWarning, self).__init__(message)
 
 
 class MarvinSkippedTestWarning(MarvinUserWarning):

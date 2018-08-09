@@ -7,7 +7,7 @@
 # @License: BSD 3-clause (http://www.opensource.org/licenses/BSD-3-Clause)
 #
 # @Last modified by: José Sánchez-Gallego (gallegoj@uw.edu)
-# @Last modified time: 2018-08-04 15:04:31
+# @Last modified time: 2018-08-09 16:27:22
 
 
 import matplotlib
@@ -17,7 +17,6 @@ from astropy import units as u
 
 from marvin.tests import marvin_test_if
 from marvin.tools.quantities import DataCube, Spectrum
-from marvin.utils.general import maskbit
 
 
 spaxel_unit = u.Unit('spaxel', represents=u.pixel, doc='A spectral pixel', parse_strict='silent')
@@ -175,8 +174,6 @@ class TestDataCube(object):
         assert isinstance(cube.flux, DataCube)
 
         assert isinstance(cube.spectral_resolution, Spectrum)
-        assert isinstance(cube.spectral_resolution.pixmask, maskbit.Maskbit)
-        assert cube.spectral_resolution.pixmask.name == 'MANGA_DRP3PIXMASK'
 
         if cube.release in ['MPL-4', 'MPL-5']:
             with pytest.raises(AssertionError) as ee:
@@ -266,7 +263,7 @@ class TestSpectrum(object):
         for sp in cube.datamodel.spectra:
             cube_quantity = getattr(cube, sp.name)
             assert isinstance(cube_quantity, Spectrum)
-            assert cube_quantity.pixmask_flag == 'MANGA_DRP3PIXMASK'
+            assert cube_quantity.pixmask_flag is None
 
     def test_plot(self, spectrum):
 

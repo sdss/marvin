@@ -5,18 +5,18 @@
 #
 # @Author: Brian Cherinka
 # @Date:   2017-09-13 16:05:56
-# @Last modified by:   Brian Cherinka
-# @Last modified time: 2017-11-14 19:11:99
+# @Last modified by: José Sánchez-Gallego (gallegoj@uw.edu)
+# @Last modified time: 2018-07-30 11:45:09
 
-from __future__ import print_function, division, absolute_import
+from __future__ import absolute_import, division, print_function
 
 from astropy import units as u
 
 from marvin.utils.datamodel.maskbit import get_maskbits
-from .base import Bintype, DAPDataModel, Property, MultiChannelProperty
-from .base import spaxel, Channel, Model
+
+from .base import Bintype, Channel, DAPDataModel, Model, MultiChannelProperty, Property
 from .base import spaxel as spaxel_unit
-from .MPL5 import GAU_MILESHC, SPX, VOR10, ALL, NRE
+from .MPL5 import ALL, GAU_MILESHC, NRE, SPX, VOR10
 
 
 HYB10 = Bintype('HYB10', description='Binning and stellar continuum fitting as VOR10, '
@@ -184,7 +184,7 @@ MPL6_maps = [
                          description='Elliptical polar coordinates of each spaxel from '
                                      'the galaxy center.'),
     Property('spx_mflux', ivar=True, mask=False,
-             unit=u.erg / u.s / (u.cm ** 2) / spaxel, scale=1e-17,
+             unit=u.erg / u.s / (u.cm ** 2) / spaxel_unit, scale=1e-17,
              formats={'string': 'r-band mean flux'},
              description='Mean flux in r-band (5600.1-6750.0 ang).'),
     Property('spx_snr', ivar=False, mask=False,
@@ -220,7 +220,7 @@ MPL6_maps = [
              description='Fractional area that the bin covers for the expected bin '
                          'shape (only relevant for radial binning).'),
     Property('bin_mflux', ivar=True, mask=True,
-             unit=u.erg / u.s / (u.cm ** 2) / spaxel, scale=1e-17,
+             unit=u.erg / u.s / (u.cm ** 2) / spaxel_unit, scale=1e-17,
              formats={'string': 'r-band binned spectra mean flux'},
              description='Mean flux in the r-band for the binned spectra.'),
     Property('bin_snr', ivar=False, mask=False,
@@ -258,7 +258,7 @@ MPL6_maps = [
     MultiChannelProperty('emline_sflux', ivar=True, mask=True,
                          channels=[oiid_channel] + MPL6_emline_channels,
                          formats={'string': 'Emission line summed flux'},
-                         unit=u.erg / u.s / (u.cm ** 2) / spaxel, scale=1e-17,
+                         unit=u.erg / u.s / (u.cm ** 2) / spaxel_unit, scale=1e-17,
                          binid=binid_properties[3],
                          description='Non-parametric summed flux for emission lines.'),
     MultiChannelProperty('emline_sew', ivar=True, mask=True,
@@ -271,7 +271,7 @@ MPL6_maps = [
     MultiChannelProperty('emline_gflux', ivar=True, mask=True,
                          channels=[oii_channel] + MPL6_emline_channels,
                          formats={'string': 'Emission line Gaussian flux'},
-                         unit=u.erg / u.s / (u.cm ** 2) / spaxel, scale=1e-17,
+                         unit=u.erg / u.s / (u.cm ** 2) / spaxel_unit, scale=1e-17,
                          binid=binid_properties[3],
                          description='Gaussian profile integrated flux for emission lines.'),
     MultiChannelProperty('emline_gvel', ivar=True, mask=True,
@@ -362,4 +362,5 @@ MPL6 = DAPDataModel('2.1.3', aliases=['MPL-6', 'MPL6'],
                     default_template='GAU-MILESHC',
                     property_table='SpaxelProp6',
                     default_binid=binid_properties[0],
-                    default_mapmask=['NOCOV', 'UNRELIABLE', 'DONOTUSE'])
+                    default_mapmask=['NOCOV', 'UNRELIABLE', 'DONOTUSE'],
+                    qual_flag='DAPQUAL')

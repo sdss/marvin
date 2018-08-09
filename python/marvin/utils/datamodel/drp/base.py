@@ -24,9 +24,30 @@ from ...general.structs import FuzzyList
 
 
 class DRPCubeDataModel(object):
-    """A class representing a DRP Cube datamodel."""
+    """A class representing a DRP Cube datamodel.
 
-    def __init__(self, release, datacubes=[], spectra=[], aliases=[], bitmasks=None):
+    Parameters
+    ----------
+    release : str
+        The DRP release this datamodel describes.
+    datacubes : list
+        A list of `.DataCube` instances that describe the datacubes in this
+        datamodel.
+    spectra : list
+        A list of `.Spectrum` instances that describe the datacubes in this
+        datamodel.
+    aliases : list
+        A list of aliases for this datamodel.
+    bitmask : dict
+        A dictionary of `~marvin.utils.general.maskbit.Maskbit` objects.
+    qual_flag : str
+        The name of the quality bitmask flag. Must not include the ``MANGA_``
+        prefix.
+
+    """
+
+    def __init__(self, release, datacubes=[], spectra=[], aliases=[], bitmasks=None,
+                 qual_flag='DRP3QUAL'):
 
         self.release = release
         self.aliases = aliases
@@ -35,6 +56,7 @@ class DRPCubeDataModel(object):
         self.spectra = SpectrumList(spectra, parent=self)
 
         self.bitmasks = bitmasks if bitmasks is not None else {}
+        self.qual_flag = qual_flag
 
     def __repr__(self):
         return ('<DRPCubeDataModel release={0!r}, n_datacubes={1}, n_spectra={2}>'
@@ -328,6 +350,9 @@ class DataCube(object):
         formats (dict):
             A dictionary with formats that can be used to represent the
             datacube. Default ones are ``latex`` and ``string``.
+        pixmask_flag : str
+            The name of the pixmask flag. Should be the full name, including the
+            ``MANGA_`` part.
         description (str):
             A description for the datacube.
 
@@ -336,7 +361,7 @@ class DataCube(object):
     def __init__(self, name, extension_name, extension_wave=None,
                  extension_ivar=None, extension_mask=None, db_table='spaxel',
                  unit=u.dimensionless_unscaled, scale=1, formats={},
-                 description=''):
+                 pixmask_flag='MANGA_DRP3PIXMASK', description=''):
 
         self.name = name
 
@@ -344,6 +369,8 @@ class DataCube(object):
         self._extension_wave = extension_wave
         self._extension_ivar = extension_ivar
         self._extension_mask = extension_mask
+
+        self.pixmask_flag = pixmask_flag
 
         self.db_table = db_table
 
@@ -609,6 +636,9 @@ class Spectrum(object):
         formats (dict):
             A dictionary with formats that can be used to represent the
             spectrum. Default ones are ``latex`` and ``string``.
+        pixmask_flag : str
+            The name of the pixmask flag. Should be the full name, including the
+            ``MANGA_`` part.
         description (str):
             A description for the spectrum.
 
@@ -616,7 +646,7 @@ class Spectrum(object):
 
     def __init__(self, name, extension_name, extension_wave=None, extension_std=None,
                  extension_mask=None, db_table='cube', unit=u.dimensionless_unscaled,
-                 scale=1, formats={}, description=''):
+                 scale=1, formats={}, pixmask_flag=None, description=''):
 
         self.name = name
 
@@ -624,6 +654,8 @@ class Spectrum(object):
         self._extension_wave = extension_wave
         self._extension_std = extension_std
         self._extension_mask = extension_mask
+
+        self.pixmask_flag = pixmask_flag
 
         self.db_table = db_table
 

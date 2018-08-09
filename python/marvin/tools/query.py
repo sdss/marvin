@@ -351,7 +351,11 @@ class Query(object):
                                  for rp in returnparams]
 
             self._returnparams = full_returnparams
-        self.params.extend(full_returnparams)
+
+        # remove any return parameters that are also defaults
+        use_only = [f for f in full_returnparams if f not in self.defaultparams]
+
+        self.params.extend(use_only)
 
     def set_defaultparams(self):
         ''' Loads the default params for a given return type
