@@ -7,7 +7,7 @@
 # @License: BSD 3-clause (http://www.opensource.org/licenses/BSD-3-Clause)
 #
 # @Last modified by: José Sánchez-Gallego (gallegoj@uw.edu)
-# @Last modified time: 2018-08-06 11:59:10
+# @Last modified time: 2018-08-09 16:08:28
 
 
 import operator
@@ -214,6 +214,11 @@ class TestMap(object):
         assert ssvalue == pytest.approx(ss[x, y].value, 1e-4)
         assert scvalue == pytest.approx(sc[x, y].value, 1e-4)
 
+    def test_datamodel(self, maps):
+
+        gew_ha = maps.emline_gew_ha_6564
+        assert gew_ha.datamodel.description == ('Gaussian-fitted equivalent widths measurements '
+                                                '(based on EMLINE_GFLUX). Channel = H-alpha 6564.')
     @marvin_test_if(mark='include', galaxy=dict(release=['MPL-6']))
     def test_stellar_sigma_mpl6(self, maps, galaxy):
         with pytest.raises(MarvinError) as cm:

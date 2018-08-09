@@ -906,7 +906,7 @@ class MultiChannelProperty(list):
 
         self.ivar = kwargs.get('ivar', False)
         self.mask = kwargs.get('mask', False)
-        self.description = kwargs.get('description', '')
+        self.description = kwargs.pop('description', '')
 
         self._parent = None
         self.parent = kwargs.get('parent', None)
@@ -915,9 +915,10 @@ class MultiChannelProperty(list):
         for ii, channel in enumerate(channels):
             this_unit = unit if not isinstance(unit, (list, tuple)) else unit[ii]
             this_scale = scale if not isinstance(scale, (list, tuple)) else scale[ii]
+            channel_description = self.description + ' Channel = {0}.'.format(channel.to_string())
             self_list.append(Property(self.name, channel=channel,
                                       unit=this_unit, scale=this_scale,
-                                      binid=binid, **kwargs))
+                                      binid=binid, description=channel_description, **kwargs))
 
         list.__init__(self, self_list)
 

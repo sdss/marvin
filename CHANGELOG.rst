@@ -36,6 +36,7 @@ Changed
 - ``pixmask`` is now available for all quantities (except ``AnalysisProprty``). The property ``masked`` now uses the bit ``DONOTUSE`` to determine what values must be masked out (:issue:`462`).
 - Raises error when applying ``inst_sigma_correction`` on ``stellar_sigma`` MPL-6 maps.  Applies correction to stellar_sigma and emline_sigma for web maps with added 'Corrected' title (:issue:`478`)
 - Removes targeting bits from ``Spaxel`` and ``Bin`` (:issue:`465`).
+- The name of the channel is now shown in the ``Property`` description (:issue:`424`).
 
 Fixed
 ^^^^^
