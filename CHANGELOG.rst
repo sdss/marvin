@@ -58,6 +58,7 @@ Refactored
 ^^^^^^^^^^
 - Moved `marvin.core.core` to `marvin.tools.core` and split the mixins into `marvin.tools.mixins`.
 - Reimplemented `~marvin.tools.mixins.aperture.GetApertureMixIn.getAperture` as a mixin using photutils apertures (:issue:`3,315`).
+- Reimplemented `~marvin.tools.rss.RSS` as a list of `~marvin.tools.rss.RSSFiber` objects (:issue:`27,504`).
 - Moved pieces of MarvinToolsClass into `marvin.tools.mixins`.
 
 
