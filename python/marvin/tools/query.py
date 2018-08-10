@@ -879,16 +879,25 @@ class Query(object):
     def _check_history(self, check_only=None):
         ''' Check the query against the query history schema '''
 
-        sf = self.marvinform._param_form_lookup.mapToColumn('searchfilter')
+        # sf = self.marvinform._param_form_lookup.mapToColumn('searchfilter')
+        # stringfilter = self.searchfilter.strip().replace(' ', '')
+        # qm = self.session.query(sf.class_).filter(sf == stringfilter, sf.class_.release == self._release).one_or_none()
+
+        sqlcol = self.marvinform._param_form_lookup.mapToColumn('sql')
         stringfilter = self.searchfilter.strip().replace(' ', '')
-        qm = self.session.query(sf.class_).filter(sf == stringfilter, sf.class_.release == self._release).one_or_none()
+        rawsql = self.show().strip()
+        return_params = ','.join(self._returnparams)
+        qm = self.session.query(sqlcol.class_).\
+            filter(sqlcol == rawsql, sqlcol.class_.release == self._release).one_or_none()
 
         if check_only:
             return qm
 
         with self.session.begin():
             if not qm:
-                qm = sf.class_(searchfilter=stringfilter, n_run=1, release=self._release, count=self.totalcount)
+                #qm = sf.class_(searchfilter=stringfilter, n_run=1, release=self._release, count=self.totalcount)
+                qm = sqlcol.class_(searchfilter=stringfilter, n_run=1, release=self._release,
+                                   count=self.totalcount, sql=rawsql, return_params=return_params)
                 self.session.add(qm)
             else:
                 qm.n_run += 1
