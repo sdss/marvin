@@ -23,6 +23,7 @@ Fixed
 - ``Bin._create_spaxels`` instantiating spaxels with the wrong ``(i,j)`` values for the bin. The ``(i, j)`` values from the ``binid`` map were being swapped twice before sending them to ``SpaxelBase`` (:issue:`457`).
 - A bug in the calculation of the deredden inverse variance in a `~marvin.tools.quantities.datacube.DataCube`.
 - Fixed typo by in method name ``Spectrum.derredden -> Spectrum.deredden``.
+- Fixed `#510 <https://github.com/sdss/marvin/issues/510>`_ - fixes incorrect conversion to sky coordinates in map plotting.
 
 
 [2.2.5] - 2018/04/26
