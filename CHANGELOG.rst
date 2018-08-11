@@ -16,6 +16,7 @@ Added
 - Adds User table into the history schema of mangadb.  Tracks user logins.
 - ``Map`` has a new method ``getSpaxel`` to retrieve an ``Spaxel`` using the parent ``Maps``.
 - New configuration option in ``marvin.yml``, ``default_release``, to set the release to be used when Marvin gets imported (:issue:`463`).
+- Applying a NumPy ufunc (except ``np.log10()``) raises ``NotImplementedError`` because ivar propagation is not implemented yet.
 - New ``Marvin Image`` Tool to load optical images using the MMA (:issue:`22`)
 - New ``Bundle`` and ``Cutout`` utility classes
 - New ``MMAMixIn`` for providing multi-modal data access
@@ -51,6 +52,7 @@ Fixed
 - Issue :issue:`431` - adding login documentation
 - Issue :issue:`151` - adding web spectrum tooltips
 - Fixed typo by in method name ``Spectrum.derredden -> Spectrum.deredden``.
+- Fixed `#305 <https://github.com/sdss/marvin/issues/305>`_ - adding ivar propogation for np.log10(Map)
 - A bug when explicitly returning default parameters in a query (:issue:`484`)
 - Fixed `#510 <https://github.com/sdss/marvin/issues/510>`_ - fixes incorrect conversion to sky coordinates in map plotting.
 
