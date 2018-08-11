@@ -6,7 +6,7 @@
 # @License: BSD 3-clause (http://www.opensource.org/licenses/BSD-3-Clause)
 #
 # @Last modified by: José Sánchez-Gallego (gallegoj@uw.edu)
-# @Last modified time: 2018-07-23 16:49:01
+# @Last modified time: 2018-07-25 18:06:38
 
 
 import os
@@ -16,6 +16,7 @@ import numpy as np
 import pytest
 from astropy import wcs
 
+import marvin
 from marvin import config, marvindb
 from marvin.core.exceptions import MarvinError, MarvinUserWarning
 from marvin.tests import marvin_test_if
@@ -190,6 +191,16 @@ class TestCube(object):
     def test_getExtensionData_db(self, galaxy):
         cube = Cube(plateifu=galaxy.plateifu)
         cube._getExtensionData(extName='flux')
+
+    def test_getrss(self, cube):
+
+        rss = cube.getRSS()
+
+        assert isinstance(rss, marvin.tools.RSS)
+        assert cube.mode == rss.mode
+        assert cube.plateifu == rss.plateifu
+        assert cube.mangaid == rss.mangaid
+        assert cube.release == rss.release
 
 
 class TestWCS(object):

@@ -17,6 +17,10 @@ Added
 - ``Map`` has a new method ``getSpaxel`` to retrieve an ``Spaxel`` using the parent ``Maps``.
 - New configuration option in ``marvin.yml``, ``default_release``, to set the release to be used when Marvin gets imported (:issue:`463`).
 - Applying a NumPy ufunc (except ``np.log10()``) raises ``NotImplementedError`` because ivar propagation is not implemented yet.
+- New ``Marvin Image`` Tool to load optical images using the MMA (:issue:`22`)
+- New ``Bundle`` and ``Cutout`` utility classes
+- New ``MMAMixIn`` for providing multi-modal data access
+- ``qual_flag`` and ``pixmask_flag`` are now stored in the datamodel (:issue:`479,482`).
 
 Changed
 ^^^^^^^
@@ -27,29 +31,37 @@ Changed
 - Added rawsql and return_params columns to history.query table in mangadb
 - Extra keyword arguments passed to ``Spectrum.plot`` are now forwarded to ``Axes.plot``.
 - Tools (e.g., ``Cube``, ``Maps``) can now be accessed from the ``marvin`` namespace (e.g., ``marvin.tools.Cube`` or ``marvin.tools.cube.Cube``).
+- Map plotting ``ax_setup()`` function is now hidden.
 - Moved ``yanny.py`` to ``extern/`` and added a readme file for the external packages (:issue:`468`).
 - `~marvin.tools.quantities.Spectrum.plot` now only masks part of the spectrum that have the ``DONOTUSE`` maskbit set (:issue:`455`).
 - ``pixmask`` is now available for all quantities (except ``AnalysisProprty``). The property ``masked`` now uses the bit ``DONOTUSE`` to determine what values must be masked out (:issue:`462`).
+- Raises error when applying ``inst_sigma_correction`` on ``stellar_sigma`` MPL-6 maps.  Applies correction to stellar_sigma and emline_sigma for web maps with added 'Corrected' title (:issue:`478`)
+- Removes targeting bits from ``Spaxel`` and ``Bin`` (:issue:`465`).
+- The name of the channel is now shown in the ``Property`` description (:issue:`424`).
 
 Fixed
 ^^^^^
-- Issue `#421 <https://github.com/sdss/marvin/issues/421>`_ - query returning spaxel props returns wrong total count
+- Issue :issue:`421` - query returning spaxel props returns wrong total count
 - Bugfix - Python 3 xrange syntax bug in buildImageDict
 - ``Bin._create_spaxels`` instantiating spaxels with the wrong ``(i,j)`` values for the bin. The ``(i, j)`` values from the ``binid`` map were being swapped twice before sending them to ``SpaxelBase`` (:issue:`457`).
 - A bug in the calculation of the deredden inverse variance in a `~marvin.tools.quantities.datacube.DataCube`.
 - Issue with setting drpall path on initial import/set of release before tree has been planted
-- Issue `#456 <https://github.com/sdss/marvin/issues/456>`_ - spectrum web display shows incorrect RA, Dec
-- Issue `#422 <https://github.com/sdss/marvin/issues/422>`_ - ensuring config auto checks access to netrc
-- Issue `#423 <https://github.com/sdss/marvin/issues/423>`_ - adding marvin.yml documentation
-- Issue `#431 <https://github.com/sdss/marvin/issues/431>`_ - adding login documentation
-- Issue `#151 <https://github.com/sdss/marvin/issues/151>`_ - adding web spectrum tooltips
+- Issue :issue:`456` - spectrum web display shows incorrect RA, Dec
+- Issue :issue:`422` - ensuring config auto checks access to netrc
+- Issue :issue:`423` - adding marvin.yml documentation
+- Issue :issue:`431` - adding login documentation
+- Issue :issue:`151` - adding web spectrum tooltips
 - Fixed typo by in method name ``Spectrum.derredden -> Spectrum.deredden``.
 - Fixed `#305 <https://github.com/sdss/marvin/issues/305>`_ - adding ivar propogation for np.log10(Map)
+- A bug when explicitly returning default parameters in a query (:issue:`484`)
+- Fixed `#510 <https://github.com/sdss/marvin/issues/510>`_ - fixes incorrect conversion to sky coordinates in map plotting.
 
 Refactored
 ^^^^^^^^^^
 - Moved `marvin.core.core` to `marvin.tools.core` and split the mixins into `marvin.tools.mixins`.
 - Reimplemented `~marvin.tools.mixins.aperture.GetApertureMixIn.getAperture` as a mixin using photutils apertures (:issue:`3,315`).
+- Reimplemented `~marvin.tools.rss.RSS` as a list of `~marvin.tools.rss.RSSFiber` objects (:issue:`27,504`).
+- Moved pieces of MarvinToolsClass into `marvin.tools.mixins`.
 
 
 [2.2.5] - 2018/04/26

@@ -7,7 +7,7 @@
 # @License: BSD 3-clause (http://www.opensource.org/licenses/BSD-3-Clause)
 #
 # @Last modified by: José Sánchez-Gallego (gallegoj@uw.edu)
-# @Last modified time: 2018-07-23 17:00:44
+# @Last modified time: 2018-08-09 16:27:22
 
 
 import matplotlib
@@ -17,7 +17,6 @@ from astropy import units as u
 
 from marvin.tests import marvin_test_if
 from marvin.tools.quantities import DataCube, Spectrum
-from marvin.utils.general import maskbit
 
 
 spaxel_unit = u.Unit('spaxel', represents=u.pixel, doc='A spectral pixel', parse_strict='silent')
@@ -27,7 +26,8 @@ spaxel_unit = u.Unit('spaxel', represents=u.pixel, doc='A spectral pixel', parse
 def datacube():
     """Produces a simple 3D array for datacube testing."""
 
-    flux = numpy.tile([numpy.arange(1, 1001)], (100, 1)).T.reshape(1000, 10, 10)
+    flux = numpy.tile([numpy.arange(1, 1001, dtype=numpy.float32)],
+                      (100, 1)).T.reshape(1000, 10, 10)
     ivar = (1. / (flux / 100))**2
     mask = numpy.zeros(flux.shape, dtype=numpy.int)
     wave = numpy.arange(1, 1001)
@@ -50,7 +50,7 @@ def datacube():
 def spectrum():
     """Produces a simple 1D array for datacube testing."""
 
-    flux = numpy.arange(1, 1001)
+    flux = numpy.arange(1, 1001, dtype=numpy.float32)
     ivar = (1. / (flux / 100))**2
     mask = numpy.zeros(flux.shape, dtype=numpy.int)
     wave = numpy.arange(1, 1001)
@@ -174,8 +174,6 @@ class TestDataCube(object):
         assert isinstance(cube.flux, DataCube)
 
         assert isinstance(cube.spectral_resolution, Spectrum)
-        assert isinstance(cube.spectral_resolution.pixmask, maskbit.Maskbit)
-        assert cube.spectral_resolution.pixmask.name == 'MANGA_DRP3PIXMASK'
 
         if cube.release in ['MPL-4', 'MPL-5']:
             with pytest.raises(AssertionError) as ee:
@@ -265,7 +263,7 @@ class TestSpectrum(object):
         for sp in cube.datamodel.spectra:
             cube_quantity = getattr(cube, sp.name)
             assert isinstance(cube_quantity, Spectrum)
-            assert cube_quantity.pixmask_flag == 'MANGA_DRP3PIXMASK'
+            assert cube_quantity.pixmask_flag is None
 
     def test_plot(self, spectrum):
 

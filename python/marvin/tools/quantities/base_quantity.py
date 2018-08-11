@@ -7,7 +7,7 @@
 # @License: BSD 3-clause (http://www.opensource.org/licenses/BSD-3-Clause)
 #
 # @Last modified by: José Sánchez-Gallego (gallegoj@uw.edu)
-# @Last modified time: 2018-07-23 16:42:56
+# @Last modified time: 2018-07-23 20:14:29
 
 
 from __future__ import absolute_import, division, print_function
@@ -105,10 +105,10 @@ class QuantityMixIn(object):
             Unit("1e-17 erg / (Angstrom cm2 s spaxel)")
             >> dc[100, 15, 15]
             <DataCube 0.270078063011169 1e-17 erg / (Angstrom cm2 s spaxel)>
-            >> dc_descaled = dc.descale()
-            >> d_descaled.unit
+            >>> dc_descaled = dc.descale()
+            >>> d_descaled.unit
             Unit("Angstrom cm2 s spaxel")
-            >> dc[100, 15, 15]
+            >>> dc[100, 15, 15]
             <DataCube 2.70078063011169e-18 erg / (Angstrom cm2 s spaxel)>
 
         """

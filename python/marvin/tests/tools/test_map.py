@@ -6,8 +6,8 @@
 # @Filename: test_map.py
 # @License: BSD 3-clause (http://www.opensource.org/licenses/BSD-3-Clause)
 #
-# @Last modified by:   andrews
-# @Last modified time: 2018-07-25 15:07:19
+# @Last modified by: José Sánchez-Gallego (gallegoj@uw.edu)
+# @Last modified time: 2018-08-09 16:08:28
 
 
 import operator
@@ -207,6 +207,7 @@ class TestMap(object):
         assert spaxel is not None
         assert spaxel.x == 10 and spaxel.y == 10
 
+    @marvin_test_if(mark='skip', galaxy=dict(release=['MPL-6']))
     def test_stellar_sigma_values(self, maps, galaxy):
         ''' Assert values for stellar_sigma and stellar_sigmacorr are different (issue #411) '''
 
@@ -220,6 +221,17 @@ class TestMap(object):
         scvalue = galaxy.dap['stellar_sigmacorr'][galaxy.bintype.name]
         assert ssvalue == pytest.approx(ss[x, y].value, 1e-4)
         assert scvalue == pytest.approx(sc[x, y].value, 1e-4)
+
+    def test_datamodel(self, maps):
+
+        gew_ha = maps.emline_gew_ha_6564
+        assert gew_ha.datamodel.description == ('Gaussian-fitted equivalent widths measurements '
+                                                '(based on EMLINE_GFLUX). Channel = H-alpha 6564.')
+    @marvin_test_if(mark='include', galaxy=dict(release=['MPL-6']))
+    def test_stellar_sigma_mpl6(self, maps, galaxy):
+        with pytest.raises(MarvinError) as cm:
+            __ = maps.stellar_sigmacorr
+        assert 'stellar_sigmacorr is unreliable in MPL-6. Please use MPL-7.' in str(cm.value)
 
 
 class TestMapArith(object):
@@ -428,7 +440,7 @@ class TestMapArith(object):
         assert map_new.ivar == pytest.approx(ivar_new)
         assert (map_new.mask == map_orig.mask).all()
 
-    @marvin_test_if(mark='skip', galaxy=dict(release=['MPL-4']))
+    @marvin_test_if(mark='skip', galaxy=dict(release=['MPL-4', 'MPL-6']))
     def test_stellar_sigma_correction(self, galaxy):
         maps = Maps(plateifu=galaxy.plateifu)
         stsig = maps['stellar_sigma']
@@ -447,14 +459,20 @@ class TestMapArith(object):
         assert (actual.mask == expected.mask).all()
         assert actual.datamodel == stsig.datamodel
 
-    @marvin_test_if(mark='include', galaxy=dict(release=['MPL-4']))
+    @marvin_test_if(mark='include', galaxy=dict(release=['MPL-4', 'MPL-6']))
     def test_stellar_sigma_correction_MPL4(self, galaxy):
         maps = Maps(plateifu=galaxy.plateifu)
         stsig = maps['stellar_sigma']
+
+        if galaxy.release == 'MPL-4':
+            errmsg = 'Instrumental broadening correction not implemented for MPL-4.'
+        elif galaxy.release == 'MPL-6':
+            errmsg = 'The stellar sigma corrections in MPL-6 are unreliable. Please use MPL-7.'
+
         with pytest.raises(MarvinError) as ee:
             stsig.inst_sigma_correction()
 
-        assert 'Instrumental broadening correction not implemented for MPL-4.' in str(ee.value)
+        assert errmsg in str(ee.value)
 
     def test_stellar_sigma_correction_invalid_property(self, galaxy):
         maps = Maps(plateifu=galaxy.plateifu)
@@ -548,11 +566,6 @@ class TestMaskbit(object):
     def test_labels_to_value(self, maps_release_only, names, expected):
         ha = maps_release_only['emline_gflux_ha_6564']
         assert ha.pixmask.labels_to_value(names) == expected
-
-    @marvin_test_if(mark='skip', maps_release_only=dict(release=['MPL-4']))
-    def test_quality_flag(self, maps_release_only):
-        ha = maps_release_only['emline_gflux_ha_6564']
-        assert ha.quality_flag is not None
 
     @pytest.mark.parametrize('flag',
                              ['manga_target1',

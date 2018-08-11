@@ -7,17 +7,16 @@
 # @Date:   2017-05-01 09:07:00
 
 # @Last modified by:   andrews
-# @Last modified time: 2018-07-06 15:07:79
+# @Last modified time: 2018-08-07 16:08:71
 
-import numpy as np
 import matplotlib
+import numpy as np
 import pytest
 
+import marvin.utils.plot.map as mapplot
 from marvin import config
 from marvin.tests import marvin_test_if
-import marvin.utils.plot.map as mapplot
 from marvin.utils.datamodel.dap import datamodel
-
 
 matplotlib_2 = pytest.mark.skipif(int(matplotlib.__version__.split('.')[0]) <= 1,
                                   reason='matplotlib-2.0 or higher required')
@@ -189,8 +188,8 @@ class TestMasks(object):
 class TestMapPlot(object):
 
     @pytest.mark.parametrize('cube_size, sky_coords, expected',
-                             [([36, 36], True, np.array([-18, 18, -18, 18])),
-                              ([35, 35], True, np.array([-17.5, 17.5, -17.5, 17.5])),
+                             [([36, 36], True, np.array([-9, 9, -9, 9])),
+                              ([35, 35], True, np.array([-8.75, 8.75, -8.75, 8.75])),
                               ([36, 36], False, np.array([0, 35, 0, 35]))])
     def test_set_extent(self, cube_size, sky_coords, expected):
         extent = mapplot._set_extent(cube_size, sky_coords)
@@ -198,7 +197,7 @@ class TestMapPlot(object):
 
     @matplotlib_2
     def test_ax_facecolor(self):
-        fig, ax = mapplot.ax_setup(sky_coords=True, fig=None, ax=None, facecolor='#A8A8A8')
+        fig, ax = mapplot._ax_setup(sky_coords=True, fig=None, ax=None, facecolor='#A8A8A8')
         assert ax.get_facecolor() == (0.6588235294117647, 0.6588235294117647, 0.6588235294117647,
                                       1.0)
 

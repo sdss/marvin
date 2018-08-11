@@ -6,7 +6,7 @@
 # @Filename: conftest.py
 # @License: BSD 3-clause (http://www.opensource.org/licenses/BSD-3-Clause)
 #
-# @Last modified by: José Sánchez-Gallego (gallegoj@uw.edu)
+# @Last modified by:   Brian Cherinka
 # @Last modified time: 2018-07-21 21:51:06
 
 import copy
@@ -172,7 +172,7 @@ def data_origin(request):
     return request.param
 
 
-@pytest.fixture(params=modes)
+@pytest.fixture(scope='session', params=modes)
 def mode(request):
     """Yield a data mode."""
     if travis and request.param not in travis.new_modes:
@@ -418,7 +418,7 @@ def monkeyauth(monkeypatch):
 
 # Temp Dir/File-based FIXTURES
 # ----------------------------
-@pytest.fixture(scope='session')
+@pytest.fixture(scope='function')
 def temp_scratch(tmpdir_factory):
     """Create a temporary scratch space for reading/writing.
 
@@ -632,7 +632,7 @@ def maps_release_only(release):
 
 
 @pytest.fixture(scope='function')
-def query(request, release, mode, db):
+def query(request, monkeyauth, release, mode, db):
     ''' Yields a Query that loops over all modes and db options '''
     data = query_data[release]
     set_the_config(release)

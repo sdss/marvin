@@ -1,17 +1,19 @@
 
 import contextlib
-import re
 import functools
 import os
+import re
 from copy import deepcopy
-from marvin import config
-from marvin.utils.datamodel.dap import datamodel as dm
-from webargs import fields, validate, ValidationError
-from webargs.flaskparser import use_args, use_kwargs, parser
-from marvin.utils.general import validate_jwt
-from flask_jwt_extended import fresh_jwt_required
+
 from brain.utils.general import build_routemap
 from flask import current_app
+from flask_jwt_extended import fresh_jwt_required
+from webargs import ValidationError, fields, validate
+from webargs.flaskparser import parser, use_args, use_kwargs
+
+from marvin import config
+from marvin.utils.datamodel.dap import datamodel as dm
+from marvin.utils.general import validate_jwt
 
 
 def plate_in_range(val):
@@ -46,6 +48,8 @@ viewargs = {'name': fields.String(required=True, location='view_args', validate=
                                                                           'emline_base',
                                                                           'emline_mask'])),
             'colname': fields.String(required=True, location='view_args', allow_none=True),
+            'fiberid': fields.Integer(required=True, location='view_args',
+                                      validate=validate.Range(min=-1, max=5800)),
             }
 
 # List of all form parameters that are needed in all the API routes

@@ -7,7 +7,7 @@
 # @License: BSD 3-clause (http://www.opensource.org/licenses/BSD-3-Clause)
 #
 # @Last modified by: José Sánchez-Gallego (gallegoj@uw.edu)
-# @Last modified time: 2018-07-17 16:39:15
+# @Last modified time: 2018-07-27 13:06:25
 
 import numpy
 import pytest
@@ -108,3 +108,16 @@ def test_get_aperture_no_lazy():
     aperture = cube.getAperture((17, 17), 1)
 
     assert aperture.getSpaxels(lazy=False)[0].loaded is True
+
+
+def test_get_spaxels_custom_mask():
+    """Tests the mask parameter in getSpaxels."""
+
+    cube = marvin.tools.Cube('8485-1901')
+
+    aperture = cube.getAperture((17, 17), 2)
+
+    my_mask = aperture.mask.copy()
+    my_mask[0:5, 0:5] = 1
+
+    assert len(aperture.getSpaxels(mask=my_mask)) == 34

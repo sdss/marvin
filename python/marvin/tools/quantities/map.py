@@ -139,7 +139,6 @@ class Map(units.Quantity, QuantityMixIn):
         new_map.manga_target3 = deepcopy(self.manga_target3)
         new_map.target_flags = deepcopy(self.target_flags)
 
-        new_map.quality_flag = deepcopy(self.quality_flag)
         new_map.pixmask_flag = deepcopy(self.pixmask_flag)
 
         return new_map
@@ -242,8 +241,7 @@ class Map(units.Quantity, QuantityMixIn):
         obj.manga_target3 = maps.manga_target3
         obj.target_flags = maps.target_flags
 
-        obj.quality_flag = maps.quality_flag
-        obj.pixmask_flag = maps.header['MASKNAME']
+        obj.pixmask_flag = prop.pixmask_flag
 
         return obj
 
@@ -542,11 +540,15 @@ class Map(units.Quantity, QuantityMixIn):
         Correct observed stellar or emission line velocity dispersion
         for instrumental broadening.
         """
+
         if self.datamodel.name == 'stellar_sigma':
 
-            if self._datamodel.parent.release == 'MPL-4':
+            if 'MPL-4' in self._datamodel.parent.aliases:
                 raise marvin.core.exceptions.MarvinError(
                     'Instrumental broadening correction not implemented for MPL-4.')
+            elif 'MPL-6' in self._datamodel.parent.aliases:
+                raise marvin.core.exceptions.MarvinError(
+                    'The stellar sigma corrections in MPL-6 are unreliable. Please use MPL-7.')
 
             map_corr = self.getMaps()['stellar_sigmacorr']
 
@@ -573,7 +575,7 @@ class Map(units.Quantity, QuantityMixIn):
         """
         if self.datamodel.name == 'specindex':
 
-            if self._datamodel.parent.release == 'MPL-4':
+            if 'MPL-4' in self._datamodel.parent.aliases:
                 raise marvin.core.exceptions.MarvinError(
                     'Velocity dispersion correction not implemented for MPL-4.')
 

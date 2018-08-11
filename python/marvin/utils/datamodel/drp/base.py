@@ -1,33 +1,53 @@
 #!/usr/bin/env python
-# encoding: utf-8
+# -*- coding: utf-8 -*-
 #
-# @Author: Brian Cherinka, José Sánchez-Gallego, Brett Andrews
-# @Date: Oct 25, 2017
+# @Author: Brian Cherinka, José Sánchez-Gallego, and Brett Andrews
+# @Date: 2017-10-25
 # @Filename: base.py
-# @License: BSD 3-Clause
-# @Copyright: Brian Cherinka, José Sánchez-Gallego, Brett Andrews
+# @License: BSD 3-clause (http://www.opensource.org/licenses/BSD-3-Clause)
+#
+# @Last modified by: José Sánchez-Gallego (gallegoj@uw.edu)
+# @Last modified time: 2018-07-25 18:32:35
 
-
-from __future__ import division
-from __future__ import print_function
-from __future__ import absolute_import
+from __future__ import absolute_import, division, print_function
 
 import copy as copy_mod
 import os
 
-from marvin.core.exceptions import MarvinError
-
 import astropy.table as table
 from astropy import units as u
+
+from marvin.core.exceptions import MarvinError
 
 from .. import DataModelList
 from ...general.structs import FuzzyList
 
 
-class DRPDataModel(object):
-    """A class representing a DAP datamodel, with bintypes, templates, properties, etc."""
+class DRPCubeDataModel(object):
+    """A class representing a DRP Cube datamodel.
 
-    def __init__(self, release, datacubes=[], spectra=[], aliases=[], bitmasks=None):
+    Parameters
+    ----------
+    release : str
+        The DRP release this datamodel describes.
+    datacubes : list
+        A list of `.DataCube` instances that describe the datacubes in this
+        datamodel.
+    spectra : list
+        A list of `.Spectrum` instances that describe the datacubes in this
+        datamodel.
+    aliases : list
+        A list of aliases for this datamodel.
+    bitmask : dict
+        A dictionary of `~marvin.utils.general.maskbit.Maskbit` objects.
+    qual_flag : str
+        The name of the quality bitmask flag. Must not include the ``MANGA_``
+        prefix.
+
+    """
+
+    def __init__(self, release, datacubes=[], spectra=[], aliases=[], bitmasks=None,
+                 qual_flag='DRP3QUAL'):
 
         self.release = release
         self.aliases = aliases
@@ -36,10 +56,10 @@ class DRPDataModel(object):
         self.spectra = SpectrumList(spectra, parent=self)
 
         self.bitmasks = bitmasks if bitmasks is not None else {}
+        self.qual_flag = qual_flag
 
     def __repr__(self):
-
-        return ('<DRPDataModel release={0!r}, n_datacubes={1}, n_spectra={2}>'
+        return ('<DRPCubeDataModel release={0!r}, n_datacubes={1}, n_spectra={2}>'
                 .format(self.release, len(self.datacubes), len(self.spectra)))
 
     def copy(self):
@@ -90,11 +110,61 @@ class DRPDataModel(object):
     def __getitem__(self, value):
         return self == value
 
+    def to_rss(self):
+        """Returns a copy with `.RSSDatamodel` objects instead of datacubes."""
 
-class DRPDataModelList(DataModelList):
-    """A dictionary of DRP datamodels."""
+        if isinstance(self, DRPRSSDataModel):
+            raise ValueError('this is already a DRPRSSDataModel')
 
-    base = {'DRPDataModel': DRPDataModel}
+        copy_of_self = self.copy()
+        delattr(copy_of_self, 'datacubes')
+
+        # Chances the type and converts datacubes to RSSDatamodel
+        copy_of_self.__class__ = DRPRSSDataModel
+        copy_of_self.rss = self.datacubes.to_rss(copy_of_self)
+
+        # Resets the parent of the copied spectra
+        for spectrum in copy_of_self.spectra:
+            spectrum.parent = copy_of_self
+
+        return copy_of_self
+
+
+class DRPRSSDataModel(DRPCubeDataModel):
+    """A class representing a DRP RSS listdatamodel."""
+
+    def __init__(self, release, rss=[], spectra=[], aliases=[], bitmasks=None):
+
+        self.release = release
+        self.aliases = aliases
+
+        self.rss = RSSList(rss, parent=self)
+        self.spectra = SpectrumList(spectra, parent=self)
+
+        self.bitmasks = bitmasks if bitmasks is not None else {}
+
+    def __repr__(self):
+        return ('<DRPRSSDataModel release={0!r}, n_rss={1}, n_spectra={2}>'
+                .format(self.release, len(self.rss), len(self.spectra)))
+
+
+class DRPCubeDataModelList(DataModelList):
+    """A dictionary of DRP Cube datamodels."""
+
+    base = {'DRPCubeDataModel': DRPCubeDataModel}
+
+    def copy(self):
+
+        copy_of_self = super(DRPCubeDataModelList, self).copy()
+        copy_of_self.__class__ = DRPRSSDataModelList
+
+        return copy_of_self
+
+
+class DRPRSSDataModelList(DataModelList):
+    """A dictionary of DRP RSS datamodels."""
+
+    base = {'DRPRSSDataModel': DRPRSSDataModel}
 
 
 class DataCubeList(FuzzyList):
@@ -108,6 +178,11 @@ class DataCubeList(FuzzyList):
 
         for item in the_list:
             self.append(item, copy=True)
+
+    def copy(self):
+        """Returns a copy of the datamodel."""
+
+        return copy_mod.deepcopy(self)
 
     def mapper(self, value):
         """Helper method for the fuzzy list to match on the datacube name."""
@@ -124,6 +199,24 @@ class DataCubeList(FuzzyList):
             super(DataCubeList, self).append(append_obj)
         else:
             raise ValueError('invalid datacube of type {!r}'.format(type(append_obj)))
+
+    def to_rss(self, new_parent):
+        """Returns a copy of this list as an `.RSSList` object."""
+
+        if isinstance(self, RSSList):
+            raise ValueError('this is already an RSSList')
+
+        # Copies selef and resets the type to RSSList
+        copy_of_self = self.copy()
+        copy_of_self.__class__ = RSSList
+        copy_of_self.parent = new_parent
+
+        # Replaces each datacube in itself with a RSSDatamodel
+        for label in self.list_names():
+            copy_of_self.remove(copy_of_self[label])
+            copy_of_self.append(self[label].to_rss(new_parent))
+
+        return copy_of_self
 
     def list_names(self):
         """Returns a list with the names of the datacubes in this list."""
@@ -198,6 +291,36 @@ class DataCubeList(FuzzyList):
         table.write(fullpath, format='csv', overwrite=overwrite)
 
 
+class RSSList(DataCubeList):
+    """Creates a list containing RSSDatamodel and their representation."""
+
+    def append(self, value, copy=True):
+        """Appends with copy."""
+
+        append_obj = value if copy is False else copy_mod.deepcopy(value)
+        append_obj.parent = self.parent
+
+        if isinstance(append_obj, RSS):
+            super(RSSList, self).append(append_obj)
+        else:
+            raise ValueError('invalid RSS of type {!r}'.format(type(append_obj)))
+
+    def write_csv(self, filename=None, path=None, overwrite=None, **kwargs):
+        """Write the datamodel to a CSV"""
+
+        release = self.parent.release.lower().replace('-', '')
+
+        if not filename:
+            filename = 'drprss_dm_{0}.csv'.format(release)
+
+        if not path:
+            path = os.path.join(os.getenv('MARVIN_DIR'), 'docs', 'sphinx', '_static')
+
+        fullpath = os.path.join(path, filename)
+        table = self.to_table(**kwargs)
+        table.write(fullpath, format='csv', overwrite=overwrite)
+
+
 class DataCube(object):
     """Represents a extension in the DRP logcube file.
 
@@ -227,6 +350,9 @@ class DataCube(object):
         formats (dict):
             A dictionary with formats that can be used to represent the
             datacube. Default ones are ``latex`` and ``string``.
+        pixmask_flag : str
+            The name of the pixmask flag. Should be the full name, including the
+            ``MANGA_`` part.
         description (str):
             A description for the datacube.
 
@@ -235,7 +361,7 @@ class DataCube(object):
     def __init__(self, name, extension_name, extension_wave=None,
                  extension_ivar=None, extension_mask=None, db_table='spaxel',
                  unit=u.dimensionless_unscaled, scale=1, formats={},
-                 description=''):
+                 pixmask_flag='MANGA_DRP3PIXMASK', description=''):
 
         self.name = name
 
@@ -243,6 +369,8 @@ class DataCube(object):
         self._extension_wave = extension_wave
         self._extension_ivar = extension_ivar
         self._extension_mask = extension_mask
+
+        self.pixmask_flag = pixmask_flag
 
         self.db_table = db_table
 
@@ -254,6 +382,22 @@ class DataCube(object):
 
         self.unit = u.CompositeUnit(scale, unit.bases, unit.powers)
 
+    def copy(self):
+        return copy_mod.deepcopy(self)
+
+    def to_rss(self, new_parent):
+        """Creates a copy of this datacube as a `.RSS` object."""
+
+        if isinstance(self, RSS):
+            raise ValueError('this is already a RSS datamodel object.')
+
+        assert isinstance(new_parent, DRPRSSDataModel)
+        copy_of_self = self.copy()
+        copy_of_self.__class__ = RSS
+        copy_of_self.parent = new_parent
+
+        return copy_of_self
+
     @property
     def parent(self):
         """Retrieves the parent."""
@@ -264,7 +408,7 @@ class DataCube(object):
     def parent(self, value):
         """Sets the parent."""
 
-        assert isinstance(value, DRPDataModel), 'parent must be a DRPDataModel'
+        assert isinstance(value, DRPCubeDataModel), 'parent must be a DRPCubeDataModel'
 
         self._parent = value
 
@@ -335,6 +479,28 @@ class DataCube(object):
                 string = self.name
 
             return string
+
+
+class RSS(DataCube):
+
+    def __repr__(self):
+
+        return '<RSS {!r}, release={!r}, unit={!r}>'.format(
+            self.name, self.parent.release if self.parent else None,
+            self.unit.to_string())
+
+    @property
+    def parent(self):
+        """Retrieves the parent."""
+
+        return self._parent
+
+    @parent.setter
+    def parent(self, value):
+        """Sets the parent."""
+
+        assert isinstance(value, DRPRSSDataModel), 'parent must be a DRPRSSDataModel'
+        self._parent = value
 
 
 class SpectrumList(FuzzyList):
@@ -427,7 +593,12 @@ class SpectrumList(FuzzyList):
         release = self.parent.release.lower().replace('-', '')
 
         if not filename:
-            filename = 'drpspectra_dm_{0}.csv'.format(release)
+            if isinstance(self.parent, DRPRSSDataModel):
+                filename = 'drp_rss_spectra_dm_{0}.csv'.format(release)
+            elif isinstance(self.parent, DRPCubeDataModel):
+                filename = 'drp_cube_spectra_dm_{0}.csv'.format(release)
+            else:
+                raise ValueError('invalid parent of type {!r}'.format(type(self.parent)))
 
         if not path:
             path = os.path.join(os.getenv("MARVIN_DIR"), 'docs', 'sphinx', '_static')
@@ -453,6 +624,8 @@ class Spectrum(object):
         extension_std (str):
             The FITS extension containing the standard deviation for this
             spectrum.
+        extension_mask (str):
+            The FITS extension containing the mask for this spectrum.
         db_table (str):
             The DB table in which the spectrum is stored. Defaults to
             ``cube``.
@@ -463,20 +636,26 @@ class Spectrum(object):
         formats (dict):
             A dictionary with formats that can be used to represent the
             spectrum. Default ones are ``latex`` and ``string``.
+        pixmask_flag : str
+            The name of the pixmask flag. Should be the full name, including the
+            ``MANGA_`` part.
         description (str):
             A description for the spectrum.
 
     """
 
     def __init__(self, name, extension_name, extension_wave=None, extension_std=None,
-                 db_table='cube', unit=u.dimensionless_unscaled, scale=1, formats={},
-                 description=''):
+                 extension_mask=None, db_table='cube', unit=u.dimensionless_unscaled,
+                 scale=1, formats={}, pixmask_flag=None, description=''):
 
         self.name = name
 
         self._extension_name = extension_name
         self._extension_wave = extension_wave
         self._extension_std = extension_std
+        self._extension_mask = extension_mask
+
+        self.pixmask_flag = pixmask_flag
 
         self.db_table = db_table
 
@@ -498,7 +677,7 @@ class Spectrum(object):
     def parent(self, value):
         """Sets the parent."""
 
-        assert isinstance(value, DRPDataModel), 'parent must be a DRPDataModel'
+        assert isinstance(value, DRPCubeDataModel), 'parent must be a DRPCubeDataModel'
 
         self._parent = value
 
