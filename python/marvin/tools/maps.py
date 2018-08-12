@@ -7,7 +7,7 @@
 # @License: BSD 3-clause (http://www.opensource.org/licenses/BSD-3-Clause)
 #
 # @Last modified by: José Sánchez-Gallego (gallegoj@uw.edu)
-# @Last modified time: 2018-08-12 02:44:15
+# @Last modified time: 2018-08-12 03:43:35
 
 
 from __future__ import absolute_import, division, print_function
@@ -308,7 +308,8 @@ class Maps(MarvinToolsClass, NSAMixIn, DAPallMixIn, GetApertureMixIn):
         dm = datamodel[self.release]
         if dm.db_only:
             if self.bintype not in dm.db_only:
-                raise marvin.core.exceptions.MarvinError('Specified bintype {0} is not available in the DB'.format(self.bintype.name))
+                raise marvin.core.exceptions.MarvinError('Specified bintype {0} is not available '
+                                                         'in the DB'.format(self.bintype.name))
 
         if data is not None:
             assert isinstance(data, mdb.dapdb.File), 'data in not a marvindb.dapdb.File object.'
