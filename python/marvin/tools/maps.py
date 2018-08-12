@@ -7,7 +7,7 @@
 # @License: BSD 3-clause (http://www.opensource.org/licenses/BSD-3-Clause)
 #
 # @Last modified by: José Sánchez-Gallego (gallegoj@uw.edu)
-# @Last modified time: 2018-08-12 03:43:35
+# @Last modified time: 2018-08-12 13:34:54
 
 
 from __future__ import absolute_import, division, print_function
@@ -37,7 +37,7 @@ from marvin.utils.general import FuzzyDict, turn_off_ion
 
 from .core import MarvinToolsClass
 from .mixins import DAPallMixIn, GetApertureMixIn, NSAMixIn
-from .quantities import AnalysisProperty, BinMixIn
+from .quantities import AnalysisProperty
 
 
 try:
@@ -390,13 +390,10 @@ class Maps(MarvinToolsClass, NSAMixIn, DAPallMixIn, GetApertureMixIn):
 
         return
 
-    def _get_spaxel_quantities(self, spaxel):
+    def _get_spaxel_quantities(self, x, y, spaxel=None):
         """Returns a dictionary of spaxel quantities."""
 
         mdb = marvin.marvindb
-
-        x = spaxel.x
-        y = spaxel.y
 
         maps_quantities = FuzzyDict({})
 
@@ -439,8 +436,8 @@ class Maps(MarvinToolsClass, NSAMixIn, DAPallMixIn, GetApertureMixIn):
                 quantity = AnalysisProperty(data['value'], unit=dm.unit, ivar=data['ivar'],
                                             mask=data['mask'], pixmask_flag=dm.pixmask_flag)
 
-                quantity.__class__ = type('AnalysisProperty', (AnalysisProperty, BinMixIn),
-                                          {'_spaxel': spaxel, '_parent': self, '_datamodel': dm})
+                if spaxel:
+                    quantity._init_bin(spaxel=spaxel, parent=self, datamodel=dm)
 
                 maps_quantities[dm.full()] = quantity
 
@@ -469,8 +466,8 @@ class Maps(MarvinToolsClass, NSAMixIn, DAPallMixIn, GetApertureMixIn):
                                             unit=dm.unit,
                                             pixmask_flag=dm.pixmask_flag)
 
-                quantity.__class__ = type('AnalysisProperty', (AnalysisProperty, BinMixIn),
-                                          {'_spaxel': spaxel, '_parent': self, '_datamodel': dm})
+                if spaxel:
+                    quantity._init_bin(spaxel=spaxel, parent=self, datamodel=dm)
 
                 maps_quantities[dm.full()] = quantity
 

@@ -243,7 +243,7 @@ class TestSpaxel(object):
         assert not isinstance(spaxel._modelcube, ModelCube)
 
 
-class TestBinMixIn(object):
+class TestBinInfo(object):
 
     def test_bad_binid(self):
 
@@ -251,7 +251,7 @@ class TestBinMixIn(object):
                         maps=True, modelcube=True, bintype='HYB10')
 
         with pytest.raises(MarvinError) as ee:
-            spaxel.stellar_vel.get_bin_spaxels()
+            spaxel.stellar_vel.bin.get_bin_spaxels()
 
         assert 'do not correspond to a valid binid' in str(ee)
 
@@ -263,7 +263,7 @@ class TestBinMixIn(object):
 
         assert isinstance(spaxel, Spaxel)
 
-        bin_spaxels = spaxel.stellar_vel.get_bin_spaxels(lazy=False)
+        bin_spaxels = spaxel.stellar_vel.bin.get_bin_spaxels(lazy=False)
 
         assert len(bin_spaxels) > 0
         assert bin_spaxels[0].loaded is True
@@ -277,15 +277,15 @@ class TestBinMixIn(object):
         assert isinstance(spaxel, Spaxel)
         assert spaxel.x == 14, spaxel.y == 22
 
-        bin_spaxels = spaxel.stellar_vel.get_bin_spaxels()
+        bin_spaxels = spaxel.stellar_vel.bin.get_bin_spaxels()
 
         for sp in bin_spaxels:
 
             sp.load()
-            assert sp.stellar_vel.binid == spaxel.stellar_vel.binid
+            assert sp.stellar_vel.bin.binid == spaxel.stellar_vel.bin.binid
 
             sp_bin = maps[sp.y, sp.x]
-            assert sp_bin.stellar_vel.binid == spaxel.stellar_vel.binid
+            assert sp_bin.stellar_vel.bin.binid == spaxel.stellar_vel.bin.binid
 
 
 class TestPickling(object):
@@ -369,6 +369,27 @@ class TestPickling(object):
         assert isinstance(spaxel_restored._modelcube, ModelCube)
         assert spaxel_restored._modelcube.data_origin == 'api'
         assert spaxel_restored._modelcube.data is None
+
+    def test_pickling_data(self, temp_scratch, galaxy):
+
+        drpver, __ = config.lookUpVersions()
+
+        maps = Maps(filename=galaxy.mapspath)
+        modelcube = ModelCube(filename=galaxy.modelpath)
+        spaxel = maps.getSpaxel(25, 15, xyorig='lower', drp=False, models=modelcube)
+
+        file = temp_scratch.join('test_spaxel.mpf')
+
+        path_saved = spaxel.save(str(file), overwrite=True)
+        assert file.check() is True
+        assert os.path.exists(path_saved)
+
+        del spaxel
+
+        spaxel_restored = Spaxel.restore(str(file))
+
+        assert spaxel_restored.stellar_vel.value is not None
+        assert spaxel_restored.stellar_vel.bin.binid is not None
 
 
 class TestMaskbit(object):

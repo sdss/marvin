@@ -7,7 +7,7 @@
 # @License: BSD 3-clause (http://www.opensource.org/licenses/BSD-3-Clause)
 #
 # @Last modified by: José Sánchez-Gallego (gallegoj@uw.edu)
-# @Last modified time: 2018-08-12 03:54:39
+# @Last modified time: 2018-08-12 13:27:57
 
 
 from __future__ import absolute_import, division, print_function
@@ -325,7 +325,8 @@ class Spaxel(object):
         self._parent_shape = getattr(getattr(self, '_' + tool), '_shape')
 
         setattr(self, quantities_dict,
-                getattr(getattr(self, '_' + tool), '_get_spaxel_quantities')(self))
+                getattr(getattr(self, '_' + tool), '_get_spaxel_quantities')(self.x, self.y,
+                                                                             spaxel=self))
 
     def getCube(self):
         """Returns the associated `~marvin.tools.cube.Cube`"""

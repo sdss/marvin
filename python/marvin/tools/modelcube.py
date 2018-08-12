@@ -7,7 +7,7 @@
 # @License: BSD 3-clause (http://www.opensource.org/licenses/BSD-3-Clause)
 #
 # @Last modified by: José Sánchez-Gallego (gallegoj@uw.edu)
-# @Last modified time: 2018-08-12 03:47:51
+# @Last modified time: 2018-08-12 13:35:11
 
 
 from __future__ import absolute_import, division, print_function
@@ -25,7 +25,7 @@ import marvin.tools.maps
 import marvin.tools.spaxel
 import marvin.utils.general.general
 from marvin.core.exceptions import MarvinError
-from marvin.tools.quantities import BinMixIn, DataCube, Map, Spectrum
+from marvin.tools.quantities import DataCube, Map, Spectrum
 from marvin.utils.datamodel.dap import Model, datamodel
 from marvin.utils.general import FuzzyDict
 
@@ -391,13 +391,10 @@ class ModelCube(MarvinToolsClass, NSAMixIn, DAPallMixIn, GetApertureMixIn):
 
         return ext_data
 
-    def _get_spaxel_quantities(self, spaxel):
+    def _get_spaxel_quantities(self, x, y, spaxel=None):
         """Returns a dictionary of spaxel quantities."""
 
         modelcube_quantities = FuzzyDict({})
-
-        x = spaxel.x
-        y = spaxel.y
 
         if self.data_origin == 'db':
 
@@ -439,9 +436,8 @@ class ModelCube(MarvinToolsClass, NSAMixIn, DAPallMixIn, GetApertureMixIn):
                                     wavelength=self._wavelength, unit=dm.unit,
                                     pixmask_flag=dm.pixmask_flag)
 
-                quantity.__class__ = type('Spectrum', (Spectrum, BinMixIn),
-                                          {'_spaxel': spaxel, '_parent': self,
-                                           '_datamodel': dm})
+                if spaxel:
+                    quantity._init_bin(spaxel=spaxel, parent=self, datamodel=dm)
 
                 modelcube_quantities[dm.full()] = quantity
 
@@ -468,9 +464,8 @@ class ModelCube(MarvinToolsClass, NSAMixIn, DAPallMixIn, GetApertureMixIn):
                                     mask=data[dm.name]['mask'], wavelength=data['wavelength'],
                                     unit=dm.unit, pixmask_flag=dm.pixmask_flag)
 
-                quantity.__class__ = type('Spectrum', (Spectrum, BinMixIn),
-                                          {'_spaxel': spaxel, '_parent': self,
-                                           '_datamodel': dm})
+                if spaxel:
+                    quantity._init_bin(spaxel=spaxel, parent=self, datamodel=dm)
 
                 modelcube_quantities[dm.full()] = quantity
 
