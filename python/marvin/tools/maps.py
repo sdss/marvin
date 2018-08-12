@@ -6,7 +6,7 @@
 # @Filename: maps.py
 # @License: BSD 3-clause (http://www.opensource.org/licenses/BSD-3-Clause)
 # @Last modified by: José Sánchez-Gallego (gallegoj@uw.edu)
-# @Last modified time: 2018-08-12 02:23:25
+# @Last modified time: 2018-08-12 02:42:48
 
 
 from __future__ import absolute_import, division, print_function
@@ -621,7 +621,13 @@ class Maps(MarvinToolsClass, NSAMixIn, DAPallMixIn, GetApertureMixIn):
         return marvin.tools.quantities.Map.from_maps(self, best)
 
     def getMapRatio(self, property_name, channel_1, channel_2):
-        """Deprecated, see :ref:`Enhanced Map<marvin-enhanced-map>`. Returns a ratio `~marvin.tools.quantities.Map`.
+        """Returns a ratio `~marvin.tools.quantities.Map`.
+
+        .. attention::
+            Deprecated, see :ref:`Enhanced Map<marvin-enhanced-map>`.
+
+        For a given ``property_name``, returns a `~marvin.tools.quantities.Map`
+        which is the ratio of ``channel_1/channel_2``.
 
         For a given ``property_name``, returns a `~marvin.tools.quantities.Map`
         which is the ratio of ``channel_1/channel_2``.
