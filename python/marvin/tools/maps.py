@@ -6,7 +6,7 @@
 # @Filename: maps.py
 # @License: BSD 3-clause (http://www.opensource.org/licenses/BSD-3-Clause)
 # @Last modified by: José Sánchez-Gallego (gallegoj@uw.edu)
-# @Last modified time: 2018-07-30 11:34:04
+# @Last modified time: 2018-08-12 02:23:25
 
 
 from __future__ import absolute_import, division, print_function
@@ -36,7 +36,7 @@ from marvin.utils.general import FuzzyDict, turn_off_ion
 
 from .core import MarvinToolsClass
 from .mixins import DAPallMixIn, GetApertureMixIn, NSAMixIn
-from .quantities import AnalysisProperty
+from .quantities import AnalysisProperty, BinMixIn
 
 
 try:
@@ -388,10 +388,13 @@ class Maps(MarvinToolsClass, NSAMixIn, DAPallMixIn, GetApertureMixIn):
 
         return
 
-    def _get_spaxel_quantities(self, x, y):
+    def _get_spaxel_quantities(self, spaxel):
         """Returns a dictionary of spaxel quantities."""
 
         mdb = marvin.marvindb
+
+        x = spaxel.x
+        y = spaxel.y
 
         maps_quantities = FuzzyDict({})
 
@@ -431,11 +434,13 @@ class Maps(MarvinToolsClass, NSAMixIn, DAPallMixIn, GetApertureMixIn):
                         colname = dm.db_column(ext=None if key == 'value' else key)
                         data[key] = getattr(_db_rows[table], colname)
 
-                maps_quantities[dm.full()] = AnalysisProperty(data['value'],
-                                                              unit=dm.unit,
-                                                              ivar=data['ivar'],
-                                                              mask=data['mask'],
-                                                              pixmask_flag=dm.pixmask_flag)
+                quantity = AnalysisProperty(data['value'], unit=dm.unit, ivar=data['ivar'],
+                                            mask=data['mask'], pixmask_flag=dm.pixmask_flag)
+
+                quantity.__class__ = type('AnalysisProperty', (AnalysisProperty, BinMixIn),
+                                          {'_spaxel': spaxel, '_parent': self, '_datamodel': dm})
+
+                maps_quantities[dm.full()] = quantity
 
         if self.data_origin == 'api':
 
@@ -456,29 +461,46 @@ class Maps(MarvinToolsClass, NSAMixIn, DAPallMixIn, GetApertureMixIn):
 
             for dm in self.datamodel:
 
-                maps_quantities[dm.full()] = AnalysisProperty(data[dm.full()]['value'],
-                                                              ivar=data[dm.full()]['ivar'],
-                                                              mask=data[dm.full()]['mask'],
-                                                              unit=dm.unit,
-                                                              pixmask_flag=dm.pixmask_flag)
+                quantity = AnalysisProperty(data[dm.full()]['value'],
+                                            ivar=data[dm.full()]['ivar'],
+                                            mask=data[dm.full()]['mask'],
+                                            unit=dm.unit,
+                                            pixmask_flag=dm.pixmask_flag)
+
+                quantity.__class__ = type('AnalysisProperty', (AnalysisProperty, BinMixIn),
+                                          {'_spaxel': spaxel, '_parent': self, '_datamodel': dm})
+
+                maps_quantities[dm.full()] = quantity
 
         return maps_quantities
 
-    def get_binid(self, binid=None):
-        """Returns a 2D array containing the binid map.
+    def get_binid(self, property=None):
+        """Returns the binid map associated with a property.
 
-        In ``MPL-6``, ``binid`` can be used to specify the binid property
-        to return. If ``binid=None``, the default binid is returned.
+        Parameters
+        ----------
+        property : `datamodel.Property` or None
+            The property for which the associated binid map will be returned.
+            If ``binid=None``, the default binid is returned.
+
+        Returns
+        -------
+        binid : `Map`
+            A `Map` with the binid associated with ``property`` or the default
+            binid.
 
         """
 
-        assert binid is None or isinstance(binid, Property), 'binid must be None or a Property.'
+        assert property is None or isinstance(property, Property), \
+            'property must be None or a Property.'
 
-        if binid is None:
+        if property is None:
             assert self.datamodel.parent.default_binid is not None
             binid = self.datamodel.parent.default_binid
+        else:
+            binid = property.binid
 
-        return self.getMap(binid).value
+        return self.getMap(binid)
 
     def getCube(self):
         """Returns the :class:`~marvin.tools.cube.Cube` for with this Maps."""

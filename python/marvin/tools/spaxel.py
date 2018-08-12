@@ -1,11 +1,13 @@
 #!/usr/bin/env python
-# encoding: utf-8
+# -*- coding: utf-8 -*-
 #
-# @Author: José Sánchez-Gallego
-# @Date: Nov 3, 2017
+# @Author: Brian Cherinka, José Sánchez-Gallego, and Brett Andrews
+# @Date: 2017-11-03
 # @Filename: spaxel.py
-# @License: BSD 3-Clause
-# @Copyright: José Sánchez-Gallego
+# @License: BSD 3-clause (http://www.opensource.org/licenses/BSD-3-Clause)
+#
+# @Last modified by: José Sánchez-Gallego (gallegoj@uw.edu)
+# @Last modified time: 2018-08-12 02:22:24
 
 
 from __future__ import absolute_import, division, print_function
@@ -321,7 +323,7 @@ class Spaxel(object):
         self._parent_shape = getattr(getattr(self, '_' + tool), '_shape')
 
         setattr(self, quantities_dict,
-                getattr(getattr(self, '_' + tool), '_get_spaxel_quantities')(self.x, self.y))
+                getattr(getattr(self, '_' + tool), '_get_spaxel_quantities')(self))
 
     def getCube(self):
         """Returns the associated `~marvin.tools.cube.Cube`"""

@@ -7,7 +7,7 @@
 # @License: BSD 3-clause (http://www.opensource.org/licenses/BSD-3-Clause)
 #
 # @Last modified by: José Sánchez-Gallego (gallegoj@uw.edu)
-# @Last modified time: 2018-07-30 11:44:24
+# @Last modified time: 2018-08-12 02:24:10
 
 
 from __future__ import absolute_import, division, print_function
@@ -25,7 +25,7 @@ import marvin.tools.maps
 import marvin.tools.spaxel
 import marvin.utils.general.general
 from marvin.core.exceptions import MarvinError
-from marvin.tools.quantities import DataCube, Spectrum
+from marvin.tools.quantities import BinMixIn, DataCube, Map, Spectrum
 from marvin.utils.datamodel.dap import Model, datamodel
 from marvin.utils.general import FuzzyDict
 
@@ -391,10 +391,13 @@ class ModelCube(MarvinToolsClass, NSAMixIn, DAPallMixIn, GetApertureMixIn):
 
         return ext_data
 
-    def _get_spaxel_quantities(self, x, y):
+    def _get_spaxel_quantities(self, spaxel):
         """Returns a dictionary of spaxel quantities."""
 
         modelcube_quantities = FuzzyDict({})
+
+        x = spaxel.x
+        y = spaxel.y
 
         if self.data_origin == 'db':
 
@@ -432,12 +435,15 @@ class ModelCube(MarvinToolsClass, NSAMixIn, DAPallMixIn, GetApertureMixIn):
 
                         data[key] = np.array(getattr(_db_row, colname))
 
-                modelcube_quantities[dm.name] = Spectrum(data['value'],
-                                                         ivar=data['ivar'],
-                                                         mask=data['mask'],
-                                                         wavelength=self._wavelength,
-                                                         unit=dm.unit,
-                                                         pixmask_flag=dm.pixmask_flag)
+                quantity = Spectrum(data['value'], ivar=data['ivar'], mask=data['mask'],
+                                    wavelength=self._wavelength, unit=dm.unit,
+                                    pixmask_flag=dm.pixmask_flag)
+
+                quantity.__class__ = type('Spectrum', (Spectrum, BinMixIn),
+                                          {'_spaxel': spaxel, '_parent': self,
+                                           '_datamodel': dm})
+
+                modelcube_quantities[dm.full()] = quantity
 
         if self.data_origin == 'api':
 
@@ -458,12 +464,15 @@ class ModelCube(MarvinToolsClass, NSAMixIn, DAPallMixIn, GetApertureMixIn):
 
             for dm in self.datamodel:
 
-                modelcube_quantities[dm.name] = Spectrum(data[dm.name]['value'],
-                                                         ivar=data[dm.name]['ivar'],
-                                                         mask=data[dm.name]['mask'],
-                                                         wavelength=data['wavelength'],
-                                                         unit=dm.unit,
-                                                         pixmask_flag=dm.pixmask_flag)
+                quantity = Spectrum(data[dm.name]['value'], ivar=data[dm.name]['ivar'],
+                                    mask=data[dm.name]['mask'], wavelength=data['wavelength'],
+                                    unit=dm.unit, pixmask_flag=dm.pixmask_flag)
+
+                quantity.__class__ = type('Spectrum', (Spectrum, BinMixIn),
+                                          {'_spaxel': spaxel, '_parent': self,
+                                           '_datamodel': dm})
+
+                modelcube_quantities[dm.full()] = quantity
 
         return modelcube_quantities
 
@@ -486,9 +495,9 @@ class ModelCube(MarvinToolsClass, NSAMixIn, DAPallMixIn, GetApertureMixIn):
         if self.data_origin == 'file':
 
             if binid_prop.channel is None:
-                return self.data[binid_prop.name].data[:, :]
+                binid_map_data = self.data[binid_prop.name].data[:, :]
             else:
-                return self.data[binid_prop.name].data[binid_prop.channel.idx, :, :]
+                binid_map_data = self.data[binid_prop.name].data[binid_prop.channel.idx, :, :]
 
         elif self.data_origin == 'db':
 
@@ -503,7 +512,7 @@ class ModelCube(MarvinToolsClass, NSAMixIn, DAPallMixIn, GetApertureMixIn):
             nx = ny = int(np.sqrt(len(binid_list)))
             binid_array = np.array(binid_list)
 
-            return binid_array.transpose().reshape((ny, nx)).transpose(1, 0)
+            binid_map_data = binid_array.transpose().reshape((ny, nx)).transpose(1, 0)
 
         elif self.data_origin == 'api':
 
@@ -526,7 +535,12 @@ class ModelCube(MarvinToolsClass, NSAMixIn, DAPallMixIn, GetApertureMixIn):
                 raise MarvinError('found a problem while getting the binid from API: {}'
                                   .format(str(response.results['error'])))
 
-            return np.array(response.getData()['binid'])
+            binid_map_data = np.array(response.getData()['binid'])
+
+        binid_map = Map(binid_map_data, unit=binid_prop.unit)
+        binid_map._datamodel = binid_prop
+
+        return binid_map
 
     @property
     def binned_flux(self):

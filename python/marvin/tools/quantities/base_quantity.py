@@ -7,7 +7,7 @@
 # @License: BSD 3-clause (http://www.opensource.org/licenses/BSD-3-Clause)
 #
 # @Last modified by: José Sánchez-Gallego (gallegoj@uw.edu)
-# @Last modified time: 2018-07-23 20:14:29
+# @Last modified time: 2018-08-12 02:28:11
 
 
 from __future__ import absolute_import, division, print_function
@@ -18,6 +18,7 @@ import astropy.units as units
 import numpy as np
 
 import marvin.core.exceptions
+from marvin.tools.spaxel import Spaxel
 from marvin.utils.general import maskbit
 from marvin.utils.general.general import _sort_dir
 
@@ -126,3 +127,41 @@ class QuantityMixIn(object):
 
         return self.__class__(value_descaled, self.wavelength, unit=value_unit,
                               ivar=ivar_descaled, mask=self.mask)
+
+
+class BinMixIn(object):
+
+    _spaxel = None
+    _parent = None
+    _datamodel = None
+
+    @property
+    def binid_map(self):
+        return self._parent.get_binid(self._datamodel)
+
+    @property
+    def binid(self):
+        return int(self.binid_map[self._spaxel.y, self._spaxel.x].value)
+
+    @property
+    def is_binned(self):
+        return self._parent.is_binned()
+
+    def get_bin_spaxels(self, lazy=True, **kwargs):
+
+        if self.binid < 0:
+            raise marvin.core.exceptions.MarvinError(
+                'coordinates ({}, {}) do not correspond to a valid binid.'.format(self._spaxel.x,
+                                                                                  self._spaxel.y))
+
+        spaxel_coords = zip(*np.where(self.binid_map.value == self.binid))
+        spaxels = []
+
+        for ii, jj in spaxel_coords:
+            spaxels.append(Spaxel(x=jj, y=ii, plateifu=self._spaxel.plateifu,
+                                  release=self._spaxel.release, cube=self._spaxel._cube,
+                                  maps=self._spaxel._maps, modelcube=self._spaxel._modelcube,
+                                  bintype=self._spaxel.bintype, template=self._spaxel.template,
+                                  lazy=True))
+
+        return spaxels

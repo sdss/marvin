@@ -7,7 +7,7 @@
 # @License: BSD 3-clause (http://www.opensource.org/licenses/BSD-3-Clause)
 #
 # @Last modified by: José Sánchez-Gallego (gallegoj@uw.edu)
-# @Last modified time: 2018-07-30 11:33:31
+# @Last modified time: 2018-08-12 02:30:07
 
 
 from __future__ import absolute_import, division, print_function
@@ -417,10 +417,13 @@ class Cube(MarvinToolsClass, NSAMixIn, GetApertureMixIn):
 
         return ext_data
 
-    def _get_spaxel_quantities(self, x, y):
+    def _get_spaxel_quantities(self, spaxel):
         """Returns a dictionary of spaxel quantities."""
 
         cube_quantities = FuzzyDict({})
+
+        x = spaxel.x
+        y = spaxel.y
 
         if self.data_origin == 'db':
 
