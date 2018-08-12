@@ -7,7 +7,7 @@
 # @License: BSD 3-clause (http://www.opensource.org/licenses/BSD-3-Clause)
 #
 # @Last modified by: José Sánchez-Gallego (gallegoj@uw.edu)
-# @Last modified time: 2018-08-12 02:24:10
+# @Last modified time: 2018-08-12 03:47:51
 
 
 from __future__ import absolute_import, division, print_function
@@ -477,7 +477,21 @@ class ModelCube(MarvinToolsClass, NSAMixIn, DAPallMixIn, GetApertureMixIn):
         return modelcube_quantities
 
     def get_binid(self, model=None):
-        """Returns the 2D array for the binid map associated with ``model``."""
+        """Returns the binid map associated with a model.
+
+        Parameters
+        ----------
+        model : `datamodel.Model` or None
+            The model for which the associated binid map will be returned.
+            If ``binid=None``, the default binid is returned.
+
+        Returns
+        -------
+        binid : `Map`
+            A `Map` with the binid associated with ``model`` or the default
+            binid.
+
+        """
 
         assert model is None or isinstance(model, Model), 'invalid model type.'
 

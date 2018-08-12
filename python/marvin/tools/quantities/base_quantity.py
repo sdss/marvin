@@ -7,7 +7,7 @@
 # @License: BSD 3-clause (http://www.opensource.org/licenses/BSD-3-Clause)
 #
 # @Last modified by: José Sánchez-Gallego (gallegoj@uw.edu)
-# @Last modified time: 2018-08-12 02:51:02
+# @Last modified time: 2018-08-12 03:52:21
 
 
 from __future__ import absolute_import, division, print_function
@@ -137,21 +137,44 @@ class BinMixIn(object):
 
     @property
     def binid_map(self):
+        """Returns the binid Map associated to this quantity."""
+
         return self._parent.get_binid(self._datamodel)
 
     @property
     def binid(self):
+        """Returns the binid associated to this quantity and spaxel."""
+
         return int(self.binid_map[self._spaxel.y, self._spaxel.x].value)
 
     @property
     def binid_mask(self):
+        """Returns a mask of the spaxels with the same binid."""
+
         return self.binid_map.value == self.binid
 
     @property
     def is_binned(self):
+        """Returns `True`` if the parent object is binned."""
+
         return self._parent.is_binned()
 
-    def get_bin_spaxels(self, lazy=True, **kwargs):
+    def get_bin_spaxels(self, lazy=True):
+        """Returns a list of the spaxels associated with this bin.
+
+        Parameters
+        ----------
+        lazy : bool
+            If ``True``, the spaxels returned will be lazy loaded. Spaxels
+            can be fully loaded by calling their `~.Spaxel.load` method.
+
+        Returns
+        -------
+        spaxels : list
+            A list of all the `.Spaxel` instances associated with this
+            quantity binid.
+
+        """
 
         if self.binid < 0:
             raise marvin.core.exceptions.MarvinError(

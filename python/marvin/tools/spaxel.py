@@ -7,7 +7,7 @@
 # @License: BSD 3-clause (http://www.opensource.org/licenses/BSD-3-Clause)
 #
 # @Last modified by: José Sánchez-Gallego (gallegoj@uw.edu)
-# @Last modified time: 2018-08-12 02:22:24
+# @Last modified time: 2018-08-12 03:54:39
 
 
 from __future__ import absolute_import, division, print_function
@@ -260,14 +260,16 @@ class Spaxel(object):
     def load(self, force=None):
         """Loads the spaxel data.
 
-        Loads the spaxel data for cubes/maps/modelcubes. By default attempts
+        Loads the spaxel data for cubes/maps/modelcube. By default attempts
         to load whatever is specified when spaxels are instantianted from other
         Marvin Tools. Can manually force load a data type with the force
         keyword.
 
         Parameters:
-            force ({cube|maps|modelcube}):
-                Str datatype to force load
+        -----------
+        force : {cube|maps|modelcube}
+            Datatype to force load.
+
         """
 
         if self.loaded and force is None:
