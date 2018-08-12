@@ -243,46 +243,49 @@ class TestSpaxel(object):
         assert not isinstance(spaxel._modelcube, ModelCube)
 
 
-# class TestBin(object):
+class TestBinMixIn(object):
 
-#     def test_bad_binid(self):
+    def test_bad_binid(self):
 
-#         with pytest.raises(MarvinError) as ee:
-#             Spaxel(0, 0, plateifu='8485-1901', cube=True,
-#                        maps=True, modelcube=True, bintype='HYB10')
+        spaxel = Spaxel(0, 0, plateifu='8485-1901', cube=True,
+                        maps=True, modelcube=True, bintype='HYB10')
 
-#         assert 'do not correspond to a valid binid' in str(ee) or 'invalid bintype' in str(ee)
+        with pytest.raises(MarvinError) as ee:
+            spaxel.stellar_vel.get_bin_spaxels()
 
-#     def test_load_all(self):
+        assert 'do not correspond to a valid binid' in str(ee)
 
-#         set_the_config('MPL-6')
-#         bb = Spaxel(15, 15, plateifu='8485-1901', cube=True,
-#                         maps=True, modelcube=True, bintype='HYB10', release='MPL-6')
+    def test_load_all(self):
 
-#         assert isinstance(bb, Bin)
+        set_the_config('MPL-6')
+        spaxel = Spaxel(26, 13, plateifu='8485-1901', cube=True,
+                        maps=True, modelcube=True, bintype='HYB10', release='MPL-6')
 
-#         assert len(bb.spaxels) > 0
-#         assert bb.spaxels[0].loaded is False
+        assert isinstance(spaxel, Spaxel)
 
-#         bb.load_all()
+        bin_spaxels = spaxel.stellar_vel.get_bin_spaxels(lazy=False)
 
-#         for sp in bb.spaxels:
-#             assert sp.loaded is True
+        assert len(bin_spaxels) > 0
+        assert bin_spaxels[0].loaded is True
 
-#     def test_correct_binid(self):
-#         """Checks if the binid of the bin spaxels is the correct one (#457)"""
+    def test_correct_binid(self):
+        """Checks if the binid of the bin spaxels is the correct one (#457)"""
 
-#         maps = Maps(plateifu='8485-1901', release='MPL-6', bintype='HYB10')
-#         bb = maps[22, 14]
+        maps = Maps(plateifu='8485-1901', release='MPL-6', bintype='HYB10')
+        spaxel = maps[22, 14]
 
-#         assert isinstance(bb, Bin)
-#         assert bb.x == 14, bb.y == 22
+        assert isinstance(spaxel, Spaxel)
+        assert spaxel.x == 14, spaxel.y == 22
 
-#         spaxels = bb.spaxels
+        bin_spaxels = spaxel.stellar_vel.get_bin_spaxels()
 
-#         for sp in spaxels:
-#             sp_bin = maps[sp.y, sp.x]
-#             assert sp_bin.binid == bb.binid
+        for sp in bin_spaxels:
+
+            sp.load()
+            assert sp.stellar_vel.binid == spaxel.stellar_vel.binid
+
+            sp_bin = maps[sp.y, sp.x]
+            assert sp_bin.stellar_vel.binid == spaxel.stellar_vel.binid
 
 
 class TestPickling(object):
