@@ -17,7 +17,7 @@ import astropy.io.fits
 import pytest
 
 from marvin import config
-from marvin.core.exceptions import MarvinError
+from marvin.core.exceptions import MarvinDeprecationError, MarvinError
 from marvin.tests import marvin_test_if, marvin_test_if_class
 from marvin.tests.conftest import set_the_config
 from marvin.tools.cube import Cube
@@ -403,7 +403,7 @@ class TestMaskbit(object):
     @marvin_test_if(mark='skip', galaxy=dict(release=['MPL-4']))
     def test_quality_flags(self, galaxy):
         maps = Maps(plateifu=galaxy.plateifu)
-        sp = maps.getSpaxel(0, 0, model=True)
+        sp = maps.getSpaxel(0, 0, models=True)
         assert len(sp.quality_flags) == 2
 
 
@@ -628,6 +628,19 @@ class TestMapsGetSpaxel(object):
 
             assert map[yy, xx].mask == pytest.approx(channel_data['mask'], abs=1.e-4)
             assert map[yy, xx].ivar == pytest.approx(channel_data['ivar'], abs=1.e-4)
+
+    @marvin_test_if(mark='include', galaxy=dict(bintype=['SPX']))
+    def test_model_deprecated(self, galaxy, exporigin):
+
+        if exporigin != 'db':
+            pytest.skip()
+
+        maps = Maps(**self._get_maps_kwargs(galaxy, exporigin))
+
+        with pytest.raises(MarvinDeprecationError) as ee:
+            maps.getSpaxel(x=0, y=0, model=True)
+
+        assert 'the model parameter has been deprecated. Use models.' in str(ee)
 
 
 @marvin_test_if_class(mark='skip', galaxy=dict(release=['MPL-4']))

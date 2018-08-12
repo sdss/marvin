@@ -7,7 +7,7 @@
 # @License: BSD 3-clause (http://www.opensource.org/licenses/BSD-3-Clause)
 #
 # @Last modified by: José Sánchez-Gallego (gallegoj@uw.edu)
-# @Last modified time: 2018-08-12 13:34:54
+# @Last modified time: 2018-08-12 14:24:58
 
 
 from __future__ import absolute_import, division, print_function
@@ -522,7 +522,7 @@ class Maps(MarvinToolsClass, NSAMixIn, DAPallMixIn, GetApertureMixIn):
                                                 template=self.template)
 
     def getSpaxel(self, x=None, y=None, ra=None, dec=None,
-                  drp=True, model=False, **kwargs):
+                  drp=True, models=False, model=None, **kwargs):
         """Returns the :class:`~marvin.tools.spaxel.Spaxel` matching certain coordinates.
 
         The coordinates of the spaxel to return can be input as ``x, y`` pixels
@@ -550,7 +550,7 @@ class Maps(MarvinToolsClass, NSAMixIn, DAPallMixIn, GetApertureMixIn):
             drp (bool):
                 If ``True``, the |spaxel| will be initialised with the
                 corresponding DRP data.
-            model (bool):
+            models (bool):
                 If ``True``, the |spaxel| will be initialised with the
                 corresponding `.ModelCube` data.
 
@@ -565,9 +565,13 @@ class Maps(MarvinToolsClass, NSAMixIn, DAPallMixIn, GetApertureMixIn):
 
         """
 
+        if model is not None:
+            raise marvin.core.exceptions.MarvinDeprecationError(
+                'the model parameter has been deprecated. Use models.')
+
         return marvin.utils.general.general.getSpaxel(
             x=x, y=y, ra=ra, dec=dec,
-            cube=drp, maps=self, modelcube=model, **kwargs)
+            cube=drp, maps=self, modelcube=models, **kwargs)
 
     def _match_properties(self, property_name, channel=None, exact=False):
         """Returns the best match for a property_name+channel."""

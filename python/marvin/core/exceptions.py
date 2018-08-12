@@ -7,7 +7,7 @@
 # @License: BSD 3-clause (http://www.opensource.org/licenses/BSD-3-Clause)
 #
 # @Last modified by: José Sánchez-Gallego (gallegoj@uw.edu)
-# @Last modified time: 2018-08-12 04:04:14
+# @Last modified time: 2018-08-12 14:23:09
 
 
 from __future__ import division, print_function
@@ -104,6 +104,11 @@ class MarvinNotImplemented(MarvinError):
 
 class MarvinMissingDependency(MarvinError):
     """A custom exception for missing dependencies."""
+    pass
+
+
+class MarvinDeprecationError(MarvinError):
+    """To be raised for a deprecated feature."""
     pass
 
 
