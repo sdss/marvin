@@ -6,27 +6,20 @@
 # @License: BSD 3-clause (http://www.opensource.org/licenses/BSD-3-Clause)
 #
 # @Last modified by: José Sánchez-Gallego (gallegoj@uw.edu)
-# @Last modified time: 2018-07-30 11:06:39
+# @Last modified time: 2018-08-11 20:35:37
 
 from __future__ import absolute_import, division, print_function
 
 import abc
-import os
-import re
-import time
 import warnings
 
 import astropy.io.fits
-import six
 
 import marvin
 import marvin.api.api
 from marvin.core import marvin_pickle
-from marvin.core.exceptions import (MarvinBreadCrumb, MarvinError,
-                                    MarvinMissingDependency, MarvinUserWarning)
+from marvin.core.exceptions import MarvinBreadCrumb, MarvinError, MarvinUserWarning
 from marvin.tools.mixins import MMAMixIn
-from marvin.utils.db import testDbConnection
-from marvin.utils.general.general import mangaid2plateifu
 from marvin.utils.general.maskbit import get_manga_target
 
 
@@ -285,5 +278,3 @@ class MarvinToolsClass(MMAMixIn):
 
         image = marvin.tools.image.Image(plateifu=self.plateifu, release=self.release)
         return image
-
-
