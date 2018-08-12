@@ -4,6 +4,10 @@ Marvin's Change Log
 [2.3.0] - 2018/?/?
 --------------------
 
+Breaking changes
+^^^^^^^^^^^^^^^^
+- Removed ``Bin`` class. Bin information is now available on a per-quantity basis (:issue:`109`). See :ref:`What's new? <whats-new>` and documentation for details.
+
 Added
 ^^^^^
 - Added cheatsheet to docs.
@@ -38,6 +42,7 @@ Changed
 - Raises error when applying ``inst_sigma_correction`` on ``stellar_sigma`` MPL-6 maps.  Applies correction to stellar_sigma and emline_sigma for web maps with added 'Corrected' title (:issue:`478`)
 - Removes targeting bits from ``Spaxel`` and ``Bin`` (:issue:`465`).
 - The name of the channel is now shown in the ``Property`` description (:issue:`424`).
+- Replaced inconsistent parameter ``model`` in `~marvin.tools.maps.Maps.getSpaxel`. Use ``models`` instead.
 
 Fixed
 ^^^^^
