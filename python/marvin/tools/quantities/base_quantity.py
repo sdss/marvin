@@ -7,7 +7,7 @@
 # @License: BSD 3-clause (http://www.opensource.org/licenses/BSD-3-Clause)
 #
 # @Last modified by: José Sánchez-Gallego (gallegoj@uw.edu)
-# @Last modified time: 2018-08-12 03:52:21
+# @Last modified time: 2018-08-12 04:16:33
 
 
 from __future__ import absolute_import, division, print_function
@@ -189,6 +189,6 @@ class BinMixIn(object):
                                   release=self._spaxel.release, cube=self._spaxel._cube,
                                   maps=self._spaxel._maps, modelcube=self._spaxel._modelcube,
                                   bintype=self._spaxel.bintype, template=self._spaxel.template,
-                                  lazy=True))
+                                  lazy=lazy))
 
         return spaxels
