@@ -5,7 +5,7 @@
 #
 # @Author: Brett Andrews <andrews>
 # @Date:   2017-07-02 13:08:00
-# @Last modified by: José Sánchez-Gallego
+# @Last modified by:   Brian Cherinka
 # @Last modified time: 2018-07-13 13:04:55
 
 from copy import deepcopy
@@ -372,7 +372,8 @@ class TestMapArith(object):
         assert map_new.ivar == pytest.approx(ivar_new)
         assert (map_new.mask == map_orig.mask).all()
 
-    @marvin_test_if(mark='skip', galaxy=dict(release=['MPL-4']))
+    # @marvin_test_if(mark='skip', galaxy=dict(release=['MPL-4']))
+    @marvin_test_if(mark='skip', galaxy=dict(release=['MPL-4', 'MPL-6']))
     def test_stellar_sigma_correction(self, galaxy):
         maps = Maps(plateifu=galaxy.plateifu)
         stsig = maps['stellar_sigma']
@@ -383,14 +384,20 @@ class TestMapArith(object):
         assert actual.ivar == pytest.approx(expected.ivar)
         assert (actual.mask == expected.mask).all()
 
-    @marvin_test_if(mark='include', galaxy=dict(release=['MPL-4']))
+    @marvin_test_if(mark='include', galaxy=dict(release=['MPL-4', 'MPL-6']))
     def test_stellar_sigma_correction_MPL4(self, galaxy):
         maps = Maps(plateifu=galaxy.plateifu)
         stsig = maps['stellar_sigma']
+
+        if galaxy.release == 'MPL-4':
+            errmsg = 'Instrumental broadening correction not implemented for MPL-4.'
+        elif galaxy.release == 'MPL-6':
+            errmsg = 'The stellar sigma corrections in MPL-6 are unreliable. Please use MPL-7.'
+
         with pytest.raises(MarvinError) as ee:
             stsig.inst_sigma_correction()
 
-        assert 'Instrumental broadening correction not implemented for MPL-4.' in str(ee.value)
+        assert errmsg in str(ee.value)
 
     def test_stellar_sigma_correction_invalid_property(self, galaxy):
         maps = Maps(plateifu=galaxy.plateifu)
