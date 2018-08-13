@@ -1,8 +1,8 @@
 Marvin's Change Log
 ===================
 
-[2.2.6] - 2018/?/?
-------------------
+[2.2.6] - 2018/08/13
+--------------------
 
 Added
 ^^^^^
@@ -14,7 +14,7 @@ Changed
 - Extra keyword arguments passed to ``Spectrum.plot`` are now forwarded to ``Axes.plot``.
 - Tools (e.g., ``Cube``, ``Maps``) can now be accessed from the ``marvin`` namespace (e.g., ``marvin.tools.Cube`` or ``marvin.tools.cube.Cube``).
 - Moved ``yanny.py`` to ``extern/`` and added a readme file for the external packages (:issue:`468`).
-- `~marvin.tools.quantities.Spectrum.plot` now only masks part of the spectrum that have the ``DONOTUSE`` maskbit set (:issue:`455`).
+- `~marvin.tools.quantities.spectrum.Spectrum.plot` now only masks part of the spectrum that have the ``DONOTUSE`` maskbit set (:issue:`455`).
 - ``pixmask`` is now available for all quantities (except ``AnalysisProprty``). The property ``masked`` now uses the bit ``DONOTUSE`` to determine what values must be masked out (:issue:`462`).
 - Raises error when applying ``inst_sigma_correction`` on ``stellar_sigma`` MPL-6 maps.  Applies correction to stellar_sigma and emline_sigma for web maps with added 'Corrected' title (:issue:`478`)
 
@@ -22,7 +22,7 @@ Fixed
 ^^^^^
 - ``Bin._create_spaxels`` instantiating spaxels with the wrong ``(i,j)`` values for the bin. The ``(i, j)`` values from the ``binid`` map were being swapped twice before sending them to ``SpaxelBase`` (:issue:`457`).
 - A bug in the calculation of the deredden inverse variance in a `~marvin.tools.quantities.datacube.DataCube`.
-- Fixed typo by in method name ``Spectrum.derredden -> Spectrum.deredden``.
+- Fixed typo in method name ``Spectrum.derredden -> Spectrum.deredden``.
 - Fixed `#510 <https://github.com/sdss/marvin/issues/510>`_ - fixes incorrect conversion to sky coordinates in map plotting.
 
 

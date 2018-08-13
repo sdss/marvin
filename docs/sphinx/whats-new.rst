@@ -3,17 +3,20 @@
 What's new in Marvin
 ====================
 
-2.2.6 (July 2019)
-------------------
+2.2.6 (August 2018)
+-------------------
 
-.. attention:: This is a critical bugfix release that corrects a problem that could affect your science results. Please update as soon as possible and check whether your analysis is impacted by this bug.
+.. attention:: This is a critical bugfix release that corrects a problem that could affect your science results. Please update as soon as possible and check whether your analysis has been impacted by this bug.
 
-This version fixes a critical bug when retrieving the spaxels associated with a bin. It also simplifies the library namespace allowing for easier access to the most used Tools.
+This version fixes a critical bug when retrieving the spaxels associated with a bin, as well as a problem with the calculation of the inverse variance for deredden datacubes. It also simplifies the library namespace allowing for easier access to the most used Tools.
+
+Critical bugfixes
+*****************
 
 Spaxels associated with a bin
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-In version 2.2 we introduced the concept of :ref:`Bin <marvin-bin>` as a collection of spaxels that belong to the same binning unit. As part of the API, one can use `~marvin.tools.spaxel.Bin.spaxels` attribute to access a list of the spaxels that are included in the bin. The bug now fixed caused a list of incorrect spaxels to be associated with the bin, due to an inversion in the ``(x, y)`` order of the spaxels. For example, *before* 2.2.6 one would get ::
+In version 2.2 we introduced the concept of :ref:`Bin <marvin-bin>` as a collection of spaxels that belong to the same binning unit. As part of the API, one can use the `~marvin.tools.spaxel.Bin.spaxels` attribute to access a list of the spaxels that are included in the bin. The bug now fixed caused a list of incorrect spaxels to be associated with the bin, due to an inversion in the ``(x, y)`` order of the spaxels. *Before* 2.2.6 one would get ::
 
     >>> cube = Cube('8485-1901')
     >>> maps = cube.getMaps('HYB10')
@@ -33,8 +36,20 @@ where the x and y values should be
      <Marvin Spaxel (x=13, y=22, loaded=False),
      <Marvin Spaxel (x=14, y=22, loaded=False)]
 
+Inverse variance for deredden datacubes
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The `~marvin.tools.quantities.datacube.DataCube` quantity includes a `~marvin.tools.quantities.datacube.DataCube.deredden` method that applies the reddening correction to the flux and inverse variance in the datacube. The inverse variance associated to the derredden flux had a bug in its calculation and was incorrect in all cases. That has now been fixed. It also fixes the spelling of ``deredden`` (😅).
+
+MPL-7 now available
+*******************
+
+Starting with this release, Marvin provides access to MPL-7, the latest MaNGA Product Launch. Please read the `release notes <https://trac.sdss.org/wiki/MANGA/TRM/TRM_MPL-7/whatsnew>`__ for this version to understand what has changed. MPL-7 is now the default release when Marvin is imported.
+
+In MPL-7 we have made ``HYB10`` the default bintype. Hybrid-binned ``Maps`` and ``ModelCubes`` use different binning schemes depending on the property measured. Before using ``HYB10`` make sure you read `the documentation <https://trac.sdss.org/wiki/MANGA/TRM/TRM_MPL-7/dap/GettingStarted#HYB10-GAU-MILESHC>`__ and understand how to use the data. For ``HYB10`` the `~marvin.tools.spaxel.Bin` class is somehow limited, since it does not allow for different binning schemes depending on the measured quantity. We are planning a major reimplementation of how bins are handled, which we will release with Marvin 2.3.0. In the meantime, please be aware of these limitations when using ``HYB10``.
+
 Simplifying the namespace
-^^^^^^^^^^^^^^^^^^^^^^^^^
+**************************
 
 Prior to 2.2.6 accessing different Tools classes was inconvenient since one would need to import them independently (e.g., ``from marvin.tools.cube import Cube``, ``from marvin.tools.maps import Maps``, etc.) This version makes access easier by exposing all the Tools from the ``marvin.tools`` namespace so that you can now do ::
 
@@ -42,10 +57,19 @@ Prior to 2.2.6 accessing different Tools classes was inconvenient since one woul
     cube = marvin.tools.Cube('8485-1901')
     maps = marvin.tools.Maps('7443-12701')
 
-Stellar Sigma Correction
-^^^^^^^^^^^^^^^^^^^^^^^^
+Passing keyword arguments to `Spectrum.plot <marvin.tools.quantities.spectrum.Spectrum.plot>`
+*********************************************************************************************
 
-For MPL-6, we now raise an explicit error when attempting to apply the correction to `stellar_sigma`, using the `inst_sigma_correction` method.  The error message now suggests to upgrade to MPL-7 data.  For the web display of the `stellar_sigma` and `emline_gsigma` maps, we now apply the sigma correction automatically.  The corrected map is indicated via **Corrected: stellar_sigma** map title.
+Extra arguments passed to `Spectrum.plot <marvin.tools.quantities.spectrum.Spectrum.plot>` are now redirected to `matplotlib.axes.Axes.plot`. This provides extra flexibility for your plots. For instance, you can now set labels for the legend associated with your plot ::
+
+    ax = spectrum.plot(use_std=True, label='flux')
+    ax.plot(spectrum.wavelength, model_flux, label='model')
+    ax.legend()
+
+Stellar Sigma Correction
+************************
+
+For MPL-6, we now raise an explicit error when attempting to apply the correction to ``stellar_sigma``, using the ``inst_sigma_correction`` method.  The error message now suggests to upgrade to MPL-7 data.  For the web display of the ``stellar_sigma`` and ``emline_gsigma`` maps, we now apply the sigma correction automatically.  The corrected map is indicated via **Corrected: stellar_sigma** map title.
 
 |
 
