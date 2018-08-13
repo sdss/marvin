@@ -8,7 +8,7 @@ What's new in Marvin
 
 .. attention:: This is a critical bugfix release that corrects a problem that could affect your science results. Please update as soon as possible and check whether your analysis is impacted by this bug.
 
-This version fixes a critical bug when retrieving the spaxels associated with a bin. It also simplifies the library namespace allowing for easier access to the most used Tools.
+This version fixes a critical bug when retrieving the spaxels associated with a bin. It also provides access to MPL-7 data and simplifies the library namespace allowing for easier access to the most used Tools.
 
 Spaxels associated with a bin
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -33,6 +33,13 @@ where the x and y values should be
      <Marvin Spaxel (x=13, y=22, loaded=False),
      <Marvin Spaxel (x=14, y=22, loaded=False)]
 
+MPL-7 now available
+^^^^^^^^^^^^^^^^^^^
+
+Starting with this release, Marvin provides access to MPL-7, the latest MaNGA Product Launch. Please read the `release notes <https://trac.sdss.org/wiki/MANGA/TRM/TRM_MPL-7/whatsnew>`__ for this version to understand what has changed. MPL-7 is now the default release when Marvin is imported.
+
+In MPL-7 we have made ``HYB10`` the default bintype. Hybrid-binned ``Maps`` and ``ModelCubes`` use different binning schemes depending on the property measured. Before using ``HYB10`` make sure you read `the documentation <https://trac.sdss.org/wiki/MANGA/TRM/TRM_MPL-7/dap/GettingStarted#HYB10-GAU-MILESHC>`__ and understand how to use the data. For ``HYB10`` the `~marvin.tools.spaxel.Bin` class is somehow limited, since it does not allow for different binning schemes depending on the measured quantity. We are planning a major reimplementation of how bins are handled, which we will release with Marvin 2.3.0. In the meantime, please be aware of these limitations when using ``HYB10``.
+
 Simplifying the namespace
 ^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -45,7 +52,7 @@ Prior to 2.2.6 accessing different Tools classes was inconvenient since one woul
 Stellar Sigma Correction
 ^^^^^^^^^^^^^^^^^^^^^^^^
 
-For MPL-6, we now raise an explicit error when attempting to apply the correction to `stellar_sigma`, using the `inst_sigma_correction` method.  The error message now suggests to upgrade to MPL-7 data.  For the web display of the `stellar_sigma` and `emline_gsigma` maps, we now apply the sigma correction automatically.  The corrected map is indicated via **Corrected: stellar_sigma** map title.
+For MPL-6, we now raise an explicit error when attempting to apply the correction to ``stellar_sigma``, using the ``inst_sigma_correction`` method.  The error message now suggests to upgrade to MPL-7 data.  For the web display of the ``stellar_sigma`` and ``emline_gsigma`` maps, we now apply the sigma correction automatically.  The corrected map is indicated via **Corrected: stellar_sigma** map title.
 
 |
 
