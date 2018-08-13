@@ -3,8 +3,8 @@
 What's new in Marvin
 ====================
 
-2.2.6 (July 2019)
-------------------
+2.2.6 (August 2018)
+-------------------
 
 .. attention:: This is a critical bugfix release that corrects a problem that could affect your science results. Please update as soon as possible and check whether your analysis is impacted by this bug.
 
