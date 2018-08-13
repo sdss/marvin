@@ -57,8 +57,8 @@ A new :ref:`Marvin Image <marvin-image>` Tool is now available for interacting w
 
 The old image utility functions documented :ref:`here <marvin-images>` remain but have now been deprecated by the new `~marvin.tools.image.Image` class.  Replacement utility functions are now available, with more information located :ref:`here<image-utils>`.
 
-2.2.6 (July 2019)
-------------------
+2.2.6 (August 2018)
+-------------------
 
 .. attention:: This is a critical bugfix release that corrects a problem that could affect your science results. Please update as soon as possible and check whether your analysis has been impacted by this bug.
 
