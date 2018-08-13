@@ -21,6 +21,11 @@ Added
 - New ``Marvin Image`` Tool to load optical images using the MMA (:issue:`22`)
 - New ``Bundle`` and ``Cutout`` utility classes
 - New ``MMAMixIn`` for providing multi-modal data access
+- Applying a NumPy ufunc (except ``np.log10()``) raises ``NotImplementedError`` because ivar propagation is not implemented yet.
+- New ``Marvin Image`` Tool to load optical images using the MMA (:issue:`22`)
+- New ``Bundle`` and ``Cutout`` utility classes
+- New ``MMAMixIn`` for providing multi-modal data access
+- ``qual_flag`` and ``pixmask_flag`` are now stored in the datamodel (:issue:`479,482`).
 
 Changed
 ^^^^^^^
@@ -35,7 +40,9 @@ Changed
 - Moved ``yanny.py`` to ``extern/`` and added a readme file for the external packages (:issue:`468`).
 - `~marvin.tools.quantities.Spectrum.plot` now only masks part of the spectrum that have the ``DONOTUSE`` maskbit set (:issue:`455`).
 - ``pixmask`` is now available for all quantities (except ``AnalysisProprty``). The property ``masked`` now uses the bit ``DONOTUSE`` to determine what values must be masked out (:issue:`462`).
+- Raises error when applying ``inst_sigma_correction`` on ``stellar_sigma`` MPL-6 maps.  Applies correction to stellar_sigma and emline_sigma for web maps with added 'Corrected' title (:issue:`478`)
 - Removes targeting bits from ``Spaxel`` and ``Bin`` (:issue:`465`).
+- The name of the channel is now shown in the ``Property`` description (:issue:`424`).
 
 Fixed
 ^^^^^
@@ -50,11 +57,16 @@ Fixed
 - Issue :issue:`431` - adding login documentation
 - Issue :issue:`151` - adding web spectrum tooltips
 - Fixed typo by in method name ``Spectrum.derredden -> Spectrum.deredden``.
+- Fixed `#305 <https://github.com/sdss/marvin/issues/305>`_ - adding ivar propogation for np.log10(Map)
+- A bug when explicitly returning default parameters in a query (:issue:`484`)
+- Fixed `#510 <https://github.com/sdss/marvin/issues/510>`_ - fixes incorrect conversion to sky coordinates in map plotting.
 
 Refactored
 ^^^^^^^^^^
 - Moved `marvin.core.core` to `marvin.tools.core` and split the mixins into `marvin.tools.mixins`.
 - Reimplemented `~marvin.tools.mixins.aperture.GetApertureMixIn.getAperture` as a mixin using photutils apertures (:issue:`3,315`).
+- Reimplemented `~marvin.tools.rss.RSS` as a list of `~marvin.tools.rss.RSSFiber` objects (:issue:`27,504`).
+- Moved pieces of MarvinToolsClass into `marvin.tools.mixins`.
 
 
 [2.2.5] - 2018/04/26

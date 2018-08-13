@@ -7,7 +7,7 @@
 # @License: BSD 3-clause (http://www.opensource.org/licenses/BSD-3-Clause)
 #
 # @Last modified by: José Sánchez-Gallego (gallegoj@uw.edu)
-# @Last modified time: 2018-07-27 12:55:29
+# @Last modified time: 2018-07-27 13:02:19
 
 import astropy.coordinates
 import astropy.units
@@ -69,7 +69,7 @@ class MarvinAperture(photutils.Aperture if photutils else object):
 
         return mask
 
-    def getSpaxels(self, threshold=0.5, lazy=True, **kwargs):
+    def getSpaxels(self, threshold=0.5, lazy=True, mask=None, **kwargs):
         """Returns the spaxels that fall within the aperture.
 
         Parameters
@@ -80,6 +80,10 @@ class MarvinAperture(photutils.Aperture if photutils else object):
         lazy : bool
             Whether the returned spaxels must be fully loaded or lazily
             instantiated.
+        mask : numpy.ndarray
+            A mask that defines the fractional pixel overlap with the
+            apertures. If ``None``, the mask returned by `.MarvinAperture.mask`
+            will be used.
         kwargs : dict
             Additional parameters to be passed to the parent ``getSpaxel``
             method. Can be used to define what information is loaded
@@ -89,7 +93,11 @@ class MarvinAperture(photutils.Aperture if photutils else object):
 
         assert threshold > 0 and threshold <= 1, 'invalid threshold value'
 
-        mask = self.mask
+        if mask is None:
+            mask = self.mask
+        else:
+            assert mask.shape == self.parent._shape, 'invalid mask shape'
+
         spaxel_coords = numpy.where(mask >= threshold)
 
         if len(spaxel_coords[0]) == 0:

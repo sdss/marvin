@@ -6,7 +6,7 @@
 # @Author: Brian Cherinka
 # @Date:   2018-07-28 17:26:41
 # @Last modified by:   Brian Cherinka
-# @Last Modified time: 2018-08-01 03:17:24
+# @Last Modified time: 2018-08-07 16:32:49
 
 from __future__ import absolute_import, division, print_function
 
@@ -100,7 +100,7 @@ class MMAMixIn(object, six.with_metaclass(abc.ABCMeta)):
                  ignore_db=False):
         self.data = data
         self.data_origin = None
-        self.ignore_db = ignore_db
+        self._ignore_db = ignore_db
 
         self.filename = filename
         self.mangaid = mangaid
@@ -264,7 +264,7 @@ class MMAMixIn(object, six.with_metaclass(abc.ABCMeta)):
 
             testDbConnection(marvindb.session)
 
-            if marvindb.db and not self.ignore_db:
+            if marvindb.db and not self._ignore_db:
                 self.mode = 'local'
                 self.data_origin = 'db'
             else:
@@ -363,4 +363,3 @@ class MMAMixIn(object, six.with_metaclass(abc.ABCMeta)):
         """Returns the IFU."""
 
         return int(self.plateifu.split('-')[1])
-

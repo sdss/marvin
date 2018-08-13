@@ -11,6 +11,9 @@ Known Issues in Marvin
 .. _report new issue: https://github.com/sdss/marvin/issues/new
 
 
+* **Sigma Corrections**:
+  For MPL-6, we now raise an explicit error when attempting to apply the correction to `stellar_sigma`, using the `inst_sigma_correction` method.  The error message now suggests to upgrade to MPL-7 data.  In the web display of maps, when selecting the ``stellar_sigma`` or ``emline_sigma`` maps, we automatically apply the relevant sigma correction.  A corrected map is indicated via the **Corrected: [name]** map title.  Uncorrected maps, for example, in MPL-6, retain the original title name.
+
 * **Marvin 2.2.1 MPL-6 Maps** - All H-alpha extensions in the Marvin MAPS, using MPL-6, map to NII_6585 extensions instead.  Additionally, the Marvin Maps for SPX_ELLCOO and BIN_LWELLCOO do not include the new channel R/Reff.  It is advisable to upgrade to Marvin 2.2.2, where these bugs have been fixed.
 
 

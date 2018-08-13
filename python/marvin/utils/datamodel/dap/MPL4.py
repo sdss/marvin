@@ -1,20 +1,22 @@
 #!/usr/bin/env python
-# encoding: utf-8
+# -*- coding: utf-8 -*-
 #
-# MPL4.py
+# @Author: Brian Cherinka, José Sánchez-Gallego, and Brett Andrews
+# @Date: 2017-08-08
+# @Filename: MPL5.py
+# @License: BSD 3-clause (http://www.opensource.org/licenses/BSD-3-Clause)
 #
-# Created by José Sánchez-Gallego on 8 Aug 2017.
+# @Last modified by: José Sánchez-Gallego (gallegoj@uw.edu)
+# @Last modified time: 2018-07-30 11:44:55
 
 
-from __future__ import division
-from __future__ import print_function
-from __future__ import absolute_import
+from __future__ import absolute_import, division, print_function
 
 from astropy import units as u
 
 from marvin.utils.datamodel.maskbit import get_maskbits
-from .base import (Bintype, Template, DAPDataModel, Property, MultiChannelProperty, spaxel,
-                   Channel)
+
+from .base import Bintype, Channel, DAPDataModel, MultiChannelProperty, Property, Template, spaxel
 
 
 M11_STELIB_ZSOL = Template('M11-STELIB-ZSOL', n=0,
@@ -117,7 +119,7 @@ MPL4_maps = [
                          formats={'string': 'Emission line instrumental sigma',
                                   'latex': r'Emission line instrumental $\sigma$'},
                          description='Instrumental velocity dispersion at the line centroids '
-                                     'for emission lines (based on a single Gaussian fit.'),
+                                     'for emission lines (based on a single Gaussian fit).'),
     MultiChannelProperty('emline_ew', ivar=True, mask=True, channels=MPL4_emline_channels,
                          unit=u.Angstrom,
                          formats={'string': 'Emission line EW'},
@@ -148,4 +150,5 @@ MPL4 = DAPDataModel('1.1.1', aliases=['MPL-4', 'MPL4'], bintypes=[NONE, RADIAL, 
                     templates=[M11_STELIB_ZSOL, MIUSCAT_THIN, MILES_THIN],
                     properties=MPL4_maps, bitmasks=get_maskbits('MPL-4'),
                     default_bintype='NONE', default_template='MIUSCAT-THIN',
-                    property_table='SpaxelProp', default_binid=binid_property)
+                    property_table='SpaxelProp', default_binid=binid_property,
+                    qual_flag=None)

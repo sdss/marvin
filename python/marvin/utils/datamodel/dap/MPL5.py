@@ -1,18 +1,23 @@
 #!/usr/bin/env python
-# encoding: utf
+# -*- coding: utf-8 -*-
 #
-# Created by José Sánchez-Gallego on 8 Aug 2017.
+# @Author: Brian Cherinka, José Sánchez-Gallego, and Brett Andrews
+# @Date: 2017-08-08
+# @Filename: MPL5.py
+# @License: BSD 3-clause (http://www.opensource.org/licenses/BSD-3-Clause)
+#
+# @Last modified by: José Sánchez-Gallego (gallegoj@uw.edu)
+# @Last modified time: 2018-07-30 11:45:02
 
 
-from __future__ import division
-from __future__ import print_function
-from __future__ import absolute_import
+from __future__ import absolute_import, division, print_function
 
 from astropy import units as u
 
 from marvin.utils.datamodel.maskbit import get_maskbits
-from .base import Bintype, Template, DAPDataModel, Property, Model
-from .base import MultiChannelProperty, spaxel, Channel
+
+from .base import (Bintype, Channel, DAPDataModel, Model,
+                   MultiChannelProperty, Property, Template, spaxel)
 from .MPL4 import MPL4_emline_channels
 
 
@@ -144,7 +149,7 @@ MPL5_maps = [
                                                     'latex': r'99^{th} percentile'}, idx=1)],
                          formats={'string': 'Fractional residual growth'},
                          description='68%% and 99%% growth of the fractional residuals between '
-                                     'the model and data'),
+                                     'the model and data.'),
     Property('stellar_cont_rchi2', ivar=False, mask=False,
              formats={'string': 'Stellar continuum reduced chi-square',
                       'latex': r'Stellar\ continuum\ reduced\ \chi^2'},
@@ -176,7 +181,7 @@ MPL5_maps = [
                                   'latex': r'Emission line Gaussian $\sigma$'},
                          unit=u.km / u.s,
                          description='Gaussian profile velocity dispersion for emission lines; '
-                                     'must be corrected using EMLINE_INSTSIGMA'),
+                                     'must be corrected using EMLINE_INSTSIGMA.'),
     MultiChannelProperty('emline_instsigma', ivar=False, mask=False,
                          channels=MPL5_emline_channels,
                          formats={'string': 'Emission line instrumental sigma',
@@ -228,4 +233,4 @@ MPL5 = DAPDataModel('2.0.2', aliases=['MPL-5', 'MPL5'], bintypes=[ALL, NRE, VOR1
                     templates=[GAU_MILESHC], properties=MPL5_maps, bitmasks=get_maskbits('MPL-5'),
                     models=MPL5_models, default_bintype='SPX', default_template='GAU-MILESHC',
                     property_table='SpaxelProp5', default_binid=binid_property,
-                    default_mapmask=['NOCOV', 'UNRELIABLE', 'DONOTUSE'])
+                    default_mapmask=['NOCOV', 'UNRELIABLE', 'DONOTUSE'], qual_flag='DAPQUAL')

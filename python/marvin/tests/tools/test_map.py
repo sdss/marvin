@@ -7,7 +7,7 @@
 # @License: BSD 3-clause (http://www.opensource.org/licenses/BSD-3-Clause)
 #
 # @Last modified by: José Sánchez-Gallego (gallegoj@uw.edu)
-# @Last modified time: 2018-07-20 19:12:32
+# @Last modified time: 2018-08-09 16:08:28
 
 
 import operator
@@ -34,6 +34,9 @@ value2 = np.array([[591., 1e-8],
 value_prod12 = np.array([[9.66285000e+03, 8e-9],
                          [0, -100]])
 
+value_log2 = np.array([[2.77158748, -8.],
+                       [0.60205999, 1.]])
+
 ivar1 = np.array([[4, 1],
                   [6.97789734e+36, 1e8]])
 ivar2 = np.array([[10, 1e-8],
@@ -58,8 +61,13 @@ ivar_pow_m2 = np.array([[2.67322500e+02, 1.6e-01],
 ivar_pow_m05 = np.array([[0.97859327, 5],
                          [0, 0]])
 
+ivar_log1 = np.array([[3.67423420e-04, 4.34294482e+07],
+                      [4.11019127e-20, 4.34294482e-06]])
+
 u_flux = u.erg / u.cm**2 / u.s / u.def_unit('spaxel')
 u_flux2 = u_flux * u_flux
+
+ufuncs = [it for it in dir(np) if isinstance(getattr(np, it), np.ufunc)]
 
 
 def _get_maps_kwargs(galaxy, data_origin):
@@ -199,6 +207,7 @@ class TestMap(object):
         assert spaxel is not None
         assert spaxel.x == 10 and spaxel.y == 10
 
+    @marvin_test_if(mark='skip', galaxy=dict(release=['MPL-6']))
     def test_stellar_sigma_values(self, maps, galaxy):
         ''' Assert values for stellar_sigma and stellar_sigmacorr are different (issue #411) '''
 
@@ -212,6 +221,17 @@ class TestMap(object):
         scvalue = galaxy.dap['stellar_sigmacorr'][galaxy.bintype.name]
         assert ssvalue == pytest.approx(ss[x, y].value, 1e-4)
         assert scvalue == pytest.approx(sc[x, y].value, 1e-4)
+
+    def test_datamodel(self, maps):
+
+        gew_ha = maps.emline_gew_ha_6564
+        assert gew_ha.datamodel.description == ('Gaussian-fitted equivalent widths measurements '
+                                                '(based on EMLINE_GFLUX). Channel = H-alpha 6564.')
+    @marvin_test_if(mark='include', galaxy=dict(release=['MPL-6']))
+    def test_stellar_sigma_mpl6(self, maps, galaxy):
+        with pytest.raises(MarvinError) as cm:
+            __ = maps.stellar_sigmacorr
+        assert 'stellar_sigmacorr is unreliable in MPL-6. Please use MPL-7.' in str(cm.value)
 
 
 class TestMapArith(object):
@@ -283,6 +303,39 @@ class TestMapArith(object):
     @pytest.mark.parametrize('power', [2, 0.5, 0, -1, -2, -0.5])
     def test_pow_ivar_none(self, power):
         assert Map._pow_ivar(None, np.arange(4), power) == pytest.approx(np.zeros(4))
+
+    @pytest.mark.parametrize('ivar, value, expected',
+                             [(ivar1, value2, ivar_log1)])
+    def test_log10_ivar(self, ivar, value, expected):
+        actual = Map._log10_ivar(ivar, value)
+        assert actual == pytest.approx(expected)
+
+    def test_log10(self, maps_release_only):
+        niiha = maps_release_only.emline_gflux_nii_6585 / maps_release_only.emline_gflux_nii_6585
+        log_niiha = np.log10(niiha)
+        ivar = np.log10(np.e) * niiha.ivar**-0.5 / niiha.value
+
+        assert log_niiha.value == pytest.approx(np.log10(niiha.value), nan_ok=True)
+        assert log_niiha.ivar == pytest.approx(ivar, nan_ok=True)
+        assert (log_niiha.mask == niiha.mask).all()
+        assert log_niiha.unit == u.dimensionless_unscaled
+
+    @pytest.mark.runslow
+    @marvin_test_if(mark='skip', ufunc='log10')
+    @pytest.mark.parametrize('ufunc', ufuncs)
+    def test_np_ufunc_notimplemented(self, maps_release_only, ufunc):
+        ha = maps_release_only.emline_gflux_ha_6564
+        nii = maps_release_only.emline_gflux_nii_6585
+
+        with pytest.raises(NotImplementedError) as ee:
+            if getattr(getattr(np, ufunc), 'nargs') <= 2:
+                getattr(np, ufunc)(ha)
+
+            else:
+                getattr(np, ufunc)(nii, ha)
+
+        expected = 'np.{0} is not implemented for Map.'.format(getattr(np, ufunc).__name__)
+        assert str(ee.value) == expected
 
     @pytest.mark.parametrize('unit1, unit2, op, expected',
                              [(u_flux, u_flux, '+', u_flux),
@@ -387,7 +440,7 @@ class TestMapArith(object):
         assert map_new.ivar == pytest.approx(ivar_new)
         assert (map_new.mask == map_orig.mask).all()
 
-    @marvin_test_if(mark='skip', galaxy=dict(release=['MPL-4']))
+    @marvin_test_if(mark='skip', galaxy=dict(release=['MPL-4', 'MPL-6']))
     def test_stellar_sigma_correction(self, galaxy):
         maps = Maps(plateifu=galaxy.plateifu)
         stsig = maps['stellar_sigma']
@@ -406,14 +459,20 @@ class TestMapArith(object):
         assert (actual.mask == expected.mask).all()
         assert actual.datamodel == stsig.datamodel
 
-    @marvin_test_if(mark='include', galaxy=dict(release=['MPL-4']))
+    @marvin_test_if(mark='include', galaxy=dict(release=['MPL-4', 'MPL-6']))
     def test_stellar_sigma_correction_MPL4(self, galaxy):
         maps = Maps(plateifu=galaxy.plateifu)
         stsig = maps['stellar_sigma']
+
+        if galaxy.release == 'MPL-4':
+            errmsg = 'Instrumental broadening correction not implemented for MPL-4.'
+        elif galaxy.release == 'MPL-6':
+            errmsg = 'The stellar sigma corrections in MPL-6 are unreliable. Please use MPL-7.'
+
         with pytest.raises(MarvinError) as ee:
             stsig.inst_sigma_correction()
 
-        assert 'Instrumental broadening correction not implemented for MPL-4.' in str(ee.value)
+        assert errmsg in str(ee.value)
 
     def test_stellar_sigma_correction_invalid_property(self, galaxy):
         maps = Maps(plateifu=galaxy.plateifu)
@@ -507,11 +566,6 @@ class TestMaskbit(object):
     def test_labels_to_value(self, maps_release_only, names, expected):
         ha = maps_release_only['emline_gflux_ha_6564']
         assert ha.pixmask.labels_to_value(names) == expected
-
-    @marvin_test_if(mark='skip', maps_release_only=dict(release=['MPL-4']))
-    def test_quality_flag(self, maps_release_only):
-        ha = maps_release_only['emline_gflux_ha_6564']
-        assert ha.quality_flag is not None
 
     @pytest.mark.parametrize('flag',
                              ['manga_target1',

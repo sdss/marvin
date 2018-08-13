@@ -18,6 +18,7 @@ import sys
 import warnings
 import contextlib
 import re
+import os
 
 from collections import OrderedDict
 from builtins import range
@@ -67,7 +68,8 @@ __all__ = ('convertCoords', 'parseIdentifier', 'mangaid2plateifu', 'findClosestV
            'invalidArgs', 'missingArgs', 'getRequiredArgs', 'getKeywordArgs',
            'isCallableWithArgs', 'map_bins_to_column', '_sort_dir',
            'get_dapall_file', 'temp_setattr', 'map_dapall', 'turn_off_ion', 'memory_usage',
-           'validate_jwt', 'target_status', 'target_is_observed')
+           'validate_jwt', 'target_status', 'target_is_observed', 'get_drpall_file',
+           'target_is_mastar', 'get_plates')
 
 drpTable = {}
 
@@ -344,16 +346,12 @@ def mangaid2plateifu(mangaid, mode='auto', drpall=None, drpver=None):
 
     if mode == 'drpall':
 
-        if not drpall:
-            raise ValueError('no drpall file can be found.')
+        # Get the drpall table from cache or fresh
+        drpall_table = get_drpall_table(drpver=drpver, drpall=drpall)
 
-        # Loads the drpall table if it was not cached from a previos session.
-        if drpver not in drpTable:
-            drpTable[drpver] = table.Table.read(drpall)
+        mangaids = np.array([mm.strip() for mm in drpall_table['mangaid']])
 
-        mangaids = np.array([mm.strip() for mm in drpTable[drpver]['mangaid']])
-
-        plateifus = drpTable[drpver][np.where(mangaids == mangaid)]
+        plateifus = drpall_table[np.where(mangaids == mangaid)]
 
         if len(plateifus) > 1:
             warnings.warn('more than one plate-ifu found for mangaid={0}. '
@@ -783,6 +781,8 @@ def downloadList(inputlist, dltype='cube', **kwargs):
         NA: Downloads
     """
 
+    assert isinstance(inputlist, (list, np.ndarray)), 'inputlist must be a list or numpy array'
+
     # Get some possible keywords
     # Necessary rsync variables:
     #   drpver, plate, ifu, dir3d, [mpl, dapver, bintype, n, mode]
@@ -872,20 +872,52 @@ def downloadList(inputlist, dltype='cube', **kwargs):
     rsync_access.commit(limit=limit)
 
 
+def get_drpall_file(drpall=None, drpver=None):
+    ''' Check for/download the drpall file
+
+    Checks for existence of a local drpall file for the
+    current release set.  If not found, uses sdss_access
+    to download it.
+
+    Parameters:
+        drpall (str):
+            The local path to the drpall file
+        drpver (str):
+            The DRP version
+    '''
+    from marvin import config
+
+    # check for public release
+    is_public = 'DR' in config.release
+    release = config.release.lower() if is_public else None
+
+    # get drpver
+    config_drpver, __ = config.lookUpVersions()
+    drpver = drpver if drpver else config_drpver
+
+    if not drpall:
+        drpall = config._getDrpAllPath(drpver=drpver)
+
+    if not os.path.isfile(drpall):
+        warnings.warn('drpall file not found. Downloading it.', MarvinUserWarning)
+        rsync = RsyncAccess(label='get_drpall', public=is_public, release=release)
+        rsync.remote()
+        rsync.add('drpall', drpver=drpver)
+        try:
+            rsync.set_stream()
+        except Exception as e:
+            raise MarvinError('Could not download the drpall file with sdss_access: '
+                              '{0}\nTry manually downloading it for version {1} and '
+                              'placing it {2}'.format(e, drpver, drpall))
+        else:
+            rsync.commit()
+
+
 def get_drpall_row(plateifu, drpver=None, drpall=None):
     """Returns a dictionary from drpall matching the plateifu."""
 
-    from marvin import config
-
-    if drpall:
-        drpall_table = table.Table.read(drpall)
-    else:
-        config_drpver, __ = config.lookUpVersions()
-        drpver = drpver if drpver else config_drpver
-        if drpver not in drpTable:
-            drpall = drpall if drpall else config._getDrpAllPath(drpver=drpver)
-            drpTable[drpver] = table.Table.read(drpall)
-        drpall_table = drpTable[drpver]
+    # get the drpall table
+    drpall_table = get_drpall_table(drpver=drpver, drpall=drpall)
 
     row = drpall_table[drpall_table['plateifu'] == plateifu]
 
@@ -1580,3 +1612,85 @@ def target_is_observed(mangaid, mode='auto', source='nsa', drpall=None, drpver=N
     # check the target status
     status = target_status(mangaid, source=source, mode=mode, drpver=drpver, drpall=drpall)
     return status == 'observed'
+
+
+def target_is_mastar(plateifu, drpver=None, drpall=None):
+    ''' Check if a target is bright-time MaStar target
+
+    Uses the local drpall file to check if a plateifu is a MaStar target
+
+    Parameters:
+        plateifu (str):
+            The plateifu of the target
+        drpver (str):
+            The drpver version to check against
+        drpall (str):
+            The drpall file path
+
+    Returns:
+        True if it is
+
+    '''
+
+    row = get_drpall_row(plateifu, drpver=drpver, drpall=drpall)
+    return row['srvymode'] == 'APOGEE lead'
+
+
+def get_drpall_table(drpver=None, drpall=None):
+    ''' Gets the drpall table
+
+    Gets the drpall table either from cache or loads it
+
+    Parameters:
+        drpver (str):
+            The DRP release version to load.  Defaults to current marvin release
+        drpall (str):
+            The full path to the drpall table. Defaults to current marvin release.
+
+    Returns:
+        An Astropy Table
+    '''
+
+    from marvin import config
+
+    # get the drpall file
+    get_drpall_file(drpall=drpall, drpver=drpver)
+
+    # Loads the drpall table if it was not cached from a previous session.
+    config_drpver, __ = config.lookUpVersions()
+    drpver = drpver if drpver else config_drpver
+
+    if drpver not in drpTable:
+        drpall = drpall if drpall else config._getDrpAllPath(drpver=drpver)
+        drpTable[drpver] = table.Table.read(drpall)
+
+    drpall_table = drpTable[drpver]
+
+    return drpall_table
+
+
+def get_plates(drpver=None, drpall=None, release=None):
+    ''' Get a list of unique plates from the drpall file
+
+    Parameters:
+        drpver (str):
+            The DRP release version to load.  Defaults to current marvin release
+        drpall (str):
+            The full path to the drpall table. Defaults to current marvin release.
+        release (str):
+            The marvin release
+
+    Returns:
+        A list of plate ids
+
+    '''
+    assert not all([drpver, release]), 'Cannot set both drpver and release '
+
+    if release:
+        drpver, __ = marvin.config.lookUpVersions(release)
+
+    drpall_table = get_drpall_table(drpver=drpver, drpall=drpall)
+    plates = list(set(drpall_table['plate']))
+    return plates
+
+

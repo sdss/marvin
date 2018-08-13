@@ -6,7 +6,7 @@
 # @Author: Brian Cherinka
 # @Date:   2017-09-20 13:24:13
 # @Last modified by:   Brian Cherinka
-# @Last Modified time: 2018-04-10 15:28:51
+# @Last Modified time: 2018-07-30 14:41:50
 
 from __future__ import print_function, division, absolute_import
 from .base import QueryDataModel
@@ -21,7 +21,7 @@ def groups():
 # MPL-4
 
 # list of tables to exclude
-BASE_EXCLUDE = ['anime', 'catalogue', 'pipeline', 'maskbit', 'hdu', 'query',
+BASE_EXCLUDE = ['anime', 'catalogue', 'pipeline', 'maskbit', 'hdu', 'query', 'user',
                 'extcol', 'exttype', 'extname', 'cube_shape', 'spaxelprops']
 
 EXCLUDE = ['modelcube', 'modelspaxel', 'redcorr', 'obsinfo', 'dapall'] + BASE_EXCLUDE
@@ -46,4 +46,4 @@ MPL6 = QueryDataModel(release='MPL-6', groups=groups(), aliases=['MPL6', 'v2_3_1
 
 # MPL-7
 
-MPL7 = QueryDataModel(release='MPL-7', groups=groups(), aliases=['MPL7', 'v2_4_3', '2.2.0', 'DR15'], exclude=EX6, dapdm=None)
+MPL7 = QueryDataModel(release='MPL-7', groups=groups(), aliases=['MPL7', 'v2_4_3', '2.2.0', 'DR15'], exclude=EX6, dapdm=datamodel['MPL-7'])
