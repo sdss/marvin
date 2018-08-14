@@ -6,7 +6,7 @@
 # @Author: Brian Cherinka
 # @Date:   2018-03-08 18:08:34
 # @Last modified by:   Brian Cherinka
-# @Last Modified time: 2018-08-13 10:14:23
+# @Last Modified time: 2018-08-14 18:10:06
 
 from __future__ import print_function, division, absolute_import
 import pytest
@@ -59,19 +59,10 @@ def initconfig(monkeypatch):
 
 
 @pytest.fixture()
-def set_default(monkeypatch, newconfig, request):
-    monkeypatch.setattr(newconfig, '_release', request.param)
-    monkeypatch.setitem(newconfig._custom_config, 'default_release', request.param)
-    newconfig._check_config()
-
-
-@pytest.fixture()
-def newconfig():
-    #global config
-    config = MarvinConfig()
-    #config = newconfig
-    yield config
-    #config = None
+def set_default(monkeypatch, request):
+    monkeypatch.setattr(config, '_release', request.param)
+    monkeypatch.setitem(config._custom_config, 'default_release', request.param)
+    config._check_config()
 
 
 class TestVars(object):
@@ -235,13 +226,12 @@ class TestSasUrl(object):
         config.switchSasUrl(sas, public=public, test=test)
         assert exp in config.sasurl
 
-    @pytest.mark.parametrize('set_default, defrel, exp',
-                             [('MPL-5', 'MPL-5', 'api.sdss.org'),
-                              ('DR15', 'DR15', 'dr15.sdss.org/api')], indirect=['set_default'])
-    def test_sasurl_default_release(self, set_default, defrel, exp):
-        print(config._custom_config, config.release, config.sasurl)
-        assert config.release == defrel
-        assert exp in config.sasurl
+    # @pytest.mark.parametrize('set_default, defrel, exp',
+    #                          [('MPL-5', 'MPL-5', 'api.sdss.org'),
+    #                           ('DR15', 'DR15', 'dr15.sdss.org/api')], indirect=['set_default'])
+    # def test_sasurl_default_release(self, set_default, defrel, exp):
+    #     assert config.release == defrel
+    #     assert exp in config.sasurl
 
 
 

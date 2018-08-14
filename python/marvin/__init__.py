@@ -103,7 +103,6 @@ class MarvinConfig(object):
         self.use_sentry = True
         self.add_github_message = True
         self._allowed_releases = {}
-        #self.token = None
 
         # perform some checks
         self._load_defaults()
@@ -138,12 +137,6 @@ class MarvinConfig(object):
                 self.__setattr__(key, value)
 
         self._custom_config = config
-
-        # try moving this into check_config
-        # If the configuration file included a default release, we set it now
-        #if 'default_release' in self._custom_config and self._custom_config['default_release']:
-            # We set _release because at this point the available versions are not yet set.
-            #self._release = self._custom_config['default_release']
 
     def _checkPaths(self, name):
         ''' Check for the necessary path existence.
@@ -653,13 +646,12 @@ class MarvinConfig(object):
         if is_different and not nullinit:
             if (relchange and self.access == 'collab') or stilldr or topublic or tocollab:
                 self._tree.replant_tree(tree_config)
-        print('setting sasurl')
+
         # switch the API url depending on release
         if 'MPL' in value:
             self.switchSasUrl('utah')
         elif 'DR' in value:
             self.switchSasUrl('utah', public=True)
-        print('blag', self.sasurl)
 
     def login(self, refresh=None):
         ''' Login with netrc credentials to receive an API token

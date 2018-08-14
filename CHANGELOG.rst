@@ -38,6 +38,7 @@ Changed
 - Raises error when applying ``inst_sigma_correction`` on ``stellar_sigma`` MPL-6 maps.  Applies correction to stellar_sigma and emline_sigma for web maps with added 'Corrected' title (:issue:`478`)
 - Removes targeting bits from ``Spaxel`` and ``Bin`` (:issue:`465`).
 - The name of the channel is now shown in the ``Property`` description (:issue:`424`).
+- MarvinError now accepts an optional `ignore_git` keyword to locally turn off the git addition to the message
 
 Fixed
 ^^^^^
@@ -55,6 +56,7 @@ Fixed
 - Fixed `#305 <https://github.com/sdss/marvin/issues/305>`_ - adding ivar propogation for np.log10(Map)
 - A bug when explicitly returning default parameters in a query (:issue:`484`)
 - Fixed `#510 <https://github.com/sdss/marvin/issues/510>`_ - fixes incorrect conversion to sky coordinates in map plotting.
+- Fixes bug with sasurl not properly being set to api.sdss.org on initial import
 
 Refactored
 ^^^^^^^^^^
