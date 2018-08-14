@@ -194,7 +194,7 @@ class Structure(Base):
     __table_args__ = {'autoload': True, 'schema': 'mangadapdb'}
 
     def __repr__(self):
-        return '<Structure (pk={0}, bintype={1}, template={3})'.format(self.pk, self.bintype.name, self.template_kin.name)
+        return '<Structure (pk={0}, bintype={1}, template={2})'.format(self.pk, self.bintype.name, self.template_kin.name)
 
 
 class BinId(Base):
@@ -275,7 +275,6 @@ for dm in datamodel:
     newclass = spaxel_factory(classname)
     cleanclass = spaxel_factory(classname, clean=True)
     if newclass:
-        locals()[cleanclass.__name__] = cleanclass
         locals()[classname] = newclass
     if cleanclass:
         locals()[cleanclass.__name__] = cleanclass
@@ -433,4 +432,8 @@ dap_cache = RelationshipCache(File.cube).\
 for classname, class_model in spaxel_tables.items():
     dap_cache = dap_cache.and_(RelationshipCache(class_model.file))
 
+# delete extra classes from the various loops
+del class_model
+del cleanclass
+del newclass
 

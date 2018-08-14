@@ -6,7 +6,7 @@
 # @Author: Brian Cherinka
 # @Date:   2017-09-20 13:24:13
 # @Last modified by:   Brian Cherinka
-# @Last Modified time: 2018-08-10 15:27:13
+# @Last Modified time: 2018-08-14 10:40:47
 
 from __future__ import print_function, division, absolute_import
 from .base import QueryDataModel
@@ -21,7 +21,7 @@ def groups():
 # MPL-4
 
 # list of tables to exclude
-BASE_EXCLUDE = ['anime', 'catalogue', 'pipeline', 'maskbit', 'hdu', 'query',
+BASE_EXCLUDE = ['anime', 'catalogue', 'pipeline', 'maskbit', 'hdu', 'query', 'user',
                 'extcol', 'exttype', 'extname', 'cube_shape', 'spaxelprops']
 
 EXCLUDE = ['modelcube', 'modelspaxel', 'redcorr', 'obsinfo', 'dapall'] + BASE_EXCLUDE
