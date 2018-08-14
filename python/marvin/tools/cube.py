@@ -38,19 +38,7 @@ class Cube(MarvinToolsClass, NSAMixIn, GetApertureMixIn):
     This class represents a fully reduced DRP data cube, initialised either
     from a file, a database, or remotely via the Marvin API.
 
-    See `~.MarvinToolsClass` for a list of parameters. In addition to the
-    attributes defined `there <~.MarvinToolsClass>`, the following ones are
-    also defined
-
-    Attributes:
-        header (`astropy.io.fits.Header`):
-            The header of the datacube.
-        ifu (int):
-            The id of the IFU.
-        ra,dec (float):
-            Coordinates of the target.
-        wcs (`astropy.wcs.WCS`):
-            The WCS solution for this plate
+    See `~.MarvinToolsClass` and `~.NSAMixIn` for a list of input parameters.
 
     """
 
@@ -89,7 +77,7 @@ class Cube(MarvinToolsClass, NSAMixIn, GetApertureMixIn):
         elif self.data_origin == 'api':
             self._load_cube_from_api()
 
-        self._init_attributes()
+        self._init_attributes(self)
 
         # Checks that the drpver set in MarvinToolsClass matches the header
         header_drpver = self.header['VERSDRP3'].strip()
@@ -137,17 +125,50 @@ class Cube(MarvinToolsClass, NSAMixIn, GetApertureMixIn):
 
         return self.getSpaxel(x=xy[1], y=xy[0], xyorig='lower')
 
-    def _init_attributes(self):
+    @staticmethod
+    def _init_attributes(obj):
         """Initialises several attributes."""
 
-        self.ra = float(self.header['OBJRA'])
-        self.dec = float(self.header['OBJDEC'])
+        obj.ra = float(obj.header['OBJRA'])
+        obj.dec = float(obj.header['OBJDEC'])
 
-        self.mangaid = self.header['MANGAID']
+        obj.mangaid = obj.header['MANGAID']
 
-        self._isbright = 'APOGEE' in self.header['SRVYMODE']
+        obj._isbright = 'APOGEE' in obj.header['SRVYMODE']
 
-        self.dir3d = 'mastar' if self._isbright else 'stack'
+        obj.dir3d = 'mastar' if obj._isbright else 'stack'
+
+    @staticmethod
+    def _do_file_checks(obj):
+        """Performs a series of check when we load from a file."""
+
+        obj.plateifu = obj.header['PLATEIFU']
+
+        # Checks and populates the release.
+        file_drpver = obj.header['VERSDRP3']
+        file_drpver = 'v1_5_1' if file_drpver == 'v1_5_0' else file_drpver
+
+        file_ver = marvin.config.lookUpRelease(file_drpver)
+        assert file_ver is not None, 'cannot find file version.'
+
+        if file_ver != obj._release:
+            warnings.warn('mismatch between file release={0} and object release={1}. '
+                          'Setting object release to {0}'.format(file_ver, obj._release),
+                          MarvinUserWarning)
+            obj._release = file_ver
+
+            # Reload NSA data from file version of drpall file
+            obj._drpver, obj._dapver = marvin.config.lookUpVersions(release=obj._release)
+            obj._drpall = marvin.config._getDrpAllPath(file_drpver)
+            obj.mangaid = obj.header['MANGAID']
+
+            nsa_source = 'drpall' if obj.nsa_source == 'auto' else obj.nsa_source
+
+            obj._nsa = None
+            obj._nsa = get_nsa_data(obj.mangaid, mode='auto', source=nsa_source,
+                                    drpver=obj._drpver, drpall=obj._drpall)
+
+        obj._drpver, obj._dapver = marvin.config.lookUpVersions(release=obj._release)
 
     def _load_cube_from_file(self, data=None):
         """Initialises a cube from a file."""
@@ -169,33 +190,7 @@ class Cube(MarvinToolsClass, NSAMixIn, GetApertureMixIn):
         self._shape = (self.data['FLUX'].header['NAXIS2'],
                        self.data['FLUX'].header['NAXIS1'])
 
-        self.plateifu = self.header['PLATEIFU']
-
-        # Checks and populates the release.
-        file_drpver = self.header['VERSDRP3']
-        file_drpver = 'v1_5_1' if file_drpver == 'v1_5_0' else file_drpver
-
-        file_ver = marvin.config.lookUpRelease(file_drpver)
-        assert file_ver is not None, 'cannot find file version.'
-
-        if file_ver != self._release:
-            warnings.warn('mismatch between file release={0} and object release={1}. '
-                          'Setting object release to {0}'.format(file_ver, self._release),
-                          MarvinUserWarning)
-            self._release = file_ver
-
-            # Reload NSA data from file version of drpall file
-            self._drpver, self._dapver = marvin.config.lookUpVersions(release=self._release)
-            self._drpall = marvin.config._getDrpAllPath(file_drpver)
-            self.mangaid = self.header['MANGAID']
-
-            nsa_source = 'drpall' if self.nsa_source == 'auto' else self.nsa_source
-
-            self._nsa = None
-            self._nsa = get_nsa_data(self.mangaid, mode='auto', source=nsa_source,
-                                     drpver=self._drpver, drpall=self._drpall)
-
-        self._drpver, self._dapver = marvin.config.lookUpVersions(release=self._release)
+        self._do_file_checks(self)
 
     def _load_cube_from_db(self, data=None):
         """Initialises a cube from the DB."""
@@ -580,6 +575,12 @@ class Cube(MarvinToolsClass, NSAMixIn, GetApertureMixIn):
                                                       cube=self,
                                                       maps=properties,
                                                       modelcube=models, **kwargs)
+
+    def getRSS(self):
+        """Returns the `~marvin.tools.rss.RSS` associated with this Cube."""
+
+        return marvin.tools.RSS(plateifu=self.plateifu, mode=self.mode,
+                                release=self.release)
 
     def getMaps(self, **kwargs):
         """Retrieves the DAP :class:`~marvin.tools.maps.Maps` for this cube.

@@ -1,19 +1,20 @@
 #!/usr/bin/env python
-# encoding: utf-8
+# -*- coding: utf-8 -*-
 #
-# structs.py
+# @Author: Brian Cherinka, José Sánchez-Gallego, and Brett Andrews
+# @Date: 2017-08-17
+# @Filename: structs.py
+# @License: BSD 3-clause (http://www.opensource.org/licenses/BSD-3-Clause)
 #
-# Created by José Sánchez-Gallego on 17 Aug 2017.
+# @Last modified by: José Sánchez-Gallego (gallegoj@uw.edu)
+# @Last modified time: 2018-08-11 20:20:17
 
 
-from __future__ import division
-from __future__ import print_function
-from __future__ import absolute_import
+from __future__ import absolute_import, division, print_function
 
 from collections import OrderedDict
 
 import six
-
 from fuzzywuzzy import fuzz as fuzz_fuzz
 from fuzzywuzzy import process as fuzz_proc
 
@@ -80,6 +81,9 @@ def get_best_fuzzy(value, choices, min_score=75, scorer=fuzz_fuzz.WRatio, return
 
     if len(value) < 3:
         raise ValueError('your fuzzy search value must be at least three characters long.')
+
+    if len(choices) == 0:
+        raise ValueError('choices cannot be an empty list.')
 
     # If the value contains _ivar or _mask this is probably and incorrect use
     # of the fuzzy feature. We raise an error.

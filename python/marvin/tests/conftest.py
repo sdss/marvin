@@ -172,7 +172,7 @@ def data_origin(request):
     return request.param
 
 
-@pytest.fixture(params=modes)
+@pytest.fixture(scope='session', params=modes)
 def mode(request):
     """Yield a data mode."""
     if travis and request.param not in travis.new_modes:
@@ -418,7 +418,7 @@ def monkeyauth(monkeypatch):
 
 # Temp Dir/File-based FIXTURES
 # ----------------------------
-@pytest.fixture(scope='session')
+@pytest.fixture(scope='function')
 def temp_scratch(tmpdir_factory):
     """Create a temporary scratch space for reading/writing.
 
