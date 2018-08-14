@@ -151,7 +151,8 @@ def buildMapDict(cube, params, dapver, bintemp=None):
     anybad = [m['data'] is None for m in mapdict]
     if any(anybad):
         bad_params = ', '.join([p for i, p in enumerate(params) if anybad[i]])
-        raise MarvinError('Could not get map for: {0}.  Please select another.'.format(bad_params))
+        raise MarvinError('Could not get map for: {0}.  Please select another.'.format(bad_params),
+                          ignore_git=True)
 
     return mapdict
 
@@ -513,7 +514,7 @@ class Galaxy(BaseWebView):
             try:
                 mapdict = buildMapDict(cube, params, self._dapver, bintemp=bintemp)
             except Exception as e:
-                output = {'mapmsg': e.message, 'status': -1, 'maps': None}
+                output = {'mapmsg': str(e), 'status': -1, 'maps': None}
             else:
                 output = {'mapmsg': None, 'status': 1, 'maps': mapdict}
         return jsonify(result=output)
@@ -549,7 +550,7 @@ class Galaxy(BaseWebView):
                 nsadict, nsacols = make_nsa_dict(cube.nsa)
                 nsa = {args.get('plateifu'): nsadict}
             except Exception as e:
-                output = {'nsamsg': e.message, 'status': -1, 'nsa': None}
+                output = {'nsamsg': str(e), 'status': -1, 'nsa': None}
             else:
                 # get the sample nsa parameters
                 try:
