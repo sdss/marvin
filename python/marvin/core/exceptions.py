@@ -65,7 +65,7 @@ ms = MarvinSentry(version=marvin.__version__)
 
 
 class MarvinError(Exception):
-    def __init__(self, message=None):
+    def __init__(self, message=None, ignore_git=None):
 
         from marvin import config
         message = 'Unknown Marvin Error' if not message else message
@@ -79,7 +79,7 @@ class MarvinError(Exception):
                 ms.client.captureMessage(message)
 
         # Add Github Issue URL to message or not
-        if config.add_github_message is True:
+        if config.add_github_message is True and not ignore_git:
             giturl = 'https://github.com/sdss/marvin/issues/new'
             message = ('{0}.\nYou can submit this error to Marvin GitHub Issues ({1}).\n'
                        'Fill out a subject and some text describing the error that just occurred.\n'

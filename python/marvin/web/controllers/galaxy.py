@@ -86,12 +86,26 @@ def getWebSpectrum(cube, x, y, xyorig=None, byradec=False):
 def getWebMap(cube, parameter='emline_gflux', channel='ha_6564',
               bintype=None, template=None):
     ''' Get and format a map for the web '''
-    name = '{0}_{1}'.format(parameter.lower(), channel)
+    if channel:
+        name = '{0}_{1}'.format(parameter.lower(), channel)
+    else:
+        name = '{0}'.format(parameter.lower())
+
     webmap = None
     try:
         maps = cube.getMaps(plateifu=cube.plateifu, mode='local',
                             bintype=bintype, template=template)
         data = maps.getMap(parameter, channel=channel)
+
+        # correct the stellar_sigma or emline_gsigma maps
+        if parameter == 'stellar_sigma' or parameter == 'emline_gsigma':
+            try:
+                data = data.inst_sigma_correction()
+            except MarvinError as e:
+                pass
+            else:
+                name = 'Corrected {0}'.format(name)
+
     except Exception as e:
         mapmsg = 'Could not get map: {0}'.format(e)
     else:
@@ -141,7 +155,8 @@ def buildMapDict(cube, params, dapver, bintemp=None):
     anybad = [m['data'] is None for m in mapdict]
     if any(anybad):
         bad_params = ', '.join([p for i, p in enumerate(params) if anybad[i]])
-        raise MarvinError('Could not get map for: {0}.  Please select another.'.format(bad_params))
+        raise MarvinError('Could not get map for: {0}.  Please select another.'.format(bad_params),
+                          ignore_git=True)
 
     return mapdict
 
@@ -474,7 +489,7 @@ class Galaxy(BaseWebView):
             try:
                 mapdict = buildMapDict(cube, params, self._dapver, bintemp=bintemp)
             except Exception as e:
-                output = {'mapmsg': e.message, 'status': -1, 'maps': None}
+                output = {'mapmsg': str(e), 'status': -1, 'maps': None}
             else:
                 output = {'mapmsg': None, 'status': 1, 'maps': mapdict}
         return jsonify(result=output)
@@ -510,7 +525,7 @@ class Galaxy(BaseWebView):
                 nsadict, nsacols = make_nsa_dict(cube.nsa)
                 nsa = {args.get('plateifu'): nsadict}
             except Exception as e:
-                output = {'nsamsg': e.message, 'status': -1, 'nsa': None}
+                output = {'nsamsg': str(e), 'status': -1, 'nsa': None}
             else:
                 # get the sample nsa parameters
                 try:
