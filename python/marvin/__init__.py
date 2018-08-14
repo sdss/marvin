@@ -139,10 +139,11 @@ class MarvinConfig(object):
 
         self._custom_config = config
 
+        # try moving this into check_config
         # If the configuration file included a default release, we set it now
-        if 'default_release' in self._custom_config and self._custom_config['default_release']:
+        #if 'default_release' in self._custom_config and self._custom_config['default_release']:
             # We set _release because at this point the available versions are not yet set.
-            self._release = self._custom_config['default_release']
+            #self._release = self._custom_config['default_release']
 
     def _checkPaths(self, name):
         ''' Check for the necessary path existence.
@@ -408,11 +409,17 @@ class MarvinConfig(object):
         # update the allowed releases
         self._update_releases()
 
+        # check for a default release from the custom config
+        default = 'default_release' in self._custom_config and self._custom_config['default_release']
+
         # Check for release version and if in allowed list
         latest = self._get_latest_release(mpl_only=self.access == 'collab')
         if not self.release:
-            log.info('No release version set. Setting default to {0}'.format(latest))
-            self.setRelease(latest)
+            if default:
+                self.setRelease(self._custom_config['default_release'])
+            else:
+                log.info('No release version set. Setting default to {0}'.format(latest))
+                self.setRelease(latest)
         elif self.release and self.release not in self._allowed_releases:
             # this toggles to latest DR when switching to public
             warnings.warn('Release {0} is not in the allowed releases.  '
@@ -635,24 +642,24 @@ class MarvinConfig(object):
         # yield the value (a release)
         yield value
 
-        # return early if the tree isn't set up or _release is None
+        # check if the tree isn't set up or _release is None
         # this should only occur during the initial imports
-        if not hasattr(self, '_tree') or self._release is None:
-            return
+        nullinit = not hasattr(self, '_tree') or self._release is None
 
         # set tree_config
         tree_config = 'sdsswork' if 'MPL' in value else value.lower() if 'DR' in value else None
 
         # replant the tree
-        if is_different:
+        if is_different and not nullinit:
             if (relchange and self.access == 'collab') or stilldr or topublic or tocollab:
                 self._tree.replant_tree(tree_config)
-
+        print('setting sasurl')
         # switch the API url depending on release
         if 'MPL' in value:
             self.switchSasUrl('utah')
         elif 'DR' in value:
             self.switchSasUrl('utah', public=True)
+        print('blag', self.sasurl)
 
     def login(self, refresh=None):
         ''' Login with netrc credentials to receive an API token
