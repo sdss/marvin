@@ -13,7 +13,7 @@ import sys
 from collections import OrderedDict
 
 # Set the Marvin version
-__version__ = '2.2.6'
+__version__ = '2.2.7dev'
 # try:
 #     from marvin.version import get_version
 # except ImportError as e:
