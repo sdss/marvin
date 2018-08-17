@@ -46,7 +46,7 @@ See :meth:`~marvin.tools.maps.Maps.get_bpt` for the API reference of how to gene
     masks, fig, axes = maps.get_bpt()
 
     # save the plot
-    fig.savefig('bpt.png')
+    # fig.savefig('bpt.png')
 
     # make a BPT classification without OI
     masks, fig, axes = maps.get_bpt(use_oi=False)
@@ -395,7 +395,7 @@ Alternatively, you may want to grab one of the axes and modify it, then saving i
     >>> ax.set_title('A custom plot')
     >>> for text in ax.texts:
     >>>     text.set_fontsize(20)
-    >>> new_fig.savefig('nii_new.png')
+    >>> # new_fig.savefig('nii_new.png')
 
 Here we have added a title to the plot, modified the font size of all the texts in the axes, and then saved it as a new image.
 
