@@ -5,7 +5,7 @@
 # @Date: 2017-11-08
 # @Filename: maps.py
 # @License: BSD 3-clause (http://www.opensource.org/licenses/BSD-3-Clause)
-# @Last modified by: José Sánchez-Gallego (gallegoj@uw.edu)
+# @Last modified by:   Brian Cherinka
 # @Last modified time: 2018-08-12 02:41:56
 
 
@@ -220,7 +220,7 @@ class Maps(MarvinToolsClass, NSAMixIn, DAPallMixIn, GetApertureMixIn):
 
         plate, ifu = self.plateifu.split('-')
 
-        if self.datamodel.release == 'MPL-4':
+        if self.release == 'MPL-4':
             niter = int('{0}{1}'.format(self.template.n, self.bintype.n))
             params = dict(drpver=self._drpver, dapver=self._dapver,
                           plate=plate, ifu=ifu, bintype=self.bintype.name,
