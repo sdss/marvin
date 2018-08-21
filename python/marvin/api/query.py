@@ -476,11 +476,22 @@ class QueryView(BaseView):
 
         '''
         paramdisplay = args.pop('paramdisplay', 'all')
-        q = Query(mode='local', release=args['release'])
         if paramdisplay == 'all':
-            params = q.get_available_params('all')
+            params = Query.get_available_params('all', release=args['release'])
         elif paramdisplay == 'best':
             params = bestparams
+        self.results['data'] = params
+        self.results['status'] = 1
+        output = jsonify(self.results)
+        return output
+
+    @route('/getallparams/', methods=['GET', 'POST'], endpoint='getallparams')
+    def getall(self):
+        ''' Retrieve all the query parameters for all releases at once '''
+        params = {}
+        releases = config._allowed_releases.keys()
+        for release in releases:
+            params[release] = Query.get_available_params('all', release=release)
         self.results['data'] = params
         self.results['status'] = 1
         output = jsonify(self.results)

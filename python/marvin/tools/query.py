@@ -6,10 +6,11 @@
 # @Author: Brian Cherinka
 # @Date:   2018-08-04 20:09:38
 # @Last modified by:   Brian Cherinka
-# @Last Modified time: 2018-08-08 18:23:26
+# @Last Modified time: 2018-08-21 00:48:57
 
 from __future__ import print_function, division, absolute_import, unicode_literals
 
+import os
 import re
 import warnings
 import datetime
@@ -21,19 +22,28 @@ import numpy as np
 import six
 from marvin import config
 from marvin.api.api import Interaction
+from marvin.core import marvin_pickle
 from marvin.core.exceptions import MarvinError, MarvinUserWarning
-from marvin.tools.results import Results
+from marvin.tools.results import Results, remote_mode_only
+from marvin.utils.general import temp_setattr
+from marvin.utils.datamodel.query import datamodel
+from marvin.utils.datamodel.query.base import query_params
 
 if config.db:
     from marvin import marvindb
-    from marvin.utils.datamodel.query import datamodel
-    from marvin.utils.datamodel.query.base import query_params
+    # from marvin.utils.datamodel.query import datamodel
+    # from marvin.utils.datamodel.query.base import query_params
     from marvin.utils.general.structs import string_folding_wrapper
     from sqlalchemy import bindparam, func
     from sqlalchemy.dialects import postgresql
     from sqlalchemy.orm import aliased
     from sqlalchemy.sql.expression import desc
     from sqlalchemy_boolean_search import (BooleanSearchException, parse_boolean_search)
+
+try:
+    import cPickle as pickle
+except:
+    import pickle
 
 
 __all__ = ['Query', 'doQuery']
@@ -161,9 +171,11 @@ class Query(object):
         self.limit = limit
         self.verbose = verbose
 
+        self.datamodel = datamodel[self.release]
+
         # add db specific parameters
         if config.db:
-            self.datamodel = datamodel[self.release]
+            #self.datamodel = datamodel[self.release]
             self._marvinform = self.datamodel._marvinform
             self.session = marvindb.session
             self._modelgraph = marvindb.modelgraph
@@ -694,7 +706,8 @@ class Query(object):
             sql = self.search_filter
             return sql
 
-    def get_available_params(self, paramdisplay='best'):
+    @classmethod
+    def get_available_params(cls, paramdisplay='best', release=None):
         ''' Retrieve the available parameters to query on
 
         Retrieves a list of the available query parameters. Can either
@@ -711,10 +724,84 @@ class Query(object):
         assert paramdisplay in ['all', 'best'], 'paramdisplay can only be either "all" or "best"!'
 
         if paramdisplay == 'all':
-            qparams = self.datamodel.groups.list_params('full')
+            qparams = datamodel[release].groups.list_params('full')
         elif paramdisplay == 'best':
             qparams = query_params
         return qparams
+
+    @remote_mode_only
+    def save(self, path=None, overwrite=False):
+        ''' Save the query as a pickle object
+
+        Parameters:
+            path (str):
+                Filepath and name of the pickled object
+            overwrite (bool):
+                Set this to overwrite an existing pickled file
+
+        Returns:
+            path (str):
+                The filepath and name of the pickled object
+
+        '''
+
+        sf = self.search_filter.replace(' ', '') if self.search_filter else 'anon'
+        # set the path
+        if not path:
+            path = os.path.expanduser('~/marvin_query_{0}.mpf'.format(sf))
+
+        # check for file extension
+        if not os.path.splitext(path)[1]:
+            path = os.path.join(path + '.mpf')
+
+        path = os.path.realpath(path)
+
+        if os.path.isdir(path):
+            raise MarvinError('path must be a full route, including the filename.')
+
+        if os.path.exists(path) and not overwrite:
+            warnings.warn('file already exists. Not overwriting.', MarvinUserWarning)
+            return
+
+        dirname = os.path.dirname(path)
+        if not os.path.exists(dirname):
+            os.makedirs(dirname)
+
+        # set bad pickled attributes to None
+        attrs = ['session', 'datamodel', 'marvinform', 'myform', '_modelgraph']
+
+        # pickle the query
+        try:
+            with temp_setattr(self, attrs, None):
+                pickle.dump(self, open(path, 'wb'), protocol=-1)
+        except Exception as ee:
+            if os.path.exists(path):
+                os.remove(path)
+            raise MarvinError('Error found while pickling: {0}'.format(str(ee)))
+
+        return path
+
+    @classmethod
+    def restore(cls, path, delete=False):
+        ''' Restore a pickled object
+
+        Parameters:
+            path (str):
+                The filename and path to the pickled object
+
+            delete (bool):
+                Turn this on to delete the pickled fil upon restore
+
+        Returns:
+            Query (instance):
+                The instantiated Marvin Query class
+        '''
+        obj = marvin_pickle.restore(path, delete=delete)
+        obj._modelgraph = marvindb.modelgraph
+        obj.session = marvindb.session
+        obj.datamodel = datamodel[obj._release]
+        obj.marvinform = obj.datamodel._marvinform
+        return obj
 
     #
     # This section describes the methods that run for local database queries

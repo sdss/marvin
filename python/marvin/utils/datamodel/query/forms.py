@@ -10,23 +10,21 @@ Revision History:
     2016-03-02 - generalized the form to build all forms - B. Cherinka
 '''
 
-from __future__ import print_function
-from __future__ import division
+from __future__ import division, print_function
+
+import re
 import sys
-from collections import OrderedDict
-from marvin import marvindb, config
-from marvin.core.exceptions import MarvinError, MarvinUserWarning
-from marvin.utils.general.structs import FuzzyDict, FuzzyList
-from collections import defaultdict
-from wtforms import StringField, Field, FieldList, validators
-from wtforms import SelectMultipleField, ValidationError, SubmitField
+import warnings
+from collections import OrderedDict, defaultdict
+from sqlalchemy.ext.hybrid import hybrid_method, hybrid_property
+from sqlalchemy.inspection import inspect as sa_inspect
+from sqlalchemy.orm.attributes import InstrumentedAttribute
+from wtforms import Field, SelectMultipleField, StringField, SubmitField, ValidationError, validators
 from wtforms.widgets import TextInput
 from wtforms_alchemy import model_form_factory
-from sqlalchemy.inspection import inspect as sa_inspect
-from sqlalchemy.ext.hybrid import hybrid_property, hybrid_method
-from sqlalchemy.orm.attributes import InstrumentedAttribute
-import re
-import warnings
+from marvin import config, marvindb
+from marvin.core.exceptions import MarvinUserWarning
+from marvin.utils.general.structs import FuzzyDict
 
 # flask_wtf does not work locally - OUTSIDE APPLICATON CONTEXT;
 # need some kind of toggle for web version and not???
@@ -356,6 +354,7 @@ class MarvinForm(object):
         '''
 
         self._release = kwargs.get('release', config.release)
+        self.verbose = kwargs.get('verbose', False)
         self._modelclasses = FuzzyDict(marvindb.buildUberClassDict(release=self._release))
         self._param_form_lookup = ParamFormLookupDict(**kwargs)
         self._param_fxn_lookup = ParamFxnLookupDict()
@@ -383,7 +382,8 @@ class MarvinForm(object):
             try:
                 newclass = formClassFactory(classname, val, ModelForm)
             except Exception as e:
-                warnings.warn('class {0} not Formable'.format(key), MarvinUserWarning)
+                if self.verbose:
+                    warnings.warn('class {0} not Formable'.format(key), MarvinUserWarning)
             else:
                 self.__setattr__(classname, newclass)
                 self._loadParams(newclass)
@@ -400,8 +400,7 @@ class MarvinForm(object):
 
         mapper = sa_inspect(model)
         for key, item in mapper.all_orm_descriptors.items():
-            if isinstance(item, hybrid_property) or \
-               isinstance(item, hybrid_method):
+            if isinstance(item, (hybrid_property, hybrid_method)):
                 key = key
             elif isinstance(item, InstrumentedAttribute):
                 key = item.key
@@ -459,8 +458,3 @@ class MarvinForm(object):
             table_class = None
 
         return table_class
-
-
-
-
-

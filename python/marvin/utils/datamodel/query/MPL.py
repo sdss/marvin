@@ -6,13 +6,14 @@
 # @Author: Brian Cherinka
 # @Date:   2017-09-20 13:24:13
 # @Last modified by:   Brian Cherinka
-# @Last Modified time: 2018-07-30 14:41:50
+# @Last Modified time: 2018-08-20 23:26:28
 
-from __future__ import print_function, division, absolute_import
-from .base import QueryDataModel
+from __future__ import absolute_import, division, print_function
+
 import copy
 from marvin.utils.datamodel.dap import datamodel
 from marvin.utils.datamodel.query.base import query_params
+from .base import QueryDataModel
 
 
 def groups():
