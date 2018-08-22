@@ -171,14 +171,14 @@ class QueryDataModel(object):
             param_best_match = self.parameters[value]
             if param_best_match:
                 return param_best_match
-        except KeyError:
+        except (KeyError, ValueError):
             pass
 
         try:
             group_best_match = self.groups[value]
             if group_best_match:
                 return group_best_match
-        except KeyError:
+        except (KeyError, ValueError):
             pass
 
         raise ValueError('too ambiguous input {!r}'.format(value))
