@@ -6,7 +6,7 @@
 # @Author: Brian Cherinka
 # @Date:   2018-08-04 20:09:38
 # @Last modified by:   Brian Cherinka
-# @Last Modified time: 2018-08-21 00:48:57
+# @Last Modified time: 2018-08-22 01:54:30
 
 from __future__ import print_function, division, absolute_import, unicode_literals
 
@@ -31,8 +31,6 @@ from marvin.utils.datamodel.query.base import query_params
 
 if config.db:
     from marvin import marvindb
-    # from marvin.utils.datamodel.query import datamodel
-    # from marvin.utils.datamodel.query.base import query_params
     from marvin.utils.general.structs import string_folding_wrapper
     from sqlalchemy import bindparam, func
     from sqlalchemy.dialects import postgresql
@@ -161,6 +159,7 @@ class Query(object):
         self.params = []
         self._nexus = nexus
         self._results = None
+        self.datamodel = datamodel[self.release]
 
         # optional parameters
         self.return_all = return_all
@@ -171,11 +170,8 @@ class Query(object):
         self.limit = limit
         self.verbose = verbose
 
-        self.datamodel = datamodel[self.release]
-
         # add db specific parameters
         if config.db:
-            #self.datamodel = datamodel[self.release]
             self._marvinform = self.datamodel._marvinform
             self.session = marvindb.session
             self._modelgraph = marvindb.modelgraph
@@ -445,6 +441,10 @@ class Query(object):
             else:
                 param = self.datamodel.parameters.get_full_from_remote(self.sort)
             sortparam = self._marvinform._param_form_lookup.mapToColumn(param)
+
+            # check if sort param actually in the parameter list
+            if sortparam.class_ not in self._modellist:
+                return
 
             # If order is specified, then do the sort
             if self.order:
@@ -826,7 +826,7 @@ class Query(object):
 
         # set some initial defaults
         assert isinstance(self.default_params, (list, type(None))), 'default_params must be a list'
-        defaults = self.default_params or ['cube.mangaid', 'cube.plateifu']
+        defaults = self.default_params or (['cube.mangaid', 'cube.plateifu'] if self.nexus == 'cube' else [])
 
         if self.return_type == 'cube':
             defaults.extend(['cube.mangaid', 'cube.plateifu'])
@@ -965,15 +965,40 @@ class Query(object):
         ''' Creates a list of database ModelClasses from a list of parameter names '''
 
         # adjust the default parameters for any necessary DAP
-        if self._check_for(self.params, tables=['spaxelprop', 'modelspaxel']):
-            dapcols = ['spaxelprop.x', 'spaxelprop.y', 'bintype.name', 'template.name']
-            self.default_params.extend(dapcols)
-            self.params.extend(dapcols)
+        self._add_default_params(['spaxelprop.x', 'spaxelprop.y', 'bintype.name', 'template.name'],
+                                 tables=['spaxelprop', 'modelspaxel'])
+
+        # adjust the default parameters for any necessary DAP
+        self._add_default_params(['bintype.name', 'template.name'], tables=['dapall'])
+
+        # adjust the default parameters for any necessary DAP
+        self._add_default_params(['obsinfo.expnum', 'obsinfo.mgdpos'], tables=['obsinfo'])
 
         self.params = [item for item in self.params if item in set(self.params)]
+
+        # create the list of parameter attributes
         queryparams = self._marvinform._param_form_lookup.mapToColumn(self.params)
+        if not isinstance(queryparams, list):
+            queryparams = [queryparams]
+
+        # create a list of key names maintaining the column order
         self._query_params = [item for item in queryparams if item in set(queryparams)]
         self._query_params_order = [q.key for q in self._query_params]
+
+    def _add_default_params(self, columns, tables=None):
+        ''' Add new default parameters into the query
+
+        Parameters:
+            columns (list):
+                A list of column names to add
+            tables (list):
+                A list of table names to check exists within the query
+        '''
+
+        # adjust the default parameters for any necessary columns
+        if self._check_for(self.params, tables=tables):
+            self.default_params.extend(columns)
+            self.params.extend(columns)
 
     def _create_base_query(self):
         ''' Create the base query session object.  Passes in a list of parameters defined in
@@ -1083,6 +1108,7 @@ class Query(object):
 
     def _build_filter(self):
         ''' Builds a filter condition to load into sqlalchemy filter. '''
+        import ipdb; ipdb.set_trace()
         try:
             self.filter = self._parsed.filter(self._modellist)
         except BooleanSearchException as e:
@@ -1315,8 +1341,8 @@ class Query(object):
         ''' Checks if the query is on the DAPall table, and regroup the parameters plateifu'''
 
         isdapall = self._check_query('dapall')
-        if isdapall:
-            self.query = self._group_by()
+        # if isdapall:
+        #     self.query = self._group_by()
 
     def _radial_query(self, fxn, **kwargs):
         ''' Runs a radial cone search around an RA, Dec
