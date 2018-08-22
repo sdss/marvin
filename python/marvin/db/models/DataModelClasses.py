@@ -17,7 +17,7 @@ from sqlalchemy.engine import reflection
 from sqlalchemy.dialects.postgresql import *
 from sqlalchemy.types import Float, Integer, String, JSON
 from sqlalchemy.orm.session import Session
-from sqlalchemy import select, func  # for aggregate, other functions
+from sqlalchemy import select, func, and_  # for aggregate, other functions
 from sqlalchemy.ext.hybrid import hybrid_property, hybrid_method
 from sqlalchemy.sql import column
 from sqlalchemy_utils import Timestamp
@@ -287,43 +287,45 @@ class Cube(Base, ArrayOps):
 
         return labels
 
+    def getQualBits(self, stage='3d'):
+        ''' get quality flags '''
+
+        col = 'DRP2QUAL' if stage == '2d' else 'DRP3QUAL'
+        hdr = self.header_to_dict()
+        bits = hdr.get(col, None)
+        return bits
+
     def getQualFlags(self, stage='3d'):
         ''' get quality flags '''
 
         name = 'MANGA_DRP2QUAL' if stage == '2d' else 'MANGA_DRP3QUAL'
-        col = 'DRP2QUAL' if stage == '2d' else 'DRP3QUAL'
-        try:
-            bits = self.header_to_dict()[col]
-        except:
-            bits = None
+        bits = self.getTargBits(stage=stage)
 
         if bits:
-            labels = self.getFlags(bits, name)
-            return labels
+            return self.getFlags(bits, name)
         else:
             return None
 
-    def getTargFlags(self, type=1):
+    def getTargFlags(self, targtype=1):
         ''' get target flags '''
 
-        name = 'MANGA_TARGET1' if type == 1 else 'MANGA_TARGET2' if type == 2 else 'MANGA_TARGET3'
-        hdr = self.header_to_dict()
-        istarg = 'MNGTARG1' in hdr.keys()
-        if istarg:
-            col = 'MNGTARG1' if type == 1 else 'MNGTARG2' if type == 2 else 'MNGTARG3'
-        else:
-            col = 'MNGTRG1' if type == 1 else 'MNGTRG2' if type == 2 else 'MNGTRG3'
-
-        try:
-            bits = hdr[col]
-        except:
-            bits = None
-
+        name = 'MANGA_TARGET1' if targtype == 1 else 'MANGA_TARGET2' if targtype == 2 else 'MANGA_TARGET3'
+        bits = self.getTargBits(targtype=targtype)
         if bits:
-            labels = self.getFlags(bits, name)
-            return labels
+            return self.getFlags(bits, name)
         else:
             return None
+
+    def getTargBits(self, targtype=1):
+        ''' get target bits '''
+
+        assert targtype in [1,2,3], 'target type can only 1, 2 or 3'
+
+        hdr = self.header_to_dict()
+        newcol = 'MNGTARG{0}'.format(targtype)
+        oldcol = 'MNGTRG{0}'.format(targtype)
+        bits = hdr.get(newcol, hdr.get(oldcol, None))
+        return bits
 
     def get3DCube(self, extension='flux'):
         """Returns a 3D array of ``extension`` from the cube spaxels.
@@ -397,6 +399,54 @@ class Cube(Base, ArrayOps):
             return True
         else:
             return False
+
+
+def set_quality(stage):
+    ''' produces cube quality flag '''
+
+    col = 'DRP2QUAL' if stage == '2d' else 'DRP3QUAL'
+    label = 'cubequal{0}'.format(stage)
+    kwarg = 'DRP{0}QUAL'.format(stage[0])
+
+    @hybrid_property
+    def quality(self):
+        bits = self.getQualBits(stage=stage)
+        return int(bits)
+
+    @quality.expression
+    def quality(cls):
+        return select([FitsHeaderValue.value.cast(Integer)]).\
+                      where(and_(FitsHeaderKeyword.pk==FitsHeaderValue.fits_header_keyword_pk,
+                                 FitsHeaderKeyword.label.ilike(kwarg),
+                                 FitsHeaderValue.cube_pk==cls.pk)).\
+                      label(label)
+    return quality
+
+
+def set_manga_target(targtype):
+    ''' produces manga_target flags '''
+
+    label = 'mngtrg{0}'.format(targtype)
+    kwarg = 'MNGT%RG{0}'.format(targtype)
+
+    @hybrid_property
+    def target(self):
+        bits = self.getTargBits(targtype=targtype)
+        return int(bits)
+
+    @target.expression
+    def target(cls):
+        return select([FitsHeaderValue.value.cast(Integer)]).\
+                      where(and_(FitsHeaderKeyword.pk==FitsHeaderValue.fits_header_keyword_pk,
+                                 FitsHeaderKeyword.label.ilike(kwarg),
+                                 FitsHeaderValue.cube_pk==cls.pk)).\
+                      label(label)
+    return target
+
+setattr(Cube, 'manga_target1', set_manga_target(1))
+setattr(Cube, 'manga_target2', set_manga_target(2))
+setattr(Cube, 'manga_target3', set_manga_target(3))
+setattr(Cube, 'quality', set_quality('3d'))
 
 
 class Wavelength(Base, ArrayOps):
