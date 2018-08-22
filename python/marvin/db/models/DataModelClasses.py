@@ -15,7 +15,7 @@ from sqlalchemy.orm import relationship, deferred
 from sqlalchemy.schema import Column
 from sqlalchemy.engine import reflection
 from sqlalchemy.dialects.postgresql import *
-from sqlalchemy.types import Float, Integer, String
+from sqlalchemy.types import Float, Integer, String, JSON
 from sqlalchemy.orm.session import Session
 from sqlalchemy import select, func  # for aggregate, other functions
 from sqlalchemy.ext.hybrid import hybrid_property, hybrid_method
@@ -636,6 +636,12 @@ class ObsInfo(Base):
     __tablename__ = 'obsinfo'
     __table_args__ = {'autoload': True, 'schema': 'mangadatadb'}
 
+    _expnum = Column('expnum', String)
+
+    @hybrid_property
+    def expnum(self):
+        return func.trim(self._expnum)
+
     def __repr__(self):
         return '<ObsInfo (pk={0},cube={1})'.format(self.pk, self.cube)
 
@@ -783,6 +789,8 @@ class Plate(object):
 class CubeHeader(Base):
     __tablename__ = 'cube_header'
     __table_args__ = {'autoload': True, 'schema': 'mangaauxdb'}
+
+    header = Column(JSON)
 
     def __repr__(self):
         return '<CubeHeader (pk={0},cube={1})'.format(self.pk, self.cube)
