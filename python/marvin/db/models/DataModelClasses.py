@@ -3,38 +3,39 @@
 # -------------------------------------------------------------------
 # Import statements
 # -------------------------------------------------------------------
-import sys
-import os
 import math
+import os
 import re
+import sys
 from decimal import *
 from operator import *
-from astropy.io import fits
 
-from sqlalchemy.orm import relationship, deferred
-from sqlalchemy.schema import Column
-from sqlalchemy.engine import reflection
-from sqlalchemy.dialects.postgresql import *
-from sqlalchemy.types import Float, Integer, String, JSON
-from sqlalchemy.orm.session import Session
-from sqlalchemy import select, func, and_  # for aggregate, other functions
-from sqlalchemy.ext.hybrid import hybrid_property, hybrid_method
-from sqlalchemy.sql import column
-from sqlalchemy_utils import Timestamp
-from marvin.db.ArrayUtils import ARRAY_D
-from marvin.core.caching_query import RelationshipCache
+import marvin.db.models.SampleModelClasses as sampledb
 import numpy as np
+from astropy.io import fits
+from flask_login import UserMixin
+from marvin.core.caching_query import RelationshipCache
+from marvin.db.ArrayUtils import ARRAY_D
+from marvin.db.database import db
+from sqlalchemy import and_, func, select  # for aggregate, other functions
+from sqlalchemy.dialects.postgresql import *
+from sqlalchemy.engine import reflection
+from sqlalchemy.ext.hybrid import hybrid_method, hybrid_property
+
+from sqlalchemy.orm import configure_mappers, deferred, relationship
+from sqlalchemy.orm.session import Session
+from sqlalchemy.schema import Column
+from sqlalchemy.sql import column
+from sqlalchemy.types import JSON, Float, Integer, String
+from sqlalchemy_utils import Timestamp
+from werkzeug.security import check_password_hash, generate_password_hash
 
 try:
     from sdss_access.path import Path
 except ImportError as e:
     Path = None
 
-from marvin.db.database import db
-import marvin.db.models.SampleModelClasses as sampledb
 
-from flask_login import UserMixin
-from werkzeug.security import generate_password_hash, check_password_hash
 
 # ========================
 # Define database classes
@@ -940,7 +941,7 @@ CubeHeader.cube = relationship(Cube, backref='hdr')
 # ---------------------------------------------------------
 # Test that all relationships/mappings are self-consistent.
 # ---------------------------------------------------------
-from sqlalchemy.orm import configure_mappers
+
 try:
     configure_mappers()
 except RuntimeError as error:
