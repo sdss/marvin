@@ -499,7 +499,7 @@ class RssFiber(Base, ArrayOps):
     predisp = deferred(Column(ARRAY_D(Float, zero_indexes=True)))
 
     def __repr__(self):
-        return '<RssFiber (pk={0})>'.format(self.pk)
+        return '<RssFiber (pk={0}, expnum={1}, mjd={2}, fiber={3})>'.format(self.pk, self.exposure_no, self.mjd, self.fiber.fiberid)
 
 
 class PipelineInfo(Base):
