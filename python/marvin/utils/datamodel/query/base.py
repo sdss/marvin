@@ -25,6 +25,7 @@ from sqlalchemy_utils import get_hybrid_properties
 from marvin import config
 from marvin.core.exceptions import MarvinError, MarvinUserWarning
 from marvin.utils.datamodel import DataModelList
+from marvin.utils.datamodel.maskbit import get_maskbits
 from marvin.utils.general.structs import FuzzyList
 if config.db:
     from marvin.utils.datamodel.query.forms import MarvinForm
@@ -51,6 +52,7 @@ class QueryDataModel(object):
         self.aliases = aliases
         self._exclude = exclude
         self.dap_datamodel = kwargs.get('dapdm', None)
+        self.bitmasks = get_maskbits(self.release)
         self._mode = kwargs.get('mode', config.mode)
         self._get_parameters()
         self._check_datamodels()

@@ -6,7 +6,7 @@
 # @Author: Brian Cherinka
 # @Date:   2018-08-04 20:09:38
 # @Last modified by:   Brian Cherinka
-# @Last Modified time: 2018-08-22 01:54:30
+# @Last Modified time: 2018-08-26 19:36:33
 
 from __future__ import print_function, division, absolute_import, unicode_literals
 
@@ -32,7 +32,7 @@ from marvin.utils.datamodel.query.base import query_params
 if config.db:
     from marvin import marvindb
     from marvin.utils.general.structs import string_folding_wrapper
-    from sqlalchemy import bindparam, func
+    from sqlalchemy import bindparam, func, and_
     from sqlalchemy.dialects import postgresql
     from sqlalchemy.orm import aliased
     from sqlalchemy.sql.expression import desc
@@ -140,9 +140,10 @@ class Query(object):
 
     '''
 
-    def __init__(self, search_filter=None, return_params=None, return_type=None, mode=None,
-                 return_all=False, default_params=None, nexus='cube', sort='mangaid', order='asc',
-                 caching=True, limit=100, count_threshold=1000, verbose=False, **kwargs):
+    def __init__(self, search_filter=None, return_params=None, return_type=None, targets=None,
+                 quality=None, mode=None, return_all=False, default_params=None, nexus='cube',
+                 sort='mangaid', order='asc', caching=True, limit=100, count_threshold=1000,
+                 verbose=False, **kwargs):
 
         # basic parameters
         self.release = kwargs.pop('release', config.release)
@@ -155,6 +156,8 @@ class Query(object):
         self.return_params = return_params
         self.return_type = return_type
         self.default_params = default_params
+        self.targets = targets
+        self.quality = quality
         self.filter_params = {}
         self.params = []
         self._nexus = nexus
@@ -918,7 +921,7 @@ class Query(object):
         '''
 
         # Triggers for only one filter and it is a function condition
-        if hasattr(parsed, 'fxn'):
+        if hasattr(parsed, 'fxn_name'):
             parsed.functions = [parsed]
 
         self._parsed = parsed
@@ -1084,6 +1087,10 @@ class Query(object):
         if not isinstance(self.filter, type(None)):
             self.query = self.query.filter(self.filter)
 
+        # check for targets and quality flags to add in the filter
+        self._check_targets()
+        #self._check_quality()
+
     def _validate_forms(self):
         ''' Validate all the data in the forms '''
 
@@ -1108,11 +1115,96 @@ class Query(object):
 
     def _build_filter(self):
         ''' Builds a filter condition to load into sqlalchemy filter. '''
-        import ipdb; ipdb.set_trace()
         try:
             self.filter = self._parsed.filter(self._modellist)
         except BooleanSearchException as e:
             raise MarvinError('Your boolean expression could not me mapped to model: {0}'.format(e))
+
+    def _check_targets(self):
+        ''' Check for any target flags to add into the filter '''
+
+        if self.targets:
+            targets = [self.targets] if not isinstance(self.targets, list) else self.targets
+            targets = [t.upper() for t in targets]
+
+            # check for ancillary targets
+            ancillaries = [a.upper() for a in self.datamodel.bitmasks['MANGA_TARGET3'].schema.label]
+            anc_labels = list(set(targets) & set(ancillaries))
+            targets = list(set(targets) - set(ancillaries))
+
+            # build the string filter
+            target_filter = ''
+            for target in targets:
+                target_filter = self._create_target_filter(target, target_filter=target_filter)
+
+            # add in any ancillary targets
+            if anc_labels:
+                target_filter = self._create_target_filter('ancillary', target_filter=target_filter, ancillaries=anc_labels)
+
+            # parse the filter and add to the main
+            parsed = parse_boolean_search(target_filter)
+            tf = parsed.filter(marvindb.datadb)
+            self.query = self.query.filter(and_(tf))
+
+    def _create_target_filter(self, target, target_filter='', ancillaries=None):
+        ''' Create a string target bitwise filter
+
+        Creates a string manga_target filter bitwise filter.  If passed an existing
+        target_filter string, it will append the new filter as an "or" boolean condition.
+        Example filter syntax is 'cube.manga_target1 & 5120'
+
+        Parameters:
+            target (str): The name of the target sample to load
+            target_filter (str): The current existing target filter string
+
+        Returns:
+            A string filter condition
+
+        '''
+        target = target.lower()
+        defaults = ['primary', 'color-enhanced', 'secondary', 'ancillary', 'stellar library', 'flux standards']
+        #options = defaults + ancillaries
+        assert target in defaults, 'target list can only contain one of {0}'.format(defaults)
+
+        if 'primary' == target:
+            name = 'manga_target1'
+            value = self.datamodel.bitmasks['MANGA_TARGET1'].labels_to_value(['PRIMARY_v1_2_0', 'COLOR_ENHANCED_v1_2_0'])
+        elif 'color-enhanced' == target:
+            name = 'manga_target1'
+            value = self.datamodel.bitmasks['MANGA_TARGET1'].labels_to_value(['COLOR_ENHANCED_v1_2_0'])
+        elif 'ancillary' == target:
+            name = 'manga_target3'
+            value = self.datamodel.bitmasks['MANGA_TARGET3'].labels_to_value(ancillaries) if ancillaries else 0
+        elif 'stellar library' == target:
+            name = 'manga_target2'
+            value = self.datamodel.bitmasks['MANGA_TARGET2'].labels_to_value(['COLOR_ENHANCED_v1_2_0'])
+        elif 'flux standards' == target:
+            name = 'manga_target2'
+            value = self.datamodel.bitmasks['MANGA_TARGET2'].labels_to_value(['COLOR_ENHANCED_v1_2_0'])
+
+        # add the column to the query
+        self._add_columns('cube.{0}'.format(name))
+
+        base = ' or ' if target_filter else ''
+        op = '>' if target == 'ancillary' else '&'
+        target_filter += '{0}cube.{1} {2} {3}'.format(base, name, op, value)
+        return target_filter
+
+    def _add_columns(self, columns):
+        ''' Add a column(s) to the query
+
+        Parameters:
+            columns (list): A list of string column names to add to the query
+        '''
+
+        # get new columns not already added
+        columns = [columns] if not isinstance(columns, list) else columns
+        new_columns = list(set(columns) - set(self.params))
+        if any(new_columns):
+            colattrs = self._marvinform._param_form_lookup.mapToColumn([for c in new_columns])
+            colattrs = [colattrs] if not isinstance(colattrs, list) else colattrs
+            self.query = self.query.add_columns(*colattrs)
+            self.params.extend(new_columns)
 
     def _add_pipeline(self):
         ''' Adds the DRP and DAP Pipeline Info into the Query '''
@@ -1213,14 +1305,14 @@ class Query(object):
     #
     def _run_functional_queries(self):
         ''' Checks for functional filter conditions and runs them '''
-        print('functions', self._parsed.functions)
+
         # check for additional modifier criteria
         if self._parsed.functions:
             # loop over all functions
             for fxn in self._parsed.functions:
                 # look up the function name in the marvinform dictionary
                 try:
-                    methodname = self._marvinform._param_fxn_lookup[fxn.fxnname]
+                    methodname = self._marvinform._param_fxn_lookup[fxn.fxn_name]
                 except KeyError as e:
                     raise MarvinError('Could not set function: {0}'.format(e))
                 else:
@@ -1371,9 +1463,7 @@ class Query(object):
         radius = float(fxn.value)
 
         # add RA, Dec as returned columns
-        self.params.extend(['cube.ra', 'cube.dec'])
-        self.query = self.query.add_column(self._marvinform._param_form_lookup.mapToColumn('cube.ra'))
-        self.query = self.query.add_column(self._marvinform._param_form_lookup.mapToColumn('cube.dec'))
+        self._add_columns(['cube.ra', 'cube.dec'])
 
         # Join to the main query
         cone_filter = func.q3c_radial_query(marvindb.datadb.Cube.ra, marvindb.datadb.Cube.dec, ra, dec, radius)
