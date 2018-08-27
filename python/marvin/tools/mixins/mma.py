@@ -6,7 +6,7 @@
 # @Author: Brian Cherinka
 # @Date:   2018-07-28 17:26:41
 # @Last modified by:   Brian Cherinka
-# @Last Modified time: 2018-08-20 23:16:07
+# @Last Modified time: 2018-08-27 13:57:09
 
 from __future__ import absolute_import, division, print_function
 
@@ -119,6 +119,9 @@ class MMAMixIn(object, six.with_metaclass(abc.ABCMeta)):
 
         assert self.mode in ['auto', 'local', 'remote']
         assert self.filename is not None or self.plateifu is not None, 'no inputs set.'
+
+        self.datamodel = None
+        self._set_datamodel()
 
         if self.mode == 'local':
             self._doLocal()
@@ -248,6 +251,10 @@ class MMAMixIn(object, six.with_metaclass(abc.ABCMeta)):
 
         ifus = ['{0}{1:02d}'.format(key, i + 1) for key, value in n_ifus.items() for i in range(value)]
         return ifus
+
+    def _set_datamodel(self):
+        """Sets the datamodel for this object. Must be overridden by each subclass."""
+        pass
 
     def _doLocal(self):
         """Tests if it's possible to load the data locally."""

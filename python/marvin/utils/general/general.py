@@ -1,61 +1,57 @@
 #!/usr/bin/env python
-# encoding: utf-8
+# -*- coding: utf-8 -*-
 #
-# @Author: José Sánchez-Gallego
-# @Date: Nov 1, 2017
+# @Author: Brian Cherinka, José Sánchez-Gallego, and Brett Andrews
+# @Date: 2017-11-01
 # @Filename: general.py
-# @License: BSD 3-Clause
-# @Copyright: José Sánchez-Gallego
+# @License: BSD 3-clause (http://www.opensource.org/licenses/BSD-3-Clause)
+#
+# @Last modified by: José Sánchez-Gallego (gallegoj@uw.edu)
+# @Last modified time: 2018-08-11 23:34:07
 
 
-from __future__ import division
-from __future__ import print_function
-from __future__ import absolute_import
+from __future__ import absolute_import, division, print_function
 
 import collections
+import contextlib
 import inspect
+import os
+import re
 import sys
 import warnings
-import contextlib
-import re
-import os
-
-from collections import OrderedDict
 from builtins import range
+from collections import OrderedDict
 from functools import wraps
 
-import numpy as np
-
-from scipy.interpolate import griddata
 import matplotlib.pyplot as plt
+import numpy as np
 import PIL
-
-from astropy import table
-from astropy import wcs
+from astropy import table, wcs
 from astropy.units.quantity import Quantity
-
-import marvin
-
-from marvin import log
-from marvin.core.exceptions import MarvinError, MarvinUserWarning
 from brain.core.exceptions import BrainError
 from flask_jwt_extended import get_jwt_identity
+from scipy.interpolate import griddata
+
+import marvin
+from marvin import log
+from marvin.core.exceptions import MarvinError, MarvinUserWarning
+
 
 try:
     from sdss_access import RsyncAccess, AccessError
-except ImportError as e:
+except ImportError:
     RsyncAccess = None
 
 try:
     from sdss_access.path import Path
-except ImportError as e:
+except ImportError:
     Path = None
 
 try:
     import pympler.summary
     import pympler.muppy
     import psutil
-except ImportError as e:
+except ImportError:
     pympler = None
     psutil = None
 
@@ -206,9 +202,8 @@ def getSpaxel(cube=True, maps=True, modelcube=True,
     _spaxels = []
     for ii in range(len(iCube[0])):
         _spaxels.append(
-            marvin.tools.spaxel.SpaxelBase(jCube[0][ii], iCube[0][ii],
-                                           cube=cube, maps=maps, modelcube=modelcube,
-                                           **kwargs))
+            marvin.tools.spaxel.Spaxel(jCube[0][ii], iCube[0][ii],
+                                       cube=cube, maps=maps, modelcube=modelcube, **kwargs))
 
     if len(_spaxels) == 1 and isScalar:
         return _spaxels[0]
@@ -1692,5 +1687,3 @@ def get_plates(drpver=None, drpall=None, release=None):
     drpall_table = get_drpall_table(drpver=drpver, drpall=drpall)
     plates = list(set(drpall_table['plate']))
     return plates
-
-

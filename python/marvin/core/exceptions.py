@@ -1,26 +1,24 @@
 #!/usr/bin/env python
-# encoding: utf-8
-"""
+# -*- coding: utf-8 -*-
+#
+# @Author: Brian Cherinka, José Sánchez-Gallego, and Brett Andrews
+# @Date: 2016-02-13
+# @Filename: exceptions.py
+# @License: BSD 3-clause (http://www.opensource.org/licenses/BSD-3-Clause)
+#
+# @Last modified by: José Sánchez-Gallego (gallegoj@uw.edu)
+# @Last modified time: 2018-08-12 14:23:09
 
-exceptions.py
 
-Licensed under a 3-clause BSD license.
-
-Revision history:
-    13 Feb 2016 J. Sánchez-Gallego
-      Initial version
-
-"""
-
-from __future__ import division
-from __future__ import print_function
+from __future__ import division, print_function
 
 import os
+import pwd
 import sys
 import warnings
-import pwd
 
 import marvin
+
 
 __all__ = ['MarvinError', 'MarvinUserWarning', 'MarvinSkippedTestWarning',
            'MarvinNotImplemented', 'MarvinMissingDependency', 'MarvinDeprecationWarning']
@@ -79,10 +77,13 @@ class MarvinError(Exception):
             else:
                 ms.client.captureMessage(message)
 
+        if message[-1] != '.':
+            message += '.'
+
         # Add Github Issue URL to message or not
         if config.add_github_message is True and not ignore_git:
             giturl = 'https://github.com/sdss/marvin/issues/new'
-            message = ('{0}.\nYou can submit this error to Marvin GitHub Issues ({1}).\n'
+            message = ('{0}\nYou can submit this error to Marvin GitHub Issues ({1}).\n'
                        'Fill out a subject and some text describing the error that just occurred.\n'
                        'If able, copy and paste the full traceback information into the issue '
                        'as well.'.format(message, giturl))
@@ -103,6 +104,11 @@ class MarvinNotImplemented(MarvinError):
 
 class MarvinMissingDependency(MarvinError):
     """A custom exception for missing dependencies."""
+    pass
+
+
+class MarvinDeprecationError(MarvinError):
+    """To be raised for a deprecated feature."""
     pass
 
 
