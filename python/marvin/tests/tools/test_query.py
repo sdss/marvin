@@ -6,7 +6,7 @@
 # @Author: Brian Cherinka
 # @Date:   2017-05-25 10:11:21
 # @Last modified by:   Brian Cherinka
-# @Last Modified time: 2018-08-28 00:20:28
+# @Last Modified time: 2018-08-28 14:03:11
 
 from __future__ import print_function, division, absolute_import
 from marvin.tools.query import Query, doQuery
@@ -235,7 +235,7 @@ class TestQueryParams(object):
 
     @pytest.mark.parametrize('paramdisplay', [('all'), ('best')])
     def test_getparams(self, query, paramdisplay):
-        params = query.get_available_params(paramdisplay)
+        params = query.get_available_params(paramdisplay, release=query.release)
         mydata = query.expdata['params'][paramdisplay]
         # counts and content
         if paramdisplay == 'best':
@@ -255,3 +255,31 @@ class TestQueryModes(object):
         res = query.run()
         assert res.mode == expmode
         assert query.mode == res.mode
+
+
+@pytest.fixture(scope='class')
+def lquery(request):
+    searchfilter = request.param if hasattr(request, 'param') else None
+    q = Query(search_filter=searchfilter, mode='local')
+    yield q
+    q = None
+
+@pytest.fixture(scope='class')
+def rquery(request):
+    config.forceDbOff()
+    searchfilter = request.param if hasattr(request, 'param') else None
+    q = Query(search_filter=searchfilter, mode='remote')
+    yield q
+    q = None
+    config.forceDbOn()
+
+
+class TestQueryAuto(object):
+
+    @pytest.mark.parametrize('mode', [('local'), ('remote')])
+    def test_mma(self, mode):
+        if mode == 'remote':
+            config.forceDbOff()
+        q = Query()
+        assert q.mode == mode
+

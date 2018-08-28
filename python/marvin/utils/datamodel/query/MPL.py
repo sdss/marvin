@@ -6,7 +6,7 @@
 # @Author: Brian Cherinka
 # @Date:   2017-09-20 13:24:13
 # @Last modified by:   Brian Cherinka
-# @Last Modified time: 2018-08-24 17:31:59
+# @Last Modified time: 2018-08-28 14:04:41
 
 from __future__ import absolute_import, division, print_function
 
@@ -23,7 +23,7 @@ def groups():
 
 # list of tables to exclude
 BASE_EXCLUDE = ['anime', 'catalogue', 'pipeline', 'maskbit', 'hdu', 'query', 'user',
-                'extcol', 'exttype', 'extname', 'cube_shape', 'spaxelprops']
+                'extcol', 'exttype', 'extname', 'cube_shape', 'spaxelprops', 'testtable']
 
 EXCLUDE = ['modelcube', 'modelspaxel', 'redcorr', 'obsinfo', 'dapall'] + BASE_EXCLUDE
 

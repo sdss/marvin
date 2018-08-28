@@ -6,7 +6,7 @@
 # @Author: Brian Cherinka
 # @Date:   2018-08-04 20:09:38
 # @Last modified by:   Brian Cherinka
-# @Last Modified time: 2018-08-28 00:27:34
+# @Last Modified time: 2018-08-28 13:39:58
 
 from __future__ import print_function, division, absolute_import, unicode_literals
 
@@ -777,7 +777,7 @@ class Query(object):
             os.makedirs(dirname)
 
         # set bad pickled attributes to None
-        attrs = ['session', 'datamodel', 'marvinform', 'myform', '_modelgraph']
+        attrs = ['session', 'datamodel', '_marvinform', '_modelgraph']
 
         # pickle the query
         try:
@@ -808,7 +808,7 @@ class Query(object):
         obj = marvin_pickle.restore(path, delete=delete)
         obj._modelgraph = marvindb.modelgraph
         obj.session = marvindb.session
-        obj.datamodel = datamodel[obj._release]
+        obj.datamodel = datamodel[obj.release]
         obj.marvinform = obj.datamodel._marvinform
         return obj
 

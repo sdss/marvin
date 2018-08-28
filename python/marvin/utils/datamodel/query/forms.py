@@ -53,7 +53,7 @@ class ModelForm(BaseModelForm):
         return marvindb.session
 
 # Builds a dictionary for modelclasses with key ClassName and value SQLalchemy model class
-modelclasses = marvindb.buildUberClassDict()
+# modelclasses = marvindb.buildUberClassDict()
 
 
 # Class factory

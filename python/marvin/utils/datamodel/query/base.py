@@ -138,6 +138,9 @@ class QueryDataModel(object):
                              rev[k.split('.')[0]]) if k.split('.')[0] in rev.keys()
                    else k for k in mykeys]
 
+        # remove any hidden keys
+        newkeys = [n for n in newkeys if '._' not in n]
+
         # exclude tables from list of keys
         if self._exclude:
             for table in self._exclude:
