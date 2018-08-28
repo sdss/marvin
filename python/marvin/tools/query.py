@@ -6,7 +6,7 @@
 # @Author: Brian Cherinka
 # @Date:   2018-08-04 20:09:38
 # @Last modified by:   Brian Cherinka
-# @Last Modified time: 2018-08-27 22:28:21
+# @Last Modified time: 2018-08-28 00:27:34
 
 from __future__ import print_function, division, absolute_import, unicode_literals
 
@@ -116,6 +116,10 @@ class Query(object):
             A list of string parameter names desired to be returned in the query
         return_type (str):
             The requested Marvin Tool object that the results are converted into
+        targets (list):
+            A list of manga_target flags to filter on
+        quality (list):
+            A list of quality flags to filter on
         mode ({'local', 'remote', 'auto'}):
             The load mode to use. See :doc:`Mode secision tree</mode_decision>`.
         return_all (bool):
@@ -268,6 +272,8 @@ class Query(object):
                                'params': returns,
                                'returntype': self.return_type,
                                'release': self.release,
+                               'sort': self.sort,
+                               'order': self.order,
                                'limit': self.limit,
                                'return_all': self.return_all,
                                'caching': self._caching}
@@ -1000,8 +1006,10 @@ class Query(object):
 
         # adjust the default parameters for any necessary columns
         if self._check_for(self.params, tables=tables):
-            self.default_params.extend(columns)
-            self.params.extend(columns)
+            # remove any columns that are also defaults
+            use_only = [c for c in columns if c not in self.default_params]
+            self.default_params.extend(use_only)
+            self.params.extend(use_only)
 
     def _create_base_query(self):
         ''' Create the base query session object.  Passes in a list of parameters defined in
@@ -1552,7 +1560,7 @@ class Query(object):
         Parameter Operand Value. This function is mapped to
         the "npergood" filter name.
 
-        Syntax: fxnname(expression) operator value
+        Syntax: fxn_name(expression) operator value
 
         Parameters:
             fxn (str):
@@ -1590,7 +1598,7 @@ class Query(object):
 
     def _parse_fxn(self, fxn):
         ''' Parse a fxn condition '''
-        return fxn.fxnname, fxn.fxncond, fxn.op, fxn.value
+        return fxn.fxn_name, fxn.condition, fxn.operator, fxn.value
 
     def _parse_expression(self, expr):
         ''' Parse an expression '''

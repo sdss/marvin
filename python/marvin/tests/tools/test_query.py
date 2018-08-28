@@ -6,7 +6,7 @@
 # @Author: Brian Cherinka
 # @Date:   2017-05-25 10:11:21
 # @Last modified by:   Brian Cherinka
-# @Last Modified time: 2018-07-24 17:30:24
+# @Last Modified time: 2018-08-28 00:20:28
 
 from __future__ import print_function, division, absolute_import
 from marvin.tools.query import Query, doQuery
@@ -23,7 +23,7 @@ import pytest
 class TestDoQuery(object):
 
     def test_success(self, release, mode):
-        q, r = doQuery(searchfilter='nsa.z < 0.1', release=release, mode=mode)
+        q, r = doQuery(search_filter='nsa.z < 0.1', release=release, mode=mode)
         assert q is not None
         assert r is not None
 
@@ -32,7 +32,7 @@ class TestQueryVersions(object):
 
     def test_versions(self, query, release, versions):
         drpver, dapver = versions
-        assert query._release == release
+        assert query.release == release
         assert query._drpver == drpver
         assert query._dapver == dapver
 
@@ -74,27 +74,11 @@ class TestQuerySearches(object):
 
         set_the_config(config.release)
 
-        with pytest.raises(MarvinError) as cm:
-            query = Query(searchfilter=badquery, mode=expmode)
+        with pytest.raises((KeyError, MarvinError)) as cm:
+            query = Query(search_filter=badquery, mode=expmode)
             res = query.run()
-        assert cm.type == MarvinError
+        assert cm.type == KeyError or cm.type == MarvinError
         assert errmsg in str(cm.value)
-
-    # Keeping this test for posterity
-    # @pytest.mark.parametrize('query, allspax, table',
-    #                          [('haflux > 25', False, 'cleanspaxelprop'),
-    #                           ('haflux > 25', True, 'spaxelprop')],
-    #                          ids=['allspax', 'cleanspax'],
-    #                          indirect=['query'])
-    # def test_spaxel_tables(self, query, expmode, allspax, table):
-    #     table = table + config.release.split('-')[1] if '4' not in config.release else table
-    #     print('creating new query')
-    #     query = Query(searchfilter=query.searchfilter, allspaxels=allspax, mode=query.mode, release=query._release)
-    #     if expmode == 'local':
-    #         assert table in set(query.joins)
-    #     else:
-    #         res = query.run()
-    #         assert table in res.query
 
     @pytest.mark.parametrize('query, sfilter',
                              [('nsa.z < 0.1', 'nsa.z < 0.1'),
@@ -129,7 +113,7 @@ class TestQuerySort(object):
                               ('nsa.z < 0.1', 'nsa.z', 'desc')], indirect=['query'])
     def test_sort(self, query, sortparam, order):
         data = query.expdata['queries']['nsa.z < 0.1']['sorted']
-        query = Query(searchfilter=query.searchfilter, mode=query.mode, sort=sortparam, order=order)
+        query = Query(search_filter=query.search_filter, mode=query.mode, sort=sortparam, order=order)
         res = query.run()
         if order == 'asc':
             redshift = data['1'][-1]
@@ -142,14 +126,14 @@ class TestQueryShow(object):
 
     @pytest.mark.parametrize('query, show, exp',
                              [('nsa.z < 0.1', 'query', 'SELECT mangadatadb.cube.mangaid'),
-                              ('nsa.z < 0.1', 'tables', "['ifudesign', 'manga_target', 'manga_target_to_nsa', 'nsa']"),
                               ('nsa.z < 0.1', 'joins', "['ifudesign', 'manga_target', 'manga_target_to_nsa', 'nsa']"),
                               ('nsa.z < 0.1', 'filter', 'mangasampledb.nsa.z < 0.1')], indirect=['query'])
     def test_show(self, query, show, exp, capsys):
-        if query.mode == 'remote':
-            exp = 'Cannot show full SQL query in remote mode, use the Results showQuery'
         sql = query.show(show)
-        assert exp in sql or exp == sql.strip('\n')
+        if query.mode == 'remote':
+            assert sql == query.search_filter
+        else:
+            assert exp in sql or exp == sql.strip('\n')
 
 
 class TestQueryReturnParams(object):
@@ -157,9 +141,10 @@ class TestQueryReturnParams(object):
     @pytest.mark.parametrize('query', [('nsa.z < 0.1')], indirect=True)
     @pytest.mark.parametrize('rps', [(['g_r']), (['cube.ra', 'cube.dec']), (['haflux'])])
     def test_success(self, query, rps):
-        query = Query(searchfilter=query.searchfilter, returnparams=rps, mode=query.mode)
-        assert 'nsa.z' in query.params
-        #assert set(rps).issubset(set(query.params))
+        query = Query(search_filter=query.search_filter, return_params=rps, mode=query.mode)
+        params = query._remote_params['params'].split(',') if query.mode == 'remote' else query.params
+        #assert 'cube.ra' in params
+        assert set(rps).issubset(set(query.params))
         res = query.run()
         assert all([p in res.columns for p in rps]) is True
         #assert set(rps).issubset(set(query.params))
@@ -178,7 +163,7 @@ class TestQueryReturnParams(object):
             error = KeyError
 
         with pytest.raises(error) as cm:
-            query = Query(searchfilter=query.searchfilter, returnparams=[rps], mode=query.mode)
+            query = Query(search_filter=query.search_filter, return_params=[rps], mode=query.mode)
             res = query.run()
         assert cm.type == error
         assert errmsg in str(cm.value)
@@ -186,12 +171,13 @@ class TestQueryReturnParams(object):
     @pytest.mark.parametrize('query', [('nsa.z < 0.1')], indirect=True)
     @pytest.mark.parametrize('rps', [(['absmag_g_r', 'cube.plate', 'cube.plateifu'])])
     def test_skipdefault(self, query, rps):
-        query = Query(searchfilter=query.searchfilter, returnparams=rps, mode=query.mode)
-        assert len(query._returnparams) == len(rps)
-        assert len(query.params) == 6
+        query = Query(search_filter=query.search_filter, return_params=rps, mode=query.mode)
+        params = query._remote_params['params'].split(',') if query.mode == 'remote' else query.params
+        assert len(query.return_params) == len(rps)
+        assert len(params) == 5
         res = query.run()
         assert len(res.returnparams) == len(rps)
-        assert len(res.columns) == 6
+        assert len(res.columns) == 5
 
 
 class TestQueryReturnType(object):
@@ -206,7 +192,7 @@ class TestQueryReturnType(object):
         if config.release == 'MPL-4' and objtype == 'modelcube':
             pytest.skip('no modelcubes in mpl-4')
 
-        query = Query(searchfilter=query.searchfilter, returntype=objtype, mode=query.mode, release=query._release)
+        query = Query(search_filter=query.search_filter, return_type=objtype, mode=query.mode, release=query.release)
         res = query.run()
         assert res.objects is not None
         assert len(res.results) == len(res.objects)
@@ -214,10 +200,10 @@ class TestQueryReturnType(object):
 
     @pytest.mark.parametrize('query', [('nsa.z < 0.1')], indirect=True)
     @pytest.mark.parametrize('objtype, errmsg',
-                             [('noncube', 'Query returntype must be either cube, spaxel, maps, modelcube, rss')])
+                             [('noncube', 'Query return_type must be either cube, spaxel, maps, modelcube, rss')])
     def test_badreturntype(self, query, objtype, errmsg):
         with pytest.raises(AssertionError) as cm:
-            query = Query(searchfilter=query.searchfilter, returntype=objtype, mode=query.mode)
+            query = Query(search_filter=query.search_filter, return_type=objtype, mode=query.mode)
         assert cm.type == AssertionError
         assert errmsg in str(cm.value)
 
@@ -242,7 +228,7 @@ class TestQueryPickling(object):
         query = None
         assert query is None
         query = Query.restore(str(file))
-        assert query.searchfilter == sfilter
+        assert query.search_filter == sfilter
 
 
 class TestQueryParams(object):
