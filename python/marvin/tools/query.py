@@ -6,7 +6,7 @@
 # @Author: Brian Cherinka
 # @Date:   2018-08-04 20:09:38
 # @Last modified by:   Brian Cherinka
-# @Last Modified time: 2018-08-27 21:36:23
+# @Last Modified time: 2018-08-27 21:50:50
 
 from __future__ import print_function, division, absolute_import, unicode_literals
 
@@ -502,7 +502,7 @@ class Query(object):
         '''
 
         sqlcol = self._marvinform._param_form_lookup.mapToColumn('sql')
-        stringfilter = self.search_filter.strip().replace(' ', '')
+        stringfilter = self.search_filter.strip().replace(' ', '') if self.search_filter else ''
         rawsql = self.show().strip()
         returns = ','.join(self.return_params) if self.return_params else ''
         qm = self.session.query(sqlcol.class_).\
@@ -1073,10 +1073,6 @@ class Query(object):
     def _add_condition(self):
         ''' Loop over all input forms and add a filter condition based on the input parameter form data. '''
 
-        # do nothing if nothing
-        if not self.search_filter:
-            return
-
         # validate the forms
         self._validate_forms()
 
@@ -1084,7 +1080,7 @@ class Query(object):
         self._build_filter()
 
         # add the filter to the query
-        if not isinstance(self.filter, type(None)):
+        if self.search_filter and not isinstance(self.filter, type(None)):
             self.query = self.query.filter(self.filter)
 
         # check for targets and quality flags to add in the filter
@@ -1115,6 +1111,11 @@ class Query(object):
 
     def _build_filter(self):
         ''' Builds a filter condition to load into sqlalchemy filter. '''
+
+        # do nothing if nothing
+        if not self.search_filter:
+            return
+
         try:
             self.filter = self._parsed.filter(self._modellist)
         except BooleanSearchException as e:
@@ -1467,6 +1468,9 @@ class Query(object):
     #
     def _run_functional_queries(self):
         ''' Checks for functional filter conditions and runs them '''
+
+        if not self.search_filter:
+            return
 
         # check for additional modifier criteria
         if self._parsed.functions:
