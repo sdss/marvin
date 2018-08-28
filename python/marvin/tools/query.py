@@ -6,7 +6,7 @@
 # @Author: Brian Cherinka
 # @Date:   2018-08-04 20:09:38
 # @Last modified by:   Brian Cherinka
-# @Last Modified time: 2018-08-26 19:36:33
+# @Last Modified time: 2018-08-27 21:36:23
 
 from __future__ import print_function, division, absolute_import, unicode_literals
 
@@ -1089,7 +1089,7 @@ class Query(object):
 
         # check for targets and quality flags to add in the filter
         self._check_targets()
-        #self._check_quality()
+        self._check_quality()
 
     def _validate_forms(self):
         ''' Validate all the data in the forms '''
@@ -1121,30 +1121,58 @@ class Query(object):
             raise MarvinError('Your boolean expression could not me mapped to model: {0}'.format(e))
 
     def _check_targets(self):
-        ''' Check for any target flags to add into the filter '''
+        ''' Check for any target flags to add into the filter
 
-        if self.targets:
-            targets = [self.targets] if not isinstance(self.targets, list) else self.targets
-            targets = [t.upper() for t in targets]
+        Checks for input manga_target flag labels in the Query.targets attribute
+        and adds them to the Query filter condition.  All target labels are joined with
+        a Boolean "or", then joined to the existing filter through a Boolean "and".
 
-            # check for ancillary targets
-            ancillaries = [a.upper() for a in self.datamodel.bitmasks['MANGA_TARGET3'].schema.label]
-            anc_labels = list(set(targets) & set(ancillaries))
-            targets = list(set(targets) - set(ancillaries))
+        To perform a bitwise not on a quality flag, specify the flag and value explicitly
+        in the search_filter. E.g. "cube.manga_target1 & ~1024"
 
-            # build the string filter
-            target_filter = ''
-            for target in targets:
-                target_filter = self._create_target_filter(target, target_filter=target_filter)
+        Available target options are:
+            primary - selects targets in both the PRIMARY_V1_2_0 and COLOR_ENHANCED_V1_2_0 samples
+            color-enhanced - selects targets in the COLOR_ENHANCED_V1_2_0 sample
+            secondary - selects targets in the SECONDARY_V1_2_0 sample
+            ancillary - selects any targets in the ANCILLARY sample
+            stellar libraray - selects targets from the stellar library
+            flux standards - selects flux standard stars
+            any ancillary catalog name, e.g. 'MWA', or 'DWARF'
 
-            # add in any ancillary targets
-            if anc_labels:
-                target_filter = self._create_target_filter('ancillary', target_filter=target_filter, ancillaries=anc_labels)
+        Example
+            >>> # perform query selecting primary and secondary targets
+            >>> q = Query(targets=['primary', 'secondary'])
+            >>>
+            >>> # select ancillary targets from Milky Way Analogs and Dwarfs
+            >>> q = Query(targets=['MWA', 'DWARF'])
+            >>>
+            >>> # select all targets that are not a part of the PRIMARY_v1_2_0 sample
+            >>> q = Query(search_filter='cube.manga_target & ~1024')
+            >>>
+        '''
 
-            # parse the filter and add to the main
-            parsed = parse_boolean_search(target_filter)
-            tf = parsed.filter(marvindb.datadb)
-            self.query = self.query.filter(and_(tf))
+        if not self.targets:
+            return
+
+        targets = [self.targets] if not isinstance(self.targets, list) else self.targets
+        targets = [t.upper() for t in targets]
+
+        # check for ancillary targets
+        ancillaries = [a.upper() for a in self.datamodel.bitmasks['MANGA_TARGET3'].schema.label]
+        anc_labels = list(set(targets) & set(ancillaries))
+        targets = list(set(targets) - set(ancillaries))
+
+        # build the string filter
+        target_filter = ''
+        for target in targets:
+            target_filter = self._create_target_filter(target, target_filter=target_filter)
+
+        # add in any ancillary targets
+        if anc_labels:
+            target_filter = self._create_target_filter('ancillary', target_filter=target_filter, ancillaries=anc_labels)
+
+        # parse the filter and add to the main
+        self._add_filter(target_filter)
 
     def _create_target_filter(self, target, target_filter='', ancillaries=None):
         ''' Create a string target bitwise filter
@@ -1154,8 +1182,12 @@ class Query(object):
         Example filter syntax is 'cube.manga_target1 & 5120'
 
         Parameters:
-            target (str): The name of the target sample to load
-            target_filter (str): The current existing target filter string
+            target (str):
+                The name of the target sample to load
+            target_filter (str):
+                The current existing target filter string
+            ancillarites (list):
+                A list of ancillary target labels
 
         Returns:
             A string filter condition
@@ -1172,6 +1204,9 @@ class Query(object):
         elif 'color-enhanced' == target:
             name = 'manga_target1'
             value = self.datamodel.bitmasks['MANGA_TARGET1'].labels_to_value(['COLOR_ENHANCED_v1_2_0'])
+        elif 'secondary' == target:
+            name = 'manga_target1'
+            value = self.datamodel.bitmasks['MANGA_TARGET1'].labels_to_value(['SECONDARY_v1_2_0'])
         elif 'ancillary' == target:
             name = 'manga_target3'
             value = self.datamodel.bitmasks['MANGA_TARGET3'].labels_to_value(ancillaries) if ancillaries else 0
@@ -1190,18 +1225,145 @@ class Query(object):
         target_filter += '{0}cube.{1} {2} {3}'.format(base, name, op, value)
         return target_filter
 
-    def _add_columns(self, columns):
-        ''' Add a column(s) to the query
+    def _check_quality(self):
+        ''' Check for any quality flags to add into the filter
+
+        Checks for input DRP or DAP quality flag labels in the Query.quality attribute
+        and adds them to the Query filter condition.  All quality labels are joined with
+        a Boolean "or", then joined to the existing filter through a Boolean "and".
+
+        To perform a bitwise not on a quality flag, specify the flag and value explicitly
+        in the search_filter. E.g. "cube.quality & ~64"
+
+        Example
+            >>> # perform query selecting galaxies with a bad flux calibration
+            >>> q = Query(quality=['BADFLUX'])
+            >>>
+            >>> # select galaxies that do not have bad flux calibration
+            >>> q = Query(search_filter='cube.quality & ~256')
+            >>>
+
+        '''
+
+        if not self.quality:
+            return
+
+        # format the quality flags
+        quality = [self.quality] if not isinstance(self.quality, list) else self.quality
+        quality = [t.upper() for t in quality]
+
+        # get all the available flags
+        flags = sum([list(i.schema.label) for i in self.datamodel.bitmasks.values()
+            if 'QUAL' in i.name or 'MASK' in i.name], [])
+        assert set(quality).issubset(set(flags)), 'quality flag must be one of {0}'.format(flags)
+
+        # get any individual label sets
+        drplabels = self._get_labelset(quality, name='MANGA_DRP3QUAL')
+        daplabels = self._get_labelset(quality, name='MANGA_DAPQUAL')
+        dapspeclabels = self._get_labelset(quality, name='MANGA_DAPSPECMASK')
+
+        # build the quality filter
+        quality_filter = ''
+        if drplabels:
+            quality_filter = self._create_quality_filter(drplabels, flag='DRP3QUAL', quality_filter=quality_filter)
+        if daplabels:
+            quality_filter = self._create_quality_filter(daplabels, flag='DAPQUAL', quality_filter=quality_filter)
+
+        # parse the filter and add to the main
+        models = [marvindb.datadb.Cube, marvindb.dapdb.File]
+        self._add_filter(quality_filter, modellist=models)
+
+    def _get_labelset(self, flags, name=None):
+        ''' Return matching labels in the set of flags
+
+        Selects out those labels that are in the set of labels from the
+        named flag.
 
         Parameters:
-            columns (list): A list of string column names to add to the query
+            flags (list):
+                A list of the input flag labels
+            name (str):
+                The name of the flag set to match against
+
+        Returns:
+            The list of labels that are in the named flag set
+        '''
+
+        # return empty list if the bitmask set not available
+        if name not in self.datamodel.bitmasks:
+            return []
+
+        labels = [q.upper() for q in self.datamodel.bitmasks[name].schema.label]
+        flags = [f.upper() for f in flags]
+        inset = list(set(flags) & set(labels))
+        return inset
+
+    def _create_quality_filter(self, labels, flag='DRP3QUAL', quality_filter=''):
+        ''' Create a string quality bitwise filter
+
+        Creates a string quality filter bitwise filter.  If passed an existing
+        quality_filter string, it will append the new filter as an "or" boolean condition.
+        Example filter syntax is 'cube.quality & 64'
+
+        Parameters:
+            labels (list):
+                A list of string quality flag labels
+            flag (str):
+                The short hand name of the flag, i.e. MANGA_XXXX
+            quality_filter(str):
+                An existing string quality filter condition
+
+        Returns:
+            A string quality filter condition
+
+        '''
+
+        # get the value given the labels
+        name = 'MANGA_{0}'.format(flag.upper())
+        value = self.datamodel.bitmasks[name].labels_to_value(labels)
+
+        # add the column to the query
+        colname = 'cube.quality' if 'DRP' in flag else 'file.quality'
+        self._add_columns(colname)
+
+        base = ' or ' if quality_filter else ''
+        quality_filter += '{0}{1} & {2}'.format(base, colname, value)
+        return quality_filter
+
+    def _add_filter(self, strfilter, modellist=None):
+        ''' Parse and add a string filter into the query
+
+        Pass a string filter condition into the boolean parser and
+        explicitly add it to the query filter
+
+        Parameters:
+            strfilter (str):
+                The filter condition to parse
+            modellist (list):
+                A list of models needed for the filter to
+                identify the correct parameters
+
+        '''
+
+        modellist = modellist if modellist else marvindb.datadb
+        # parse the filter and add to the main
+        parsed = parse_boolean_search(strfilter)
+        f = parsed.filter(modellist)
+        self.query = self.query.filter(and_(f))
+
+    def _add_columns(self, columns):
+        ''' Add columns to the query
+
+        Parameters:
+            columns (list):
+                A list of string column names to add to the query
         '''
 
         # get new columns not already added
         columns = [columns] if not isinstance(columns, list) else columns
         new_columns = list(set(columns) - set(self.params))
         if any(new_columns):
-            colattrs = self._marvinform._param_form_lookup.mapToColumn([for c in new_columns])
+            colattrs = self._marvinform._param_form_lookup.mapToColumn([c for c in new_columns])
             colattrs = [colattrs] if not isinstance(colattrs, list) else colattrs
             self.query = self.query.add_columns(*colattrs)
             self.params.extend(new_columns)
