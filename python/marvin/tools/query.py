@@ -6,7 +6,7 @@
 # @Author: Brian Cherinka
 # @Date:   2018-08-04 20:09:38
 # @Last modified by:   Brian Cherinka
-# @Last Modified time: 2018-08-27 21:50:50
+# @Last Modified time: 2018-08-27 22:28:21
 
 from __future__ import print_function, division, absolute_import, unicode_literals
 
@@ -1213,16 +1213,17 @@ class Query(object):
             value = self.datamodel.bitmasks['MANGA_TARGET3'].labels_to_value(ancillaries) if ancillaries else 0
         elif 'stellar library' == target:
             name = 'manga_target2'
-            value = self.datamodel.bitmasks['MANGA_TARGET2'].labels_to_value(['COLOR_ENHANCED_v1_2_0'])
+            value = sum([1<<i for i in (self.datamodel.bitmasks['MANGA_TARGET2'].schema.bit[2:17])])
         elif 'flux standards' == target:
             name = 'manga_target2'
-            value = self.datamodel.bitmasks['MANGA_TARGET2'].labels_to_value(['COLOR_ENHANCED_v1_2_0'])
+            bits = [20, 22, 23, 25, 26, 27]
+            value = sum([1<<i for i in bits])
 
         # add the column to the query
         self._add_columns('cube.{0}'.format(name))
 
         base = ' or ' if target_filter else ''
-        op = '>' if target == 'ancillary' else '&'
+        op = '>' if value == 0 else '&'
         target_filter += '{0}cube.{1} {2} {3}'.format(base, name, op, value)
         return target_filter
 
