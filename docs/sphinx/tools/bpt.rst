@@ -51,6 +51,9 @@ See :meth:`~marvin.tools.maps.Maps.get_bpt` for the API reference of how to gene
     # make a BPT classification without OI
     masks, fig, axes = maps.get_bpt(use_oi=False)
 
+
+.. code-block:: python
+
     # also show the optical image
     from marvin.utils.general.images import showImage
     image = showImage(plateifu='8485-1901')
