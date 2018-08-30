@@ -123,8 +123,7 @@ class ParamFormLookupDict(dict):
     def __init__(self, **kwargs):
         self.allspaxels = kwargs.get('allspaxels', None)
         self._release = kwargs.get('release', config.release)
-        self._init_table_shortcuts()
-        self._init_name_shortcuts()
+        self._init_shortcuts()
 
     def __contains__(self, value):
         ''' Override the contains '''
@@ -140,8 +139,7 @@ class ParamFormLookupDict(dict):
         """Checks if `key` is a unique column name and return the value."""
 
         # Init the shortcuts
-        self._init_table_shortcuts()
-        self._init_name_shortcuts()
+        self._init_shortcuts()
 
         # Applies shortcuts
         keySplits = self._apply_shortcuts(key)
@@ -153,17 +151,7 @@ class ParamFormLookupDict(dict):
         matches = self._check_for_junk(matches)
 
         # Return matched key
-        if len(matches) == 0:
-            # No matches. This returns the standards KeyError from dict
-            raise KeyError('{0} does not match any column.'.format(key))
-        elif len(matches) == 1:
-            # One match: returns the form.
-            return dict.__getitem__(self, matches[0])
-        else:
-            # Multiple results. Raises a custom error.
-            raise KeyError(
-                '{0} matches multiple parameters in the lookup table: {1}'
-                .format(key, ', '.join(matches)))
+        return dict.__getitem__(self, self._get_good_match(key, matches))
 
     def _check_for_junk(self, matches):
         ''' check for Junk matches and return the correct key '''
@@ -174,6 +162,20 @@ class ParamFormLookupDict(dict):
             keySplits = self._apply_shortcuts(junkmatches[0])
             matches = self._get_matches(keySplits)
         return matches
+
+    def _get_good_match(self, key, matches):
+        ''' Check if the key match is good '''
+        if len(matches) == 0:
+            # No matches. This returns the standards KeyError from dict
+            raise KeyError('{0} does not match any column.'.format(key))
+        elif len(matches) == 1:
+            # One match: returns True
+            return matches[0]
+        else:
+            # Multiple results. Raises a custom error.
+            raise KeyError(
+                '{0} matches multiple parameters in the lookup table: {1}'
+                .format(key, ', '.join(matches)))
 
     def mapToColumn(self, keys):
         """Returns the model class column in the WFTForm."""
@@ -192,13 +194,7 @@ class ParamFormLookupDict(dict):
             keySplits = self._apply_shortcuts(key)
             matches = self._get_matches(keySplits)
             matches = self._check_for_junk(matches)
-            if len(matches) == 0:
-                raise KeyError('{0} does not match any column.'.format(key))
-            elif len(matches) == 1:
-                key = matches[0]
-            else:
-                raise KeyError('{0} matches multiple parameters '
-                               'in the lookup table: {1}'.format(key, ', '.join(matches)))
+            key = self._get_good_match(key, matches)
             wtfForm = self[key]
             column = key.split('.')[-1]
             columns.append(getattr(wtfForm.Meta.model, column))
@@ -211,27 +207,53 @@ class ParamFormLookupDict(dict):
     def _init_table_shortcuts(self):
         ''' initialize the table shortcuts '''
 
+        self._schemaShortcuts = {'datadb': 'mangadatadb', 'dapdb': 'mangadapdb', 'sampledb': 'mangasampledb',
+                                 'auxdb': 'mangaauxdb'}
+
         self._tableShortcuts = {'ifu': 'ifudesign', 'cube_header_keyword': 'fits_header_keyword',
                                 'cube_header_value': 'fits_header_value', 'maps_header_keyword': 'header_keyword',
                                 'maps_header_value': 'header_value'}
         self._set_junk_shortcuts()
 
     def _init_name_shortcuts(self):
-        ''' initialize the name shortcuts '''
-        # self._nameShortcuts = {'haflux': 'emline_gflux_ha_6564',
-        #                        'g_r': 'elpetro_mag_g_r',
-        #                        'abs_g_r': 'elpetro_absmag_g_r'}
+        ''' initialize the name shortcuts
 
+        e.g {'haflux': 'emline_gflux_ha_6564',
+             'g_r': 'elpetro_mag_g_r',
+             'abs_g_r': 'elpetro_absmag_g_r'}
+
+        '''
         from marvin.utils.datamodel.query.base import query_params
         short = query_params.list_params(name_type='short')
         name = query_params.list_params(name_type='name')
         self._nameShortcuts = OrderedDict(zip(short, name))
 
+    def _init_full_shortcuts(self):
+        ''' initialize any full name shortcuts '''
+        self._fullShortcuts = {'cube_header.keyword':'fits_header_keyword.label',
+                               'cube_header.value':'fits_header_value.value',
+                               'maps_header.keyword':'header_keyword.name',
+                               'maps_header.value':'header_value.value'}
+
+    def _init_shortcuts(self):
+        ''' initialize the shortcuts '''
+        self._init_full_shortcuts()
+        self._init_table_shortcuts()
+        self._init_name_shortcuts()
+
     def _apply_shortcuts(self, key):
         ''' Apply the shortcuts to the key '''
 
+        # Apply any full name shortcuts
+        if key in self._fullShortcuts:
+            return self._fullShortcuts[key].split('.')
+
         # Gets the paths that match the key
         keySplits = key.split('.')
+
+        # Apply schema shortcuts
+        if len(keySplits) >= 3 and keySplits[-3] in self._schemaShortcuts:
+            keySplits[-3] = self._schemaShortcuts[keySplits[-3]]
 
         # Applies table shortcuts
         if len(keySplits) >= 2 and keySplits[-2] in self._tableShortcuts:
@@ -243,10 +265,14 @@ class ParamFormLookupDict(dict):
 
         return keySplits
 
-    def _get_real_key(self, key):
-        ''' Returns the real full key given some shortcuts '''
+    def get_real_name(self, key):
+        ''' Returns the real full key given some shortcut names '''
         keySplits = self._apply_shortcuts(key)
         return '.'.join(keySplits)
+
+    def get_shortcut_name(self, key):
+        ''' Returns the shortcutted full name given a real key '''
+        pass
 
     def _set_junk_shortcuts(self):
         ''' Sets the DAP spaxelprop shortcuts based on MPL '''

@@ -6,7 +6,7 @@
 # @Author: Brian Cherinka
 # @Date:   2018-08-04 20:09:38
 # @Last modified by:   Brian Cherinka
-# @Last Modified time: 2018-08-28 13:39:58
+# @Last Modified time: 2018-08-30 13:25:39
 
 from __future__ import print_function, division, absolute_import, unicode_literals
 
@@ -732,6 +732,7 @@ class Query(object):
         '''
         assert paramdisplay in ['all', 'best'], 'paramdisplay can only be either "all" or "best"!'
 
+        release = release or config.release
         if paramdisplay == 'all':
             qparams = datamodel[release].groups.list_params('full')
         elif paramdisplay == 'best':
@@ -812,6 +813,9 @@ class Query(object):
         obj.marvinform = obj.datamodel._marvinform
         return obj
 
+    def update_return_params(self, params):
+        ''' Update the list of return parameters '''
+
     #
     # This section describes the methods that run for local database queries
     #
@@ -837,17 +841,19 @@ class Query(object):
         assert isinstance(self.default_params, (list, type(None))), 'default_params must be a list'
         defaults = self.default_params or (['cube.mangaid', 'cube.plateifu'] if self.nexus == 'cube' else [])
 
+        extras = []
         if self.return_type == 'cube':
-            defaults.extend(['cube.mangaid', 'cube.plateifu'])
+            extras = ['cube.mangaid', 'cube.plateifu']
         elif self.return_type == 'spaxel':
             pass
         elif self.return_type == 'modelcube':
-            defaults.extend(['bintype.name', 'template.name'])
+            extras = ['bintype.name', 'template.name']
         elif self.return_type == 'rss':
             pass
         elif self.return_type == 'maps':
-            defaults.extend(['bintype.name', 'template.name'])
+            extras = ['bintype.name', 'template.name']
 
+        defaults.extend([e for e in extras if e not in defaults])
         self.default_params = defaults
 
         # add the defaults to the main set of parameters
@@ -905,19 +911,19 @@ class Query(object):
     def _check_shortcuts_in_filter(self):
         ''' Check for shortcuts in string filter and replace them '''
 
-        # table shortcuts
-        # for key in self.marvinform._param_form_lookup._tableShortcuts.keys():
-        #     #if key in strfilter:
-        #     if re.search('{0}.[a-z]'.format(key), strfilter):
-        #         strfilter = strfilter.replace(key, self.marvinform._param_form_lookup._tableShortcuts[key])
+        # find all named parameters in the filter
+        keys = re.findall('(?<!\d)[a-z\._]+\d*', self.search_filter)
+        # remove the boolean operators
+        keys = [i for i in keys if i not in ['and', 'or', 'not']]
+        # look up real names of all keys
+        real_names = {k: self._marvinform._param_form_lookup.get_real_name(k) for k in keys}
 
-        # name shortcuts
-        for key in self._marvinform._param_form_lookup._nameShortcuts.keys():
-            if key in self.search_filter:
-                param_form_lookup = self._marvinform._param_form_lookup
-                self.search_filter = re.sub(r'\b{0}\b'.format(key),
-                                            '{0}'.format(param_form_lookup._nameShortcuts[key]),
-                                            self.search_filter)
+        # replace the shortcut names with real ones
+        sf = self.search_filter
+        for key, value in real_names.items():
+            if key in sf:
+                sf = sf.replace(key, value)
+        self.search_filter = sf
 
     def _check_parsed(self, parsed):
         ''' Check the boolean parsed object
@@ -1271,6 +1277,7 @@ class Query(object):
         drplabels = self._get_labelset(quality, name='MANGA_DRP3QUAL')
         daplabels = self._get_labelset(quality, name='MANGA_DAPQUAL')
         dapspeclabels = self._get_labelset(quality, name='MANGA_DAPSPECMASK')
+        dappixlabels = self._get_labelset(quality, name='MANGA_DAPPIXMASK')
 
         # build the quality filter
         quality_filter = ''
@@ -1280,8 +1287,10 @@ class Query(object):
             quality_filter = self._create_quality_filter(daplabels, flag='DAPQUAL', quality_filter=quality_filter)
 
         # parse the filter and add to the main
-        models = [marvindb.datadb.Cube, marvindb.dapdb.File]
-        self._add_filter(quality_filter, modellist=models)
+        if quality_filter:
+            spaxelprop = marvindb.dapdb.__getattribute__('Clean{0}'.format(self.datamodel.dap_datamodel.property_table))
+            models = [marvindb.datadb.Cube, marvindb.dapdb.File, spaxelprop]
+            self._add_filter(quality_filter, modellist=models)
 
     def _get_labelset(self, flags, name=None):
         ''' Return matching labels in the set of flags
