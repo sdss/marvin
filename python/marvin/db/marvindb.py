@@ -152,7 +152,7 @@ class MarvinDB(object):
 
     def forceDbOn(self, dbtype=None):
         ''' Force the database to turn on '''
-        self.__init_the_db()
+        self._init_the_db()
 
     def generateClassDict(self, module=None, lower=None):
         ''' Generates a dictionary of the Model Classes, based on class name as key, to the object class.
