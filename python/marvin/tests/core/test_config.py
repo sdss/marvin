@@ -6,16 +6,17 @@
 # @Author: Brian Cherinka
 # @Date:   2018-03-08 18:08:34
 # @Last modified by:   Brian Cherinka
-# @Last Modified time: 2018-07-24 13:49:36
+# @Last Modified time: 2018-08-14 18:10:06
 
 from __future__ import print_function, division, absolute_import
-from marvin import config
-from marvin.core.exceptions import MarvinError, MarvinUserWarning
-from brain import bconfig
-from brain.core.exceptions import BrainError, BrainUserWarning
 import pytest
 import os
 import warnings
+
+from marvin import config, MarvinConfig
+from marvin.core.exceptions import MarvinError, MarvinUserWarning
+from brain import bconfig
+from brain.core.exceptions import BrainError, BrainUserWarning
 
 
 @pytest.fixture()
@@ -57,6 +58,13 @@ def initconfig(monkeypatch):
     monkeypatch.setattr(config, '_release', None)
 
 
+@pytest.fixture()
+def set_default(monkeypatch, request):
+    monkeypatch.setattr(config, '_release', request.param)
+    monkeypatch.setitem(config._custom_config, 'default_release', request.param)
+    config._check_config()
+
+
 class TestVars(object):
     ''' test getting/setting variables '''
 
@@ -89,10 +97,10 @@ class TestAccess(object):
     def test_public_access(self, bestnet):
         assert config.access == 'collab'
         assert 'MPL-5' in config._allowed_releases
-        assert 'DR14' in config._allowed_releases
+        assert 'DR15' in config._allowed_releases
         config.access = 'public'
         assert 'MPL-5' not in config._allowed_releases
-        assert 'DR14' in config._allowed_releases
+        assert 'DR15' in config._allowed_releases
 
     def test_tree(self, bestnet):
         assert config.access == 'collab'
@@ -188,4 +196,42 @@ class TestConfig(object):
         with pytest.warns(MarvinUserWarning):
             warnings.warn(msg, MarvinUserWarning)
         assert config.release == exprel
+
+
+class TestSasUrl(object):
+
+    def test_sasurl_nonetrc(self, initconfig, netrc):
+        assert 'DR' in config.release
+        assert 'dr15.sdss.org/api/marvin' in config.sasurl
+
+    @pytest.mark.parametrize('release',
+                             [('MPL-6'), ('DR15')],
+                             ids=['collab', 'public'])
+    def test_sasurl(self, bestnet, release):
+        assert 'api.sdss.org/marvin' in config.sasurl
+        config.setRelease(release)
+        sasurl = 'dr15.sdss.org/api/marvin' if 'DR' in release else 'api.sdss.org/marvin'
+        assert sasurl in config.sasurl
+
+    @pytest.mark.parametrize('sas, exp',
+                             [('utah', 'api.sdss.org'),
+                              ('public', 'dr15.sdss.org/api'),
+                              ('test', 'api.sdss.org/test'),
+                              ('local', 'localhost')],
+                             )
+    def test_sasurl_switch(self, sas, exp):
+        public = sas == 'public'
+        test = sas == 'test'
+        sas = 'utah' if sas == 'public' or sas == 'test' else sas
+        config.switchSasUrl(sas, public=public, test=test)
+        assert exp in config.sasurl
+
+    # @pytest.mark.parametrize('set_default, defrel, exp',
+    #                          [('MPL-5', 'MPL-5', 'api.sdss.org'),
+    #                           ('DR15', 'DR15', 'dr15.sdss.org/api')], indirect=['set_default'])
+    # def test_sasurl_default_release(self, set_default, defrel, exp):
+    #     assert config.release == defrel
+    #     assert exp in config.sasurl
+
+
 

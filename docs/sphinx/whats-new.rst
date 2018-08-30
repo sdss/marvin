@@ -57,6 +57,8 @@ A new :ref:`Marvin Image <marvin-image>` Tool is now available for interacting w
 
 The old image utility functions documented :ref:`here <marvin-images>` remain but have now been deprecated by the new `~marvin.tools.image.Image` class.  Replacement utility functions are now available, with more information located :ref:`here<image-utils>`.
 
+|
+
 2.2.6 (August 2018)
 -------------------
 
@@ -95,6 +97,13 @@ Inverse variance for deredden datacubes
 
 The `~marvin.tools.quantities.datacube.DataCube` quantity includes a `~marvin.tools.quantities.datacube.DataCube.deredden` method that applies the reddening correction to the flux and inverse variance in the datacube. The inverse variance associated to the derredden flux had a bug in its calculation and was incorrect in all cases. That has now been fixed. It also fixes the spelling of ``deredden`` (😅).
 
+MPL-7 now available
+*******************
+
+Starting with this release, Marvin provides access to MPL-7, the latest MaNGA Product Launch. Please read the `release notes <https://trac.sdss.org/wiki/MANGA/TRM/TRM_MPL-7/whatsnew>`__ for this version to understand what has changed. MPL-7 is now the default release when Marvin is imported.
+
+In MPL-7 we have made ``HYB10`` the default bintype. Hybrid-binned ``Maps`` and ``ModelCubes`` use different binning schemes depending on the property measured. Before using ``HYB10`` make sure you read `the documentation <https://trac.sdss.org/wiki/MANGA/TRM/TRM_MPL-7/dap/GettingStarted#HYB10-GAU-MILESHC>`__ and understand how to use the data. For ``HYB10`` the `~marvin.tools.spaxel.Bin` class is somehow limited, since it does not allow for different binning schemes depending on the measured quantity. We are planning a major reimplementation of how bins are handled, which we will release with Marvin 2.3.0. In the meantime, please be aware of these limitations when using ``HYB10``.
+
 Simplifying the namespace
 **************************
 
@@ -114,9 +123,9 @@ Extra arguments passed to `Spectrum.plot <marvin.tools.quantities.spectrum.Spect
     ax.legend()
 
 Stellar Sigma Correction
-^^^^^^^^^^^^^^^^^^^^^^^^
+************************
 
-For MPL-6, we now raise an explicit error when attempting to apply the correction to `stellar_sigma`, using the `inst_sigma_correction` method.  The error message now suggests to upgrade to MPL-7 data.  For the web display of the `stellar_sigma` and `emline_gsigma` maps, we now apply the sigma correction automatically.  The corrected map is indicated via **Corrected: stellar_sigma** map title.
+For MPL-6, we now raise an explicit error when attempting to apply the correction to ``stellar_sigma``, using the ``inst_sigma_correction`` method.  The error message now suggests to upgrade to MPL-7 data.  For the web display of the ``stellar_sigma`` and ``emline_gsigma`` maps, we now apply the sigma correction automatically.  The corrected map is indicated via **Corrected: stellar_sigma** map title.
 
 |
 

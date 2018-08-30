@@ -6,8 +6,8 @@
 # @Filename: map.py
 # @License: BSD 3-clause (http://www.opensource.org/licenses/BSD-3-Clause)
 #
-# @Last modified by:   andrews
-# @Last modified time: 2018-07-25 15:07:30
+# @Last modified by: José Sánchez-Gallego (gallegoj@uw.edu)
+# @Last modified time: 2018-08-12 04:50:45
 
 
 from __future__ import absolute_import, division, print_function
@@ -224,7 +224,7 @@ class Map(units.Quantity, QuantityMixIn):
 
         # Gets the binid array for this property.
         if prop.name != 'binid':
-            binid = maps.get_binid(prop.binid)
+            binid = maps.get_binid(prop)
         else:
             binid = None
 

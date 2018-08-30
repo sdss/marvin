@@ -103,7 +103,6 @@ class MarvinConfig(object):
         self.use_sentry = True
         self.add_github_message = True
         self._allowed_releases = {}
-        #self.token = None
 
         # perform some checks
         self._load_defaults()
@@ -138,11 +137,6 @@ class MarvinConfig(object):
                 self.__setattr__(key, value)
 
         self._custom_config = config
-
-        # If the configuration file included a default release, we set it now
-        if 'default_release' in self._custom_config and self._custom_config['default_release']:
-            # We set _release because at this point the available versions are not yet set.
-            self._release = self._custom_config['default_release']
 
     def _checkPaths(self, name):
         ''' Check for the necessary path existence.
@@ -408,11 +402,17 @@ class MarvinConfig(object):
         # update the allowed releases
         self._update_releases()
 
+        # check for a default release from the custom config
+        default = 'default_release' in self._custom_config and self._custom_config['default_release']
+
         # Check for release version and if in allowed list
         latest = self._get_latest_release(mpl_only=self.access == 'collab')
         if not self.release:
-            log.info('No release version set. Setting default to {0}'.format(latest))
-            self.setRelease(latest)
+            if default:
+                self.setRelease(self._custom_config['default_release'])
+            else:
+                log.info('No release version set. Setting default to {0}'.format(latest))
+                self.setRelease(latest)
         elif self.release and self.release not in self._allowed_releases:
             # this toggles to latest DR when switching to public
             warnings.warn('Release {0} is not in the allowed releases.  '
@@ -635,16 +635,15 @@ class MarvinConfig(object):
         # yield the value (a release)
         yield value
 
-        # return early if the tree isn't set up or _release is None
+        # check if the tree isn't set up or _release is None
         # this should only occur during the initial imports
-        if not hasattr(self, '_tree') or self._release is None:
-            return
+        nullinit = not hasattr(self, '_tree') or self._release is None
 
         # set tree_config
         tree_config = 'sdsswork' if 'MPL' in value else value.lower() if 'DR' in value else None
 
         # replant the tree
-        if is_different:
+        if is_different and not nullinit:
             if (relchange and self.access == 'collab') or stilldr or topublic or tocollab:
                 self._tree.replant_tree(tree_config)
 

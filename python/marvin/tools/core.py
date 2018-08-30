@@ -5,7 +5,7 @@
 # @Filename: core.py
 # @License: BSD 3-clause (http://www.opensource.org/licenses/BSD-3-Clause)
 #
-# @Last modified by: José Sánchez-Gallego (gallegoj@uw.edu)
+# @Last modified by:   Brian Cherinka
 # @Last modified time: 2018-08-11 20:35:37
 
 from __future__ import absolute_import, division, print_function
@@ -117,18 +117,9 @@ class MarvinToolsClass(MMAMixIn):
                           plateifu=plateifu, mode=mode, data=data, release=release,
                           download=download)
 
-        self.datamodel = None
-        self._set_datamodel()
-
         # drop breadcrumb
         breadcrumb.drop(message='Initializing MarvinTool {0}'.format(self.__class__),
                         category=self.__class__)
-
-    @abc.abstractmethod
-    def _set_datamodel(self):
-        """Sets the datamodel for this object. Must be overridden by each subclass."""
-
-        pass
 
     def _toolInteraction(self, url, params=None):
         """Runs an Interaction and passes self._release."""

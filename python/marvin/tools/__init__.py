@@ -7,7 +7,7 @@ from .maps import Maps
 from .modelcube import ModelCube
 from .plate import Plate
 from .rss import RSS, RSSFiber
-from .spaxel import Bin, Spaxel
+from .spaxel import Spaxel
 
 
 # from .query import Query
