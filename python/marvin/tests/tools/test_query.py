@@ -6,7 +6,7 @@
 # @Author: Brian Cherinka
 # @Date:   2017-05-25 10:11:21
 # @Last modified by:   Brian Cherinka
-# @Last Modified time: 2018-08-28 14:03:11
+# @Last Modified time: 2018-08-30 14:24:45
 
 from __future__ import print_function, division, absolute_import
 from marvin.tools.query import Query, doQuery
@@ -16,6 +16,7 @@ from marvin.tools.cube import Cube
 from marvin.tools.maps import Maps
 from marvin.tools.spaxel import Spaxel
 from marvin.tools.modelcube import ModelCube
+from marvin.tests import marvin_test_if
 from marvin.tests.conftest import set_the_config
 import pytest
 
@@ -136,48 +137,49 @@ class TestQueryShow(object):
             assert exp in sql or exp == sql.strip('\n')
 
 
-class TestQueryReturnParams(object):
+# class TestQueryReturnParams(object):
 
-    @pytest.mark.parametrize('query', [('nsa.z < 0.1')], indirect=True)
-    @pytest.mark.parametrize('rps', [(['g_r']), (['cube.ra', 'cube.dec']), (['haflux'])])
-    def test_success(self, query, rps):
-        query = Query(search_filter=query.search_filter, return_params=rps, mode=query.mode)
-        params = query._remote_params['params'].split(',') if query.mode == 'remote' else query.params
-        #assert 'cube.ra' in params
-        assert set(rps).issubset(set(query.params))
-        res = query.run()
-        assert all([p in res.columns for p in rps]) is True
-        #assert set(rps).issubset(set(query.params))
-        #assert set(rps).issubset(set(res.paramtocol.keys()))
+#     @pytest.mark.parametrize('query', [('nsa.z < 0.1')], indirect=True)
+#     @pytest.mark.parametrize('rps', [(['g_r']), (['cube.ra', 'cube.dec']), (['haflux'])])
+#     def test_success(self, query, rps):
+#         query = Query(search_filter=query.search_filter, return_params=rps, mode=query.mode)
+#         params = query._remote_params['params'].split(',') if query.mode == 'remote' else query.params
+#         #assert 'nsa.z' in params
+#         names = [query._marvinform._param_form_lookup._nameShortcuts[r] for r in rps]
+#         assert set(names).issubset(set(query.params))
+#         res = query.run()
+#         assert all([p in res.columns for p in rps]) is True
+#         #assert set(rps).issubset(set(query.params))
+#         #assert set(rps).issubset(set(res.paramtocol.keys()))
 
-    @pytest.mark.parametrize('query', [('nsa.z < 0.1')], indirect=True)
-    @pytest.mark.parametrize('rps, errmsg',
-                             [('hello', 'does not match any column.'),
-                              ('name', 'name matches multiple parameters')],
-                             ids=['nomatch', 'multiple_entries'])
-    def test_badparams(self, query, expmode, rps, errmsg):
-        # set error type based on query mode
-        if expmode == 'remote':
-            error = MarvinError
-        else:
-            error = KeyError
+#     @pytest.mark.parametrize('query', [('nsa.z < 0.1')], indirect=True)
+#     @pytest.mark.parametrize('rps, errmsg',
+#                              [('hello', 'does not match any column.'),
+#                               ('name', 'name matches multiple parameters')],
+#                              ids=['nomatch', 'multiple_entries'])
+#     def test_badparams(self, query, expmode, rps, errmsg):
+#         # set error type based on query mode
+#         if expmode == 'remote':
+#             error = MarvinError
+#         else:
+#             error = KeyError
 
-        with pytest.raises(error) as cm:
-            query = Query(search_filter=query.search_filter, return_params=[rps], mode=query.mode)
-            res = query.run()
-        assert cm.type == error
-        assert errmsg in str(cm.value)
+#         with pytest.raises(error) as cm:
+#             query = Query(search_filter=query.search_filter, return_params=[rps], mode=query.mode)
+#             res = query.run()
+#         assert cm.type == error
+#         assert errmsg in str(cm.value)
 
-    @pytest.mark.parametrize('query', [('nsa.z < 0.1')], indirect=True)
-    @pytest.mark.parametrize('rps', [(['absmag_g_r', 'cube.plate', 'cube.plateifu'])])
-    def test_skipdefault(self, query, rps):
-        query = Query(search_filter=query.search_filter, return_params=rps, mode=query.mode)
-        params = query._remote_params['params'].split(',') if query.mode == 'remote' else query.params
-        assert len(query.return_params) == len(rps)
-        assert len(params) == 5
-        res = query.run()
-        assert len(res.returnparams) == len(rps)
-        assert len(res.columns) == 5
+#     @pytest.mark.parametrize('query', [('nsa.z < 0.1')], indirect=True)
+#     @pytest.mark.parametrize('rps', [(['absmag_g_r', 'cube.plate', 'cube.plateifu'])])
+#     def test_skipdefault(self, query, rps):
+#         query = Query(search_filter=query.search_filter, return_params=rps, mode=query.mode)
+#         params = query._remote_params['params'].split(',') if query.mode == 'remote' else query.params
+#         assert len(query.return_params) == len(rps)
+#         assert len(params) == 5
+#         res = query.run()
+#         assert len(res.returnparams) == len(rps)
+#         assert len(res.columns) == 5
 
 
 class TestQueryReturnType(object):
@@ -186,6 +188,7 @@ class TestQueryReturnType(object):
     @pytest.mark.parametrize('objtype, tool',
                              [('cube', Cube), ('maps', Maps), ('spaxel', Spaxel),
                               ('modelcube', ModelCube)])
+    @marvin_test_if(mark='skip', query={'release': ['MPL-4']})
     def test_get_success(self, query, objtype, tool):
         if query.mode == 'remote' and config.db is None:
             pytest.skip('skipping weird case where nodb, remote mode tried to load a local file')
@@ -201,6 +204,7 @@ class TestQueryReturnType(object):
     @pytest.mark.parametrize('query', [('nsa.z < 0.1')], indirect=True)
     @pytest.mark.parametrize('objtype, errmsg',
                              [('noncube', 'Query return_type must be either cube, spaxel, maps, modelcube, rss')])
+    @marvin_test_if(mark='skip', query={'mode': ['remote']})
     def test_badreturntype(self, query, objtype, errmsg):
         with pytest.raises(AssertionError) as cm:
             query = Query(search_filter=query.search_filter, return_type=objtype, mode=query.mode)
@@ -274,6 +278,36 @@ def rquery(request):
     config.forceDbOn()
 
 
+class TestQueryLocal(object):
+    mode = 'local'
+    sf = 'nsa.z < 0.1'
+
+    @pytest.mark.parametrize('rps', [(['g_r']), (['cube.ra', 'cube.dec']), (['haflux'])], ids=['g-r', 'radec', 'haflux'])
+    def test_return_params(self, rps):
+        base = ['cube.ra', 'cube.dec']
+        query = Query(search_filter=self.sf, mode=self.mode, return_params=base + rps)
+        reals = [query._marvinform._param_form_lookup.get_real_name(r) for r in rps]
+        assert set(reals).issubset(set(query.params))
+        assert set(reals).issubset(query.return_params)
+
+    @pytest.mark.parametrize('rps, errmsg',
+                             [('hello', 'does not match any column.'),
+                              ('name', 'name matches multiple parameters')],
+                             ids=['nomatch', 'multiple_entries'])
+    def test_bad_returnparams(self, rps, errmsg):
+        with pytest.raises(KeyError) as cm:
+            query = Query(search_filter=self.sf, return_params=[rps], mode=self.mode)
+        assert cm.type == KeyError
+        assert errmsg in str(cm.value)
+
+    @pytest.mark.parametrize('rps', [(['absmag_g_r', 'cube.plate', 'cube.plateifu'])])
+    def test_skipdefault(self, rps):
+        query = Query(search_filter=self.sf, return_params=rps, mode=self.mode)
+        assert len(query.return_params) == len(rps)
+        assert len(query.params) == 5
+        assert query.params.count('cube.plateifu') == 1
+
+
 class TestQueryAuto(object):
 
     @pytest.mark.parametrize('mode', [('local'), ('remote')])
@@ -282,4 +316,25 @@ class TestQueryAuto(object):
             config.forceDbOff()
         q = Query()
         assert q.mode == mode
+
+
+@pytest.fixture(scope='class')
+def dboff():
+    config.forceDbOff()
+    yield True
+    config.forceDbOn()
+
+
+@pytest.mark.usefixtures("dboff")
+class TestQueryRemote(object):
+    mode = 'remote'
+    sf = 'nsa.z < 0.1'
+
+    @pytest.mark.parametrize('rps', [(['g_r']), (['cube.ra', 'cube.dec']), (['haflux'])], ids=['g-r', 'radec', 'haflux'])
+    def test_return_params(self, rps):
+        base = ['cube.ra', 'cube.dec']
+        query = Query(search_filter=self.sf, mode=self.mode, return_params=base + rps)
+        params = query._remote_params['params'].split(',')
+        assert set(rps).issubset(set(params))
+
 
