@@ -346,6 +346,7 @@ class TestResultsPaging(object):
 
     @pytest.mark.parametrize('results', [('nsa.z < 0.1')], indirect=True)
     def test_get_all(self, results):
+        # this tests fails because of getAll
         res = results.getAll()
         assert results.count == results.totalcount
 
@@ -371,7 +372,7 @@ class TestResultsConvertTool(object):
     @pytest.mark.parametrize('objtype, tool',
                              [('cube', Cube), ('maps', Maps), ('spaxel', Spaxel),
                               ('modelcube', ModelCube)])
-    def test_convert_success(self, results, objtype, tool, exporigin):
+    def test_convert_success(self, results, objtype, tool):
         if config.release == 'MPL-4' and objtype == 'modelcube':
             pytest.skip('no modelcubes in mpl-4')
 
