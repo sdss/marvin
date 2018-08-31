@@ -6,7 +6,7 @@
 # @Author: Brian Cherinka
 # @Date:   2018-08-04 20:09:38
 # @Last modified by:   Brian Cherinka
-# @Last Modified time: 2018-08-30 13:25:39
+# @Last Modified time: 2018-08-31 12:53:20
 
 from __future__ import print_function, division, absolute_import, unicode_literals
 
@@ -351,6 +351,7 @@ class Query(object):
             raise MarvinError('API Query call failed: {0}'.format(e))
         else:
             results = ii.getData()
+            #remotes = self._get_remote_parameters()
             # retrive and set some parameters
             self._query_params_order = ii.results['queryparams_order']
             self.params = ii.results['params']
@@ -380,6 +381,46 @@ class Query(object):
         self._final_time = (posttime - starttime)
 
         return final
+
+    def _get_remote_parameters(self, interaction):
+        ''' Retrieve or set parameters needed '''
+
+            # from query interaction
+            #self._query_params_order = ii.results['queryparams_order']
+            #self.params = ii.results['params']
+            #self.query = ii.results['query']
+            #count = ii.results['count']
+            #chunk = int(ii.results['chunk'])
+            #totalcount = ii.results['totalcount']
+            #query_runtime = ii.results['runtime']
+            #resp_runtime = ii.response_time
+
+            # from results interaction
+            #self.response_time = ii.response_time
+            #self._runtime = ii.results['runtime']
+            #self.query_time = self._getRunTime()
+
+        results = interaction.results
+        response_time = interaction.response_time
+        assert isinstance(results, dict), 'Interaction results must be a dictionary'
+
+        # get some parameters
+        query_params_order = results.get('queryparams_order', None)
+        params = results.get('params', None)
+        query = results.get('query', None)
+        count = results.get('count', None)
+        chunk = int(results.get('chunk', None))
+        totalcount = results.get('totalcount', None)
+        runtime = results.get('runtime', None)
+
+        if len(results) == 1 and results.has_key('data'):
+            totalcount = len(results['data'])
+            count = totalcount
+            chunk = self.limit
+            runtime = response_time
+
+
+        return remotes
 
     def _run_local(self, start=None, end=None, query_type=None):
         ''' Run a local database Query

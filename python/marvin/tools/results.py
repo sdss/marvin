@@ -909,9 +909,12 @@ class Results(object):
             if return_params and isinstance(return_params, list):
                 params['params'] = ','.join(return_params)
 
+        # check if we're getting all results
+        datastream = calltype == 'getAll'
+
         # send the request
         try:
-            ii = Interaction(route=url, params=params, stream=True)
+            ii = Interaction(route=url, params=params, stream=True, datastream=datastream)
         except MarvinError as e:
             raise MarvinError('API Query {0} call failed: {1}'.format(calltype, e))
         else:
@@ -1377,7 +1380,7 @@ class Results(object):
             self.count = self.totalcount
             print('Returned all {0} results'.format(self.totalcount))
 
-    def convertToTool(self, tooltype, **kwargs):
+    def convertToTool(self, tooltype, mode='auto', limit=None):
         ''' Converts the list of results into Marvin Tool objects
 
         Creates a list of Marvin Tool objects from a set of query results.
@@ -1419,8 +1422,6 @@ class Results(object):
         '''
 
         # set the desired tool type
-        mode = kwargs.get('mode', self.mode)
-        limit = kwargs.get('limit', None)
         toollist = ['cube', 'spaxel', 'maps', 'rss', 'modelcube']
         tooltype = tooltype if tooltype else self.returntype
         assert tooltype in toollist, 'Returned tool type must be one of {0}'.format(toollist)
@@ -1473,6 +1474,8 @@ class Results(object):
             isbin = 'bintype.name' in paramlist
             istemp = 'template.name' in paramlist
             self.objects = []
+
+            assert self._release != 'MPL-4', "ModelCubes require a release of MPL-5 and up"
 
             for res in self.results[0:limit]:
                 mapkwargs = {'mode': mode, 'plateifu': res.plateifu}

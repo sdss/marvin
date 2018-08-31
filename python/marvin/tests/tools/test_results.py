@@ -27,8 +27,8 @@ import json
 
 
 myplateifu = '8485-1901'
-cols = ['cube.mangaid', 'cube.plate', 'cube.plateifu', 'ifu.name', 'nsa.z']
-remotecols = [u'mangaid', u'plate', u'plateifu', u'ifu_name', u'z']
+cols = ['cube.mangaid', 'cube.plateifu', 'nsa.z']
+remotecols = [u'mangaid', u'plateifu', u'z']
 
 
 @pytest.fixture()
@@ -40,8 +40,8 @@ def limits(results):
 
 @pytest.fixture()
 def results(query, request):
-    searchfilter = request.param if hasattr(request, 'param') else 'nsa.z < 0.1 and cube.plate==8485'
-    q = Query(searchfilter=searchfilter, mode=query.mode, limit=10, release=query._release)
+    searchfilter = request.param if hasattr(request, 'param') else 'nsa.z < 0.1'
+    q = Query(search_filter=searchfilter, mode=query.mode, limit=10, release=query.release)
     r = q.run()
     r.expdata = query.expdata
     yield r
@@ -57,10 +57,10 @@ def columns(results):
 class TestResultsColumns(object):
 
     def test_check_cols(self, results, columns):
-        assert results.columns.full == columns.full
-        assert results.columns.remote == columns.remote
+        assert set(results.columns.full) == set(columns.full)
+        assert set(results.columns.remote) == set(columns.remote)
 
-    @pytest.mark.parametrize('col, errmsg', [('plate', 'plate is too ambiguous.  Did you mean one of')])
+    @pytest.mark.parametrize('col, errmsg', [('cube', 'cube is too ambiguous.  Did you mean one of')])
     def test_fail(self, results, col, errmsg):
         with pytest.raises(KeyError) as cm:
             col in results.columns
@@ -94,29 +94,28 @@ class TestResultsColumns(object):
 class TestMarvinTuple(object):
 
     def test_create(self, results):
-        data = results.results[0].__dict__
+        data = results.results[0]._asdict()
         mt = marvintuple('ResultRow', data.keys())
         assert mt is not None
         assert hasattr(mt, 'mangaid')
         assert hasattr(mt, 'plateifu')
 
         row = mt(**data)
-        assert row.plate == data['plate']
         assert row.mangaid == data['mangaid']
         assert row.plateifu == data['plateifu']
 
     def test_add(self, results):
-        data = results.results[0].__dict__
-        mt = marvintuple('ResultRow', 'mangaid, plate, plateifu, ifu_name')
+        data = results.results[0]._asdict()
+        mt = marvintuple('ResultRow', 'mangaid, plateifu')
         mt1 = marvintuple('ResultRow', 'z')
 
-        row = mt(**{k: v for k, v in data.items() if k in ['mangaid', 'plate', 'plateifu', 'ifu_name']})
+        row = mt(**{k: v for k, v in data.items() if k in ['mangaid', 'plateifu']})
         row1 = mt1(**{k: v for k, v in data.items()})
         new_row = row + row1
         assert new_row is not None
-        cols = ['mangaid', 'plate', 'plateifu', 'z']
-        assert set(cols).issubset(set(new_row.__dict__.keys()))
-        assert row.__dict__ <= new_row.__dict__
+        cols = ['mangaid', 'plateifu', 'z']
+        assert set(cols).issubset(set(new_row._asdict().keys()))
+        assert all(item in new_row._asdict().items() for item in row._asdict().items())
 
 
 class TestResultSet(object):
@@ -127,6 +126,7 @@ class TestResultSet(object):
 
     @pytest.mark.parametrize('results', [('nsa.z < 0.1')], indirect=True)
     def test_sort(self, results):
+        # these break because getAll send return_all=True which uses generator
         redshift = results.expdata['queries']['nsa.z < 0.1']['sorted']['1'][-1]
         results.getAll()
         results.results.sort('z')
@@ -181,7 +181,7 @@ class TestResultsGetParams(object):
 
     @pytest.mark.parametrize('col',
                              [(c) for c in cols],
-                             ids=['cube.mangaid', 'cube.plate', 'cube.plateifu', 'ifu.name', 'nsa.z'])
+                             ids=['cube.mangaid', 'cube.plateifu', 'nsa.z'])
     def test_get_list(self, results, col):
         assert col in results.columns
         obj = results.getListOf(col)
@@ -195,8 +195,9 @@ class TestResultsGetParams(object):
                               ('nsa.z < 0.1'),
                               ('haflux > 25')], indirect=True)
     def test_get_list_all(self, results):
-        q = Query(searchfilter=results.searchfilter, mode=results.mode, limit=1,
-                  release=results._release, returnparams=results.returnparams)
+        # these break because now remote searchfilter is different
+        q = Query(search_filter=results.searchfilter, mode=results.mode, limit=1,
+                  release=results._release, return_params=results.returnparams)
         r = q.run(start=0, end=1)
         assert r.count == 1
         mangaids = r.getListOf('mangaid', return_all=True)
@@ -374,7 +375,7 @@ class TestResultsConvertTool(object):
         if config.release == 'MPL-4' and objtype == 'modelcube':
             pytest.skip('no modelcubes in mpl-4')
 
-        results.convertToTool(objtype, limit=1)
+        results.convertToTool(objtype, limit=1, mode=results.mode)
         assert results.objects is not None
         assert isinstance(results.objects, list) is True
         assert isinstance(results.objects[0], tool) is True
@@ -382,7 +383,7 @@ class TestResultsConvertTool(object):
             assert results.mode == results.objects[0].mode
 
     @pytest.mark.parametrize('objtype, error, errmsg',
-                             [('modelcube', MarvinError, "ModelCube requires at least dapver='2.0.2'"),
+                             [('modelcube', AssertionError, "ModelCubes require a release of MPL-5 and up"),
                               ('spaxel', AssertionError, 'Parameters must include spaxelprop.x and y in order to convert to Marvin Spaxel')],
                              ids=['mcminrelease', 'nospaxinfo'])
     def test_convert_failures(self, results, objtype, error, errmsg):
