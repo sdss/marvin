@@ -110,6 +110,30 @@ def _get_column(results, colname, format_type=None):
     return column
 
 
+def _compressed_response(compression, results):
+    ''' Compress the data before sending it back in the Response
+
+    Parameters:
+        compression (str):
+            The compression type.  Either `json` or `msgpack`.
+        results (dict):
+            The current response dictionary
+
+    Returns:
+        A Flask Response object with the compressed data
+    '''
+
+    # pack the data
+    mimetype = 'json' if compression == 'json' else 'octet-stream'
+    try:
+        packed = compress_data(results, compress_with=compression)
+    except Exception as e:
+        self.results['error'] = str(e)
+        self.results['traceback'] = get_traceback(asstring=True)
+
+    return Response(stream_with_context(packed), mimetype='application/{0}'.format(mimetype))
+
+
 class QueryView(BaseView):
     """Class describing API calls related to queries."""
     decorators = [limiter.limit("60/minute")]
@@ -265,16 +289,8 @@ class QueryView(BaseView):
             self.results['status'] = 1
             self.update_results(res)
 
-        # pack the data
         compression = args.pop('compression', config.compression)
-        mimetype = 'json' if compression == 'json' else 'octet-stream'
-        try:
-            packed = compress_data(self.results, compress_with=compression)
-        except Exception as e:
-            self.results['error'] = str(e)
-            self.results['traceback'] = get_traceback(asstring=True)
-
-        return Response(stream_with_context(packed), mimetype='application/{0}'.format(mimetype))
+        return _compressed_response(compression, self.results)
 
     @route('/cubes/columns/', defaults={'colname': None}, methods=['GET', 'POST'], endpoint='getcolumn')
     @route('/cubes/columns/<colname>/', methods=['GET', 'POST'], endpoint='getcolumn')
@@ -342,7 +358,9 @@ class QueryView(BaseView):
                 self.results['data'] = column
                 self.results['runtime'] = _get_runtime(query)
 
-        return Response(json.dumps(self.results), mimetype='application/json')
+        compression = args.pop('compression', config.compression)
+        return _compressed_response(compression, self.results)
+        #return Response(json.dumps(self.results), mimetype='application/json')
 
     @route('/cubes/getsubset/', methods=['GET', 'POST'], endpoint='getsubset')
     @av.check_args(use_params='query', required=['searchfilter', 'start', 'end'])
@@ -428,8 +446,10 @@ class QueryView(BaseView):
             self.results['status'] = 1
             self.update_results(res)
 
+        compression = args.pop('compression', config.compression)
+        return _compressed_response(compression, self.results)
         # this needs to be json.dumps until sas-vm at Utah updates to 2.7.11
-        return Response(json.dumps(self.results), mimetype='application/json')
+        #return Response(json.dumps(self.results), mimetype='application/json')
 
     @route('/getparamslist/', methods=['GET', 'POST'], endpoint='getparams')
     @av.check_args(use_params='query', required='paramdisplay')
