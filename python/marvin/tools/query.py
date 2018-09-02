@@ -6,7 +6,7 @@
 # @Author: Brian Cherinka
 # @Date:   2018-08-04 20:09:38
 # @Last modified by:   Brian Cherinka
-# @Last Modified time: 2018-08-31 12:53:20
+# @Last Modified time: 2018-09-02 18:16:34
 
 from __future__ import print_function, division, absolute_import, unicode_literals
 
@@ -350,31 +350,21 @@ class Query(object):
         except Exception as e:
             raise MarvinError('API Query call failed: {0}'.format(e))
         else:
-            results = ii.getData()
-            #remotes = self._get_remote_parameters()
             # retrive and set some parameters
-            self._query_params_order = ii.results['queryparams_order']
-            self.params = ii.results['params']
-            self.query = ii.results['query']
-            count = ii.results['count']
-            chunk = int(ii.results['chunk'])
-            totalcount = ii.results['totalcount']
-            query_runtime = ii.results['runtime']
-            resp_runtime = ii.response_time
+            remotes = self._get_remote_parameters(ii)
+            remotes.update({'start': start, 'end': end})
 
         # do results stuff here
         if self.return_all:
-            msg = 'Returning all {0} results'.format(totalcount)
+            msg = 'Returning all {0} results'.format(remotes['totalcount'])
         else:
-            msg = 'Only returning the first {0} results.'.format(count)
+            msg = 'Only returning the first {0} results.'.format(remotes['count'])
 
         if self.verbose:
-            print('Results contain of a total of {0}. {1}'.format(totalcount, msg))
+            print('Results contain of a total of {0}. {1}'.format(remotes['totalcount'], msg))
 
         # get Marvin Results
-        final = Results(results=results, query=self.query, mode=self.mode, queryobj=self, count=count,
-                        returntype=self.return_type, totalcount=totalcount, chunk=chunk,
-                        runtime=query_runtime, response_time=resp_runtime, start=start, end=end)
+        final = Results(**remotes)
 
         # get the final time
         posttime = datetime.datetime.now()
@@ -383,42 +373,48 @@ class Query(object):
         return final
 
     def _get_remote_parameters(self, interaction):
-        ''' Retrieve or set parameters needed '''
+        ''' Retrieve or set parameters needed
 
-            # from query interaction
-            #self._query_params_order = ii.results['queryparams_order']
-            #self.params = ii.results['params']
-            #self.query = ii.results['query']
-            #count = ii.results['count']
-            #chunk = int(ii.results['chunk'])
-            #totalcount = ii.results['totalcount']
-            #query_runtime = ii.results['runtime']
-            #resp_runtime = ii.response_time
+        Parameters:
+            interaction (object):
+                The Marvin Interaction response object
 
-            # from results interaction
-            #self.response_time = ii.response_time
-            #self._runtime = ii.results['runtime']
-            #self.query_time = self._getRunTime()
+        Returns:
+            A dict of parameters needed to pass into Marvin Results
+
+        '''
 
         results = interaction.results
         response_time = interaction.response_time
         assert isinstance(results, dict), 'Interaction results must be a dictionary'
 
         # get some parameters
-        query_params_order = results.get('queryparams_order', None)
+        data = interaction.getData()
         params = results.get('params', None)
-        query = results.get('query', None)
+        query = results.get('query', self.search_filter)
         count = results.get('count', None)
-        chunk = int(results.get('chunk', None))
+        chunk = results.get('chunk', None)
         totalcount = results.get('totalcount', None)
         runtime = results.get('runtime', None)
 
+        # set some parameters when only data is available
         if len(results) == 1 and results.has_key('data'):
-            totalcount = len(results['data'])
+            # check first data row
+            row = data[0]
+            isstr = any([isinstance(i, six.string_types) for i in row])
+            data = data[1:] if isstr else data
+            # compute additional info
+            params = row if isstr else []
+            totalcount = len(data)
             count = totalcount
             chunk = self.limit
             runtime = response_time
 
+        self.query = query
+        self.params = params
+        remotes = dict(response_time=response_time, params=params, query=query, results=data,
+                       totalcount=totalcount, count=count, runtime=runtime, chunk=int(chunk),
+                       mode=self.mode, queryobj=self)
 
         return remotes
 

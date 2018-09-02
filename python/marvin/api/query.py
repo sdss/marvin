@@ -60,7 +60,7 @@ def _getCubes(searchfilter, **kwargs):
     return output
 
 
-def gen(query, compression=config.compression):
+def gen(query, compression=config.compression, params=None):
     ''' Generator for query results
 
     Parameters:
@@ -73,7 +73,9 @@ def gen(query, compression=config.compression):
         A compressed result row of data to stream to the client
 
     '''
-    for row in query:
+    for i, row in enumerate(query):
+        if i == 0 and params:
+            yield compress_data(params, compress_with=compression) + ';\n'
         yield compress_data(row, compress_with=compression) + ';\n'
 
 
@@ -200,7 +202,7 @@ class QueryView(BaseView):
                       filter=searchfilter, params=q.params, returnparams=q.return_params, runtime=None,
                       queryparams_order=q._query_params_order, count=None, totalcount=None)
 
-        return Response(stream_with_context(gen(q.query, compression=compression)), mimetype='application/{0}'.format(mimetype))
+        return Response(stream_with_context(gen(q.query, compression=compression, params=q.params)), mimetype='application/{0}'.format(mimetype))
 
     @route('/cubes/', methods=['GET', 'POST'], endpoint='querycubes')
     @av.check_args(use_params='query', required='searchfilter')
