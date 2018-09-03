@@ -1,14 +1,26 @@
-from flask_classful import route
-from flask import jsonify, Response, redirect, url_for, stream_with_context
-from marvin import config
-from marvin.tools.query import doQuery, Query
-from marvin.core.exceptions import MarvinError
-from marvin.api.base import BaseView, arg_validate as av
-from marvin.utils.db import get_traceback
-from marvin.utils.datamodel.query.base import bestparams
-from marvin.web.extensions import limiter
+# !usr/bin/env python
+# -*- coding: utf-8 -*-
+#
+# Licensed under a 3-clause BSD license.
+#
+# @Author: Brian Cherinka
+# @Date:   2018-09-03 18:56:38
+# @Last modified by:   Brian Cherinka
+# @Last Modified time: 2018-09-03 18:57:08
+
+from __future__ import absolute_import, division, print_function
+
 from brain.utils.general import compress_data
-import json
+from flask import Response, jsonify, redirect, stream_with_context, url_for
+from flask_classful import route
+from marvin import config
+from marvin.api.base import arg_validate as av
+from marvin.api.base import BaseView
+from marvin.core.exceptions import MarvinError
+from marvin.tools.query import Query, doQuery
+from marvin.utils.datamodel.query.base import bestparams
+from marvin.utils.db import get_traceback
+from marvin.web.extensions import limiter
 
 
 def _run_query(searchfilter, **kwargs):
@@ -131,8 +143,8 @@ def _compressed_response(compression, results):
     try:
         packed = compress_data(results, compress_with=compression)
     except Exception as e:
-        self.results['error'] = str(e)
-        self.results['traceback'] = get_traceback(asstring=True)
+        results['error'] = str(e)
+        results['traceback'] = get_traceback(asstring=True)
 
     return Response(stream_with_context(packed), mimetype='application/{0}'.format(mimetype))
 
