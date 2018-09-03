@@ -15,7 +15,8 @@ def _run_query(searchfilter, **kwargs):
     ''' Run the query and return the query and results '''
 
     release = kwargs.pop('release', None)
-    kwargs['return_params'] = kwargs.pop('params', None)
+    kwargs['return_params'] = kwargs.pop('returnparams', None)
+    kwargs['default_params'] = kwargs.pop('defaults', None)
     kwargs['return_type'] = kwargs.pop('rettype', None)
     try:
         q, r = doQuery(search_filter=searchfilter, release=release, **kwargs)
@@ -41,7 +42,7 @@ def _getCubes(searchfilter, **kwargs):
     start = kwargs.get('start', None)
     end = kwargs.get('end', None)
     limit = kwargs.get('limit', None)
-    params = kwargs.get('params', None)
+    returnparams = kwargs.get('returnparams', None)
 
     # retrieve a subset
     chunk = None
@@ -55,7 +56,7 @@ def _getCubes(searchfilter, **kwargs):
 
     # set up the output
     output = dict(data=results, query=r.showQuery(), chunk=limit,
-                  filter=searchfilter, params=q.params, returnparams=params, runtime=_get_runtime(q),
+                  filter=searchfilter, params=q.params, returnparams=returnparams, runtime=_get_runtime(q),
                   queryparams_order=q._query_params_order, count=len(results), totalcount=r.totalcount)
     return output
 
@@ -194,7 +195,7 @@ class QueryView(BaseView):
         mimetype = 'json' if compression == 'json' else 'octet-stream'
 
         release = args.pop('release', None)
-        args['return_params'] = args.pop('params', None)
+        args['return_params'] = args.pop('returnparams', None)
         args['return_type'] = args.pop('rettype', None)
         q = Query(search_filter=searchfilter, release=release, **args)
 
@@ -281,7 +282,7 @@ class QueryView(BaseView):
             return redirect(url_for('api.stream', **args))
 
         searchfilter = args.pop('searchfilter', None)
-
+        print('args', args)
         try:
             res = _getCubes(searchfilter, **args)
         except MarvinError as e:

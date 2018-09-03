@@ -555,7 +555,7 @@ class Results(object):
 
             # Get the query route
             url = config.urlmap['api']['querycubes']['url']
-            params = {'searchfilter': self.search_filter, 'params': self.return_params,
+            params = {'searchfilter': self.search_filter, 'returnparams': self.return_params,
                       'sort': remotename, 'order': order, 'limit': self.limit}
 
             self._interaction(url, params, create_set=True, calltype='Sort')
@@ -911,10 +911,10 @@ class Results(object):
         '''
 
         # check if the returnparams parameter is in the proper format
-        if 'params' in params:
-            return_params = params.get('params', None)
+        if 'returnparams' in params:
+            return_params = params.get('returnparams', None)
             if return_params and isinstance(return_params, list):
-                params['params'] = ','.join(return_params)
+                params['returnparams'] = ','.join(return_params)
 
         # check if we're getting all results
         datastream = calltype == 'getAll'
@@ -985,7 +985,7 @@ class Results(object):
             # # grab all of that column
             url = config.urlmap['api']['getcolumn']['url'].format(colname=fullname)
             params = {'searchfilter': self.search_filter, 'format_type': 'list',
-                      'return_all': True, 'params': self.return_params}
+                      'return_all': True, 'returnparams': self.return_params}
             output = self._interaction(url, params, calltype='getList')
         else:
             # only deal with current page
@@ -1056,7 +1056,7 @@ class Results(object):
         if return_all:
             # grab all or of a specific column
             params = {'searchfilter': self.search_filter, 'return_all': True,
-                      'format_type': format_type, 'params': self.return_params}
+                      'format_type': format_type, 'returnparams': self.return_params}
             url = config.urlmap['api']['getcolumn']['url'].format(colname=fullname)
             output = self._interaction(url, params, calltype='getDict')
         else:
@@ -1188,7 +1188,7 @@ class Results(object):
 
             # Get the query route
             url = config.urlmap['api']['getsubset']['url']
-            params = {'searchfilter': self.search_filter, 'params': self.return_params,
+            params = {'searchfilter': self.search_filter, 'returnparams': self.return_params,
                       'start': newstart, 'end': newend, 'limit': chunk,
                       'sort': self.sortcol, 'order': self.order}
             self._interaction(url, params, calltype='getNext', create_set=True,
@@ -1266,7 +1266,7 @@ class Results(object):
             # Get the query route
             url = config.urlmap['api']['getsubset']['url']
 
-            params = {'searchfilter': self.search_filter, 'params': self.return_params,
+            params = {'searchfilter': self.search_filter, 'returnparams': self.return_params,
                       'start': newstart, 'end': newend, 'limit': chunk,
                       'sort': self.sortcol, 'order': self.order}
             self._interaction(url, params, calltype='getPrevious', create_set=True,
@@ -1337,7 +1337,7 @@ class Results(object):
             # Get the query route
             url = config.urlmap['api']['getsubset']['url']
 
-            params = {'searchfilter': self.search_filter, 'params': self.return_params,
+            params = {'searchfilter': self.search_filter, 'returnparams': self.return_params,
                       'start': start, 'end': end, 'limit': limit,
                       'sort': self.sortcol, 'order': self.order}
             self._interaction(url, params, calltype='getSubset', create_set=True, index=start)
@@ -1382,7 +1382,7 @@ class Results(object):
             url = config.urlmap['api']['querycubes']['url']
 
             params = {'searchfilter': self.search_filter, 'return_all': True,
-                      'params': self.return_params, 'limit': self.limit,
+                      'returnparams': self.return_params, 'limit': self.limit,
                       'sort': self.sortcol, 'order': self.order}
             self._interaction(url, params, calltype='getAll', create_set=True)
             self.count = self.totalcount

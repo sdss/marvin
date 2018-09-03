@@ -6,7 +6,7 @@
 # @Author: Brian Cherinka
 # @Date:   2017-05-25 10:11:21
 # @Last modified by:   Brian Cherinka
-# @Last Modified time: 2018-08-30 14:24:45
+# @Last Modified time: 2018-09-03 18:40:29
 
 from __future__ import print_function, division, absolute_import
 from marvin.tools.query import Query, doQuery
@@ -268,6 +268,7 @@ def lquery(request):
     yield q
     q = None
 
+
 @pytest.fixture(scope='class')
 def rquery(request):
     config.forceDbOff()
@@ -334,7 +335,7 @@ class TestQueryRemote(object):
     def test_return_params(self, rps):
         base = ['cube.ra', 'cube.dec']
         query = Query(search_filter=self.sf, mode=self.mode, return_params=base + rps)
-        params = query._remote_params['params'].split(',')
+        params = query._remote_params['returnparams'].split(',')
         assert set(rps).issubset(set(params))
 
 
