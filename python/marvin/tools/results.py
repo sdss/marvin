@@ -124,20 +124,9 @@ def marvintuple(name, params=None, **kwargs):
 
     # pop any extra keywords
     results = kwargs.pop('results', None)
-    # set the default string
-    # if hasattr(results, 'default_params') and results.default_params:
-    #     names = [results.datamodel[s].name for s in results.default_params]
-    #     dps = ', '.join(names)
-    # else:
-    #     dps = 'mangaid, plateifu'
 
-    dps = 'mangaid, plateifu'
-
-    # create default namedtuple and find new columns
-    default = namedtuple(name, dps)
-    newcols = [col for col in params if col not in default._fields] if params else None
-    finalfields = default._fields + tuple(newcols) if newcols else default._fields
-    nt = namedtuple(name, finalfields, **kwargs)
+    # create default namedtuple
+    nt = namedtuple(name, params, **kwargs)
 
     def new_add(self, other):
         ''' Overloaded add to combine tuples without duplicates '''
@@ -146,7 +135,10 @@ def marvintuple(name, params=None, **kwargs):
             assert self.release == other.release, 'Cannot add result rows from different releases'
         if self._search_filter:
             assert self._search_filter == other._search_filter, ('Cannot add result rows generated '
-                                                               'using different search filters')
+                                                                 'using different search filters')
+
+        assert hasattr(self, 'plateifu') and hasattr(other, 'plateifu'), ("All rows must have a "
+                                                                          "plateifu column to be able to add")
 
         assert self.plateifu == other.plateifu, 'The plateifus must be the same to add these rows'
 
@@ -350,7 +342,7 @@ class Results(object):
             SQLalchemy object that can be used to redo the query, or extract subsets
             of results from the query. In remote more, the query is a literal string
             representation of the SQL query.
-        returntype (str):
+        return_type (str):
             The MarvinTools object to convert the results into.  If initially set, the results
             are automaticaly converted into the specified Marvin Tool Object on initialization
         objects (list):
@@ -391,7 +383,7 @@ class Results(object):
     def __init__(self, results=None, mode=None, data_origin=None, release=None, count=None,
                  totalcount=None, runtime=None, response_time=None, chunk=None, start=None,
                  end=None, queryobj=None, query=None, search_filter=None, return_params=None,
-                 return_type=None, default_params=None, limit=None, params=None, **kwargs):
+                 return_type=None, limit=None, params=None, **kwargs):
 
         # basic parameters
         self.results = results
@@ -407,7 +399,6 @@ class Results(object):
         self.return_type = self._queryobj.return_type if self._queryobj else return_type
         self.search_filter = self._queryobj.search_filter if self._queryobj else search_filter
         self.return_params = self._queryobj.return_params if self._queryobj else return_params
-        self.default_params = self._queryobj.default_params if self._queryobj else default_params
         self.limit = self._queryobj.limit if self._queryobj else limit
 
         # stat parameters

@@ -104,18 +104,28 @@ class TestMarvinTuple(object):
         assert row.mangaid == data['mangaid']
         assert row.plateifu == data['plateifu']
 
-    def test_add(self, results):
+    @pytest.mark.parametrize('params, msg',
+                             [('plateifu, z', None),
+                              ('z', 'All rows must have a plateifu column to be able to add')],
+                             ids=['pass', 'fail'])
+    def test_add(self, results, params, msg):
         data = results.results[0]._asdict()
         mt = marvintuple('ResultRow', 'mangaid, plateifu')
-        mt1 = marvintuple('ResultRow', 'z')
-
+        mt1 = marvintuple('ResultRow', params)
+        cols = [c.strip() for c in params.split(',')]
         row = mt(**{k: v for k, v in data.items() if k in ['mangaid', 'plateifu']})
-        row1 = mt1(**{k: v for k, v in data.items()})
-        new_row = row + row1
-        assert new_row is not None
-        cols = ['mangaid', 'plateifu', 'z']
-        assert set(cols).issubset(set(new_row._asdict().keys()))
-        assert all(item in new_row._asdict().items() for item in row._asdict().items())
+        row1 = mt1(**{k: v for k, v in data.items() if k in cols})
+
+        if msg:
+            with pytest.raises(AssertionError) as cm:
+                new_row = row + row1
+            assert msg in str(cm)
+        else:
+            new_row = row + row1
+            assert new_row is not None
+            cols = ['mangaid', 'plateifu'] + cols
+            assert set(cols).issubset(set(new_row._asdict().keys()))
+            assert all(item in new_row._asdict().items() for item in row._asdict().items())
 
 
 class TestResultSet(object):
