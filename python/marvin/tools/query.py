@@ -6,7 +6,7 @@
 # @Author: Brian Cherinka
 # @Date:   2018-08-04 20:09:38
 # @Last modified by:   Brian Cherinka
-# @Last Modified time: 2018-09-02 18:16:34
+# @Last Modified time: 2018-09-02 20:03:24
 
 from __future__ import print_function, division, absolute_import, unicode_literals
 
@@ -393,12 +393,12 @@ class Query(object):
         params = results.get('params', None)
         query = results.get('query', self.search_filter)
         count = results.get('count', None)
-        chunk = results.get('chunk', None)
+        chunk = results.get('chunk', self.limit)
         totalcount = results.get('totalcount', None)
         runtime = results.get('runtime', None)
 
         # set some parameters when only data is available
-        if len(results) == 1 and results.has_key('data'):
+        if len(results) == 1 and 'data' in results:
             # check first data row
             row = data[0]
             isstr = any([isinstance(i, six.string_types) for i in row])
@@ -1488,6 +1488,7 @@ class Query(object):
 
         #newdefaults = self._marvinform._param_form_lookup.mapToColumn(params)
         newdefaults = [d for d in self._query_params if str(d).lower() in params]
+        self.default_params = params
         self.params = params
         newq = self.query.from_self(*newdefaults).group_by(*newdefaults)
         return newq

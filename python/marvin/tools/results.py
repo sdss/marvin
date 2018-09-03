@@ -125,11 +125,13 @@ def marvintuple(name, params=None, **kwargs):
     # pop any extra keywords
     results = kwargs.pop('results', None)
     # set the default string
-    if results.default_params:
-        names = [results.datamodel[s].name for s in results.default_params]
-        dps = ', '.join(names)
-    else:
-        dps = 'mangaid, plateifu'
+    # if hasattr(results, 'default_params') and results.default_params:
+    #     names = [results.datamodel[s].name for s in results.default_params]
+    #     dps = ', '.join(names)
+    # else:
+    #     dps = 'mangaid, plateifu'
+
+    dps = 'mangaid, plateifu'
 
     # create default namedtuple and find new columns
     default = namedtuple(name, dps)
@@ -841,9 +843,9 @@ class Results(object):
                 The instantiated Marvin Results class
         '''
         obj = marvin_pickle.restore(path, delete=delete)
+        obj.datamodel = datamodel[obj.release]
         obj._create_result_set()
         obj.getColumns()
-        obj.datamodel = datamodel[obj.release]
         return obj
 
     def toJson(self):

@@ -33,7 +33,7 @@ remotecols = [u'mangaid', u'plateifu', u'z']
 
 @pytest.fixture()
 def limits(results):
-    data = results.expdata['queries'][results.searchfilter]
+    data = results.expdata['queries'][results.search_filter]
     count = 10 if data['count'] >= 10 else data['count']
     return (10, count)
 
@@ -126,7 +126,6 @@ class TestResultSet(object):
 
     @pytest.mark.parametrize('results', [('nsa.z < 0.1')], indirect=True)
     def test_sort(self, results):
-        # these break because getAll send return_all=True which uses generator
         redshift = results.expdata['queries']['nsa.z < 0.1']['sorted']['1'][-1]
         results.getAll()
         results.results.sort('z')
@@ -191,18 +190,17 @@ class TestResultsGetParams(object):
         assert isinstance(json_obj, six.string_types)
 
     @pytest.mark.parametrize('results',
-                             [('nsa.z < 0.1 and haflux > 25'),
+                             [('nsa.z < 0.1 and emline_gflux_ha_6564 > 25'),
                               ('nsa.z < 0.1'),
-                              ('haflux > 25')], indirect=True)
+                              ('emline_gflux_ha_6564 > 25')], indirect=True)
     def test_get_list_all(self, results):
-        # these break because now remote searchfilter is different
-        q = Query(search_filter=results.searchfilter, mode=results.mode, limit=1,
-                  release=results._release, return_params=results.returnparams)
+        q = Query(search_filter=results.search_filter, mode=results.mode, limit=1,
+                  release=results.release, return_params=results.return_params)
         r = q.run(start=0, end=1)
         assert r.count == 1
         mangaids = r.getListOf('mangaid', return_all=True)
         assert len(mangaids) == r.totalcount
-        assert len(mangaids) == results.expdata['queries'][results.searchfilter]['count']
+        assert len(mangaids) == results.expdata['queries'][results.search_filter]['count']
 
     @pytest.mark.parametrize('ftype', [('dictlist'), ('listdict')])
     @pytest.mark.parametrize('name', [(None), ('mangaid'), ('z')], ids=['noname', 'mangaid', 'z'])
@@ -238,7 +236,7 @@ class TestResultsSort(object):
     def test_sort(self, results, limits):
         results.sort('z')
         limit, count = limits
-        data = results.expdata['queries'][results.searchfilter]['sorted']
+        data = results.expdata['queries'][results.search_filter]['sorted']
         assert tuple(data['1']) == results.results[0]
         assert tuple(data[str(count)]) == results.results[count - 1]
 
@@ -251,7 +249,7 @@ class TestResultsPaging(object):
             pytest.skip('skipping now due to weird issue with local results not same as remote results')
         results.sort('z')
         limit, count = limits
-        data = results.expdata['queries'][results.searchfilter]
+        data = results.expdata['queries'][results.search_filter]
         assert results.totalcount == data['count']
         assert results.count == count
         assert len(results.results) == count
@@ -269,7 +267,7 @@ class TestResultsPaging(object):
         limit, count = limits
         results.sort('z')
         results.getNext(chunk=chunk)
-        data = results.expdata['queries'][results.searchfilter]['sorted']
+        data = results.expdata['queries'][results.search_filter]['sorted']
         if results.count == results.totalcount:
             assert results.results[0] == tuple(data['1'])
             assert len(results.results) == count
@@ -291,7 +289,7 @@ class TestResultsPaging(object):
         results.sort('z')
         results.getSubset(index, limit=chunk)
         results.getPrevious(chunk=chunk)
-        data = results.expdata['queries'][results.searchfilter]['sorted']
+        data = results.expdata['queries'][results.search_filter]['sorted']
         if results.count == results.totalcount:
             assert results.results[0] == tuple(data['1'])
             assert len(results.results) == count
@@ -314,7 +312,7 @@ class TestResultsPaging(object):
         limit, count = limits
         results.sort('z')
         results.getSubset(index, limit=chunk)
-        data = results.expdata['queries'][results.searchfilter]['sorted']
+        data = results.expdata['queries'][results.search_filter]['sorted']
         if results.count == results.totalcount:
             assert results.results[0] == tuple(data['1'])
             assert len(results.results) == count
@@ -341,12 +339,11 @@ class TestResultsPaging(object):
         res = results.getSubset(0, limit=1)
         assert results.count == 1
         results.loop(chunk=500)
-        assert results.count == results.expdata['queries'][results.searchfilter]['count']
+        assert results.count == results.expdata['queries'][results.search_filter]['count']
         assert results.count == results.totalcount
 
     @pytest.mark.parametrize('results', [('nsa.z < 0.1')], indirect=True)
     def test_get_all(self, results):
-        # this tests fails because of getAll
         res = results.getAll()
         assert results.count == results.totalcount
 
@@ -363,7 +360,7 @@ class TestResultsPickling(object):
         path = results.save(str(file), overwrite=True)
         assert file.check() is True
         r = Results.restore(str(file))
-        assert r.searchfilter == results.searchfilter
+        assert r.search_filter == results.search_filter
 
 
 class TestResultsConvertTool(object):
