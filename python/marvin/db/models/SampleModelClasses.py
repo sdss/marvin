@@ -14,8 +14,7 @@ Revision history:
 
 """
 
-from __future__ import division
-from __future__ import print_function
+from __future__ import division, print_function
 
 import itertools
 import math
@@ -23,20 +22,18 @@ import re
 import shutil
 
 import numpy as np
+from marvin.core.caching_query import RelationshipCache
+from marvin.db.database import db
+from sqlalchemy import Float, ForeignKeyConstraint, case, cast, func
+from sqlalchemy.ext.hybrid import hybrid_method, hybrid_property
+from sqlalchemy.inspection import inspect as sa_inspect
+from sqlalchemy.orm import backref, configure_mappers, relationship
+
 
 try:
     import cStringIO as StringIO
 except ImportError:
     from io import StringIO
-
-from sqlalchemy import case, cast, Float
-from sqlalchemy import ForeignKeyConstraint, func
-from sqlalchemy.ext.hybrid import hybrid_property, hybrid_method
-from sqlalchemy.inspection import inspect as sa_inspect
-from sqlalchemy.orm import relationship, configure_mappers, backref
-
-from marvin.core.caching_query import RelationshipCache
-from marvin.db.database import db
 
 
 Base = db.Base

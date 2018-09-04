@@ -30,7 +30,7 @@ from marvin.tools.modelcube import ModelCube
 from marvin.tools.rss import RSS
 from marvin.utils.datamodel.query import datamodel
 from marvin.utils.datamodel.query.base import ParameterGroup
-from marvin.utils.general import (downloadList, getImagesByList, map_bins_to_column, temp_setattr,
+from marvin.utils.general import (downloadList, get_images_by_list, map_bins_to_column, temp_setattr,
                                   turn_off_ion)
 
 try:
@@ -125,20 +125,20 @@ def marvintuple(name, params=None, **kwargs):
     # pop any extra keywords
     results = kwargs.pop('results', None)
 
-    # create default namedtuple and find new columns
-    default = namedtuple(name, 'mangaid, plate, plateifu, ifu_name')
-    newcols = [col for col in params if col not in default._fields] if params else None
-    finalfields = default._fields + tuple(newcols) if newcols else default._fields
-    nt = namedtuple(name, finalfields, **kwargs)
+    # create default namedtuple
+    nt = namedtuple(name, params, **kwargs)
 
     def new_add(self, other):
         ''' Overloaded add to combine tuples without duplicates '''
 
-        if self._release:
-            assert self._release == other._release, 'Cannot add result rows from different releases'
-        if self._searchfilter:
-            assert self._searchfilter == other._searchfilter, ('Cannot add result rows generated '
-                                                               'using different search filters')
+        if self.release:
+            assert self.release == other.release, 'Cannot add result rows from different releases'
+        if self._search_filter:
+            assert self._search_filter == other._search_filter, ('Cannot add result rows generated '
+                                                                 'using different search filters')
+
+        assert hasattr(self, 'plateifu') and hasattr(other, 'plateifu'), ("All rows must have a "
+                                                                          "plateifu column to be able to add")
 
         assert self.plateifu == other.plateifu, 'The plateifus must be the same to add these rows'
 
@@ -153,8 +153,8 @@ def marvintuple(name, params=None, **kwargs):
     # append new properties and overloaded methods
     nt.__add__ = new_add
     nt._results = results
-    nt._release = results._release if results else None
-    nt._searchfilter = results.searchfilter if results else None
+    nt.release = results.release if results else None
+    nt._search_filter = results.search_filter if results else None
     return nt
 
 
@@ -342,7 +342,7 @@ class Results(object):
             SQLalchemy object that can be used to redo the query, or extract subsets
             of results from the query. In remote more, the query is a literal string
             representation of the SQL query.
-        returntype (str):
+        return_type (str):
             The MarvinTools object to convert the results into.  If initially set, the results
             are automaticaly converted into the specified Marvin Tool Object on initialization
         objects (list):
@@ -370,7 +370,7 @@ class Results(object):
 
     Example:
         >>> f = 'nsa.z < 0.012 and ifu.name = 19*'
-        >>> q = Query(searchfilter=f)
+        >>> q = Query(search_filter=f)
         >>> r = q.run()
         >>> print(r)
         >>> Results(results=[(u'4-3602', u'1902', -9999.0), (u'4-3862', u'1902', -9999.0), (u'4-3293', u'1901', -9999.0), (u'4-3988', u'1901', -9999.0), (u'4-4602', u'1901', -9999.0)],
@@ -380,22 +380,39 @@ class Results(object):
 
     '''
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, results=None, mode=None, data_origin=None, release=None, count=None,
+                 totalcount=None, runtime=None, response_time=None, chunk=None, start=None,
+                 end=None, queryobj=None, query=None, search_filter=None, return_params=None,
+                 return_type=None, limit=None, params=None, **kwargs):
 
-        self.results = kwargs.get('results', None)
-        self._queryobj = kwargs.get('queryobj', None)
-        self._updateQueryObj(**kwargs)
-        self.count = kwargs.get('count', None)
-        self.totalcount = kwargs.get('totalcount', self.count)
-        self._runtime = kwargs.get('runtime', None)
-        self.query_time = self._getRunTime() if self._runtime is not None else None
-        self.response_time = kwargs.get('response_time', None)
-        self.mode = config.mode if not kwargs.get('mode', None) else kwargs.get('mode', None)
-        self.chunk = kwargs.get('chunk', None)
-        self.start = kwargs.get('start', None)
-        self.end = kwargs.get('end', None)
-        self.datamodel = datamodel[self._release]
+        # basic parameters
+        self.results = results
+        self.mode = mode if mode else config.mode
+        self.data_origin = data_origin
         self.objects = None
+
+        # input query parameters
+        self._queryobj = queryobj
+        self._params = self._queryobj.params if self._queryobj else params
+        self.release = self._queryobj.release if self._queryobj else release
+        self.query = self._queryobj.query if self._queryobj else query
+        self.return_type = self._queryobj.return_type if self._queryobj else return_type
+        self.search_filter = self._queryobj.search_filter if self._queryobj else search_filter
+        self.return_params = self._queryobj.return_params if self._queryobj else return_params
+        self.limit = self._queryobj.limit if self._queryobj else limit
+
+        # stat parameters
+        self.datamodel = datamodel[self.release]
+        self.count = count if count else len(self.results)
+        self.totalcount = totalcount if totalcount else self.count
+        self._runtime = runtime
+        self.query_time = self._getRunTime() if self._runtime is not None else None
+        self.response_time = response_time
+
+        # ordering parameters
+        self.chunk = chunk
+        self.start = start
+        self.end = end
         self.sortcol = None
         self.order = None
 
@@ -409,35 +426,25 @@ class Results(object):
             self._create_result_set(index=self.start)
 
         # Auto convert to Marvin Object
-        if self.returntype:
-            self.convertToTool(self.returntype)
+        if self.return_type:
+            self.convertToTool(self.return_type)
 
     def __add__(self, other):
         assert isinstance(other, Results) is True, 'Can only add Marvin Results together'
-        assert self._release == other._release, 'Cannot add Marvin Results from different releases'
-        assert self.searchfilter == other.searchfilter, 'Cannot add Marvin Results with different search filters'
+        assert self.release == other.release, 'Cannot add Marvin Results from different releases'
+        assert self.search_filter == other.search_filter, 'Cannot add Marvin Results with different search filters'
         results = self.results + other.results
-        returnparams = self.returnparams + [p for p in other.returnparams if p not in self.returnparams]
+        return_params = self.return_params + [p for p in other.return_params if p not in self.return_params]
         params = self._params + [p for p in other._params if p not in self._params]
-        return Results(results=results, params=params, returnparams=returnparams, limit=self.limit,
-                       searchfilter=self.searchfilter, count=len(results), totalcount=self.totalcount,
-                       release=self._release, mode=self.mode)
+        return Results(results=results, params=params, return_params=return_params, limit=self.limit,
+                       search_filter=self.search_filter, count=len(results), totalcount=self.totalcount,
+                       release=self.release, mode=self.mode)
 
     def __radd__(self, other):
         return self.__add__(other)
 
-    def _updateQueryObj(self, **kwargs):
-        ''' update parameters using the _queryobj '''
-        self.query = self._queryobj.query if self._queryobj else kwargs.get('query', None)
-        self.returntype = self._queryobj.returntype if self._queryobj else kwargs.get('returntype', None)
-        self.searchfilter = self._queryobj.searchfilter if self._queryobj else kwargs.get('searchfilter', None)
-        self.returnparams = self._queryobj._returnparams if self._queryobj else kwargs.get('returnparams', [])
-        self.limit = self._queryobj.limit if self._queryobj else kwargs.get('limit', None)
-        self._params = self._queryobj.params if self._queryobj else kwargs.get('params', None)
-        self._release = self._queryobj._release if self._queryobj else kwargs.get('release', None)
-
     def __repr__(self):
-        return ('Marvin Results(query={0}, totalcount={1}, count={2}, mode={3})'.format(self.searchfilter, self.totalcount, self.count, self.mode))
+        return ('Marvin Results(query={0}, totalcount={1}, count={2}, mode={3})'.format(self.search_filter, self.totalcount, self.count, self.mode))
 
     def showQuery(self):
         ''' Displays the literal SQL query used to generate the Results objects
@@ -489,9 +496,9 @@ class Results(object):
 
         plateifu = self.getListOf('plateifu')
         if images:
-            tmp = getImagesByList(plateifu, mode='remote', as_url=True, download=True)
+            tmp = get_images_by_list(plateifu, releas=self.release, download=True)
         else:
-            downloadList(plateifu, dltype=self.returntype, limit=limit)
+            downloadList(plateifu, dltype=self.return_type, limit=limit)
 
     def sort(self, name, order='asc'):
         ''' Sort the set of results by column name
@@ -548,7 +555,7 @@ class Results(object):
 
             # Get the query route
             url = config.urlmap['api']['querycubes']['url']
-            params = {'searchfilter': self.searchfilter, 'params': self.returnparams,
+            params = {'searchfilter': self.search_filter, 'returnparams': self.return_params,
                       'sort': remotename, 'order': order, 'limit': self.limit}
 
             self._interaction(url, params, create_set=True, calltype='Sort')
@@ -611,9 +618,9 @@ class Results(object):
 
         Example:
             >>> # query 1
-            >>> q, r = doQuery(searchfilter='nsa.z < 0.1', returnparams=['g_r', 'cube.ra', 'cube.dec'])
+            >>> q, r = doQuery(search_filter='nsa.z < 0.1', returnparams=['g_r', 'cube.ra', 'cube.dec'])
             >>> # query 2
-            >>> q2, r2 = doQuery(searchfilter='nsa.z < 0.1')
+            >>> q2, r2 = doQuery(search_filter='nsa.z < 0.1')
             >>>
             >>> # convert to tables
             >>> table_1 = r.toTable()
@@ -767,7 +774,7 @@ class Results(object):
         '''
 
         # set the filename and path
-        sf = self.searchfilter.replace(' ', '') if self.searchfilter else 'anon'
+        sf = self.search_filter.replace(' ', '') if self.search_filter else 'anon'
         # set the path
         if not path:
             path = os.path.expanduser('~/marvin_results_{0}.mpf'.format(sf))
@@ -827,9 +834,9 @@ class Results(object):
                 The instantiated Marvin Results class
         '''
         obj = marvin_pickle.restore(path, delete=delete)
+        obj.datamodel = datamodel[obj.release]
         obj._create_result_set()
         obj.getColumns()
-        obj.datamodel = datamodel[obj._release]
         return obj
 
     def toJson(self):
@@ -904,20 +911,24 @@ class Results(object):
         '''
 
         # check if the returnparams parameter is in the proper format
-        if 'params' in params:
-            return_params = params.get('params', None)
+        if 'returnparams' in params:
+            return_params = params.get('returnparams', None)
             if return_params and isinstance(return_params, list):
-                params['params'] = ','.join(return_params)
+                params['returnparams'] = ','.join(return_params)
+
+        # check if we're getting all results
+        datastream = calltype == 'getAll'
 
         # send the request
         try:
-            ii = Interaction(route=url, params=params, stream=True)
+            ii = Interaction(route=url, params=params, stream=True, datastream=datastream)
         except MarvinError as e:
             raise MarvinError('API Query {0} call failed: {1}'.format(calltype, e))
         else:
-            output = ii.getData()
-            self.response_time = ii.response_time
-            self._runtime = ii.results['runtime']
+            remotes = self._queryobj._get_remote_parameters(ii)
+            output = remotes['results']
+            self.response_time = remotes['response_time']
+            self._runtime = remotes['runtime']
             self.query_time = self._getRunTime()
             index = kwargs.get('index', None)
             if create_set:
@@ -973,8 +984,8 @@ class Results(object):
         if return_all:
             # # grab all of that column
             url = config.urlmap['api']['getcolumn']['url'].format(colname=fullname)
-            params = {'searchfilter': self.searchfilter, 'format_type': 'list',
-                      'return_all': True, 'params': self.returnparams}
+            params = {'searchfilter': self.search_filter, 'format_type': 'list',
+                      'return_all': True, 'returnparams': self.return_params}
             output = self._interaction(url, params, calltype='getList')
         else:
             # only deal with current page
@@ -1044,8 +1055,8 @@ class Results(object):
         # deal with the output
         if return_all:
             # grab all or of a specific column
-            params = {'searchfilter': self.searchfilter, 'return_all': True,
-                      'format_type': format_type, 'params': self.returnparams}
+            params = {'searchfilter': self.search_filter, 'return_all': True,
+                      'format_type': format_type, 'returnparams': self.return_params}
             url = config.urlmap['api']['getcolumn']['url'].format(colname=fullname)
             output = self._interaction(url, params, calltype='getDict')
         else:
@@ -1177,7 +1188,7 @@ class Results(object):
 
             # Get the query route
             url = config.urlmap['api']['getsubset']['url']
-            params = {'searchfilter': self.searchfilter, 'params': self.returnparams,
+            params = {'searchfilter': self.search_filter, 'returnparams': self.return_params,
                       'start': newstart, 'end': newend, 'limit': chunk,
                       'sort': self.sortcol, 'order': self.order}
             self._interaction(url, params, calltype='getNext', create_set=True,
@@ -1187,8 +1198,8 @@ class Results(object):
         self.end = newend
         self.count = len(self.results)
 
-        if self.returntype:
-            self.convertToTool(self.returntype)
+        if self.return_type:
+            self.convertToTool(self.return_type)
 
         return self.results
 
@@ -1255,7 +1266,7 @@ class Results(object):
             # Get the query route
             url = config.urlmap['api']['getsubset']['url']
 
-            params = {'searchfilter': self.searchfilter, 'params': self.returnparams,
+            params = {'searchfilter': self.search_filter, 'returnparams': self.return_params,
                       'start': newstart, 'end': newend, 'limit': chunk,
                       'sort': self.sortcol, 'order': self.order}
             self._interaction(url, params, calltype='getPrevious', create_set=True,
@@ -1265,8 +1276,8 @@ class Results(object):
         self.end = newend
         self.count = len(self.results)
 
-        if self.returntype:
-            self.convertToTool(self.returntype)
+        if self.return_type:
+            self.convertToTool(self.return_type)
 
         return self.results
 
@@ -1326,14 +1337,14 @@ class Results(object):
             # Get the query route
             url = config.urlmap['api']['getsubset']['url']
 
-            params = {'searchfilter': self.searchfilter, 'params': self.returnparams,
+            params = {'searchfilter': self.search_filter, 'returnparams': self.return_params,
                       'start': start, 'end': end, 'limit': limit,
                       'sort': self.sortcol, 'order': self.order}
             self._interaction(url, params, calltype='getSubset', create_set=True, index=start)
 
         self.count = len(self.results)
-        if self.returntype:
-            self.convertToTool(self.returntype)
+        if self.return_type:
+            self.convertToTool(self.return_type)
 
         return self.results
 
@@ -1370,14 +1381,14 @@ class Results(object):
             # Get the query route
             url = config.urlmap['api']['querycubes']['url']
 
-            params = {'searchfilter': self.searchfilter, 'return_all': True,
-                      'params': self.returnparams, 'limit': self.limit,
+            params = {'searchfilter': self.search_filter, 'return_all': True,
+                      'returnparams': self.return_params, 'limit': self.limit,
                       'sort': self.sortcol, 'order': self.order}
             self._interaction(url, params, calltype='getAll', create_set=True)
             self.count = self.totalcount
             print('Returned all {0} results'.format(self.totalcount))
 
-    def convertToTool(self, tooltype, **kwargs):
+    def convertToTool(self, tooltype, mode='auto', limit=None):
         ''' Converts the list of results into Marvin Tool objects
 
         Creates a list of Marvin Tool objects from a set of query results.
@@ -1419,10 +1430,8 @@ class Results(object):
         '''
 
         # set the desired tool type
-        mode = kwargs.get('mode', self.mode)
-        limit = kwargs.get('limit', None)
         toollist = ['cube', 'spaxel', 'maps', 'rss', 'modelcube']
-        tooltype = tooltype if tooltype else self.returntype
+        tooltype = tooltype if tooltype else self.return_type
         assert tooltype in toollist, 'Returned tool type must be one of {0}'.format(toollist)
 
         # get the parameter list to check against
@@ -1473,6 +1482,8 @@ class Results(object):
             isbin = 'bintype.name' in paramlist
             istemp = 'template.name' in paramlist
             self.objects = []
+
+            assert self.release != 'MPL-4', "ModelCubes require a release of MPL-5 and up"
 
             for res in self.results[0:limit]:
                 mapkwargs = {'mode': mode, 'plateifu': res.plateifu}
@@ -1544,7 +1555,7 @@ class Results(object):
 
         Example:
             >>> # do a query and get the results
-            >>> q = Query(searchfilter='nsa.z < 0.1', returnparams=['nsa.elpetro_ba', 'g_r'])
+            >>> q = Query(search_filter='nsa.z < 0.1', returnparams=['nsa.elpetro_ba', 'g_r'])
             >>> r = q.run()
             >>> # plot the total columns of Redshift vs g-r magnitude
             >>> fig, axes, hist_data = r.plot('nsa.z', 'g_r')
@@ -1612,7 +1623,7 @@ class Results(object):
 
         Example:
             >>> # do a query and get the results
-            >>> q = Query(searchfilter='nsa.z < 0.1', returnparams=['nsa.elpetro_ba', 'g_r'])
+            >>> q = Query(search_filter='nsa.z < 0.1', returnparams=['nsa.elpetro_ba', 'g_r'])
             >>> r = q.run()
             >>> # plot a histogram of the redshift column
             >>> hist_data, fig, axes = r.hist('nsa.z')

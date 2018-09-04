@@ -19,6 +19,7 @@ from collections import OrderedDict
 __version__ = '2.3.0dev'
 
 # Does this so that the implicit module definitions in extern can happen.
+# time - 483 ms
 from marvin import extern
 
 from brain.utils.general.general import getDbMachine, merge
@@ -58,6 +59,7 @@ warnings.filterwarnings('ignore', category=DeprecationWarning)
 warnings.filterwarnings('once', category=DeprecationWarning, module='marvin')
 
 
+# up to here - time: 1 second
 class MarvinConfig(object):
     ''' Global Marvin Configuration
 
@@ -302,6 +304,14 @@ class MarvinConfig(object):
         bconfig.traceback = value
 
     @property
+    def compression(self):
+        return bconfig.compression
+
+    @compression.setter
+    def compression(self, value):
+        bconfig.compression = value
+
+    @property
     def token(self):
         return bconfig.token
 
@@ -373,8 +383,7 @@ class MarvinConfig(object):
                    'MPL-5': ('v2_0_1', '2.0.2'),
                    'MPL-4': ('v1_5_1', '1.1.1')}
 
-        drdict = {'DR15': ('v2_4_3', '2.2.1'),
-                  'DR14': ('v2_1_2', '2.0.2')}
+        drdict = {'DR15': ('v2_4_3', '2.2.1')}
 
         # set the allowed releases based on access
         self._allowed_releases = {}
@@ -689,10 +698,12 @@ class MarvinConfig(object):
 
 
 config = MarvinConfig()
+# up to here - time: 1.6 seconds
 
-# Inits the Database session and ModelClasses
-from marvin.db.marvindb import MarvinDB
-marvindb = MarvinDB(dbtype=config.db)
+# Inits the Database session and ModelClasses (time: 1.8 seconds)
+if config.db:
+    from marvin.db.marvindb import MarvinDB
+    marvindb = MarvinDB(dbtype=config.db, log=log, allowed_releases=config._allowed_releases.keys())
 
 # Init MARVIN_DIR
 marvindir = os.environ.get('MARVIN_DIR', None)
