@@ -8,34 +8,37 @@
 # @Last modified by:   Brian Cherinka
 # @Last modified time: 2017-11-14 11:11:27
 
-from __future__ import print_function, division, absolute_import
-
-from marvin.utils.datamodel.query.forms import MarvinForm
-from marvin.utils.datamodel import DataModelList
-from marvin.core.exceptions import MarvinError, MarvinUserWarning
-from marvin.utils.general.structs import FuzzyList
-from marvin import config
-
-from sqlalchemy_utils import get_hybrid_properties
+from __future__ import absolute_import, division, print_function
 
 import copy as copy_mod
+import inspect
 import os
+import warnings
+
 import numpy as np
 import six
 import yaml
 import yamlordereddictloader
-import inspect
-import warnings
-
 from astropy.table import Table
-from fuzzywuzzy import process
-from fuzzywuzzy import fuzz
+from fuzzywuzzy import fuzz, process
+from sqlalchemy_utils import get_hybrid_properties
+from marvin import config
+from marvin.core.exceptions import MarvinError, MarvinUserWarning
+from marvin.utils.datamodel import DataModelList
+from marvin.utils.datamodel.maskbit import get_maskbits
+from marvin.utils.general.structs import FuzzyList
+if config.db:
+    from marvin.utils.datamodel.query.forms import MarvinForm
+else:
+    MarvinForm = None
 
 
 __ALL__ = ('QueryDataModelList', 'QueryDataModel')
 
 
 query_params = None
+
+PARAM_CACHE = {}
 
 
 class QueryDataModel(object):
@@ -49,9 +52,9 @@ class QueryDataModel(object):
         self.aliases = aliases
         self._exclude = exclude
         self.dap_datamodel = kwargs.get('dapdm', None)
-        self._marvinform = MarvinForm(release=release)
+        self.bitmasks = get_maskbits(self.release)
         self._mode = kwargs.get('mode', config.mode)
-        self._setup_mode()
+        self._get_parameters()
         self._check_datamodels()
 
     def __repr__(self):
@@ -59,37 +62,52 @@ class QueryDataModel(object):
         return ('<QueryDataModel release={0!r}, n_groups={1}, n_parameters={2}, n_total={3}>'
                 .format(self.release, len(self.groups), len(self.parameters), len(self._keys)))
 
-    def _setup_mode(self):
-        ''' Setup the mode the retrieve the query keys '''
+    def _get_parameters(self):
+        ''' Get the parameters for the datamodel '''
 
+        # check cache for parameters
+        if self.release in PARAM_CACHE:
+            self._keys = PARAM_CACHE[self.release]
+            return
+
+        # get the parameters
         if self._mode == 'local':
+            self._marvinform = MarvinForm(release=self.release)
             self._cleanup_keys()
         elif self._mode == 'remote':
-            from marvin.api.api import Interaction
-            # try to get the url
-            try:
-                url = config.urlmap['api']['getparams']['url']
-            except Exception as e:
-                warnings.warn('Cannot access Marvin API to get the full list of query parameters. '
-                              'for the Query Datamodel. Only showing the best ones.', MarvinUserWarning)
-                url = None
-                self._cleanup_keys()
-            # make the call
-            if url:
-                try:
-                    ii = Interaction(url, params={'release': self.release, 'paramdisplay': 'all'})
-                except Exception as e:
-                    warnings.warn('Could not remotely retrieve full set of parameters. {0}'.format(e), MarvinUserWarning)
-                    self._keys = []
-                else:
-                    self._keys = ii.getData()
-                    self._remove_query_params()
+            self._get_from_remote()
         elif self._mode == 'auto':
             if config.db:
                 self._mode = 'local'
             else:
                 self._mode = 'remote'
-            self._setup_mode()
+            self._get_parameters()
+
+    def _get_from_remote(self):
+        ''' Get the keys from a remote source '''
+
+        from marvin.api.api import Interaction
+        # try to get the url
+        try:
+            url = config.urlmap['api']['getparams']['url']
+        except Exception as e:
+            warnings.warn('Cannot access Marvin API to get the full list of query parameters. '
+                          'for the Query Datamodel. Only showing the best ones.', MarvinUserWarning)
+            url = None
+            self._cleanup_keys()
+        # make the call
+        if url:
+            try:
+                ii = Interaction(url, params={'release': self.release, 'paramdisplay': 'all'})
+            except Exception as e:
+                warnings.warn('Could not remotely retrieve full set of parameters. {0}'.format(e), MarvinUserWarning)
+                self._keys = []
+            else:
+                # TODO when ready update this code to use the getallparams url call
+                #PARAM_CACHE = ii.getData()
+                #self._keys = PARAM_CACHE[self.release]
+                self._keys = ii.getData()
+                self._remove_query_params()
 
     def _remove_query_params(self):
         ''' Remove keys from query_params best list '''
@@ -97,6 +115,10 @@ class QueryDataModel(object):
         for okey in origlist:
             if okey in self._keys:
                 self._keys.remove(okey)
+
+        # add the final list to the cache
+        if self.release not in PARAM_CACHE:
+            PARAM_CACHE[self.release] = self._keys
 
     def _cleanup_keys(self):
         ''' Cleans up the list for MarvinForm keys '''
@@ -115,6 +137,9 @@ class QueryDataModel(object):
         newkeys = [k.replace(k.split('.')[0],
                              rev[k.split('.')[0]]) if k.split('.')[0] in rev.keys()
                    else k for k in mykeys]
+
+        # remove any hidden keys
+        newkeys = [n for n in newkeys if '._' not in n]
 
         # exclude tables from list of keys
         if self._exclude:
@@ -151,14 +176,14 @@ class QueryDataModel(object):
             param_best_match = self.parameters[value]
             if param_best_match:
                 return param_best_match
-        except KeyError:
+        except (KeyError, ValueError):
             pass
 
         try:
             group_best_match = self.groups[value]
             if group_best_match:
                 return group_best_match
-        except KeyError:
+        except (KeyError, ValueError):
             pass
 
         raise ValueError('too ambiguous input {!r}'.format(value))

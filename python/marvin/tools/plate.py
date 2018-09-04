@@ -14,7 +14,7 @@ import inspect
 
 from astropy.io import fits
 
-from marvin import config, marvindb
+from marvin import config
 from marvin.core.exceptions import MarvinError
 from marvin.tools.cube import Cube
 from marvin.utils.general.structs import FuzzyList
@@ -191,8 +191,7 @@ class Plate(MarvinToolsClass, FuzzyList):
     def _getPlateFromDB(self):
         ''' Initialize a Plate from the DB '''
         import sqlalchemy
-
-        mdb = marvindb
+        from marvin import marvindb as mdb
 
         if not mdb.isdbconnected:
             raise MarvinError('No db connected')

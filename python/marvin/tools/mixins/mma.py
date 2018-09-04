@@ -6,7 +6,7 @@
 # @Author: Brian Cherinka
 # @Date:   2018-07-28 17:26:41
 # @Last modified by:   Brian Cherinka
-# @Last Modified time: 2018-08-18 21:28:45
+# @Last Modified time: 2018-08-27 13:57:09
 
 from __future__ import absolute_import, division, print_function
 
@@ -17,7 +17,7 @@ import time
 import warnings
 
 import six
-from marvin import config, marvindb
+from marvin import config
 from marvin.core.exceptions import (MarvinError, MarvinMissingDependency, MarvinUserWarning)
 from marvin.utils.db import testDbConnection
 from marvin.utils.general.general import mangaid2plateifu
@@ -269,6 +269,7 @@ class MMAMixIn(object, six.with_metaclass(abc.ABCMeta)):
 
         elif self.plateifu:
 
+            from marvin import marvindb
             testDbConnection(marvindb.session)
 
             if marvindb.db and not self._ignore_db:

@@ -10,11 +10,8 @@ Revision History:
     Last Modified On: 2016-03-28 23:30:14 by Brian
 
 '''
-from __future__ import print_function
-from __future__ import division
+from __future__ import print_function, division
 from brain.db.modelGraph import ModelGraph
-from marvin import config, log
-from marvin.utils.datamodel.dap import datamodel
 import inspect
 
 __author__ = 'Brian Cherinka'
@@ -23,18 +20,19 @@ __author__ = 'Brian Cherinka'
 class MarvinDB(object):
     ''' Class designed to handle database related things with Marvin '''
 
-    def __init__(self, *args, **kwargs):
-        self.dbtype = kwargs.get('dbtype', None)
+    def __init__(self, dbtype=None, log=None, allowed_releases=None):
+        self.dbtype = dbtype
         self.db = None
-        self.log = kwargs.get('log', None)
+        self.log = log
+        self.allowed_releases = allowed_releases
         self.error = []
         self.spaxelpropdict = None
         self.datadb = None
         self.dapdb = None
         self.sampledb = None
-        self.__init_the_db()
+        self._init_the_db()
 
-    def __init_the_db(self):
+    def _init_the_db(self):
         ''' Initialize the db '''
         if self.dbtype:
             self._setupDB()
@@ -45,17 +43,18 @@ class MarvinDB(object):
         self._setModelGraph()
         self.cache_bits = []
         if self.db:
-            self._addCache()
+           self._addCache()
 
     def _setupDB(self):
         ''' Try to import the database '''
+        # time - 14.8 ms
         try:
             from marvin.db.database import db
         except RuntimeError as e:
-            log.debug('RuntimeError raised: Problem importing db: {0}'.format(e))
+            self.log.debug('RuntimeError raised: Problem importing db: {0}'.format(e))
             self.db = None
         except ImportError as e:
-            log.debug('ImportError raised: Problem importing db: {0}'.format(e))
+            self.log.debug('ImportError raised: Problem importing db: {0}'.format(e))
             self.db = None
         else:
             self.db = db
@@ -63,24 +62,29 @@ class MarvinDB(object):
     def _importModels(self):
         ''' Try to import the sql alchemy model classes '''
 
+        # tested lazy imports - speeds init until they get called
+        # import lazy_import
+        # sampledb = lazy_import.lazy_module("marvin.db.models.SampleModelClasses")
+
+        # time 1.6 seconds
         try:
             import marvin.db.models.SampleModelClasses as sampledb
         except Exception as e:
-            log.debug('Exception raised: Problem importing mangadb SampleModelClasses: {0}'.format(e))
+            self.log.debug('Exception raised: Problem importing mangadb SampleModelClasses: {0}'.format(e))
         else:
             self.sampledb = sampledb
 
         try:
             import marvin.db.models.DataModelClasses as datadb
         except Exception as e:
-            log.debug('Exception raised: Problem importing mangadb DataModelClasses: {0}'.format(e))
+            self.log.debug('Exception raised: Problem importing mangadb DataModelClasses: {0}'.format(e))
         else:
             self.datadb = datadb
 
         try:
             import marvin.db.models.DapModelClasses as dapdb
         except Exception as e:
-            log.debug('Exception raised: Problem importing mangadb DapModelClasses: {0}'.format(e))
+            self.log.debug('Exception raised: Problem importing mangadb DapModelClasses: {0}'.format(e))
         else:
             self.dapdb = dapdb
             self.spaxelpropdict = self._setSpaxelPropDict()
@@ -90,15 +94,18 @@ class MarvinDB(object):
         isdata = self.datadb is not None
         isdap = self.dapdb is not None
         issample = self.sampledb is not None
-        log.info('datadb? {0}'.format(isdata))
-        log.info('dapdb? {0}'.format(isdap))
-        log.info('sampledb? {0}'.format(issample))
+        self.log.info('datadb? {0}'.format(isdata))
+        self.log.info('dapdb? {0}'.format(isdap))
+        self.log.info('sampledb? {0}'.format(issample))
         return all([isdata, isdap, issample])
 
     def _setSpaxelPropDict(self):
         ''' Set the SpaxelProp lookup dictionary '''
+
+        # time - 38 us
+        from marvin.utils.datamodel.dap import datamodel
         spdict = {}
-        for release in config._allowed_releases.keys():
+        for release in self.allowed_releases:
             if release in datamodel:
                 dm = datamodel[release]
                 spdict.update({release: dm.property_table})
@@ -106,6 +113,7 @@ class MarvinDB(object):
 
     def _getSpaxelProp(self):
         ''' Get the correct SpaxelProp class given an release '''
+
         inspdict = self._release in self.spaxelpropdict
         if inspdict:
             specific_spaxelprop = {'full': self.spaxelpropdict[self._release], 'clean':
@@ -120,6 +128,8 @@ class MarvinDB(object):
 
     def testDbConnection(self):
         ''' Test the database connection to ensure it works.  Sets a boolean variable isdbconnected '''
+
+        # time - 4.7 ms
         if self.db and self.datadb:
             try:
                 tmp = self.session.query(self.datadb.PipelineVersion).first()
@@ -142,7 +152,7 @@ class MarvinDB(object):
 
     def forceDbOn(self, dbtype=None):
         ''' Force the database to turn on '''
-        self.__init_the_db()
+        self._init_the_db()
 
     def generateClassDict(self, module=None, lower=None):
         ''' Generates a dictionary of the Model Classes, based on class name as key, to the object class.
@@ -164,9 +174,9 @@ class MarvinDB(object):
                     classdict[keyname] = model[1]
         return classdict
 
-    def buildUberClassDict(self, **kwargs):
+    def buildUberClassDict(self, release=None):
         ''' Builds an uber class dictionary from all modelclasses '''
-        self._release = kwargs.get('release', config.release)
+        self._release = release
         classdict = {}
         models = [self.datadb, self.sampledb, self.dapdb]
         for model in models:

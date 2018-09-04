@@ -6,13 +6,14 @@
 # @Author: Brian Cherinka
 # @Date:   2017-09-20 13:24:13
 # @Last modified by:   Brian Cherinka
-# @Last Modified time: 2018-07-30 14:41:50
+# @Last Modified time: 2018-08-28 14:04:41
 
-from __future__ import print_function, division, absolute_import
-from .base import QueryDataModel
+from __future__ import absolute_import, division, print_function
+
 import copy
 from marvin.utils.datamodel.dap import datamodel
 from marvin.utils.datamodel.query.base import query_params
+from .base import QueryDataModel
 
 
 def groups():
@@ -22,7 +23,7 @@ def groups():
 
 # list of tables to exclude
 BASE_EXCLUDE = ['anime', 'catalogue', 'pipeline', 'maskbit', 'hdu', 'query', 'user',
-                'extcol', 'exttype', 'extname', 'cube_shape', 'spaxelprops']
+                'extcol', 'exttype', 'extname', 'cube_shape', 'spaxelprops', 'testtable']
 
 EXCLUDE = ['modelcube', 'modelspaxel', 'redcorr', 'obsinfo', 'dapall'] + BASE_EXCLUDE
 
