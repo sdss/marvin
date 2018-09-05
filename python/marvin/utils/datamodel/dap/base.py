@@ -7,22 +7,20 @@
 # Refactored by José Sánchez-Gallego on 6 Aug 2017.
 
 
-from __future__ import division
-from __future__ import print_function
-from __future__ import absolute_import
+from __future__ import absolute_import, division, print_function
 
 import copy as copy_mod
 import itertools
-import re
-import six
 import os
+import re
 
 import astropy.table as table
+import six
 from astropy import units as u
 
 from marvin.core.exceptions import MarvinError
-from marvin.utils.general.structs import get_best_fuzzy, FuzzyList
 from marvin.utils.datamodel import DataModelList
+from marvin.utils.general.structs import FuzzyList, get_best_fuzzy
 
 
 __ALL__ = ('DAPDataModelList', 'DAPDataModel', 'Bintype', 'Template', 'Property',
@@ -33,11 +31,53 @@ spaxel = u.Unit('spaxel', represents=u.pixel, doc='A spectral pixel', parse_stri
 
 
 class DAPDataModel(object):
-    """A class representing a DAP datamodel, with bintypes, templates, properties, etc."""
+    """A class representing a DAP datamodel.
+
+    Parameters
+    ----------
+    release : str
+        The DRP release this datamodel describes.
+    bintypes : list
+        A list of `.Bintype` instances that describe the bintypes available
+        for this datamodel.
+    templates : list
+        A list of `.Template` instances that describe the stellar templates
+        available for this datamodel.
+    properties : list
+        A list of `.Property` instances that describe the properties (maps)
+        available in this datamodel.
+    models : list
+        A list of `.Model` instances that describe the model datacubes
+        available for this datamodel.
+    property_table : str
+        The name of the DB table containing property data.
+    default_bintype : str
+        The name of the default bintype.
+    default_template : str
+        The name of the default template.
+    default_binid : str
+        The name of the default binid extension to use.
+    db_only : list
+        A list of bintypes that are accessible in the DB. If ``None``, assumes
+        that all the bintypes are loaded in the DB.
+    default_mapset : list
+        A list of maps to show in the web by default.
+    default_mapmask : list
+        A list of pixmask labels that define the bad mask.
+    aliases : list
+        A list of aliases for this datamodel.
+    bitmask : dict
+        A dictionary of `~marvin.utils.general.maskbit.Maskbit` objects.
+    qual_flag : str
+        The name of the quality bitmask flag. Must not include the ``MANGA_``
+        prefix.
+
+    """
 
     def __init__(self, release, bintypes=[], templates=[], properties=[], models=[],
                  default_template=None, default_bintype=None, property_table=None,
-                 default_binid=None, aliases=[], bitmasks=None, db_only=[]):
+                 default_binid=None, aliases=[], bitmasks=None, db_only=[], default_mapset=None,
+                 default_mapmask=None, qual_flag='MANGA_DAPQUAL'):
 
         self.release = release
         self.bintypes = bintypes
@@ -53,6 +93,13 @@ class DAPDataModel(object):
 
         self.property_table = property_table
 
+        # default plotting params
+        self.default_mapmask = default_mapmask
+        self.qual_flag = qual_flag
+        self.default_mapset = self.get_default_mapset(default_mapset)
+        self.default_plot_params = self.get_default_plot_params()
+
+        # default bintypes/templates
         self._default_bintype = None
         self.default_bintype = default_bintype
 
@@ -219,6 +266,73 @@ class DAPDataModel(object):
 
         return ['-'.join(item) for item in list(itertools.product(bins, temps))]
 
+    @staticmethod
+    def get_default_mapset(default=None):
+        ''' Return the default set of maps
+
+        Syntax of a map name is parameter:channel
+
+        Parameters:
+            default (list):
+                A list of default map names
+
+        Returns:
+            A list of map names
+
+        '''
+        if not default:
+            default = ['stellar_vel', 'emline_gflux:ha_6564', 'specindex:d4000']
+
+        assert len(default) <= 6, 'default maps must number less than six'
+        return default
+
+    def get_default_plot_params(self):
+        ''' Return the default set of plotting params '''
+
+        if not self.default_mapmask:
+            self.default_mapmask = ['DONOTUSE']
+
+        return self.set_base_params()
+
+    def get_plot_params(self, prop=None):
+        ''' Get one set of plotting params for a given property
+
+        Parameters:
+            prop (str):
+                The name of the property
+        Returns:
+            The default set of plotting params for the given property
+        '''
+
+        defaults = self.get_default_plot_params()
+
+        if 'vel' in prop:
+            key = 'vel'
+        elif 'sigma' in prop:
+            key = 'sigma'
+        else:
+            key = 'default'
+        return defaults[key]
+
+    def set_base_params(self):
+        ''' Set the base plotting param defaults '''
+
+        return {'default': {'bitmasks': self.default_mapmask,
+                            'cmap': 'linearlab',
+                            'percentile_clip': [5, 95],
+                            'symmetric': False,
+                            'snr_min': 1},
+                'vel': {'bitmasks': self.default_mapmask,
+                        'cmap': 'RdBu_r',
+                        'percentile_clip': [10, 90],
+                        'symmetric': True,
+                        'snr_min': None},
+                'sigma': {'bitmasks': self.default_mapmask,
+                          'cmap': 'inferno',
+                          'percentile_clip': [10, 90],
+                          'symmetric': False,
+                          'snr_min': 1}}
+
 
 class DAPDataModelList(DataModelList):
     """A dictionary of DAP datamodels."""
@@ -278,6 +392,12 @@ class PropertyList(FuzzyList):
         """The release of the parent `.DAPDataModel`."""
 
         return self.parent.release
+
+    @property
+    def qual_flag(self):
+        """The qual_flag of the parent `.DAPDataModel`."""
+
+        return self.parent.qual_flag
 
     def to_table(self, compact=True, pprint=False, description=False, max_width=1000):
         """Returns an astropy table with all the properties in this model.
@@ -403,6 +523,12 @@ class ModelList(FuzzyList):
         """The release of the parent `.DAPDataModel`."""
 
         return self.parent.release
+
+    @property
+    def qual_flag(self):
+        """The qual_flag of the parent `.DAPDataModel`."""
+
+        return self.parent.qual_flag
 
     def from_fits_extension(self, extension):
         """Returns the `.Model` whose FITS extension matches ``extension``."""
@@ -564,19 +690,25 @@ class Property(object):
         binid (:class:`Property` object or None):
             The ``binid`` :class:`Property` object associated with this
             propety. If not set, assumes the `.DAPDataModel` ``default_binid``.
+        pixmask_flag : str
+            The name of the pixmask flag. Should be the full name, including
+            the ``MANGA_`` prefix.
         description (str):
             A description of the property.
 
     """
 
     def __init__(self, name, channel=None, ivar=False, mask=False, unit=None,
-                 scale=1, formats={}, parent=None, binid=None, description=''):
+                 scale=1, formats={}, parent=None, binid=None,
+                 pixmask_flag='MANGA_DAPPIXMASK', description=''):
 
         self.name = name
         self.channel = copy_mod.deepcopy(channel)
 
         self.ivar = ivar
         self.mask = mask
+
+        self.pixmask_flag = pixmask_flag
 
         self.formats = formats
 
@@ -619,11 +751,14 @@ class Property(object):
         if self._binid is not None:
             self._binid.parent = value
 
-    def full(self):
+    def full(self, web=None):
         """Returns the name + channel string."""
 
         if self.channel:
-            return self.name + '_' + self.channel.name
+            if web:
+                return self.name + ':' + self.channel.name
+            else:
+                return self.name + '_' + self.channel.name
 
         return self.name
 
@@ -771,7 +906,7 @@ class MultiChannelProperty(list):
 
         self.ivar = kwargs.get('ivar', False)
         self.mask = kwargs.get('mask', False)
-        self.description = kwargs.get('description', '')
+        self.description = kwargs.pop('description', '')
 
         self._parent = None
         self.parent = kwargs.get('parent', None)
@@ -780,9 +915,10 @@ class MultiChannelProperty(list):
         for ii, channel in enumerate(channels):
             this_unit = unit if not isinstance(unit, (list, tuple)) else unit[ii]
             this_scale = scale if not isinstance(scale, (list, tuple)) else scale[ii]
+            channel_description = self.description + ' Channel = {0}.'.format(channel.to_string())
             self_list.append(Property(self.name, channel=channel,
                                       unit=this_unit, scale=this_scale,
-                                      binid=binid, **kwargs))
+                                      binid=binid, description=channel_description, **kwargs))
 
         list.__init__(self, self_list)
 
@@ -934,6 +1070,9 @@ class Model(object):
         binid (:class:`Property` object or None):
             The ``binid`` :class:`Property` object associated with this
             model. If not set, assumes the `.DAPDataModel` ``default_binid``.
+        pixmask_flag : str
+            The name of the pixmask flag. Should be the full name, including
+            the ``MANGA_`` prefix.
         description (str):
             A description for the model.
         db_table (str):
@@ -944,7 +1083,8 @@ class Model(object):
     def __init__(self, name, extension_name, extension_wave=None,
                  extension_ivar=None, extension_mask=None, channels=[],
                  unit=u.dimensionless_unscaled, scale=1, formats={},
-                 parent=None, binid=None, description='', db_table='modelspaxel'):
+                 parent=None, binid=None, description='',
+                 db_table='modelspaxel', pixmask_flag='MANGA_DAPSPECMASK'):
 
         self.name = name
 
@@ -965,6 +1105,8 @@ class Model(object):
 
         self._parent = None
         self.parent = parent
+
+        self.pixmask_flag = pixmask_flag
 
         self._binid = copy_mod.deepcopy(binid)
         if self._binid is not None:

@@ -12,11 +12,10 @@
 
 from __future__ import print_function
 from __future__ import division
-from flask import jsonify, current_app, request
+from flask import jsonify
 from flask_classful import route
 from marvin.tools.plate import Plate
 from marvin.api.base import BaseView, arg_validate as av
-from marvin.core.exceptions import MarvinError
 
 
 def _getPlate(plateid, nocubes=None, **kwargs):
@@ -66,7 +65,7 @@ class PlateView(BaseView):
 
         .. sourcecode:: http
 
-           GET /marvin2/api/plates/ HTTP/1.1
+           GET /marvin/api/plates/ HTTP/1.1
            Host: api.sdss.org
            Accept: application/json, */*
 
@@ -115,7 +114,7 @@ class PlateView(BaseView):
 
         .. sourcecode:: http
 
-           GET /marvin2/api/plate/8485/ HTTP/1.1
+           GET /marvin/api/plate/8485/ HTTP/1.1
            Host: api.sdss.org
            Accept: application/json, */*
 
@@ -173,7 +172,7 @@ class PlateView(BaseView):
 
         .. sourcecode:: http
 
-           GET /marvin2/api/plate/8485/cubes/ HTTP/1.1
+           GET /marvin/api/plate/8485/cubes/ HTTP/1.1
            Host: api.sdss.org
            Accept: application/json, */*
 

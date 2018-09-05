@@ -2,7 +2,7 @@
 * @Author: Brian Cherinka
 * @Date:   2016-04-12 00:10:26
 * @Last Modified by:   Brian Cherinka
-* @Last Modified time: 2017-05-23 17:36:14
+* @Last Modified time: 2018-04-13 16:05:17
 */
 
 // Javascript code for general things
@@ -89,7 +89,7 @@ class Utils {
         Promise.resolve($.post(Flask.url_for('index_page.login'), form, 'json'))
           .then((data)=>{
               if (data.result.status < 0) {
-                throw new Error('Bad status login');
+                throw new Error('Bad status login. ' + data.result.message);
               }
               if (data.result.message !== ''){
                   const stat = (data.result.status === 0) ? 'danger' : 'success';
@@ -102,7 +102,7 @@ class Utils {
             })
           .catch((error)=>{
             this.resetLogin();
-            alert('Bad login attempt');
+            alert('Bad login attempt! ' + error);
           });
 
       }

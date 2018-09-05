@@ -1,11 +1,13 @@
 #!/usr/bin/env python
-# encoding: utf-8
+# -*- coding: utf-8 -*-
 #
-# @Author: José Sánchez-Gallego
-# @Date: Nov 8, 2017
+# @Author: Brian Cherinka, José Sánchez-Gallego, and Brett Andrews
+# @Date: 2017-11-08
 # @Filename: maps.py
-# @License: BSD 3-Clause
-# @Copyright: José Sánchez-Gallego
+# @License: BSD 3-clause (http://www.opensource.org/licenses/BSD-3-Clause)
+#
+# @Last modified by:   Brian Cherinka
+# @Last modified time: 2018-08-23 11:53:04
 
 
 from __future__ import absolute_import, division, print_function
@@ -29,12 +31,11 @@ import marvin.tools.quantities.map
 import marvin.tools.spaxel
 import marvin.utils.dap.bpt
 import marvin.utils.general.general
-from marvin.core.core import DAPallMixIn, MarvinToolsClass, NSAMixIn
 from marvin.utils.datamodel.dap import datamodel
 from marvin.utils.datamodel.dap.base import Channel, Property
 from marvin.utils.general import FuzzyDict, turn_off_ion
-from marvin.utils.general.maskbit import get_manga_target
-
+from .core import MarvinToolsClass
+from .mixins import DAPallMixIn, GetApertureMixIn, NSAMixIn
 from .quantities import AnalysisProperty
 
 
@@ -47,7 +48,7 @@ except ImportError:
 __all__ = ['Maps']
 
 
-class Maps(MarvinToolsClass, NSAMixIn, DAPallMixIn):
+class Maps(MarvinToolsClass, NSAMixIn, DAPallMixIn, GetApertureMixIn):
     """A class that represents a DAP MAPS file.
 
     Provides access to the data stored in a DAP MAPS file. In addition to
@@ -88,6 +89,7 @@ class Maps(MarvinToolsClass, NSAMixIn, DAPallMixIn):
         # _set_datamodel will replace these strings with datamodel objects.
         self.bintype = bintype
         self.template = template
+
         self._bitmasks = None
 
         MarvinToolsClass.__init__(self, input=input, filename=filename,
@@ -195,7 +197,7 @@ class Maps(MarvinToolsClass, NSAMixIn, DAPallMixIn):
         params = self._getPathParams()
         path_type = params.pop('path_type')
 
-        return MarvinToolsClass._getFullPath(self, path_type, **params)
+        return super(Maps, self)._getFullPath(path_type, **params)
 
     def download(self):
         """Downloads the maps using sdss_access - Rsync"""
@@ -218,7 +220,7 @@ class Maps(MarvinToolsClass, NSAMixIn, DAPallMixIn):
 
         plate, ifu = self.plateifu.split('-')
 
-        if self.datamodel.release == 'MPL-4':
+        if self.release == 'MPL-4':
             niter = int('{0}{1}'.format(self.template.n, self.bintype.n))
             params = dict(drpver=self._drpver, dapver=self._dapver,
                           plate=plate, ifu=ifu, bintype=self.bintype.name,
@@ -305,7 +307,8 @@ class Maps(MarvinToolsClass, NSAMixIn, DAPallMixIn):
         dm = datamodel[self.release]
         if dm.db_only:
             if self.bintype not in dm.db_only:
-                raise marvin.core.exceptions.MarvinError('Specified bintype {0} is not available in the DB'.format(self.bintype.name))
+                raise marvin.core.exceptions.MarvinError('Specified bintype {0} is not available '
+                                                         'in the DB'.format(self.bintype.name))
 
         if data is not None:
             assert isinstance(data, mdb.dapdb.File), 'data in not a marvindb.dapdb.File object.'
@@ -386,7 +389,7 @@ class Maps(MarvinToolsClass, NSAMixIn, DAPallMixIn):
 
         return
 
-    def _get_spaxel_quantities(self, x, y):
+    def _get_spaxel_quantities(self, x, y, spaxel=None):
         """Returns a dictionary of spaxel quantities."""
 
         mdb = marvin.marvindb
@@ -429,10 +432,13 @@ class Maps(MarvinToolsClass, NSAMixIn, DAPallMixIn):
                         colname = dm.db_column(ext=None if key == 'value' else key)
                         data[key] = getattr(_db_rows[table], colname)
 
-                maps_quantities[dm.full()] = AnalysisProperty(data['value'],
-                                                              unit=dm.unit,
-                                                              ivar=data['ivar'],
-                                                              mask=data['mask'])
+                quantity = AnalysisProperty(data['value'], unit=dm.unit, ivar=data['ivar'],
+                                            mask=data['mask'], pixmask_flag=dm.pixmask_flag)
+
+                if spaxel:
+                    quantity._init_bin(spaxel=spaxel, parent=self, datamodel=dm)
+
+                maps_quantities[dm.full()] = quantity
 
         if self.data_origin == 'api':
 
@@ -453,28 +459,46 @@ class Maps(MarvinToolsClass, NSAMixIn, DAPallMixIn):
 
             for dm in self.datamodel:
 
-                maps_quantities[dm.full()] = AnalysisProperty(data[dm.full()]['value'],
-                                                              ivar=data[dm.full()]['ivar'],
-                                                              mask=data[dm.full()]['mask'],
-                                                              unit=dm.unit)
+                quantity = AnalysisProperty(data[dm.full()]['value'],
+                                            ivar=data[dm.full()]['ivar'],
+                                            mask=data[dm.full()]['mask'],
+                                            unit=dm.unit,
+                                            pixmask_flag=dm.pixmask_flag)
+
+                if spaxel:
+                    quantity._init_bin(spaxel=spaxel, parent=self, datamodel=dm)
+
+                maps_quantities[dm.full()] = quantity
 
         return maps_quantities
 
-    def get_binid(self, binid=None):
-        """Returns a 2D array containing the binid map.
+    def get_binid(self, property=None):
+        """Returns the binid map associated with a property.
 
-        In ``MPL-6``, ``binid`` can be used to specify the binid property
-        to return. If ``binid=None``, the default binid is returned.
+        Parameters
+        ----------
+        property : `datamodel.Property` or None
+            The property for which the associated binid map will be returned.
+            If ``binid=None``, the default binid is returned.
+
+        Returns
+        -------
+        binid : `Map`
+            A `Map` with the binid associated with ``property`` or the default
+            binid.
 
         """
 
-        assert binid is None or isinstance(binid, Property), 'binid must be None or a Property.'
+        assert property is None or isinstance(property, Property), \
+            'property must be None or a Property.'
 
-        if binid is None:
+        if property is None:
             assert self.datamodel.parent.default_binid is not None
             binid = self.datamodel.parent.default_binid
+        else:
+            binid = property.binid
 
-        return self.getMap(binid).value
+        return self.getMap(binid)
 
     def getCube(self):
         """Returns the :class:`~marvin.tools.cube.Cube` for with this Maps."""
@@ -496,41 +520,8 @@ class Maps(MarvinToolsClass, NSAMixIn, DAPallMixIn):
                                                 bintype=self.bintype,
                                                 template=self.template)
 
-    @property
-    def manga_target1(self):
-        """Return MANGA_TARGET1 flag."""
-        return get_manga_target('1', self._bitmasks, self.header)
-
-    @property
-    def manga_target2(self):
-        """Return MANGA_TARGET2 flag."""
-        return get_manga_target('2', self._bitmasks, self.header)
-
-    @property
-    def manga_target3(self):
-        """Return MANGA_TARGET3 flag."""
-        return get_manga_target('3', self._bitmasks, self.header)
-
-    @property
-    def target_flags(self):
-        """Bundle MaNGA targeting flags."""
-        return [self.manga_target1, self.manga_target2, self.manga_target3]
-
-    @property
-    def quality_flag(self):
-        """Return Maps DAPQUAL flag."""
-
-        try:
-            dapqual = self._bitmasks['MANGA_DAPQUAL']
-        except KeyError:
-            dapqual = None
-        else:
-            dapqual.mask = int(self.header['DAPQUAL'])
-
-        return dapqual
-
     def getSpaxel(self, x=None, y=None, ra=None, dec=None,
-                  drp=True, model=False, **kwargs):
+                  drp=True, models=False, model=None, **kwargs):
         """Returns the :class:`~marvin.tools.spaxel.Spaxel` matching certain coordinates.
 
         The coordinates of the spaxel to return can be input as ``x, y`` pixels
@@ -558,7 +549,7 @@ class Maps(MarvinToolsClass, NSAMixIn, DAPallMixIn):
             drp (bool):
                 If ``True``, the |spaxel| will be initialised with the
                 corresponding DRP data.
-            model (bool):
+            models (bool):
                 If ``True``, the |spaxel| will be initialised with the
                 corresponding `.ModelCube` data.
 
@@ -573,15 +564,20 @@ class Maps(MarvinToolsClass, NSAMixIn, DAPallMixIn):
 
         """
 
+        if model is not None:
+            raise marvin.core.exceptions.MarvinDeprecationError(
+                'the model parameter has been deprecated. Use models.')
+
         return marvin.utils.general.general.getSpaxel(
             x=x, y=y, ra=ra, dec=dec,
-            cube=drp, maps=self, modelcube=model, **kwargs)
+            cube=drp, maps=self, modelcube=models, **kwargs)
 
     def _match_properties(self, property_name, channel=None, exact=False):
         """Returns the best match for a property_name+channel."""
 
         channel = channel.name if isinstance(channel, Channel) else channel
 
+        channel = None if channel == 'None' else channel
         if channel is not None:
             property_name = property_name + '_' + channel
 
@@ -619,10 +615,21 @@ class Maps(MarvinToolsClass, NSAMixIn, DAPallMixIn):
         else:
             best = self._match_properties(property_name, channel=channel, exact=exact)
 
+        # raise error when property is MPL-6 stellar_sigmacorr
+        if best.full() == 'stellar_sigmacorr' and self.release == 'MPL-6':
+            raise marvin.core.exceptions.MarvinError('stellar_sigmacorr is unreliable in MPL-6. '
+                                                     'Please use MPL-7.')
+
         return marvin.tools.quantities.Map.from_maps(self, best)
 
     def getMapRatio(self, property_name, channel_1, channel_2):
-        """Deprecated, see :ref:`Enhanced Map<marvin-enhanced-map>`. Returns a ratio `~marvin.tools.quantities.Map`.
+        """Returns a ratio `~marvin.tools.quantities.Map`.
+
+        .. attention::
+            Deprecated, see :ref:`Enhanced Map<marvin-enhanced-map>`.
+
+        For a given ``property_name``, returns a `~marvin.tools.quantities.Map`
+        which is the ratio of ``channel_1/channel_2``.
 
         For a given ``property_name``, returns a `~marvin.tools.quantities.Map`
         which is the ratio of ``channel_1/channel_2``.
@@ -635,26 +642,10 @@ class Maps(MarvinToolsClass, NSAMixIn, DAPallMixIn):
                 The channels to use.
 
         """
-
-        # TODO extend to allow for different property names and make channel optional
         map_1 = self.getMap(property_name, channel=channel_1)
         map_2 = self.getMap(property_name, channel=channel_2)
 
-        map_1.value /= map_2.value
-
-        # TODO: do the error propogation (BHA)
-        map_1.ivar = None
-
-        map_1.mask &= map_2.mask
-
-        map_1.channel = '{0}/{1}'.format(channel_1, channel_2)
-
-        if map_1.unit != map_2.unit:
-            map_1.unit = '{0}/{1}'.format(map_1.unit, map_2.unit)
-        else:
-            map_1.unit = ''
-
-        return map_1
+        return map_1 / map_2
 
     def is_binned(self):
         """Returns True if the Maps is not unbinned."""

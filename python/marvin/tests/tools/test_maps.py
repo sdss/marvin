@@ -1,30 +1,34 @@
 #!/usr/bin/env python
-# encoding: utf-8
+# -*- coding: utf-8 -*-
 #
-# test_maps.py
+# @Author: Brian Cherinka, José Sánchez-Gallego, and Brett Andrews
+# @Date: 2016-06-22
+# @Filename: test_maps.py
+# @License: BSD 3-clause (http://www.opensource.org/licenses/BSD-3-Clause)
 #
-# Created by José Sánchez-Gallego on 22 Jun 2016.
+# @Last modified by: José Sánchez-Gallego (gallegoj@uw.edu)
+# @Last modified time: 2018-08-06 12:12:16
 
 
-from __future__ import division
-from __future__ import print_function
-from __future__ import absolute_import
+from __future__ import absolute_import, division, print_function
 
 import copy
-from os.path import join
 import re
+from os.path import join
 
-import pytest
-import numpy as np
 import astropy
 import astropy.io.fits
+import numpy as np
+import pytest
 
 import marvin
-from marvin.tools.maps import Maps
 import marvin.tools.spaxel
 from marvin.core.exceptions import MarvinError
-from marvin.utils.datamodel.dap.base import Property
 from marvin.tests import marvin_test_if
+from marvin.tools.maps import Maps
+from marvin.utils.datamodel.dap.base import Property
+
+from ..conftest import set_the_config
 
 
 def _assert_maps(maps, galaxy):
@@ -177,6 +181,15 @@ class TestMaps(object):
                 else:
                     assert value == value2, attr
 
+    def test_getMapRatio(self, galaxy):
+        maps = Maps(galaxy.plateifu)
+        map_ratio = maps.getMapRatio('emline_gflux', 'nii_6585', 'ha_6564')
+        map_arith = maps.emline_gflux_nii_6585 / maps.emline_gflux_ha_6564
+
+        assert map_ratio.value == pytest.approx(map_arith.value, nan_ok=True)
+        assert map_ratio.ivar == pytest.approx(map_arith.ivar, nan_ok=True)
+        assert map_ratio.mask == pytest.approx(map_arith.mask, nan_ok=True)
+
 
 class TestMaskbit(object):
 
@@ -184,11 +197,6 @@ class TestMaskbit(object):
     def test_quality_flag_mpl4(self, maps_release_only):
         ha = maps_release_only['emline_gflux_ha_6564']
         assert ha.quality_flag is None
-
-    @marvin_test_if(mark='skip', maps_release_only=dict(release=['MPL-4']))
-    def test_quality_flag(self, maps_release_only):
-        ha = maps_release_only['emline_gflux_ha_6564']
-        assert ha.quality_flag.mask == 0
 
     @pytest.mark.parametrize('flag',
                              ['manga_target1',

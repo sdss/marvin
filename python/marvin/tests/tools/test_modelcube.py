@@ -1,21 +1,21 @@
 #!/usr/bin/env python
-# encoding: utf-8
+# -*- coding: utf-8 -*-
 #
-# @Author: José Sánchez-Gallego
-# @Date: Aug 15, 2017
+# @Author: Brian Cherinka, José Sánchez-Gallego, and Brett Andrews
+# @Date: 2017-08-15
 # @Filename: test_modelcube.py
-# @License: BSD 3-Clause
-# @Copyright: José Sánchez-Gallego
+# @License: BSD 3-clause (http://www.opensource.org/licenses/BSD-3-Clause)
+#
+# @Last modified by: José Sánchez-Gallego (gallegoj@uw.edu)
+# @Last modified time: 2018-07-20 19:13:16
 
 
-from __future__ import division
-from __future__ import print_function
-from __future__ import absolute_import
+from __future__ import absolute_import, division, print_function
 
 import os
-import six
 
 import pytest
+import six
 from astropy.io import fits
 from astropy.wcs import WCS
 
@@ -207,8 +207,7 @@ class TestMaskbit(object):
                              ['manga_target1',
                               'manga_target2',
                               'manga_target3',
-                              'target_flags',
-                              'pixmask'])
+                              'target_flags'])
     def test_flag(self, flag, galaxy):
         modelcube = ModelCube(plateifu=galaxy.plateifu, bintype=galaxy.bintype)
         assert getattr(modelcube, flag, None) is not None

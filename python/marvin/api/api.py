@@ -13,8 +13,9 @@ Revision History:
 from __future__ import print_function
 from __future__ import division
 from brain.api.api import BrainInteraction
+from marvin import config
 
-configkeys = ['release', 'session_id']
+configkeys = ['release', 'session_id', 'compression']
 
 
 class Interaction(BrainInteraction):
@@ -34,22 +35,27 @@ class Interaction(BrainInteraction):
     Parameters:
         route (str):
             Required.  Relative url path of the API call you want to make
-
         params (dict):
             dictionary of parameters you are passing into the API function call
-
         request_type (str):
             the method type of the API call, can be either "get" or "post" (default: post)
-
         auth (str):
             the authentication method used for the API.  Currently set as default to use
             netrc authentication.
-
         timeout (float|tuple):
             A float or tuple of floats indicating the request timeout limit in seconds.
             If the server has not sent a respsonse by the time limit, an exception is raised.
             The default timeout is set to 5 minutes.
             See http://docs.python-requests.org/en/master/user/advanced/#timeouts
+        headers (dict):
+            A custom header to send with the request
+        stream (bool):
+            If True, iterates over the response data.  Default is False.  When set, avoids reading the
+            content all at once into memory for large responses.
+            See `request streaming <http://docs.python-requests.org/en/master/user/advanced/#streaming-requests>`_
+        datastream (bool):
+            If True, expects the response content to be streamed back using a Python generator.
+            All matters when Marvin Query return_all is True.
 
     Returns:
         results (dict):
@@ -83,10 +89,21 @@ class Interaction(BrainInteraction):
     def _loadConfigParams(self):
         """Load the local configuration into a parameters dictionary to be sent with the request"""
 
-        from marvin import config
         if self.params:
             for k in configkeys:
                 if k not in self.params or self.params[k] is None:
                     self.params[k] = config.__getattribute__(k)
         else:
             self.params = {k: config.__getattribute__(k) for k in configkeys}
+
+    def setAuth(self, authtype=None):
+        ''' Set the authorization '''
+
+        release = self.params['release'] if self.params and 'release' in self.params else config.release
+
+        if (config.access == 'collab' and 'DR' in release) or config.access == 'public':
+            authtype = None
+        else:
+            assert authtype is not None, 'Must have an authorization type set for collab access to MPLs!'
+
+        super(Interaction, self).setAuth(authtype=authtype)

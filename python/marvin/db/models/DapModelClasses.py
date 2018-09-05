@@ -7,20 +7,23 @@ new mangadap db model classes - Sept 7 , for alternate schema
 '''
 
 from __future__ import division, print_function
-from sqlalchemy.orm import relationship
+
+import re
+
+import marvin.db.models.DataModelClasses as datadb
+import numpy as np
+from astropy.io import fits
+from marvin.core.caching_query import RelationshipCache
+from marvin.db.database import db
+from marvin.utils.datamodel.dap import datamodel
+from sqlalchemy import Float, ForeignKeyConstraint, and_, case, cast, select
 from sqlalchemy.engine import reflection
-from sqlalchemy import ForeignKeyConstraint
+from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.inspection import inspect
+from sqlalchemy.orm import configure_mappers, relationship
 from sqlalchemy.schema import Column
 from sqlalchemy.types import Integer
-from sqlalchemy.ext.hybrid import hybrid_property
-from sqlalchemy import case, cast, Float
-import re
-from marvin.db.database import db
-import marvin.db.models.DataModelClasses as datadb
-from astropy.io import fits
-import numpy as np
-from marvin.core.caching_query import RelationshipCache
+
 
 # ========================
 # Define database classes
@@ -83,6 +86,25 @@ class File(Base):
         fluxhdu = [h for h in self.hdus if h.extname.name == name][0]
         return fluxhdu.header
 
+    @hybrid_property
+    def quality(self):
+        hdr = self.primary_header
+        bits = hdr.get('DAPQUAL', None)
+        if bits:
+            return int(bits)
+        else:
+            return None
+
+    @quality.expression
+    def quality(cls):
+        return select([HeaderValue.value.cast(Integer)]).\
+                      where(and_(HeaderKeyword.pk==HeaderValue.header_keyword_pk,
+                                 HduToHeaderValue.header_value_pk==HeaderValue.pk,
+                                 HduToHeaderValue.hdu_pk==Hdu.pk,
+                                 Hdu.file_pk==cls.pk,
+                                 HeaderKeyword.name.ilike('DAPQUAL')
+                        )).\
+                      label('dapqual')
 
 class CurrentDefault(Base):
     __tablename__ = 'current_default'
@@ -193,7 +215,7 @@ class Structure(Base):
     __table_args__ = {'autoload': True, 'schema': 'mangadapdb'}
 
     def __repr__(self):
-        return '<Structure (pk={0})'.format(self.pk)
+        return '<Structure (pk={0}, bintype={1}, template={3})'.format(self.pk, self.bintype.name, self.template_kin.name)
 
 
 class BinId(Base):
@@ -245,58 +267,38 @@ setattr(SpaxelAtts, 'oi_to_ha', HybridRatio('emline_gflux_oi_6302', 'emline_gflu
 setattr(SpaxelAtts, 'sii_to_ha', HybridRatio(('emline_gflux_sii_6718', 'emline_gflux_sii_6732'), 'emline_gflux_ha_6564'))
 
 
-class SpaxelProp(Base, SpaxelAtts):
-    __tablename__ = 'spaxelprop'
-    __table_args__ = {'autoload': True, 'schema': 'mangadapdb'}
+def spaxel_factory(classname, clean=None):
+    ''' class factory for the spaxelprop tables '''
 
-    def __repr__(self):
-        return '<SpaxelProp (pk={0}, file={1})'.format(self.pk, self.file_pk)
+    if clean:
+        classname = 'Clean{0}'.format(classname)
+    tablename = classname.lower()
 
+    params = {'__tablename__': tablename, '__table_args__': {'autoload': True, 'schema': 'mangadapdb'}}
+    if clean:
+        params.update({'pk': Column(Integer, primary_key=True)})
 
-class SpaxelProp5(Base, SpaxelAtts):
-    __tablename__ = 'spaxelprop5'
-    __table_args__ = {'autoload': True, 'schema': 'mangadapdb'}
+    def newrepr(self):
+        return '<{2} (pk={0}, file={1})'.format(self.pk, self.file_pk, classname)
 
-    def __repr__(self):
-        return '<SpaxelProp5 (pk={0}, file={1})'.format(self.pk, self.file_pk)
+    try:
+        newclass = type(classname, (Base, SpaxelAtts,), params)
+        newclass.__repr__ = newrepr
+    except Exception as e:
+        newclass = None
 
-
-class SpaxelProp6(Base, SpaxelAtts):
-    __tablename__ = 'spaxelprop6'
-    __table_args__ = {'autoload': True, 'schema': 'mangadapdb'}
-
-    def __repr__(self):
-        return '<SpaxelProp6 (pk={0}, file={1})'.format(self.pk, self.file_pk)
-
-
-class CleanSpaxelProp(Base, SpaxelAtts):
-    __tablename__ = 'cleanspaxelprop'
-    __table_args__ = {'autoload': True, 'schema': 'mangadapdb'}
-
-    pk = Column(Integer, primary_key=True)
-
-    def __repr__(self):
-        return '<CleanSpaxelProp (pk={0}, file={1})'.format(self.pk, self.file_pk)
+    return newclass
 
 
-class CleanSpaxelProp5(Base, SpaxelAtts):
-    __tablename__ = 'cleanspaxelprop5'
-    __table_args__ = {'autoload': True, 'schema': 'mangadapdb'}
-
-    pk = Column(Integer, primary_key=True)
-
-    def __repr__(self):
-        return '<CleanSpaxelProp5 (pk={0}, file={1})'.format(self.pk, self.file_pk)
-
-
-class CleanSpaxelProp6(Base, SpaxelAtts):
-    __tablename__ = 'cleanspaxelprop6'
-    __table_args__ = {'autoload': True, 'schema': 'mangadapdb'}
-
-    pk = Column(Integer, primary_key=True)
-
-    def __repr__(self):
-        return '<CleanSpaxelProp6 (pk={0}, file={1})'.format(self.pk, self.file_pk)
+# create the (clean)spaxel models from the DAP datamodel
+for dm in datamodel:
+    classname = datamodel[dm].property_table
+    newclass = spaxel_factory(classname)
+    cleanclass = spaxel_factory(classname, clean=True)
+    if newclass:
+        locals()[classname] = newclass
+    if cleanclass:
+        locals()[cleanclass.__name__] = cleanclass
 
 
 class BinMode(Base):
@@ -386,25 +388,15 @@ class DapAll(Base):
         return '<DapAll (pk={0}, file={1})'.format(self.pk, self.file_pk)
 
 
-# Now we create the remaining tables.
-insp = inspect(db.engine)
-schemaName = 'mangadapdb'
-#spaxTables = [t for t in insp.get_table_names(schema=schemaName) if 'spaxelprop' in t]
-spaxviews = insp.get_view_names(schema=schemaName)
+if 'testtable' in db.engine.table_names('mangadapdb'):
+    class TestTable(Base):
+        __tablename__ = 'testtable'
+        __table_args__ = {'autoload': True, 'schema': 'mangadapdb'}
 
-# done_names = db.Base.metadata.tables.keys()
-# for tableName in spaxviews:
-#     if schemaName + '.' + tableName in done_names:
-#         continue
-#     className = str(tableName).upper()
+        file = relationship(File, backref="testtable")
 
-#     newClass = ClassFactory(
-#         className, tableName,
-#         fks=[('file_pk', 'mangadapdb.file.pk')])
-#     newClass.file = relationship(
-#         File, backref='{0}'.format(tableName))
-#     locals()[className] = newClass
-#     done_names.append(schemaName + '.' + tableName)
+        def __repr__(self):
+            return ('<TestTable pk={0}, file={1}>'.format(self.pk, self.file_pk))
 
 # -----
 # Buld Relationships
@@ -430,23 +422,15 @@ Structure.template_kin = relationship(Template, foreign_keys=[Structure.template
 Structure.template_pop = relationship(Template, foreign_keys=[Structure.template_pop_pk], backref='structures_pop')
 
 insp = reflection.Inspector.from_engine(db.engine)
-fks = insp.get_foreign_keys(SpaxelProp.__table__.name, schema='mangadapdb')
-if fks:
-    SpaxelProp.file = relationship(File, backref='spaxelprops')
-    #SpaxelProp.binidfk = relationship(BinId, backref='spaxelprops')
-    CleanSpaxelProp.file = relationship(File, backref='cleanspaxelprops')
 
-fks = insp.get_foreign_keys(SpaxelProp5.__table__.name, schema='mangadapdb')
-if fks:
-    SpaxelProp5.file = relationship(File, backref='spaxelprops5')
-    #SpaxelProp5.binidfk = relationship(BinId, backref='spaxelprops5')
-    CleanSpaxelProp5.file = relationship(File, backref='cleanspaxelprops5')
+# add foreign key relationships on (Clean)SpaxelProp classses to File
+spaxel_tables = {k: v for k, v in locals().items() if 'SpaxelProp' in k or 'CleanSpaxelProp' in k}
 
-fks = insp.get_foreign_keys(SpaxelProp6.__table__.name, schema='mangadapdb')
-if fks:
-    SpaxelProp6.file = relationship(File, backref='spaxelprops6')
-    #SpaxelProp6.binidfk = relationship(BinId, backref='spaxelprops6')
-    CleanSpaxelProp6.file = relationship(File, backref='cleanspaxelprops6')
+for classname, class_model in spaxel_tables.items():
+    fks = insp.get_foreign_keys(class_model.__table__.name, schema='mangadapdb')
+    if fks:
+        backname = classname.lower().replace('prop', 'props')
+        class_model.file = relationship(File, backref=backname)
 
 fks = insp.get_foreign_keys(ModelCube.__table__.name, schema='mangadapdb')
 if fks:
@@ -463,7 +447,7 @@ if fks:
 # ---------------------------------------------------------
 # Test that all relationships/mappings are self-consistent.
 # ---------------------------------------------------------
-from sqlalchemy.orm import configure_mappers
+
 try:
     configure_mappers()
 except RuntimeError as error:
@@ -472,12 +456,14 @@ except RuntimeError as error:
 dap_cache = RelationshipCache(File.cube).\
                and_(RelationshipCache(File.filetype)).\
                and_(RelationshipCache(File.structure)).\
-               and_(RelationshipCache(SpaxelProp.file)).\
-               and_(RelationshipCache(CleanSpaxelProp.file)).\
-               and_(RelationshipCache(SpaxelProp5.file)).\
-               and_(RelationshipCache(CleanSpaxelProp5.file)).\
-               and_(RelationshipCache(SpaxelProp6.file)).\
-               and_(RelationshipCache(CleanSpaxelProp6.file)).\
                and_(RelationshipCache(ModelCube.file)).\
                and_(RelationshipCache(ModelSpaxel.modelcube)).\
                and_(RelationshipCache(RedCorr.modelcube))
+# add the SpaxelProp models to the cache
+for classname, class_model in spaxel_tables.items():
+    dap_cache = dap_cache.and_(RelationshipCache(class_model.file))
+
+# delete extra classes from the various loops
+del class_model
+del cleanclass
+del newclass

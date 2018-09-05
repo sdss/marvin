@@ -5,8 +5,8 @@
 #
 # @Author: Brett Andrews <andrews>
 # @Date:   2017-10-06 10:10:00
-# @Last modified by:   andrews
-# @Last modified time: 2018-02-22 16:02:75
+# @Last modified by: José Sánchez-Gallego
+# @Last modified time: 2018-07-13 09:07:21
 
 from __future__ import division, print_function, absolute_import
 
@@ -16,7 +16,11 @@ import numpy as np
 import pandas as pd
 
 import marvin
-from marvin.utils.general.yanny import yanny
+from marvin.extern.yanny import yanny
+
+
+# Stores the maskbits yanny file structure so that we don't need to open it more than once.
+_maskbits_from_yanny = None
 
 
 def _read_maskbit_schemas():
@@ -25,9 +29,14 @@ def _read_maskbit_schemas():
     Returns:
         Record Array: all bits for all schemas.
     """
-    path_maskbits = os.path.join(os.path.dirname(marvin.__file__), 'data', 'sdssMaskbits.par')
-    sdss_maskbits = yanny(path_maskbits, np=True)
-    return sdss_maskbits['MASKBITS']
+
+    global _maskbits_from_yanny
+
+    if _maskbits_from_yanny is None:
+        path_maskbits = os.path.join(os.path.dirname(marvin.__file__), 'data', 'sdssMaskbits.par')
+        _maskbits_from_yanny = yanny(path_maskbits, np=True)
+
+    return _maskbits_from_yanny['MASKBITS']
 
 
 def get_available_maskbits():

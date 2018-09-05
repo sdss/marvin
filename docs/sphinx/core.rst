@@ -17,8 +17,8 @@ MarvinToolsClass
 
 Generic methods for `pickling <pickle>` and unpickling the subclassed objects are implemented in `.MarvinToolsClass.save` and `.MarvinToolsClass.restore`. While these work in most cases, depending on the specifics of the subclass some additional handling may be necessary.
 
-.. autoclass:: marvin.core.core.MarvinToolsClass
-   :members: download, save, restore, release, _getFullPath, _set_datamodel
+.. autoclass:: marvin.tools.core.MarvinToolsClass
+   :members: download, save, restore, release, _getFullPath, _set_datamodel, getImage
 
 Mixins
 ------

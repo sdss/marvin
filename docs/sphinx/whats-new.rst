@@ -1,7 +1,60 @@
 .. _whats-new:
 
-What's New in Marvin 2.2 (January 2018)
-=======================================
+What's new in Marvin
+====================
+
+2.3.0 (unreleased)
+------------------
+* A new Marvin :ref:`marvin-image` Tool for interfacing with the MaNGA optical images.
+
+2.2.6 (August 2018)
+-------------------
+
+.. attention:: This is a critical bugfix release that corrects a problem that could affect your science results. Please update as soon as possible and check whether your analysis is impacted by this bug.
+
+This version fixes a critical bug when retrieving the spaxels associated with a bin. It also simplifies the library namespace allowing for easier access to the most used Tools.
+
+Spaxels associated with a bin
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+In version 2.2 we introduced the concept of :ref:`Bin <marvin-bin>` as a collection of spaxels that belong to the same binning unit. As part of the API, one can use `~marvin.tools.spaxel.Bin.spaxels` attribute to access a list of the spaxels that are included in the bin. The bug now fixed caused a list of incorrect spaxels to be associated with the bin, due to an inversion in the ``(x, y)`` order of the spaxels. For example, *before* 2.2.6 one would get ::
+
+    >>> cube = Cube('8485-1901')
+    >>> maps = cube.getMaps('HYB10')
+    >>> bb = maps[22, 14]
+    >>> bb.spaxels
+    [<Marvin Spaxel (x=21, y=13, loaded=False),
+     <Marvin Spaxel (x=21, y=14, loaded=False),
+     <Marvin Spaxel (x=22, y=13, loaded=False),
+     <Marvin Spaxel (x=22, y=14, loaded=False)]
+
+where the x and y values should be
+
+.. code-block:: console
+
+    [<Marvin Spaxel (x=13, y=21, loaded=False),
+     <Marvin Spaxel (x=14, y=21, loaded=False),
+     <Marvin Spaxel (x=13, y=22, loaded=False),
+     <Marvin Spaxel (x=14, y=22, loaded=False)]
+
+Simplifying the namespace
+^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Prior to 2.2.6 accessing different Tools classes was inconvenient since one would need to import them independently (e.g., ``from marvin.tools.cube import Cube``, ``from marvin.tools.maps import Maps``, etc.) This version makes access easier by exposing all the Tools from the ``marvin.tools`` namespace so that you can now do ::
+
+    import marvin
+    cube = marvin.tools.Cube('8485-1901')
+    maps = marvin.tools.Maps('7443-12701')
+
+Stellar Sigma Correction
+^^^^^^^^^^^^^^^^^^^^^^^^
+
+For MPL-6, we now raise an explicit error when attempting to apply the correction to `stellar_sigma`, using the `inst_sigma_correction` method.  The error message now suggests to upgrade to MPL-7 data.  For the web display of the `stellar_sigma` and `emline_gsigma` maps, we now apply the sigma correction automatically.  The corrected map is indicated via **Corrected: stellar_sigma** map title.
+
+|
+
+2.2 (January 2018)
+------------------
 
 Marvin 2.2.0 brings significant improvements in the way you interact with MaNGA data.  Try the :ref:`Jupyter Notebook<marvin-jupyter-new22>` for a small sample.
 
@@ -17,8 +70,8 @@ Marvin 2.2.0 brings significant improvements in the way you interact with MaNGA 
 
 |
 
-What's New in Marvin 2.1.4 (August 2017)
-========================================
+2.1.4 (August 2017)
+-------------------
 
 * Refactored the Query Page in Marvin Web: Adds more intuitive parameters naming in dropdown.  Adds Guided Marvin Query Builder, using `Jquery Query Builder <http://querybuilder.js.org/>`_.  See the Search page section of :doc:`Web Docs <web>`.
 
@@ -40,8 +93,8 @@ What's New in Marvin 2.1.4 (August 2017)
 
 |
 
-What's New in Marvin 2.1.3 (May 2017)
-=====================================
+2.1.3 (May 2017)
+----------------
 
 * Slicing in tool objects now behaves as in a Numpy array. That means that `cube[i, j]` returns the same result as `cube.getSpaxel(x=j, y=i, xyorig='lower')`.
 
@@ -68,8 +121,8 @@ What's New in Marvin 2.1.3 (May 2017)
 
 |
 
-What's New in Marvin 2.1 (February 2017)
-========================================
+2.1 (February 2017)
+-------------------
 
 * Marvin is now minimally compliant with Python 3.5+
 
@@ -103,8 +156,8 @@ What's New in Marvin 2.1 (February 2017)
 
 |
 
-What's New in Marvin 2.0 Beta (November 2016)
-=============================================
+2.0 Beta (November 2016)
+------------------------
 
 * Brand new painless installation (pip install sdss-marvin)
 
@@ -124,8 +177,8 @@ What's New in Marvin 2.0 Beta (November 2016)
 
 |
 
-What's New in Marvin 2.0 Alpha (June 2016)
-==========================================
+2.0 Alpha (June 2016)
+---------------------
 
 Marvin 2.0 is a complete overhaul of Marvin 1.0, converting Marvin into a full suite of interaction tools.
 

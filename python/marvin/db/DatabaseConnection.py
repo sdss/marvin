@@ -73,7 +73,7 @@ regions['default'] = make_region(
         }
     )
 
-for mpl in config._mpldict.keys():
+for mpl in config._allowed_releases.keys():
     nsacache = 'nsa_{0}'.format(mpl.lower().replace('-', ''))
     regions[nsacache] = make_nsa_region(nsacache)
 
@@ -102,7 +102,7 @@ def clearSearchPathCallback(dbapi_con, connection_record):
     connection_record - type: sqlalchemy.pool._ConnectionRecord
     '''
     cursor = dbapi_con.cursor()
-    cursor.execute('SET search_path TO "$user",functions')
+    cursor.execute('SET search_path TO "$user",functions,public')
     dbapi_con.commit()
 
 listen(Pool, 'connect', clearSearchPathCallback)

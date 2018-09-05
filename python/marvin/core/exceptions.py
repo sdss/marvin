@@ -1,26 +1,24 @@
 #!/usr/bin/env python
-# encoding: utf-8
-"""
+# -*- coding: utf-8 -*-
+#
+# @Author: Brian Cherinka, José Sánchez-Gallego, and Brett Andrews
+# @Date: 2016-02-13
+# @Filename: exceptions.py
+# @License: BSD 3-clause (http://www.opensource.org/licenses/BSD-3-Clause)
+#
+# @Last modified by: José Sánchez-Gallego (gallegoj@uw.edu)
+# @Last modified time: 2018-08-12 14:23:09
 
-exceptions.py
 
-Licensed under a 3-clause BSD license.
-
-Revision history:
-    13 Feb 2016 J. Sánchez-Gallego
-      Initial version
-
-"""
-
-from __future__ import division
-from __future__ import print_function
+from __future__ import division, print_function
 
 import os
+import pwd
 import sys
 import warnings
-import pwd
 
 import marvin
+
 
 __all__ = ['MarvinError', 'MarvinUserWarning', 'MarvinSkippedTestWarning',
            'MarvinNotImplemented', 'MarvinMissingDependency', 'MarvinDeprecationWarning']
@@ -38,14 +36,14 @@ class MarvinSentry(object):
         if Client:
             os.environ['SENTRY_DSN'] = 'https://98bc7162624049ffa3d8d9911e373430:1a6b3217d10e4207908d8e8744145421@sentry.io/107924'
             self.client = Client(
-                    dsn=os.environ.get('SENTRY_DSN'),
-                    release=version,
-                    site='Marvin',
-                    environment=sys.version.rsplit('|', 1)[0],
-                    processors=(
-                            'raven.processors.SanitizePasswordsProcessor',
-                        )
+                dsn=os.environ.get('SENTRY_DSN'),
+                release=version,
+                site='Marvin',
+                environment=sys.version.rsplit('|', 1)[0],
+                processors=(
+                    'raven.processors.SanitizePasswordsProcessor',
                 )
+            )
             try:
                 self.client.context.merge({'user': {'name': pwd.getpwuid(os.getuid())[0],
                                                     'system': '_'.join(os.uname())}})
@@ -53,7 +51,7 @@ class MarvinSentry(object):
                 warnings.warn('cannot initiate Sentry error reporting: {0}.'.format(str(ee)),
                               UserWarning)
                 self.client = None
-            except:
+            except Exception as ee:
                 warnings.warn('cannot initiate Sentry error reporting: unknown error.',
                               UserWarning)
                 self.client = None
@@ -65,7 +63,8 @@ ms = MarvinSentry(version=marvin.__version__)
 
 
 class MarvinError(Exception):
-    def __init__(self, message=None):
+    ''' Main Marvin Error '''
+    def __init__(self, message=None, ignore_git=None):
 
         from marvin import config
         message = 'Unknown Marvin Error' if not message else message
@@ -78,10 +77,13 @@ class MarvinError(Exception):
             else:
                 ms.client.captureMessage(message)
 
+        if message[-1] != '.':
+            message += '.'
+
         # Add Github Issue URL to message or not
-        if config.add_github_message is True:
+        if config.add_github_message is True and not ignore_git:
             giturl = 'https://github.com/sdss/marvin/issues/new'
-            message = ('{0}.\nYou can submit this error to Marvin GitHub Issues ({1}).\n'
+            message = ('{0}\nYou can submit this error to Marvin GitHub Issues ({1}).\n'
                        'Fill out a subject and some text describing the error that just occurred.\n'
                        'If able, copy and paste the full traceback information into the issue '
                        'as well.'.format(message, giturl))
@@ -105,6 +107,11 @@ class MarvinMissingDependency(MarvinError):
     pass
 
 
+class MarvinDeprecationError(MarvinError):
+    """To be raised for a deprecated feature."""
+    pass
+
+
 class MarvinWarning(Warning):
     """Base warning for Marvin."""
     pass
@@ -113,6 +120,15 @@ class MarvinWarning(Warning):
 class MarvinUserWarning(UserWarning, MarvinWarning):
     """The primary warning class."""
     pass
+
+
+class MarvinPassiveAggressiveWarning(MarvinUserWarning):
+    """The passive aggressive warning class."""
+
+    def __init__(self, message=None):
+        message = ("Well, I wouldn't do it like that, but if that's "
+                   "how you want to do it, sure, go ahead.\n{0}".format(message or ''))
+        super(MarvinPassiveAggressiveWarning, self).__init__(message)
 
 
 class MarvinSkippedTestWarning(MarvinUserWarning):

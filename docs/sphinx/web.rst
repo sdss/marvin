@@ -30,7 +30,12 @@ designations given the typed entry.
 **Version Dropdown Select**:
 
 A dropdown select button indicating what version of MaNGA data you are
-currently working with.
+currently working with.  The default available releases are public data releases.
+
+**Login**:
+
+The Marvin login box.  Log in using your personal SDSS credentials or the general SDSS username and password to
+access collaboration data.
 
 .. _web-help:
 
@@ -60,7 +65,6 @@ language syntax.
 A dropdown multiple select box indicating which parameters are available to query
 on and/or return.  You may select multiple parameters (up to 5). See :ref:`marvin-query-parameters`.
 
-
 **Search Filter**:
 
 An input string search filter box that accepts a pseudo-natural language format.
@@ -75,7 +79,11 @@ The search filter accepts boolean search strings that are parsed with a
 
 If you need help building a query, you can use this to help design your SQL filter.  This feature uses the `Jquery Query Builder <http://querybuilder.js.org/>`_.
 
-After a query is run a table of results is generated to navigate around.  A **View Galaxies** button will display the postage stamp images of all the galaxies in the results.  This page displays up to 16 galaxies at a time, with the big carousel image linking to the individual galaxy page.  There are pagination buttons to help you cycle through your pages.
+After a query is run a table of results is generated to navigate around.  Returned columns include some default target identification parameters, plus any parameters used in your search filter, or additional returned parameters.  Large result sets are paginated.  You can also sort on individual columns by clicking the column header.
+
+**View Galaxies**:
+
+After a search, the **View Galaxies** button will display the postage stamp images of all the galaxies in the results.  This page displays up to 16 galaxies at a time, with the big carousel image linking to the individual galaxy page.  There are pagination buttons to help you cycle through your pages.
 
 
 .. _web-plate:
@@ -172,6 +180,9 @@ flux map, and the d4000 spectral index map.  All maps are generated using the
   * **Binning Scheme--Stellar Template Dropdown**: Choose a binning and stellar template set combination. *Default is SPX-GAU-MILESHC (i.e., spaxel binning (i.e., no binning) with the MILESHC stellar template set).*
   * **Get Maps**: Click to display maps.
   * **Reset Selection**: Clear your selected Analysis Properties (Binning Scheme and Stellar Template combination will remain the same.).
+
+* **Sigma Corrections**:
+  When selecting the ``stellar_sigma`` or ``emline_sigma`` maps, we automatically apply the relevant sigma correction.  A corrected map is indicated via the **Corrected: [name]** map title.  Uncorrected maps, for example, in MPL-6, retain the original title name.
 
 * **Map Color Schemes**:
 

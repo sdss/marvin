@@ -40,21 +40,20 @@
 # EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 
-from __future__ import division, print_function, absolute_import
+from __future__ import absolute_import, division, print_function
 
 import copy
 
-from astropy import units
-
-import numpy as np
 import matplotlib as mpl
 import matplotlib.pyplot as plt
+import numpy as np
+from astropy import units
 from matplotlib.colors import LogNorm
 
+import marvin.utils.plot.colorbar as colorbar
 from marvin import config
 from marvin.core.exceptions import MarvinError
-import marvin.utils.plot.colorbar as colorbar
-from marvin.utils.general import get_plot_params
+from marvin.utils.datamodel.dap import datamodel
 from marvin.utils.general.maskbit import Maskbit
 
 
@@ -190,8 +189,8 @@ def _set_extent(cube_size, sky_coords):
     """
     if sky_coords:
         spaxel_size = 0.5  # arcsec
-        extent = np.array([-(cube_size[0] * spaxel_size), (cube_size[0] * spaxel_size),
-                           -(cube_size[1] * spaxel_size), (cube_size[1] * spaxel_size)])
+        extent = np.array([-(cube_size[0] / 2 * spaxel_size), (cube_size[0] / 2 * spaxel_size),
+                           -(cube_size[1] / 2 * spaxel_size), (cube_size[1] / 2 * spaxel_size)])
     else:
         extent = np.array([0, cube_size[0] - 1, 0, cube_size[1] - 1])
 
@@ -223,7 +222,7 @@ def _set_patch_style(patch_kws, extent):
     return patch_kws
 
 
-def ax_setup(sky_coords, fig=None, ax=None, facecolor='#A8A8A8'):
+def _ax_setup(sky_coords, fig=None, ax=None, facecolor='#A8A8A8'):
     """Do basic axis setup for maps.
 
     Parameters:
@@ -423,11 +422,11 @@ def plot(*args, **kwargs):
     try:
         prop = dapmap.datamodel.full()
     except (AttributeError, TypeError):
-        prop = ''
+        prop = _get_prop(title)
 
     # get plotparams from datamodel
     dapver = dapmap._datamodel.parent.release if dapmap is not None else config.lookUpVersions()[1]
-    params = get_plot_params(dapver, prop)
+    params = datamodel[dapver].get_plot_params(prop)
     cmap = kwargs.get('cmap', params['cmap'])
     percentile_clip = kwargs.get('percentile_clip', params['percentile_clip'])
     symmetric = kwargs.get('symmetric', params['symmetric'])
@@ -499,7 +498,7 @@ def plot(*args, **kwargs):
 
     with plt.style.context(plt_style):
 
-        fig, ax = ax_setup(sky_coords=sky_coords, fig=fig, ax=ax)
+        fig, ax = _ax_setup(sky_coords=sky_coords, fig=fig, ax=ax)
 
         # plot hatched regions by putting one large patch as lowest layer
         # hatched regions are bad data, low SNR, or negative values if the colorbar is logarithmic

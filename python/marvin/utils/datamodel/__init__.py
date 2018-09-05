@@ -6,12 +6,14 @@
 # @Author: Brian Cherinka
 # @Date:   2017-09-20 10:31:11
 # @Last modified by:   Brian Cherinka
-# @Last modified time: 2017-10-02 14:10:71
+# @Last modified time: 2018-08-04 13:22:38
 
-from __future__ import print_function, division, absolute_import
+from __future__ import absolute_import, division, print_function
+
+import copy
 from collections import OrderedDict
-from marvin import config
 import six
+from marvin import config
 
 
 class MetaDataModel(type):
@@ -55,6 +57,14 @@ class DataModelList(six.with_metaclass(MetaDataModel, OrderedDict)):
 
         raise KeyError('cannot find release or alias {0!r}'.format(release))
 
+    def __contains__(self, value):
+        ''' Returns True based on release/aliases using getitem '''
+        try:
+            self[value]
+            return True
+        except KeyError:
+            return False
+
     def __repr__(self):
 
         return repr([xx for xx in self.values()])
@@ -66,13 +76,20 @@ class DataModelList(six.with_metaclass(MetaDataModel, OrderedDict)):
 
         self[dm.release] = dm
 
+    def copy(self):
+        return self.__deepcopy__(self)
+
+    def __deepcopy__(self, memo):
+        return memo.__class__(models=[copy.deepcopy(model) for model in memo.values()])
+
 
 class DataModelLookup(object):
     ''' Class for lookups into the Marvin DataModel '''
 
     def __init__(self, release=None):
         from marvin.utils.datamodel.dap import datamodel as dap_dms
-        from marvin.utils.datamodel.drp import datamodel as drp_dms
+        from marvin.utils.datamodel.drp import datamodel as drp_cube_dms
+        from marvin.utils.datamodel.drp import datamodel_rss as drp_rss_dms
         from marvin.utils.datamodel.query import datamodel as query_dms
         from marvin.utils.datamodel.vacs import datamodel as vac_dms
 
@@ -81,11 +98,12 @@ class DataModelLookup(object):
 
         # set datamodels for a given release
         self.dapdm = dap_dms[release]
-        self.drpdm = drp_dms[release]
+        self.drpcubedm = drp_cube_dms[release]
+        self.drprssdm = drp_rss_dms[release]
         self.querydm = query_dms[release]
         self.vacdm = vac_dms[release] if release in vac_dms else None
         self._dm = None
-        self.model_map = ['drp', 'dap', 'query', 'vac']
+        self.model_map = ['drp_cube', 'drp_rss', 'dap', 'query', 'vac']
 
     def __repr__(self):
 
@@ -94,35 +112,41 @@ class DataModelLookup(object):
     def check_value(self, value, model=None):
         ''' Check that a value is in the Marvin datamodel
 
-        Searches a specified datamodel for a value.  If no model is specified,
+        Searches a specified datamodel for a value. If no model is specified,
         attempts to search all the datamodels.
 
         Parameters:
             value (str):
                 The value to look up in the datamodels
             model (str):
-                Optional name of the datamodel to search on. Can be drp, dap, or query.
+                Optional name of the datamodel to search on.
+                Can be drp_cube, drp_rss, dap, or query.
 
         Returns:
             True if value found within a specified model.  When no model is specified,
             returns the name of the model the value was found in.
+
         '''
 
         assert isinstance(value, six.string_types), 'value must be a string'
-        assert model in self.model_map + [None], 'model must be drp, dap, or query'
+        assert model in self.model_map + [None], 'model must be drp_cube, drp_rss, dap, or query'
 
-        indrp = value in self.drpdm
+        indrpcube = value in self.drpcubedm
+        indrprss = value in self.drprssdm
         indap = value in self.dapdm
         inquery = value in self.querydm
         invac = value in self.vacdm if self.vacdm else False
-        true_map = [indrp, indap, inquery, invac]
+        true_map = [indrpcube, indrprss, indap, inquery, invac]
 
         if model == 'dap':
             self._dm = self.dapdm
             return indap
-        elif model == 'drp':
-            self._dm = self.drpdm
-            return indrp
+        elif model == 'drp_cube':
+            self._dm = self.drpcubedm
+            return indrpcube
+        elif model == 'drp_rss':
+            self._dm = self.drprssdm
+            return indrprss
         elif model == 'query':
             self._dm = self.querydm
             return inquery
@@ -130,16 +154,20 @@ class DataModelLookup(object):
             self._dm = self.vacdm
         else:
             # check all of them
-            tootrue = sum([indrp, indap]) > 1
+            tootrue = sum([indrpcube, indrprss, indap]) > 1
             if tootrue:
                 subset = [i for i in self.model_map if true_map[self.model_map.index(i)]]
                 raise ValueError('{0} found in multiple datamodels {1}. '
-                                 'Fine-tune your value or try a specific model'.format(value, subset))
+                                 'Fine-tune your value or try a specific model'.format(value,
+                                                                                       subset))
             else:
-                model = 'drp' if indrp else 'dap' if indap else 'query' if inquery else 'vac' if invac else None
+                model = 'drp_cube' if indrpcube else 'drp_rss' if indrprss else \
+                    'dap' if indap else 'query' if inquery else 'vac' if invac else None
 
             if not model:
-                print('{0} not found in any datamodels.  Refine your syntax or check the MaNGA TRM!'.format(value))
+                print('{0} not found in any datamodels. '
+                      'Refine your syntax or check the MaNGA TRM!'.format(value))
+
             return model
 
     def get_value(self, value, model=None):
@@ -161,8 +189,10 @@ class DataModelLookup(object):
 
         if checked is True:
             param = value == self._dm
-        elif checked == 'drp':
-            param = value == self.drpdm
+        elif checked == 'drp_cube':
+            param = value == self.drpcubedm
+        elif checked == 'drp_rss':
+            param = value == self.drprssdm
         elif checked == 'dap':
             param = value == self.dapdm
         elif checked == 'query':
@@ -181,13 +211,17 @@ class DataModelLookup(object):
         assert model in self.model_map + [None], 'model must be drp, dap, query, or vac'
 
         if model == 'query':
-            self.querydm.write_csv(path=path, filename=filename, overwrite=overwrite, db=True)
+            self.querydm.write_csv(path=path, filename=filename,
+                                   overwrite=overwrite, db=True)
         elif model == 'dap':
             self.dapdm.properties.write_csv(path=path, filename=filename, overwrite=overwrite, **kwargs)
             self.dapdm.models.write_csv(path=path, filename=filename, overwrite=overwrite, **kwargs)
-        elif model == 'drp':
-            self.drpdm.spectra.write_csv(path=path, filename=filename, overwrite=overwrite, **kwargs)
-            self.drpdm.datacubes.write_csv(path=path, filename=filename, overwrite=overwrite, **kwargs)
+        elif model == 'drp_cube':
+            self.drpcubedm.spectra.write_csv(path=path, filename=filename, overwrite=overwrite, **kwargs)
+            self.drpcubedm.datacubes.write_csv(path=path, filename=filename, overwrite=overwrite, **kwargs)
+        elif model == 'drp_rss':
+            self.drprssdm.spectra.write_csv(path=path, filename=filename, overwrite=overwrite, **kwargs)
+            self.drprssdm.rss.write_csv(path=path, filename=filename, overwrite=overwrite, **kwargs)
         elif model == 'vac':
             pass
 
@@ -196,9 +230,3 @@ class DataModelLookup(object):
 
         for model in self.model_map:
             self.write_csv(model=model, overwrite=overwrite, **kwargs)
-
-
-
-
-
-

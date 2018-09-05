@@ -53,7 +53,8 @@ extensions = [
     'sphinxcontrib.autohttp.flaskqref',
     'sphinx.ext.inheritance_diagram', 'sphinx.ext.graphviz',
     'IPython.sphinxext.ipython_console_highlighting',
-    'IPython.sphinxext.ipython_directive', 'sphinx.ext.intersphinx', 'docudatamodel']
+    'IPython.sphinxext.ipython_directive', 'sphinx.ext.intersphinx', 'docudatamodel',
+    'sphinx_issues']
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
@@ -106,6 +107,8 @@ exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
 # documents.
 default_role = 'py:obj'
 
+issues_github_path = 'sdss/marvin'
+
 # If true, '()' will be appended to :func: etc. cross-reference text.
 # add_function_parentheses = True
 
@@ -130,7 +133,8 @@ pygments_style = 'sphinx'
 intersphinx_mapping = {'python': ('https://docs.python.org/3.6', None),
                        'astropy': ('http://docs.astropy.org/en/latest', None),
                        'numpy': ('http://docs.scipy.org/doc/numpy/', None),
-                       'pandas': ('http://pandas.pydata.org/pandas-docs/stable/', None)}
+                       'pandas': ('http://pandas.pydata.org/pandas-docs/stable/', None),
+                       'photutils': ('http://photutils.readthedocs.io/en/stable/', None)}
 
 autodoc_member_order = 'groupwise'
 modindex_common_prefix = ['marvin.']

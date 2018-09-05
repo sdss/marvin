@@ -30,9 +30,10 @@ from marvin.tools.cube import Cube
 from marvin.tools.quantities import Spectrum
 from marvin.utils.general.structs import DotableCaseInsensitive
 from marvin.core.exceptions import MarvinError
-from marvin.utils.general import (convertCoords, get_nsa_data, getWCSFromPng, get_plot_params,
-                                  _sort_dir, getDapRedux, getDefaultMapPath)
-from marvin.utils.datamodel.dap.plotting import get_default_plot_params
+from marvin.utils.general import (convertCoords, get_nsa_data, getWCSFromPng,
+                                  _sort_dir, getDapRedux, getDefaultMapPath, target_status,
+                                  target_is_observed)
+from marvin.utils.datamodel.dap import datamodel
 
 
 @pytest.fixture(scope='function')
@@ -171,12 +172,12 @@ class TestGetNSAData(object):
     def test_nsa(self, galaxy, mode, db, source):
         if mode == 'local' and source == 'nsa' and marvin.config.db is None:
             with pytest.raises(MarvinError) as cm:
-                data = get_nsa_data(galaxy.mangaid, source=source, mode=mode)
+                data = get_nsa_data(galaxy.mangaid, source=source, mode=mode, drpver=galaxy.drpver)
             errmsg = 'get_nsa_data: cannot find a valid DB connection.'
             assert cm.type == MarvinError
             assert errmsg in str(cm.value)
         else:
-            data = get_nsa_data(galaxy.mangaid, source=source, mode=mode)
+            data = get_nsa_data(galaxy.mangaid, source=source, mode=mode, drpver=galaxy.drpver)
             if source == 'nsa':
                 self._test_nsa(galaxy, data)
             elif source == 'drpall':
@@ -184,7 +185,7 @@ class TestGetNSAData(object):
 
     @pytest.mark.parametrize('monkeyconfig', [('_drpall', None)], indirect=True, ids=['nodrpall'])
     def test_nodrpall(self, galaxy, monkeyconfig):
-        data = get_nsa_data(galaxy.mangaid, source='drpall', mode='auto')
+        data = get_nsa_data(galaxy.mangaid, source='drpall', mode='auto', drpver=galaxy.drpver)
         self._test_drpall(galaxy, data)
 
 
@@ -211,8 +212,7 @@ class TestDataModelPlotParams(object):
                               ('stellar_sigma', {'cmap': 'inferno', 'percentile_clip': [10, 90], 'symmetric': False, 'snr_min': 1})],
                              ids=['emline', 'stvel', 'stsig'])
     def test_get_plot_params(self, dapver, name, desired):
-        params = get_default_plot_params(dapver)
-
+        params = datamodel[dapver].get_default_plot_params()
         if 'vel' in name:
             key = 'vel'
         elif 'sigma' in name:
@@ -221,7 +221,7 @@ class TestDataModelPlotParams(object):
             key = 'default'
 
         desired['bitmasks'] = params[key]['bitmasks']
-        actual = get_plot_params(dapver=dapver, prop=name)
+        actual = datamodel[dapver].get_plot_params(prop=name)
         assert desired == actual
 
 
@@ -229,11 +229,11 @@ class TestSortDir(object):
 
     @pytest.mark.parametrize('class_, expected',
                              [(Map, ['error', 'inst_sigma_correction', 'ivar',
-                                     'getMaps', 'mask', 'masked', 'plot',
+                                     'getMaps', 'mask', 'masked', 'plot', 'getSpaxel',
                                      'restore', 'save', 'snr', 'value', 'from_maps',
                                      'binid', 'descale', 'datamodel', 'pixmask',
                                      'quality_flag', 'target_flags', 'manga_target1',
-                                     'manga_target2', 'manga_target3'])])
+                                     'manga_target2', 'manga_target3', 'specindex_correction'])])
     def test_sort_dir_map(self, galaxy, class_, expected):
         maps = Maps(plateifu=galaxy.plateifu)
         ha = maps['emline_gflux_ha_6564']
@@ -283,3 +283,22 @@ class TestGetDefaultMapPath(object):
             assert 'MAPS' in path
 
         assert full in path
+
+
+class TestTargetStatus(object):
+
+    @pytest.mark.parametrize('galid, exp', [('1-209232', True),
+                                            ('1-208345', False),
+                                            ('1-95058', False)])
+    def test_is_observed(self, galid, exp):
+        observed = target_is_observed(galid)
+        assert observed == exp
+
+    @pytest.mark.parametrize('galid, exp', [('1-209232', 'observed'),
+                                            ('1-208345', 'not valid target'),
+                                            ('1-95058', 'not yet observed')])
+    def test_status(self, galid, exp):
+        status = target_status(galid)
+        assert status == exp
+
+

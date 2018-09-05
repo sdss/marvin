@@ -67,6 +67,7 @@ Components
   * :doc:`query`
   * :doc:`results`
   * :doc:`tools/plate`
+  * :doc:`tools/image`
   * :doc:`tools/cube`
   * :doc:`tools/modelcube`
   * :doc:`tools/maps`
@@ -99,6 +100,7 @@ Components
   * :doc:`datamodel/mpl4`
   * :doc:`datamodel/mpl5`
   * :doc:`datamodel/mpl6`
+  * :doc:`datamodel/mpl7`
 
 |
 
@@ -124,6 +126,7 @@ API/Code Reference
    api/general
    api/api
    api/tools
+   api/mixins
    api/quantities
    api/queries
    api/utils

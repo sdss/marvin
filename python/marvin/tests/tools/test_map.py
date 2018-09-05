@@ -1,28 +1,30 @@
 #!/usr/bin/env python
-# encoding: utf-8
+# -*- coding: utf-8 -*-
 #
-# test_map.py
+# @Author: Brian Cherinka, José Sánchez-Gallego, and Brett Andrews
+# @Date: 2017-07-02
+# @Filename: test_map.py
+# @License: BSD 3-clause (http://www.opensource.org/licenses/BSD-3-Clause)
 #
-# @Author: Brett Andrews <andrews>
-# @Date:   2017-07-02 13:08:00
-# @Last modified by:   andrews
-# @Last modified time: 2018-03-01 11:03:79
+# @Last modified by: José Sánchez-Gallego (gallegoj@uw.edu)
+# @Last modified time: 2018-08-09 16:08:28
 
+
+import operator
 from copy import deepcopy
 
-import numpy as np
-from astropy import units as u
 import matplotlib
+import numpy as np
 import pytest
+from astropy import units as u
 
-from marvin import config
 from marvin.core.exceptions import MarvinError
-from marvin.tools.maps import Maps
-from marvin.tools.quantities import Map, EnhancedMap
 from marvin.tests import marvin_test_if
+from marvin.tools.maps import Maps
+from marvin.tools.quantities import EnhancedMap, Map
 from marvin.utils.datamodel.dap import datamodel
-from marvin.utils.datamodel.dap.plotting import get_default_plot_params
 from marvin.utils.general.maskbit import Maskbit
+
 
 value1 = np.array([[16.35, 0.8],
                    [0, -10.]])
@@ -31,6 +33,9 @@ value2 = np.array([[591., 1e-8],
 
 value_prod12 = np.array([[9.66285000e+03, 8e-9],
                          [0, -100]])
+
+value_log2 = np.array([[2.77158748, -8.],
+                       [0.60205999, 1.]])
 
 ivar1 = np.array([[4, 1],
                   [6.97789734e+36, 1e8]])
@@ -56,8 +61,13 @@ ivar_pow_m2 = np.array([[2.67322500e+02, 1.6e-01],
 ivar_pow_m05 = np.array([[0.97859327, 5],
                          [0, 0]])
 
+ivar_log1 = np.array([[3.67423420e-04, 4.34294482e+07],
+                      [4.11019127e-20, 4.34294482e-06]])
+
 u_flux = u.erg / u.cm**2 / u.s / u.def_unit('spaxel')
 u_flux2 = u_flux * u_flux
+
+ufuncs = [it for it in dir(np) if isinstance(getattr(np, it), np.ufunc)]
 
 
 def _get_maps_kwargs(galaxy, data_origin):
@@ -184,6 +194,45 @@ class TestMap(object):
         reordered_ha = np.moveaxis(ha, 0, -1)
         assert reordered_ha.unit is not None
 
+    @marvin_test_if(mark='include', maps={'plateifu': '8485-1901',
+                                          'release': 'MPL-6',
+                                          'bintype': ['SPX']})
+    def test_get_spaxel(self, maps):
+        """Tests `.Map.getSpaxel`."""
+
+        ha = maps['emline_gflux_ha']
+
+        spaxel = ha.getSpaxel(x=10, y=10, xyorig='lower')
+
+        assert spaxel is not None
+        assert spaxel.x == 10 and spaxel.y == 10
+
+    @marvin_test_if(mark='skip', galaxy=dict(release=['MPL-6']))
+    def test_stellar_sigma_values(self, maps, galaxy):
+        ''' Assert values for stellar_sigma and stellar_sigmacorr are different (issue #411) '''
+
+        ss = maps.stellar_sigma
+        sc = maps.stellar_sigmacorr
+        compare = sum(ss == sc)
+        assert len(np.unique(compare)) > 1
+        x = galaxy.dap['x']
+        y = galaxy.dap['y']
+        ssvalue = galaxy.dap['stellar_sigma'][galaxy.bintype.name]
+        scvalue = galaxy.dap['stellar_sigmacorr'][galaxy.bintype.name]
+        assert ssvalue == pytest.approx(ss[x, y].value, 1e-4)
+        assert scvalue == pytest.approx(sc[x, y].value, 1e-4)
+
+    def test_datamodel(self, maps):
+
+        gew_ha = maps.emline_gew_ha_6564
+        assert gew_ha.datamodel.description == ('Gaussian-fitted equivalent widths measurements '
+                                                '(based on EMLINE_GFLUX). Channel = H-alpha 6564.')
+    @marvin_test_if(mark='include', galaxy=dict(release=['MPL-6']))
+    def test_stellar_sigma_mpl6(self, maps, galaxy):
+        with pytest.raises(MarvinError) as cm:
+            __ = maps.stellar_sigmacorr
+        assert 'stellar_sigmacorr is unreliable in MPL-6. Please use MPL-7.' in str(cm.value)
+
 
 class TestMapArith(object):
 
@@ -254,6 +303,39 @@ class TestMapArith(object):
     @pytest.mark.parametrize('power', [2, 0.5, 0, -1, -2, -0.5])
     def test_pow_ivar_none(self, power):
         assert Map._pow_ivar(None, np.arange(4), power) == pytest.approx(np.zeros(4))
+
+    @pytest.mark.parametrize('ivar, value, expected',
+                             [(ivar1, value2, ivar_log1)])
+    def test_log10_ivar(self, ivar, value, expected):
+        actual = Map._log10_ivar(ivar, value)
+        assert actual == pytest.approx(expected)
+
+    def test_log10(self, maps_release_only):
+        niiha = maps_release_only.emline_gflux_nii_6585 / maps_release_only.emline_gflux_nii_6585
+        log_niiha = np.log10(niiha)
+        ivar = np.log10(np.e) * niiha.ivar**-0.5 / niiha.value
+
+        assert log_niiha.value == pytest.approx(np.log10(niiha.value), nan_ok=True)
+        assert log_niiha.ivar == pytest.approx(ivar, nan_ok=True)
+        assert (log_niiha.mask == niiha.mask).all()
+        assert log_niiha.unit == u.dimensionless_unscaled
+
+    @pytest.mark.runslow
+    @marvin_test_if(mark='skip', ufunc='log10')
+    @pytest.mark.parametrize('ufunc', ufuncs)
+    def test_np_ufunc_notimplemented(self, maps_release_only, ufunc):
+        ha = maps_release_only.emline_gflux_ha_6564
+        nii = maps_release_only.emline_gflux_nii_6585
+
+        with pytest.raises(NotImplementedError) as ee:
+            if getattr(getattr(np, ufunc), 'nargs') <= 2:
+                getattr(np, ufunc)(ha)
+
+            else:
+                getattr(np, ufunc)(nii, ha)
+
+        expected = 'np.{0} is not implemented for Map.'.format(getattr(np, ufunc).__name__)
+        assert str(ee.value) == expected
 
     @pytest.mark.parametrize('unit1, unit2, op, expected',
                              [(u_flux, u_flux, '+', u_flux),
@@ -358,25 +440,39 @@ class TestMapArith(object):
         assert map_new.ivar == pytest.approx(ivar_new)
         assert (map_new.mask == map_orig.mask).all()
 
-    @marvin_test_if(mark='skip', galaxy=dict(release=['MPL-4']))
+    @marvin_test_if(mark='skip', galaxy=dict(release=['MPL-4', 'MPL-6']))
     def test_stellar_sigma_correction(self, galaxy):
         maps = Maps(plateifu=galaxy.plateifu)
         stsig = maps['stellar_sigma']
         stsigcorr = maps['stellar_sigmacorr']
+
         expected = (stsig**2 - stsigcorr**2)**0.5
+        expected.ivar = (expected.value / stsig.value) * stsig.ivar
+        expected.ivar[stsig.ivar == 0] = 0
+        expected.ivar[stsigcorr.value >= stsig.value] = 0
+        expected.value[stsigcorr.value >= stsig.value] = 0
+
         actual = stsig.inst_sigma_correction()
+
         assert actual.value == pytest.approx(expected.value, nan_ok=True)
         assert actual.ivar == pytest.approx(expected.ivar)
         assert (actual.mask == expected.mask).all()
+        assert actual.datamodel == stsig.datamodel
 
-    @marvin_test_if(mark='include', galaxy=dict(release=['MPL-4']))
+    @marvin_test_if(mark='include', galaxy=dict(release=['MPL-4', 'MPL-6']))
     def test_stellar_sigma_correction_MPL4(self, galaxy):
         maps = Maps(plateifu=galaxy.plateifu)
         stsig = maps['stellar_sigma']
+
+        if galaxy.release == 'MPL-4':
+            errmsg = 'Instrumental broadening correction not implemented for MPL-4.'
+        elif galaxy.release == 'MPL-6':
+            errmsg = 'The stellar sigma corrections in MPL-6 are unreliable. Please use MPL-7.'
+
         with pytest.raises(MarvinError) as ee:
             stsig.inst_sigma_correction()
 
-        assert 'Instrumental broadening correction not implemented for MPL-4.' in str(ee.value)
+        assert errmsg in str(ee.value)
 
     def test_stellar_sigma_correction_invalid_property(self, galaxy):
         maps = Maps(plateifu=galaxy.plateifu)
@@ -394,18 +490,44 @@ class TestMapArith(object):
         emsigcorr = maps['emline_instsigma_ha_6564']
 
         expected = (hasig**2 - emsigcorr**2)**0.5
+        expected.ivar = (expected.value / hasig.value) * hasig.ivar
+        expected.ivar[hasig.ivar == 0] = 0
+        expected.ivar[emsigcorr.value >= hasig.value] = 0
+        expected.value[emsigcorr.value >= hasig.value] = 0
+
         actual = hasig.inst_sigma_correction()
 
         assert actual.value == pytest.approx(expected.value, nan_ok=True)
         assert actual.ivar == pytest.approx(expected.ivar)
         assert (actual.mask == expected.mask).all()
+        assert actual.datamodel == hasig.datamodel
+
+    @marvin_test_if(mark='skip', galaxy=dict(release=['MPL-4', 'MPL-5']))
+    @pytest.mark.parametrize('channel, op',
+                             [('hb', '*'),
+                              ('d4000', '*'),
+                              ('cn1', '+'),
+                              ])
+    def test_specindex_sigma_correction(self, galaxy, channel, op):
+        maps = Maps(plateifu=galaxy.plateifu)
+        si = maps['specindex_' + channel]
+        sicorr = maps['specindex_corr' + channel]
+
+        ops = {'+': operator.add, '-': operator.sub, '*': operator.mul, '/': operator.truediv}
+        expected = ops[op](si, sicorr)
+
+        actual = si.specindex_correction()
+
+        assert actual.value == pytest.approx(expected.value, nan_ok=True)
+        assert actual.ivar == pytest.approx(expected.ivar)
+        assert (actual.mask == expected.mask).all()
+        assert actual.datamodel == si.datamodel
 
 
 class TestMaskbit(object):
 
     def test_masked(self, maps_release_only):
-        __, dapver = config.lookUpVersions(maps_release_only.release)
-        params = get_default_plot_params(dapver)
+        params = maps_release_only.datamodel.parent.get_default_plot_params()
         ha = maps_release_only['emline_gflux_ha_6564']
         expected = ha.pixmask.get_mask(params['default']['bitmasks'], dtype=bool)
 
@@ -444,11 +566,6 @@ class TestMaskbit(object):
     def test_labels_to_value(self, maps_release_only, names, expected):
         ha = maps_release_only['emline_gflux_ha_6564']
         assert ha.pixmask.labels_to_value(names) == expected
-
-    @marvin_test_if(mark='skip', maps_release_only=dict(release=['MPL-4']))
-    def test_quality_flag(self, maps_release_only):
-        ha = maps_release_only['emline_gflux_ha_6564']
-        assert ha.quality_flag is not None
 
     @pytest.mark.parametrize('flag',
                              ['manga_target1',

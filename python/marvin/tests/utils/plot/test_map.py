@@ -5,18 +5,18 @@
 #
 # @Author: Brett Andrews <andrews>
 # @Date:   2017-05-01 09:07:00
-# @Last modified by:   andrews
-# @Last modified time: 2018-04-03 10:04:19
 
-import numpy as np
+# @Last modified by:   andrews
+# @Last modified time: 2018-08-07 16:08:71
+
 import matplotlib
+import numpy as np
 import pytest
 
+import marvin.utils.plot.map as mapplot
 from marvin import config
 from marvin.tests import marvin_test_if
-import marvin.utils.plot.map as mapplot
-from marvin.utils.general import get_plot_params
-
+from marvin.utils.datamodel.dap import datamodel
 
 matplotlib_2 = pytest.mark.skipif(int(matplotlib.__version__.split('.')[0]) <= 1,
                                   reason='matplotlib-2.0 or higher required')
@@ -112,7 +112,7 @@ image_3_false = np.array([[1, 1, 1],
 @pytest.fixture(scope='module', params=['stellar_vel', 'stellar_sigma', 'emline_gflux',
                                         'specindex'])
 def bits(request, set_release):
-    params = get_plot_params(dapver=config.lookUpVersions()[1], prop=request.param)
+    params = datamodel[config.lookUpVersions()[1]].get_plot_params(request.param)
     return params['bitmasks']
 
 
@@ -161,7 +161,7 @@ class TestMasks(object):
             pytest.skip('Only include MPL-4.')
 
         for prop in ['stellar_vel', 'stellar_sigma', 'emline_gflux', 'specindex']:
-            params = get_plot_params(dapver=config.lookUpVersions()[1], prop=prop)
+            params = datamodel[config.lookUpVersions()[1]].get_plot_params(prop)
             actual = mapplot._format_use_masks(use_masks, mask, dapmap=None,
                                                default_masks=params['bitmasks'])
             assert actual == expected
@@ -179,7 +179,7 @@ class TestMasks(object):
             pytest.skip('Skip MPL-4.')
 
         for prop in ['stellar_vel', 'stellar_sigma', 'emline_gflux', 'specindex']:
-            params = get_plot_params(dapver=config.lookUpVersions()[1], prop=prop)
+            params = datamodel[config.lookUpVersions()[1]].get_plot_params(prop)
             actual = mapplot._format_use_masks(use_masks, mask, dapmap=None,
                                                default_masks=params['bitmasks'])
             assert actual == expected
@@ -188,28 +188,16 @@ class TestMasks(object):
 class TestMapPlot(object):
 
     @pytest.mark.parametrize('cube_size, sky_coords, expected',
-                             [([36, 36], True, np.array([-18, 18, -18, 18])),
-                              ([35, 35], True, np.array([-17.5, 17.5, -17.5, 17.5])),
+                             [([36, 36], True, np.array([-9, 9, -9, 9])),
+                              ([35, 35], True, np.array([-8.75, 8.75, -8.75, 8.75])),
                               ([36, 36], False, np.array([0, 35, 0, 35]))])
     def test_set_extent(self, cube_size, sky_coords, expected):
         extent = mapplot._set_extent(cube_size, sky_coords)
         assert np.all(extent == expected)
 
     @matplotlib_2
-    def test_set_hatch_linewidth(self, maps_release_only):
-        map_ = maps_release_only.getMap('emline_gflux', channel='ha_6564')
-        fig, ax = mapplot.plot(dapmap=map_)
-        assert matplotlib.rcParams['hatch.linewidth'] == 0.5
-
-    @matplotlib_2
-    def test_set_hatch_color(self, maps_release_only):
-        map_ = maps_release_only.getMap('emline_gflux', channel='ha_6564')
-        fig, ax = mapplot.plot(dapmap=map_)
-        assert matplotlib.rcParams['hatch.color'] == 'w'
-
-    @matplotlib_2
     def test_ax_facecolor(self):
-        fig, ax = mapplot.ax_setup(sky_coords=True, fig=None, ax=None, facecolor='#A8A8A8')
+        fig, ax = mapplot._ax_setup(sky_coords=True, fig=None, ax=None, facecolor='#A8A8A8')
         assert ax.get_facecolor() == (0.6588235294117647, 0.6588235294117647, 0.6588235294117647,
                                       1.0)
 

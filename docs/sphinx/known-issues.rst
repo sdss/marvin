@@ -11,6 +11,9 @@ Known Issues in Marvin
 .. _report new issue: https://github.com/sdss/marvin/issues/new
 
 
+* **Sigma Corrections**:
+  For MPL-6, we now raise an explicit error when attempting to apply the correction to `stellar_sigma`, using the `inst_sigma_correction` method.  The error message now suggests to upgrade to MPL-7 data.  In the web display of maps, when selecting the ``stellar_sigma`` or ``emline_sigma`` maps, we automatically apply the relevant sigma correction.  A corrected map is indicated via the **Corrected: [name]** map title.  Uncorrected maps, for example, in MPL-6, retain the original title name.
+
 * **Marvin 2.2.1 MPL-6 Maps** - All H-alpha extensions in the Marvin MAPS, using MPL-6, map to NII_6585 extensions instead.  Additionally, the Marvin Maps for SPX_ELLCOO and BIN_LWELLCOO do not include the new channel R/Reff.  It is advisable to upgrade to Marvin 2.2.2, where these bugs have been fixed.
 
 
@@ -68,7 +71,7 @@ Tools
 
 * When a Cube is instantiated from a file, the Maps object derived from could be instantiated remotely even if the Maps file is present locally. See `this issue <https://github.com/sdss/marvin/issues/40>`_.
 
-* **Queries** - Marvin Queries work!, but they are sometimes intermittent.  You sometimes may receive this error ``MarvinError: API Query call failed: Requests Http Status Error: 404 Client Error: Not Found for url: https://api.sdss.org/test/marvin2/api/query/cubes/.``  If you do, then just wait a moment, and try your query again.  Sometimes the query succeeds on the server-side and caches your results, but fails when sending it back to you.  We don't yet know why this happens, but we are currently trying to understand this problem!
+* **Queries** - Marvin Queries work!, but they are sometimes intermittent.  You sometimes may receive this error ``MarvinError: API Query call failed: Requests Http Status Error: 404 Client Error: Not Found for url: https://api.sdss.org/test/marvin/api/query/cubes/.``  If you do, then just wait a moment, and try your query again.  Sometimes the query succeeds on the server-side and caches your results, but fails when sending it back to you.  We don't yet know why this happens, but we are currently trying to understand this problem!
 
 
 Web
