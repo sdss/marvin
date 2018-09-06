@@ -14,6 +14,7 @@ import contextlib
 import yaml
 import six
 from collections import OrderedDict
+from astropy.wcs import FITSFixedWarning
 
 # Set the Marvin version
 __version__ = '2.3.0dev'
@@ -21,20 +22,12 @@ __version__ = '2.3.0dev'
 # Does this so that the implicit module definitions in extern can happen.
 # time - 483 ms
 from marvin import extern
-
+from marvin.core.exceptions import MarvinUserWarning, MarvinError
 from brain.utils.general.general import getDbMachine, merge
 from brain import bconfig
 from brain.core.core import URLMapDict
 from brain.core.exceptions import BrainError
 from brain.core.logger import initLog
-
-from astropy.wcs import FITSFixedWarning
-
-# Set the Marvin version
-__version__ = '2.2.6dev'
-
-from marvin.core.exceptions import MarvinUserWarning, MarvinError
-
 
 # Defines log dir.
 if 'MARVIN_LOGS_DIR' in os.environ:
