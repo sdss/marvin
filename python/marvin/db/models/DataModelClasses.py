@@ -300,7 +300,7 @@ class Cube(Base, ArrayOps):
         ''' get quality flags '''
 
         name = 'MANGA_DRP2QUAL' if stage == '2d' else 'MANGA_DRP3QUAL'
-        bits = self.getTargBits(stage=stage)
+        bits = self.getQualBits(stage=stage)
 
         if bits:
             return self.getFlags(bits, name)
