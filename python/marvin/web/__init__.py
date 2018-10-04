@@ -43,7 +43,7 @@ def create_app(debug=False, local=False, object_config=None):
     # ----------------------------------
     # Create App
     marvin_base = os.environ.get('MARVIN_BASE', 'marvin')
-    print('marvin_base', marvin_base)
+
     app = Flask(__name__, static_url_path='/{0}/static'.format(marvin_base))
     api = Blueprint("api", __name__, url_prefix='/{0}/api'.format(marvin_base))
     app.debug = debug
