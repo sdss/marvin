@@ -6,7 +6,7 @@
 # @Filename: maps.py
 # @License: BSD 3-clause (http://www.opensource.org/licenses/BSD-3-Clause)
 #
-# @Last modified by: José Sánchez-Gallego (gallegoj@uw.edu)
+# @Last modified by:   Brian Cherinka
 # @Last modified time: 2018-08-23 11:53:04
 
 
@@ -393,8 +393,6 @@ class Maps(MarvinToolsClass, NSAMixIn, DAPallMixIn, GetApertureMixIn):
     def _get_spaxel_quantities(self, x, y, spaxel=None):
         """Returns a dictionary of spaxel quantities."""
 
-        mdb = marvin.marvindb
-
         maps_quantities = FuzzyDict({})
 
         if self.data_origin == 'file' or self.data_origin == 'db':
@@ -423,6 +421,8 @@ class Maps(MarvinToolsClass, NSAMixIn, DAPallMixIn, GetApertureMixIn):
                             data[key] = self.data[extname].data[y, x]
 
                     elif self.data_origin == 'db':
+
+                        mdb = marvin.marvindb
 
                         table = getattr(mdb.dapdb, dm.model)
 
