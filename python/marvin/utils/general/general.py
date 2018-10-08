@@ -6,7 +6,7 @@
 # @Filename: general.py
 # @License: BSD 3-clause (http://www.opensource.org/licenses/BSD-3-Clause)
 #
-# @Last modified by: José Sánchez-Gallego (gallegoj@uw.edu)
+# @Last modified by:   Brian Cherinka
 # @Last modified time: 2018-08-11 23:34:07
 
 
@@ -390,7 +390,6 @@ def mangaid2plateifu(mangaid, mode='auto', drpall=None, drpver=None):
     elif mode == 'remote':
 
         try:
-            # response = Interaction('api/general/mangaid2plateifu/{0}/'.format(mangaid))
             url = marvin.config.urlmap['api']['mangaid2plateifu']['url']
             response = Interaction(url.format(mangaid=mangaid))
         except MarvinError as e:

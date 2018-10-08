@@ -207,7 +207,7 @@ def set_sasurl(loc='local', port=None):
     config.switchSasUrl(loc, test=istest, port=port)
     global URLMAP
     if not URLMAP:
-        response = Interaction('api/general/getroutemap', request_type='get', auth='netrc')
+        response = Interaction('/marvin/api/general/getroutemap', request_type='get', auth='netrc')
         config.urlmap = response.getRouteMap()
         URLMAP = config.urlmap
 
