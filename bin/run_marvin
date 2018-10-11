@@ -21,6 +21,8 @@ from marvin.web import create_app
 
 app = create_app(debug=args.debug, local=args.local)
 
+app.jinja_env.cache = {}
+
 # Set local port envvar
 if args.port:
     os.environ['LOCAL_MARVIN_PORT'] = str(args.port)

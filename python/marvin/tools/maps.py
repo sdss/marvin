@@ -392,8 +392,6 @@ class Maps(MarvinToolsClass, NSAMixIn, DAPallMixIn, GetApertureMixIn):
     def _get_spaxel_quantities(self, x, y, spaxel=None):
         """Returns a dictionary of spaxel quantities."""
 
-        mdb = marvin.marvindb
-
         maps_quantities = FuzzyDict({})
 
         if self.data_origin == 'file' or self.data_origin == 'db':
@@ -422,6 +420,8 @@ class Maps(MarvinToolsClass, NSAMixIn, DAPallMixIn, GetApertureMixIn):
                             data[key] = self.data[extname].data[y, x]
 
                     elif self.data_origin == 'db':
+
+                        mdb = marvin.marvindb
 
                         table = getattr(mdb.dapdb, dm.model)
 
