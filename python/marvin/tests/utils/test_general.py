@@ -229,7 +229,7 @@ class TestSortDir(object):
 
     @pytest.mark.parametrize('class_, expected',
                              [(Map, ['error', 'inst_sigma_correction', 'ivar',
-                                     'getMaps', 'mask', 'masked', 'plot',
+                                     'getMaps', 'mask', 'masked', 'plot', 'getSpaxel',
                                      'restore', 'save', 'snr', 'value', 'from_maps',
                                      'binid', 'descale', 'datamodel', 'pixmask',
                                      'quality_flag', 'target_flags', 'manga_target1',

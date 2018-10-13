@@ -6,7 +6,7 @@
 # @Filename: structs.py
 # @License: BSD 3-clause (http://www.opensource.org/licenses/BSD-3-Clause)
 #
-# @Last modified by: José Sánchez-Gallego (gallegoj@uw.edu)
+# @Last modified by:   Brian Cherinka
 # @Last modified time: 2018-08-11 20:20:17
 
 
@@ -218,6 +218,10 @@ class StringFolder(object):
     Class that will fold strings. See 'fold_string'.
     This object may be safely deleted or go out of scope when
     strings have been folded.
+
+    Credit: Ben Last
+    http://dev.mobify.com/blog/sqlalchemy-memory-magic/
+
     """
     def __init__(self):
         self.unicode_map = {}
@@ -234,7 +238,7 @@ class StringFolder(object):
         :return: a string or unicode object.
         """
         # If s is not a string or unicode object, return it unchanged
-        if not isinstance(s, basestring):
+        if not isinstance(s, six.string_types):
             return s
 
         # If s is already a string, then str() has no effect.
@@ -242,7 +246,7 @@ class StringFolder(object):
         # If s is Unicode and can't be encoded as a string, this try
         # will raise a UnicodeEncodeError.
         try:
-            return intern(str(s))
+            return six.moves.intern(str(s))
         except UnicodeEncodeError:
             # Fall through and handle s as Unicode
             pass
@@ -261,6 +265,9 @@ def string_folding_wrapper(results, keys=None):
     """
     This generator yields rows from the results as tuples,
     with all string values folded.
+
+    Credit: Ben Last
+    http://dev.mobify.com/blog/sqlalchemy-memory-magic/
     """
     # Get the list of keys so that we build tuples with all
     # the values in key order.

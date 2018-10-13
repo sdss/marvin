@@ -639,7 +639,7 @@ def query(request, monkeyauth, release, mode, db):
     if mode == 'local' and not db:
         pytest.skip('cannot use queries in local mode without a db')
     searchfilter = request.param if hasattr(request, 'param') else None
-    q = Query(searchfilter=searchfilter, mode=mode, release=release)
+    q = Query(search_filter=searchfilter, mode=mode, release=release)
     q.expdata = data
     yield q
     config.forceDbOn()

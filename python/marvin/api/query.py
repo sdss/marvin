@@ -1,23 +1,37 @@
+# !usr/bin/env python
+# -*- coding: utf-8 -*-
+#
+# Licensed under a 3-clause BSD license.
+#
+# @Author: Brian Cherinka
+# @Date:   2018-09-03 18:56:38
+# @Last modified by:   Brian Cherinka
+# @Last Modified time: 2018-09-03 18:57:08
+
+from __future__ import absolute_import, division, print_function
+
+from brain.utils.general import compress_data
+from flask import Response, jsonify, redirect, stream_with_context, url_for
 from flask_classful import route
-from flask import jsonify, Response
-from marvin.tools.query import doQuery, Query
+from marvin import config
+from marvin.api.base import arg_validate as av
+from marvin.api.base import BaseView
 from marvin.core.exceptions import MarvinError
-from marvin.api.base import BaseView, arg_validate as av
-from marvin.utils.db import get_traceback
+from marvin.tools.query import Query, doQuery
 from marvin.utils.datamodel.query.base import bestparams
+from marvin.utils.db import get_traceback
 from marvin.web.extensions import limiter
-import json
 
 
 def _run_query(searchfilter, **kwargs):
     ''' Run the query and return the query and results '''
 
     release = kwargs.pop('release', None)
-    kwargs['returnparams'] = kwargs.pop('params', None)
-    kwargs['returntype'] = kwargs.pop('rettype', None)
-
+    kwargs['return_params'] = kwargs.pop('returnparams', None)
+    kwargs['default_params'] = kwargs.pop('defaults', None)
+    kwargs['return_type'] = kwargs.pop('rettype', None)
     try:
-        q, r = doQuery(searchfilter=searchfilter, release=release, **kwargs)
+        q, r = doQuery(search_filter=searchfilter, release=release, **kwargs)
     except Exception as e:
         raise MarvinError('Query failed with {0}: {1}'.format(e.__class__.__name__, e))
     else:
@@ -26,7 +40,7 @@ def _run_query(searchfilter, **kwargs):
 
 def _get_runtime(query):
     ''' Retrive a dictionary of the runtime to pass back in JSON '''
-    runtime = {'days': query.runtime.days, 'seconds': query.runtime.seconds, 'microseconds': query.runtime.microseconds}
+    runtime = {'days': query._run_time.days, 'seconds': query._run_time.seconds, 'microseconds': query._run_time.microseconds}
     return runtime
 
 
@@ -40,7 +54,7 @@ def _getCubes(searchfilter, **kwargs):
     start = kwargs.get('start', None)
     end = kwargs.get('end', None)
     limit = kwargs.get('limit', None)
-    params = kwargs.get('params', None)
+    returnparams = kwargs.get('returnparams', None)
 
     # retrieve a subset
     chunk = None
@@ -54,13 +68,44 @@ def _getCubes(searchfilter, **kwargs):
 
     # set up the output
     output = dict(data=results, query=r.showQuery(), chunk=limit,
-                  filter=searchfilter, params=q.params, returnparams=params, runtime=_get_runtime(q),
-                  queryparams_order=q.queryparams_order, count=len(results), totalcount=r.totalcount)
+                  filter=searchfilter, params=q.params, returnparams=returnparams, runtime=_get_runtime(q),
+                  queryparams_order=q._query_params_order, count=len(results), totalcount=r.totalcount)
     return output
 
 
+def gen(query, compression=config.compression, params=None):
+    ''' Generator for query results
+
+    Parameters:
+        query (obj):
+            The SQLalchemy query object
+        compresssion (str):
+            The type of compression to use, e.g. 'json' or 'msgpack'
+
+    Yields:
+        A compressed result row of data to stream to the client
+
+    '''
+    for i, row in enumerate(query):
+        if i == 0 and params:
+            yield compress_data(params, compress_with=compression) + ';\n'
+        yield compress_data(row, compress_with=compression) + ';\n'
+
+
 def _get_column(results, colname, format_type=None):
-    ''' Gets a column from a Query '''
+    ''' Gets a column from a Query
+
+    Parameters:
+        results (obj):
+            A set of Marvin Results
+        colname (str):
+            The name of the column to extract
+        format_type (str):
+            The format of the dictionary
+
+    Returns:
+        A list of data for that column
+    '''
 
     column = None
     if format_type == 'list':
@@ -78,6 +123,30 @@ def _get_column(results, colname, format_type=None):
             raise MarvinError('Cannot get dictionary for column {0}: {1}'.format(colname, e))
 
     return column
+
+
+def _compressed_response(compression, results):
+    ''' Compress the data before sending it back in the Response
+
+    Parameters:
+        compression (str):
+            The compression type.  Either `json` or `msgpack`.
+        results (dict):
+            The current response dictionary
+
+    Returns:
+        A Flask Response object with the compressed data
+    '''
+
+    # pack the data
+    mimetype = 'json' if compression == 'json' else 'octet-stream'
+    try:
+        packed = compress_data(results, compress_with=compression)
+    except Exception as e:
+        results['error'] = str(e)
+        results['traceback'] = get_traceback(asstring=True)
+
+    return Response(stream_with_context(packed), mimetype='application/{0}'.format(mimetype))
 
 
 class QueryView(BaseView):
@@ -127,6 +196,26 @@ class QueryView(BaseView):
         self.results['data'] = 'this is a query!'
         self.results['status'] = 1
         return jsonify(self.results)
+
+    @route('/stream/', methods=['GET', 'POST'], endpoint='stream')
+    @av.check_args(use_params='query', required='searchfilter')
+    def stream(self, args):
+        ''' test query generator stream '''
+
+        searchfilter = args.pop('searchfilter', None)
+        compression = args.pop('compression', config.compression)
+        mimetype = 'json' if compression == 'json' else 'octet-stream'
+
+        release = args.pop('release', None)
+        args['return_params'] = args.pop('returnparams', None)
+        args['return_type'] = args.pop('rettype', None)
+        q = Query(search_filter=searchfilter, release=release, **args)
+
+        output = dict(data=None, chunk=q.limit, query=q.show(),
+                      filter=searchfilter, params=q.params, returnparams=q.return_params, runtime=None,
+                      queryparams_order=q._query_params_order, count=None, totalcount=None)
+
+        return Response(stream_with_context(gen(q.query, compression=compression, params=q.params)), mimetype='application/{0}'.format(mimetype))
 
     @route('/cubes/', methods=['GET', 'POST'], endpoint='querycubes')
     @av.check_args(use_params='query', required='searchfilter')
@@ -199,8 +288,13 @@ class QueryView(BaseView):
            }
 
         '''
-        searchfilter = args.pop('searchfilter', None)
+        # if return_all is True, perform a redirect to stream
+        return_all = args.get('return_all', None)
+        if return_all:
+            return redirect(url_for('api.stream', **args))
 
+        searchfilter = args.pop('searchfilter', None)
+        print('args', args)
         try:
             res = _getCubes(searchfilter, **args)
         except MarvinError as e:
@@ -210,8 +304,8 @@ class QueryView(BaseView):
             self.results['status'] = 1
             self.update_results(res)
 
-        # this needs to be json.dumps until sas-vm at Utah updates to 2.7.11
-        return Response(json.dumps(self.results), mimetype='application/json')
+        compression = args.pop('compression', config.compression)
+        return _compressed_response(compression, self.results)
 
     @route('/cubes/columns/', defaults={'colname': None}, methods=['GET', 'POST'], endpoint='getcolumn')
     @route('/cubes/columns/<colname>/', methods=['GET', 'POST'], endpoint='getcolumn')
@@ -279,7 +373,9 @@ class QueryView(BaseView):
                 self.results['data'] = column
                 self.results['runtime'] = _get_runtime(query)
 
-        return Response(json.dumps(self.results), mimetype='application/json')
+        compression = args.pop('compression', config.compression)
+        return _compressed_response(compression, self.results)
+        #return Response(json.dumps(self.results), mimetype='application/json')
 
     @route('/cubes/getsubset/', methods=['GET', 'POST'], endpoint='getsubset')
     @av.check_args(use_params='query', required=['searchfilter', 'start', 'end'])
@@ -365,8 +461,10 @@ class QueryView(BaseView):
             self.results['status'] = 1
             self.update_results(res)
 
+        compression = args.pop('compression', config.compression)
+        return _compressed_response(compression, self.results)
         # this needs to be json.dumps until sas-vm at Utah updates to 2.7.11
-        return Response(json.dumps(self.results), mimetype='application/json')
+        #return Response(json.dumps(self.results), mimetype='application/json')
 
     @route('/getparamslist/', methods=['GET', 'POST'], endpoint='getparams')
     @av.check_args(use_params='query', required='paramdisplay')
@@ -413,11 +511,22 @@ class QueryView(BaseView):
 
         '''
         paramdisplay = args.pop('paramdisplay', 'all')
-        q = Query(mode='local', release=args['release'])
         if paramdisplay == 'all':
-            params = q.get_available_params('all')
+            params = Query.get_available_params('all', release=args['release'])
         elif paramdisplay == 'best':
             params = bestparams
+        self.results['data'] = params
+        self.results['status'] = 1
+        output = jsonify(self.results)
+        return output
+
+    @route('/getallparams/', methods=['GET', 'POST'], endpoint='getallparams')
+    def getall(self):
+        ''' Retrieve all the query parameters for all releases at once '''
+        params = {}
+        releases = config._allowed_releases.keys()
+        for release in releases:
+            params[release] = Query.get_available_params('all', release=release)
         self.results['data'] = params
         self.results['status'] = 1
         output = jsonify(self.results)
