@@ -9,7 +9,8 @@ new mangadap db model classes - Sept 7 , for alternate schema
 from __future__ import division, print_function
 
 import re
-
+from marvin.db.database import db
+from marvin.utils.datamodel.dap import datamodel
 import marvin.db.models.DataModelClasses as datadb
 import numpy as np
 from astropy.io import fits
@@ -215,7 +216,7 @@ class Structure(Base):
     __table_args__ = {'autoload': True, 'schema': 'mangadapdb'}
 
     def __repr__(self):
-        return '<Structure (pk={0}, bintype={1}, template={3})'.format(self.pk, self.bintype.name, self.template_kin.name)
+        return '<Structure (pk={0}, bintype={1}, template={2})'.format(self.pk, self.bintype.name, self.template_kin.name)
 
 
 class BinId(Base):
@@ -387,16 +388,6 @@ class DapAll(Base):
     def __repr__(self):
         return '<DapAll (pk={0}, file={1})'.format(self.pk, self.file_pk)
 
-
-if 'testtable' in db.engine.table_names('mangadapdb'):
-    class TestTable(Base):
-        __tablename__ = 'testtable'
-        __table_args__ = {'autoload': True, 'schema': 'mangadapdb'}
-
-        file = relationship(File, backref="testtable")
-
-        def __repr__(self):
-            return ('<TestTable pk={0}, file={1}>'.format(self.pk, self.file_pk))
 
 # -----
 # Buld Relationships

@@ -17,7 +17,13 @@ from collections import OrderedDict
 from astropy.wcs import FITSFixedWarning
 
 # Set the Marvin version
-__version__ = '2.3.0dev'
+__version__ = '2.2.7dev'
+# try:
+#     from marvin.version import get_version
+# except ImportError as e:
+#     __version__ = 'dev'
+# else:
+#     __version__ = get_version()
 
 # Does this so that the implicit module definitions in extern can happen.
 # time - 483 ms
@@ -367,10 +373,9 @@ class MarvinConfig(object):
         ''' Set the db configuration '''
         self.db = getDbMachine()
 
-    def _update_releases(self):
-        ''' Update the allowed releases based on access '''
-
-        # define release dictionaries
+    def _checkConfig(self):
+        ''' Check the config '''
+        # set and sort the base MPL dictionary
         mpldict = {'MPL-7': ('v2_4_3', '2.2.1'),
                    'MPL-6': ('v2_3_1', '2.1.3'),
                    'MPL-5': ('v2_0_1', '2.0.2'),

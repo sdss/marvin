@@ -1,9 +1,16 @@
 Marvin's Change Log
 ===================
 
-.. _marvin-2.3.0:
+[2.2.7dev] - unreleased
+-----------------------
+Fixed
+^^^^^
+- Python 3 bug fix for exception error.message no longer valid in galaxy web page
+- Added ignore_git to MarvinError to conditionally rather than globally turn off git issues
+- Replaced web function getWebMap with correct version from master (a lost cherry-pick)
 
-[2.3.0] - 2018/?/?
+
+[2.2.6] - 2018/08/13
 --------------------
 
 Breaking changes

@@ -6,8 +6,8 @@
 # @Filename: spaxel.py
 # @License: BSD 3-clause (http://www.opensource.org/licenses/BSD-3-Clause)
 #
-# @Last modified by: José Sánchez-Gallego (gallegoj@uw.edu)
-# @Last modified time: 2018-08-12 13:27:57
+# @Last modified by:   andrews
+# @Last modified time: 2018-10-16 10:10:58
 
 
 from __future__ import absolute_import, division, print_function

@@ -6,8 +6,8 @@
 # @Filename: test_map.py
 # @License: BSD 3-clause (http://www.opensource.org/licenses/BSD-3-Clause)
 #
-# @Last modified by: José Sánchez-Gallego (gallegoj@uw.edu)
-# @Last modified time: 2018-08-09 16:08:28
+# @Last modified by:   andrews
+# @Last modified time: 2018-10-16 10:10:15
 
 
 import operator

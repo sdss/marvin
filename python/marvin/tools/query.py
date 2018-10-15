@@ -5,8 +5,8 @@
 #
 # @Author: Brian Cherinka
 # @Date:   2018-08-04 20:09:38
-# @Last modified by:   Brian Cherinka
-# @Last Modified time: 2018-09-03 18:36:33
+# @Last modified by:   andrews
+# @Last modified time: 2018-10-16 10:10:80
 
 from __future__ import print_function, division, absolute_import, unicode_literals
 
@@ -1216,19 +1216,30 @@ class Query(object):
         targets = [self.targets] if not isinstance(self.targets, list) else self.targets
         targets = [t.upper() for t in targets]
 
-        # check for ancillary targets
-        ancillaries = [a.upper() for a in self.datamodel.bitmasks['MANGA_TARGET3'].schema.label]
-        anc_labels = list(set(targets) & set(ancillaries))
-        targets = list(set(targets) - set(ancillaries))
+        # sf = self.marvinform._param_form_lookup.mapToColumn('searchfilter')
+        # stringfilter = self.searchfilter.strip().replace(' ', '')
+        # qm = self.session.query(sf.class_).filter(sf == stringfilter, sf.class_.release == self._release).one_or_none()
+
+        sqlcol = self.marvinform._param_form_lookup.mapToColumn('sql')
+        stringfilter = self.searchfilter.strip().replace(' ', '')
+        rawsql = self.show().strip()
+        return_params = ','.join(self._returnparams)
+        qm = self.session.query(sqlcol.class_).\
+            filter(sqlcol == rawsql, sqlcol.class_.release == self._release).one_or_none()
 
         # build the string filter
         target_filter = ''
         for target in targets:
             target_filter = self._create_target_filter(target, target_filter=target_filter)
 
-        # add in any ancillary targets
-        if anc_labels:
-            target_filter = self._create_target_filter('ancillary', target_filter=target_filter, ancillaries=anc_labels)
+        with self.session.begin():
+            if not qm:
+                #qm = sf.class_(searchfilter=stringfilter, n_run=1, release=self._release, count=self.totalcount)
+                qm = sqlcol.class_(searchfilter=stringfilter, n_run=1, release=self._release,
+                                   count=self.totalcount, sql=rawsql, return_params=return_params)
+                self.session.add(qm)
+            else:
+                qm.n_run += 1
 
         # parse the filter and add to the main
         self._add_filter(target_filter)
@@ -1697,7 +1708,3 @@ class Query(object):
         # Join to the main query
         cone_filter = func.q3c_radial_query(marvindb.datadb.Cube.ra, marvindb.datadb.Cube.dec, ra, dec, radius)
         self.query = self.query.filter(cone_filter)
-
-
-
-
