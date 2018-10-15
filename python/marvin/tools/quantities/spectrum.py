@@ -6,8 +6,8 @@
 # @Filename: spectrum.py
 # @License: BSD 3-clause (http://www.opensource.org/licenses/BSD-3-Clause)
 #
-# @Last modified by:   Brian Cherinka
-# @Last modified time: 2018-07-21 16:43:21
+# @Last modified by:   andrews
+# @Last modified time: 2018-10-19 20:10:13
 
 
 from __future__ import absolute_import, division, print_function
@@ -189,6 +189,9 @@ class Spectrum(Quantity, QuantityMixIn):
             fig = plt.figure() if figure is None else figure
             ax = fig.add_subplot(111)
 
+        if self.mask is None:
+            use_mask = False
+
         if use_mask:
             donotuse_mask = self.pixmask.get_mask('DONOTUSE') > 0
 
@@ -199,7 +202,7 @@ class Spectrum(Quantity, QuantityMixIn):
         else:
             value = self.value
             wave = self.wavelength.value
-            std = np.ma.array(self.std.value, mask=donotuse_mask) if self.std else None
+            std = self.std.value if self.std else None
 
         ax.plot(wave, value, **kwargs)
 

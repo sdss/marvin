@@ -6,8 +6,8 @@
 # @Filename: test_quantities.py
 # @License: BSD 3-clause (http://www.opensource.org/licenses/BSD-3-Clause)
 #
-# @Last modified by: José Sánchez-Gallego (gallegoj@uw.edu)
-# @Last modified time: 2018-08-09 16:27:22
+# @Last modified by:   andrews
+# @Last modified time: 2018-10-19 14:10:15
 
 
 import matplotlib
@@ -269,3 +269,32 @@ class TestSpectrum(object):
 
         ax = spectrum.plot(show_std=True)
         assert isinstance(ax, matplotlib.axes.Axes)
+
+    def test_plot_no_std_no_mask(self):
+        sp = Spectrum(numpy.random.randn(1000), wavelength=numpy.arange(1000))
+        sp.plot()
+
+    def test_plot_no_std(self):
+
+        mask = numpy.zeros(1000, dtype=numpy.int)
+        mask[50:100] = 2**10
+        mask[500:600] = 2**4
+
+        sp = Spectrum(
+            flux=numpy.random.randn(1000),
+            wavelength=numpy.arange(1000),
+            mask=mask,
+            pixmask_flag='MANGA_DRP3PIXMASK',
+        )
+        sp.plot()
+
+    def test_plot_no_mask(self):
+        flux = numpy.random.randn(1000)
+        ivar = (1. / (flux / 100))**2
+
+        sp = Spectrum(
+            flux=flux,
+            wavelength=numpy.arange(1000),
+            ivar=ivar,
+        )
+        sp.plot()
