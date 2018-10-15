@@ -5,8 +5,8 @@
 #
 # @Author: Brian Cherinka
 # @Date:   2017-08-22 22:43:15
-# @Last modified by:   Brian Cherinka
-# @Last modified time: 2017-11-14 11:11:27
+# @Last modified by:   andrews
+# @Last modified time: 2018-10-15 11:10:90
 
 from __future__ import absolute_import, division, print_function
 
@@ -845,7 +845,10 @@ class QueryParameter(object):
 
     def _in_form(self):
         ''' Check in parameters is in the Marvin Form '''
-        return self.full in self.parent._marvinform._param_form_lookup
+        try:
+            return self.full in self.parent._marvinform._param_form_lookup
+        except AttributeError:
+            return False
 
 
 # # Get the Common Parameters from the filelist
