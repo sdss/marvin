@@ -19,6 +19,7 @@ import sys
 
 # Importing matplotlib here with agg to prevent tkinter error in readthedocs
 import matplotlib
+import matplotlib.sphinxext.only_directives
 # Matplolib plot directive
 import matplotlib.sphinxext.plot_directive
 # Comment if you do not want to use bootstrap themes.
