@@ -17,7 +17,6 @@ import os
 
 # Importing matplotlib here with agg to prevent tkinter error in readthedocs
 import matplotlib
-import matplotlib.sphinxext.only_directives
 # Matplolib plot directive
 import matplotlib.sphinxext.plot_directive
 matplotlib.use('agg')
@@ -50,7 +49,6 @@ sys.path.insert(0, os.path.abspath('../../python/marvin/utils/datamodel/'))
 extensions = [
     'sphinx.ext.autodoc', 'sphinx.ext.napoleon', 'sphinx.ext.autosummary',
     'sphinx.ext.todo', 'sphinx.ext.viewcode', 'sphinx.ext.mathjax',
-    'matplotlib.sphinxext.only_directives',
     'matplotlib.sphinxext.plot_directive',
     'sphinxcontrib.httpdomain', 'sphinxcontrib.autohttp.flask',
     'sphinxcontrib.autohttp.flaskqref',
