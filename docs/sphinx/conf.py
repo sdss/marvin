@@ -24,6 +24,7 @@ matplotlib.use('agg')
 # Comment if you do not want to use bootstrap themes.
 import sphinx_bootstrap_theme
 import marvin
+marvin.config.setRelease('MPL-7')
 
 try:
     marvin_version = marvin.__version__
