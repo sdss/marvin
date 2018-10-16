@@ -24,7 +24,9 @@ matplotlib.use('agg')
 # Comment if you do not want to use bootstrap themes.
 import sphinx_bootstrap_theme
 import marvin
-marvin.config.setRelease('MPL-7')
+
+# hack attempt to force docs to get any urlmap
+marvin.config.sasurl = 'https://api.sdss.org/'
 
 try:
     marvin_version = marvin.__version__
