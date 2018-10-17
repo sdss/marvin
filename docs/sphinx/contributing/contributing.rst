@@ -67,55 +67,52 @@ Contributing a VAC
 
 At this time, only file-based access is supported (i.e., no querying or remote access is available) but the `~.VACMixIn` class provides a convenient way of matching targets with their VAC information and returning it to the user. Very little knowledge of how Marvin internally works is required! The directory `marvin/contrib/vacs <https://github.com/sdss/marvin/blob/master/python/marvin/contrib/vacs>`__ contains the base code and a list of already implemented VACs that you can use as a template.
 
-Example: Galaxy Zoo: 3D
-^^^^^^^^^^^^^^^^^^^^^^^
+Example: HI Follow-up for MaNGA
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-The `Galaxy Zoo: 3D project <https://www.zooniverse.org/projects/klmasters/galaxy-zoo-3d>`__ provides classifications of internal structures of MaNGA galaxies. For each observed MaNGA galaxy there is a Galaxy Zoo: 3D FITS file (you can find all the files `here <https://data.sdss.org/sas/mangawork/manga/sandbox/galaxyzoo3d/>`__) with the format ``<version>/<mangaid>-<ifusize>-<galzooid>.fits.gz``, where ``<version>`` is the version of the Galaxy Zoo VAC release, and ``<galzooid>`` is an internal identifier. The source code for this VAC's implementation can be found at  `marvin/contrib/vacs/galaxyzoo3d.py <https://github.com/sdss/marvin/blob/master/python/marvin/contrib/vacs/galaxyzoo3d.py>`__:
+The `MaNGA-HI` project is a program to perform follow-up observations of all MaNGA targets to look for HI 21cm using the Greenbank Radio Telescope.  This project provides HI spectral data and derived HI properties of MaNGA galaxies.  For each observed MaNGA galaxy, there is an HI spectrum FITS file, as well as a summary file of all HI observations. You can find all the files `here <https://data.sdss.org/sas/mangawork/manga/HI/>`__ with the format ``<version>/mangaHIall.fits`` for the summary file, and format ``<version>/spectra/<programid>/fits/mangaHI-<plateifu>.fits``. ``<version>`` is the version of the HI VAC release, ``<programid>`` is an internal identifier for the observing program, and ``<plateifu>`` is the plate-IFU of the galaxy. The source code for this VAC's implementation can be found at  `marvin/contrib/vacs/mangahi.py <https://github.com/sdss/marvin/blob/master/python/marvin/contrib/vacs/mangahi.py>`__:
 
-.. literalinclude:: ../../../python/marvin/contrib/vacs/galaxyzoo3d.py
+.. literalinclude:: ../../../python/marvin/contrib/vacs/mangahi.py
    :language: python
    :linenos:
 
 The file itself contains just a subclass of `~.VACMixIn`. In the docstring, we make sure to include the name of the VAC, a URL with a description of its contents, and a short description of what the VAC provides and what the class returns.
 
-The global section of the `~marvin.contrib.vacs.galaxyzoo3d.GalaxyZoo3DVAC` class defines :
+The global section of the `~marvin.contrib.vacs.mangahi.HIVAC` class defines :
 
 * The ``name`` of the VAC (this is the name that users will enter to access the VAC from Marvin). This is the only required attribute that we need to override from the parent class.
-* A ``version`` dictionary that defines the relationship between Marvin releases (e.g., ``MPL-6``, ``DR15``) and internal Galaxy Zoo: 3D versions.
-* An ``include`` attribute that contains a list of Marvin Tools classes to which this VAC must be added. In this particular case we only want the Galaxy Zoo VAC to show in `~marvin.tools.cube.Cube`, `~marvin.tools.maps.Maps`, and `~marvin.tools.modelcube.ModelCube`. If ``include`` is not defined the VAC will be added to all the Marvin Tools classes with the exception of `~marvin.tools.plate.Plate`.
+* A ``version`` dictionary that defines the relationship between Marvin releases (e.g., ``MPL-7``, ``DR15``) and internal MaNGA-HI versions.
+* An ``include`` attribute that contains a list of Marvin Tools classes to which this VAC must be added. In this particular case we only want the HI VAC to show in `~marvin.tools.cube.Cube`, `~marvin.tools.maps.Maps`, and `~marvin.tools.modelcube.ModelCube`. If ``include`` is not defined the VAC will be added to all the Marvin Tools classes with the exception of `~marvin.tools.plate.Plate`.
 
 `~.VACMixIn.get_data` is the only method that you need to override from `~.VACMixIn`. You will have noted that `~.VACMixIn.get_data` receives a single, ``parent_object`` argument, which is the object (e.g., a `~marvin.tools.maps.Maps` instance) that is trying to access the VAC information. You can use it and its attributes to do the matching with the VAC information.
 
-We use `sdss_access <http://sdss-access.readthedocs.io/en/stable>`__ to download the necessary files, so we need to be sure that the paths to the VAC files are included in the `tree <http://sdss-tree.readthedocs.io/en/latest/>`_. For this particular filetype the entry in tree looks like::
+We use `sdss_access <http://sdss-access.readthedocs.io/en/stable>`__ to download the necessary files, so we need to be sure that the paths to the VAC files are included in the `tree <http://sdss-tree.readthedocs.io/en/latest/>`_. For these particular filetypes the entry in tree looks like::
 
-    mangagalaxyzoo3d = $MANGA_SANDBOX/galaxyzoo3d/{gz3dver}/{mangaid}_{ifusize}_{zooid}.fits.gz
+    mangahisum = $MANGA_HI/{ver}/mangaHI{type}.fits
+    mangahispectra = $MANGA_HI/{ver}/spectra/{program}/fits/mangaHI-{plateifu}.fits
 
-In addition to the tree path name (``mangagalaxyzoo3d``) we need to define a dictionary of path parameters. We use the ``parent_object`` to determine the release (and thus the Galaxy Zoo ``version``) and the ``mangaid``. Because for a given ``mangaid`` ``ifusize`` and ``zooid`` are fixed, we can replace them with wild cards.
+In addition to the tree path names (``mangahi``, ``mangahispectra``) we need to define a dictionary of path parameters. We use the ``parent_object`` to determine the release (and thus the HI ``version``) and the ``plateifu``. Because for a given ``program`` and ``type`` are fixed, they are manually specified in the VAC.
 
-First, we use `~marvin.contrib.vacs.VACMixIn.get_path` to determine whether the file is already present in the local SAS. If that is not the case, we use `~marvin.contrib.vacs.VACMixIn.download_vac` to retrieve it. It only rests to open the FITS file and return it. Easy!
+First, we use `~marvin.contrib.vacs.VACMixIn.get_path` to determine whether the file is already present in the local SAS. If that is not the case, we use `~marvin.contrib.vacs.VACMixIn.download_vac` to retrieve it.
+
+Once you have the file(s), all that is left is to return the data you want from the FITS files.  In most cases you may simply want to return the entire FITS file or a specific row of an extension.  In other cases you may want to return something a bit more complex.  Since the HI VAC includes for a given galaxy both data from an HI summary file and an HI flux spectrum, we want to return both the summary and spectral data, plus provide a method for plotting the HI spectrum.  The best way to do that is by creating a new custom class (`~marvin.contrib.vacs.mangahi.HIData`) that will handle all the HI data for us, along with any other complexity we wish to add.  We can simply return an instance of our custom class in the `~.VACMixIn.get_data` method.
+
 
 Now that we have implemented the VAC, let's make sure it works:
 
 .. code-block:: python
 
     >>> from marvin.tools.maps import Maps
-    >>> my_map = Maps('8485-1901')
-    >>> galaxyzoo3d_data = my_map.vacs.galaxyzoo3d
-    >>> print(my_map.vacs.galaxyzoo3d.info())
+    >>> my_map = Maps('7443-12701')
+    >>> hi_data = my_map.vacs.mangahi
+    >>> # access the data from the summary file
+    >>> print(hi_data.data)
 
-    Filename: /Users/albireo/Documents/MaNGA/mangawork/manga/sandbox/galaxyzoo3d/v1_0_0/1-209232_19_5679839.fits.gz
-    No.    Name      Ver    Type      Cards   Dimensions   Format
-    0  PRIMARY       1 PrimaryHDU      23   (3, 525, 525)   uint8
-    1                1 ImageHDU        23   (525, 525)   float64
-    2                1 ImageHDU        23   (525, 525)   float64
-    3                1 ImageHDU        23   (525, 525)   float64
-    4                1 ImageHDU        23   (525, 525)   float64
-    5                1 BinTableHDU     38   1R x 15C   [E, E, 11A, 19A, D, D, K, 90A, I, I, I, K, K, K, 70A]
-    6                1 BinTableHDU     30   1R x 11C   [D, D, D, D, D, D, D, D, D, D, K]
-    7                1 BinTableHDU     30   0R x 11C   [D, D, D, D, D, D, D, D, D, D, D]
-    8                1 BinTableHDU     18   17R x 5C   [8A, 7A, 24A, 41A, 57A]
-    9                1 BinTableHDU     16   0R x 4C   [D, D, D, D]
-    10                1 BinTableHDU     16   0R x 4C   [D, D, D, D]
+        FITS_rec([('7443-12701', '12-98126', 230.5074624, 43.53234133, 6139, '16A-14', 767.4, 1.76, 8.82, -999., -999., -999., -999., -999, -999., -999, -999, -999, -999, -999, -999., -999., -999., -999., -999., -999.)],
+                 dtype=(numpy.record, [('plateifu', 'S10'), ('mangaid', 'S9'), ('objra', '>f8'), ('objdec', '>f8'), ('vopt', '>i2'), ('session', 'S12'), ('Exp', '>f4'), ('rms', '>f4'), ('logHIlim200kms', '>f4'), ('peak', '>f4'), ('snr', '>f4'), ('FHI', '>f4'), ('logMHI', '>f4'), ('VHI', '>i2'), ('eV', '>f4'), ('WM50', '>i2'), ('WP50', '>i2'), ('WP20', '>i2'), ('W2P50', '>i2'), ('WF50', '>i2'), ('Pr', '>f4'), ('Pl', '>f4'), ('ar', '>f4'), ('br', '>f4'), ('al', '>f4'), ('bl', '>f4')]))
+
+    >>> # plot the HI spectrum
+    >>> hi_data.plot_spectrum()
 
 Writing your own VAC
 ^^^^^^^^^^^^^^^^^^^^

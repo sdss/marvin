@@ -1,3 +1,3 @@
 
 .. autosummary::
-    marvin.contrib.vacs.galaxyzoo3d.GalaxyZoo3DVAC
+    marvin.contrib.vacs.mangahi.HIVAC

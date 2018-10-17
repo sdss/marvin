@@ -6,7 +6,7 @@
 # @Author: Brian Cherinka
 # @Date:   2018-06-21 17:01:09
 # @Last modified by:   Brian Cherinka
-# @Last Modified time: 2018-07-19 00:04:40
+# @Last Modified time: 2018-10-17 00:22:19
 
 from __future__ import absolute_import, division, print_function
 
@@ -56,7 +56,10 @@ class VACMixIn(object, six.with_metaclass(abc.ABCMeta)):
         if not sdss_access.sync.RsyncAccess:
             raise MarvinError('sdss_access is not installed')
         else:
-            self.rsync_access = sdss_access.sync.RsyncAccess()
+            self._release = marvin.config.release
+            is_public = 'DR' in self._release
+            rsync_release = self._release.lower() if is_public else None
+            self.rsync_access = sdss_access.sync.RsyncAccess(public=is_public, release=rsync_release)
 
     def __repr__(self):
         return '<VAC (name={0}, description={1})>'.format(self.name, self.description)
@@ -70,8 +73,7 @@ class VACMixIn(object, six.with_metaclass(abc.ABCMeta)):
         general each version of this method must:
 
         * Check whether the VAC file exists locally.
-        * If it does not, download it using `~VACMixIn.download_vac` (and,
-          possibly, by setting the path using `~VACMixIn.set_sandbox_path`).
+        * If it does not, download it using `~VACMixIn.download_vac`.
         * Open the file using the appropriate library.
         * Retrieve the VAC data matching ``parent_object``. Usually one will
           use attributes in ``parent_object`` such as ``.mangaid`` or
@@ -140,8 +142,9 @@ class VACMixIn(object, six.with_metaclass(abc.ABCMeta)):
 
             # We need to set sv=subvac in the lambda function to prevent
             # a cell-var-from-loop issue.
-            setattr(VACContainer, subvac.name,
-                    property(lambda self, sv=subvac: sv().get_data(parent_object)))
+            if parent_object._release in subvac.version:
+                setattr(VACContainer, subvac.name,
+                        property(lambda self, sv=subvac: sv().get_data(parent_object)))
 
         return vac_container
 

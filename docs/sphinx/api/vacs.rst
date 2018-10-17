@@ -11,4 +11,8 @@ API
 Available VACs
 --------------
 
-.. autoclass:: marvin.contrib.vacs.galaxyzoo3d.GalaxyZoo3DVAC
+.. autoclass:: marvin.contrib.vacs.mangahi.HIVAC
+    :members:
+
+.. autoclass:: marvin.contrib.vacs.mangahi.HIData
+    :members:
