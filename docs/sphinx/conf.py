@@ -17,11 +17,16 @@ import os
 
 # Importing matplotlib here with agg to prevent tkinter error in readthedocs
 import matplotlib
+# Matplolib plot directive
+import matplotlib.sphinxext.plot_directive
 matplotlib.use('agg')
 
 # Comment if you do not want to use bootstrap themes.
 import sphinx_bootstrap_theme
 import marvin
+
+# hack attempt to force docs to get any urlmap
+marvin.config.sasurl = 'https://api.sdss.org/'
 
 try:
     marvin_version = marvin.__version__
@@ -47,7 +52,6 @@ sys.path.insert(0, os.path.abspath('../../python/marvin/utils/datamodel/'))
 extensions = [
     'sphinx.ext.autodoc', 'sphinx.ext.napoleon', 'sphinx.ext.autosummary',
     'sphinx.ext.todo', 'sphinx.ext.viewcode', 'sphinx.ext.mathjax',
-    'matplotlib.sphinxext.only_directives',
     'matplotlib.sphinxext.plot_directive',
     'sphinxcontrib.httpdomain', 'sphinxcontrib.autohttp.flask',
     'sphinxcontrib.autohttp.flaskqref',
