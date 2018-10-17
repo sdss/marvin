@@ -48,7 +48,7 @@ class Random(BaseWebView):
         imfiles = None
         try:
             imfiles = getRandomImages(as_url=True, num=self.random['imnumber'], mode='local', release=self._release)
-        except MarvinError as e:
+        except (MarvinError, AssertionError) as e:
             self.random['error'] = 'Error: could not get images: {0}'.format(e)
         else:
             images = buildImageDict(imfiles)

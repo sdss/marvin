@@ -14,6 +14,7 @@ import contextlib
 import yaml
 import six
 from collections import OrderedDict
+from astropy.wcs import FITSFixedWarning
 
 # Set the Marvin version
 __version__ = '2.3.0dev'
@@ -21,20 +22,12 @@ __version__ = '2.3.0dev'
 # Does this so that the implicit module definitions in extern can happen.
 # time - 483 ms
 from marvin import extern
-
+from marvin.core.exceptions import MarvinUserWarning, MarvinError
 from brain.utils.general.general import getDbMachine, merge
 from brain import bconfig
 from brain.core.core import URLMapDict
 from brain.core.exceptions import BrainError
 from brain.core.logger import initLog
-
-from astropy.wcs import FITSFixedWarning
-
-# Set the Marvin version
-__version__ = '2.2.6dev'
-
-from marvin.core.exceptions import MarvinUserWarning, MarvinError
-
 
 # Defines log dir.
 if 'MARVIN_LOGS_DIR' in os.environ:
@@ -327,7 +320,7 @@ class MarvinConfig(object):
 
         if self._urlmap is None or (isinstance(self._urlmap, dict) and len(self._urlmap) == 0):
             try:
-                response = Interaction('api/general/getroutemap', request_type='get', auth='netrc')
+                response = Interaction('/marvin/api/general/getroutemap', request_type='get', auth='netrc')
             except Exception as e:
                 warnings.warn('Cannot retrieve URLMap. Remote functionality will not work: {0}'.format(e),
                               MarvinUserWarning)
@@ -535,21 +528,39 @@ class MarvinConfig(object):
         '''
         assert sasmode in ['utah', 'local'], 'SAS mode can only be utah or local'
         base = base if base else os.environ.get('MARVIN_BASE', 'marvin')
+        test_domain = 'https://lore.sdss.utah.edu/'
         if sasmode == 'local':
             if ngrokid:
-                self.sasurl = 'http://{0}.ngrok.io/{1}/'.format(ngrokid, base)
+                self.sasurl = 'http://{0}.ngrok.io/'.format(ngrokid)
             else:
-                self.sasurl = 'http://localhost:{0}/{1}/'.format(port, base)
+                self.sasurl = 'http://localhost:{0}/'.format(port)
         elif sasmode == 'utah':
-            marvin_base = 'test/{0}/'.format(base) if test else '{0}/'.format(base)
+            # sort out the domain name
             if public:
-                base_url = re.sub(r'(dr[0-9]{1,2})', self._release.lower(), bconfig.public_api_url)
-                public_api = os.path.join(base_url, marvin_base)
-                self.sasurl = public_api
-                self._authtype = None
+                domain = test_domain if test else bconfig.public_api_url
+                if test:
+                    domain = '{0}{1}'.format(domain, 'public/')
+                else:
+                    domain = re.sub(r'(dr[0-9]{1,2})', self._release.lower(), domain)
             else:
-                self.sasurl = os.path.join(bconfig.collab_api_url, marvin_base)
-                self._authtype = 'token'
+                domain = test_domain if test else bconfig.collab_api_url
+
+            url = os.path.join(domain)
+            self.sasurl = url
+
+            # get a new urlmap (need to do for vetting)
+            self._urlmap = None
+            #__ = self.urlmap
+
+            # marvin_base = 'test/{0}/'.format(base) if test else '{0}/'.format(base)
+            # if public:
+            #     base_url = re.sub(r'(dr[0-9]{1,2})', self._release.lower(), bconfig.public_api_url)
+            #     public_api = os.path.join(base_url, marvin_base)
+            #     self.sasurl = public_api
+            #     self._authtype = None
+            # else:
+            #     self.sasurl = os.path.join(bconfig.collab_api_url, marvin_base)
+            #     self._authtype = 'token'
 
     def forceDbOff(self):
         ''' Force the database to be turned off '''

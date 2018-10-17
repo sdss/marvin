@@ -1,21 +1,21 @@
 
-.. _datamodel-mpl7:
+.. _datamodel-dr15:
 
-MPL-7 DataModel
+DR15 DataModel
 ---------------
 
-This datamodel corresponds to the MPL-7 (v2_4_3, 2.2.1) release of MaNGA data.
+This datamodel corresponds to the DR15 release of MaNGA data.
 
 
 .. datamodel:: marvin.utils.datamodel.drp.MPL:MPL7
    :prog: DRP DataModel
-   :title: MPL-7 DataModel
+   :title: DR15 DataModel
    :spectra:
    :datacubes:
 
 .. datamodel:: marvin.utils.datamodel.dap:MPL7
    :prog: DAP DataModel
-   :title: MPL-7 DataModel
+   :title: DR15 DataModel
    :bintypes:
    :templates:
    :models:
@@ -23,11 +23,11 @@ This datamodel corresponds to the MPL-7 (v2_4_3, 2.2.1) release of MaNGA data.
 
 .. datamodel:: marvin.utils.datamodel.query:MPL7
    :prog: Query DataModel
-   :title: MPL-7 DataModel
+   :title: DR15 DataModel
    :parameters:
 
 
-MPL-7 Maskbits
+DR15 Maskbits
 --------------
 
 .. datamodel:: marvin.utils.datamodel.dap:MPL7
@@ -46,9 +46,9 @@ MPL-7 Maskbits
    :bittype: Target
 
 
-MPL-7 VACs
+DR15 VACs
 ----------
 
 .. datamodel:: marvin.utils.datamodel.vacs:datamodel
    :prog: Available VACs
-   :vac: MPL-7
+   :vac: DR15

@@ -121,6 +121,10 @@ class MarvinToolsClass(MMAMixIn):
         breadcrumb.drop(message='Initializing MarvinTool {0}'.format(self.__class__),
                         category=self.__class__)
 
+        # Load VACs
+        from marvin.contrib.vacs.base import VACMixIn
+        self.vacs = VACMixIn.get_vacs(self)
+
     def _toolInteraction(self, url, params=None):
         """Runs an Interaction and passes self._release."""
 

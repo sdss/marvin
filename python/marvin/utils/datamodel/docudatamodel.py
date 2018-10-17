@@ -6,7 +6,7 @@
 # @Author: Brian Cherinka
 # @Date:   2017-11-21 11:56:56
 # @Last modified by:   Brian Cherinka
-# @Last Modified time: 2017-12-05 17:51:38
+# @Last Modified time: 2018-07-19 15:42:46
 
 from __future__ import print_function, division, absolute_import
 from docutils import nodes
@@ -251,6 +251,24 @@ def _format_bitmasks(maskbit, bittype):
                 yield line
 
 
+def _format_vacs(vacs, release):
+    ''' Format a vac schema '''
+
+    yield '.. list-table:: VACs'
+    yield _indent(':widths: 20 10 50')
+    yield _indent(':header-rows: 1')
+    yield ''
+    yield _indent('* - Name')
+    yield _indent('  - Version')
+    yield _indent('  - Description')
+
+    for vac in vacs:
+        yield _indent('* - {0}'.format(vac.name))
+        yield _indent('  - {0}'.format(vac.version[release]))
+        yield _indent('  - {0}'.format(vac.description))
+    yield ''
+
+
 def _format_command(name, command, **kwargs):
     """Format the output of `click.Command`."""
 
@@ -298,6 +316,14 @@ def _format_command(name, command, **kwargs):
         for line in _format_bitmasks(command.bitmasks, kwargs.get('bittype', None)):
             yield line
 
+    # vacs
+    if 'vac' in kwargs:
+        vac_release = kwargs.get('vac', None)
+        if vac_release and vac_release in command:
+            vacdm = command[vac_release]
+            for line in _format_vacs(vacdm.vacs, vacdm.release):
+                yield line
+
 
 class DataModelDirective(rst.Directive):
 
@@ -315,6 +341,7 @@ class DataModelDirective(rst.Directive):
         'bitmasks': directives.flag,
         'parameters': directives.flag,
         'bittype': directives.unchanged,
+        'vac': directives.unchanged,
     }
 
     def _load_module(self, module_path):

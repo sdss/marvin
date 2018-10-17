@@ -99,11 +99,11 @@ class Search(BaseWebView):
             if searchform.validate():
                 # try the query
                 try:
-                    q, res = doQuery(searchfilter=searchvalue, release=self._release, returnparams=returnparams)
+                    q, res = doQuery(search_filter=searchvalue, release=self._release, return_params=returnparams)
                 except MarvinError as e:
                     self.search['errmsg'] = 'Could not perform query: {0}'.format(e)
                 else:
-                    self.search['filter'] = q.strfilter
+                    self.search['filter'] = q.search_filter
                     self.search['count'] = res.totalcount
                     self.search['runtime'] = res.query_time.total_seconds()
                     if res.count > 0:
@@ -173,11 +173,11 @@ class Search(BaseWebView):
             return output
 
         # this is to fix the brokeness with sorting on a table column using remote names
-        print('rp', returnparams, args)
+        #print('rp', returnparams, args)
 
         # do query
         try:
-            q, res = doQuery(searchfilter=searchvalue, release=self._release, returnparams=returnparams, **args)
+            q, res = doQuery(search_filter=searchvalue, release=self._release, return_params=returnparams, **args)
         except Exception as e:
             errmsg = 'Error generating webtable: {0}'.format(e)
             output = jsonify({'status': -1, 'errmsg': errmsg})
@@ -217,10 +217,10 @@ class Search(BaseWebView):
 
         sort = current_session.get('query_sort', 'cube.mangaid')
         offset = (pagesize * pagenum) - pagesize
-        q, res = doQuery(searchfilter=searchvalue, release=self._release, sort=sort, limit=10000)
+        q, res = doQuery(search_filter=searchvalue, release=self._release, sort=sort, limit=10000)
         plateifus = res.getListOf('plateifu')
         # if a dap query, grab the unique galaxies
-        if q._isdapquery:
+        if q._check_query('dap'):
             plateifus = list(set(plateifus))
 
         # only grab subset if more than 16 galaxies
