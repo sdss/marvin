@@ -97,10 +97,11 @@ Components
 
 * :doc:`datamodel/datamodels`
 
-  * :doc:`datamodel/mpl4`
-  * :doc:`datamodel/mpl5`
-  * :doc:`datamodel/mpl6`
+  * :doc:`datamodel/dr15`
   * :doc:`datamodel/mpl7`
+  * :doc:`datamodel/mpl6`
+  * :doc:`datamodel/mpl5`
+  * :doc:`datamodel/mpl4`
 
 |
 
