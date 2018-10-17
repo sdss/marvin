@@ -87,6 +87,12 @@ class QueryDataModel(object):
         ''' Get the keys from a remote source '''
 
         from marvin.api.api import Interaction
+
+        # if not urlmap then exit
+        if not config.urlmap:
+            self._cleanup_keys()
+            return
+
         # try to get the url
         try:
             url = config.urlmap['api']['getparams']['url']
