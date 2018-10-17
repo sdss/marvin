@@ -6,7 +6,7 @@
 # @Author: Brian Cherinka
 # @Date:   2017-08-21 17:11:22
 # @Last modified by:   Brian Cherinka
-# @Last Modified time: 2018-02-26 13:46:30
+# @Last Modified time: 2018-10-17 10:33:41
 
 from __future__ import print_function, division, absolute_import
 from marvin import config
@@ -375,15 +375,15 @@ def plot(x, y, **kwargs):
         cb = fig.colorbar(main, ax=ax_scat, label='Counts')
         #ax_scat.grid(color='gray', linestyle='dashed', alpha=0.8)
     elif count > 500000:
+        # abort if mpl-scatter-density is not installed
+        if not msd:
+            raise ImportError(msderr)
+
         scat_kwargs = _prep_func_kwargs(plt.imshow, kwargs)
         main = ax_scat.scatter_density(x, y, cmap='inferno', **scat_kwargs)
         cb = fig.colorbar(main, ax=ax_scat, label='Number of points per pixel')
         ax_scat.grid(color='gray', linestyle='dashed', alpha=0.8)
     else:
-        # abort if mpl-scatter-density is not installed
-        if not msd:
-            raise ImportError(msderr)
-
         # create the scatter plot
         scat_kwargs = _prep_func_kwargs(plt.scatter, kwargs)
         main = ax_scat.scatter(x, y, c=color, s=size, marker=marker, edgecolors=edgecolors, **scat_kwargs)
