@@ -6,7 +6,7 @@
 # @Filename: vacs.py
 # @License: BSD 3-clause (http://www.opensource.org/licenses/BSD-3-Clause)
 #
-# @Last modified by: José Sánchez-Gallego
+# @Last modified by:   Brian Cherinka
 # @Last modified time: 2018-07-09 17:27:59
 
 import importlib
@@ -24,12 +24,12 @@ class TestVACs(object):
 
         assert len(VACMixIn.__subclasses__()) > 0
 
-    def test_galaxyzoo3d(self):
+    def test_mangahi(self):
 
-        my_map = Maps('8485-1901')
+        my_map = Maps('7443-12701')
 
         assert hasattr(my_map, 'vacs')
-        assert my_map.vacs.galaxyzoo3d is not None
+        assert my_map.vacs.mangahi is not None
 
     def test_vac_container(self):
 
@@ -40,7 +40,7 @@ class TestVACs(object):
 
     def test_vacs_return(self, plateifu, release):
 
-        if release in ['MPL-4', 'MPL-5']:
+        if release in ['MPL-4', 'MPL-5', 'MPL-6']:
             pytest.skip()
 
         vacs = VACMixIn.__subclasses__()
@@ -55,9 +55,9 @@ class TestVACs(object):
                 assert getattr(obj.vacs, vac.name) is not None
 
 
-class TestGalaxyZoo3D(object):
+class TestMangaHI(object):
 
     def test_return_type(self, plateifu):
 
         my_map = Maps(plateifu)
-        assert isinstance(my_map.vacs.galaxyzoo3d, astropy.io.fits.HDUList)
+        assert isinstance(my_map.vacs.mangahi, object)
