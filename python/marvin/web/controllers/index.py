@@ -1,7 +1,7 @@
 from flask import current_app, Blueprint, render_template, jsonify
 from flask import session as current_session, request, redirect, url_for
 from flask_classful import route
-from marvin import config, marvindb
+from marvin import config
 from brain.api.base import processRequest
 from marvin.utils.general.general import parseIdentifier
 from marvin.api.base import arg_validate as av
@@ -10,6 +10,9 @@ from marvin.web.web_utils import setGlobalSession, set_session_versions
 
 from brain.utils.general import validate_user, get_db_user
 from flask_login import current_user, login_user, logout_user
+
+if config.db:
+    from marvin import marvindb
 
 index = Blueprint("index_page", __name__)
 
