@@ -6,7 +6,7 @@
 # @Author: Brian Cherinka
 # @Date:   2018-09-03 18:56:38
 # @Last modified by:   Brian Cherinka
-# @Last Modified time: 2018-09-03 18:57:08
+# @Last Modified time: 2018-10-17 14:08:53
 
 from __future__ import absolute_import, division, print_function
 
@@ -512,7 +512,13 @@ class QueryView(BaseView):
         '''
         paramdisplay = args.pop('paramdisplay', 'all')
         if paramdisplay == 'all':
-            params = Query.get_available_params('all', release=args['release'])
+            try:
+                params = Query.get_available_params('all', release=args['release'])
+            except MarvinError as e:
+                self.results['error'] = str(e)
+                self.results['traceback'] = get_traceback(asstring=True)
+                self.results['status'] = -1
+                return jsonify(self.results)
         elif paramdisplay == 'best':
             params = bestparams
         self.results['data'] = params
