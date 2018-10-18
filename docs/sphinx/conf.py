@@ -27,6 +27,7 @@ import marvin
 
 # hack attempt to force docs to get any urlmap
 marvin.config.sasurl = 'https://api.sdss.org/'
+marvin.config.forceDbOff()
 
 try:
     marvin_version = marvin.__version__

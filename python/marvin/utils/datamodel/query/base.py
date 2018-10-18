@@ -113,6 +113,7 @@ class QueryDataModel(object):
                 warnings.warn('Could not remotely retrieve full set of parameters. {0}'.format(e), MarvinUserWarning)
                 self._keys = []
             else:
+                self._marvinform = MarvinForm(release=self.release)
                 # this deals with all parameters from all releases at once
                 PARAM_CACHE.update(ii.getData())
                 self._check_aliases()
@@ -863,6 +864,9 @@ class QueryParameter(object):
 
     def _in_form(self):
         ''' Check in parameters is in the Marvin Form '''
+        if not hasattr(self.parent, '_marvinform'):
+            return False
+
         return self.full in self.parent._marvinform._param_form_lookup
 
 
