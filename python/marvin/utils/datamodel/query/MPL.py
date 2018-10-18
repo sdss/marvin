@@ -6,7 +6,7 @@
 # @Author: Brian Cherinka
 # @Date:   2017-09-20 13:24:13
 # @Last modified by:   Brian Cherinka
-# @Last Modified time: 2018-08-28 14:04:41
+# @Last Modified time: 2018-10-18 11:43:06
 
 from __future__ import absolute_import, division, print_function
 
@@ -47,4 +47,8 @@ MPL6 = QueryDataModel(release='MPL-6', groups=groups(), aliases=['MPL6', 'v2_3_1
 
 # MPL-7
 
-MPL7 = QueryDataModel(release='MPL-7', groups=groups(), aliases=['MPL7', 'v2_4_3', '2.2.0', 'DR15'], exclude=EX6, dapdm=datamodel['MPL-7'])
+MPL7 = QueryDataModel(release='MPL-7', groups=groups(), aliases=['MPL7', 'v2_4_3', '2.2.0'], exclude=EX6, dapdm=datamodel['MPL-7'])
+
+# DR15
+
+DR15 = QueryDataModel(release='DR15', groups=groups(), aliases=['DR15', 'v2_4_3', '2.2.0'], exclude=EX6, dapdm=datamodel['DR15'])

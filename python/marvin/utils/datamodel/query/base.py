@@ -62,6 +62,11 @@ class QueryDataModel(object):
         return ('<QueryDataModel release={0!r}, n_groups={1}, n_parameters={2}, n_total={3}>'
                 .format(self.release, len(self.groups), len(self.parameters), len(self._keys)))
 
+    def copy(self):
+        """Returns a copy of the datamodel."""
+
+        return copy_mod.deepcopy(self)
+
     def _get_parameters(self):
         ''' Get the parameters for the datamodel '''
 
@@ -113,7 +118,6 @@ class QueryDataModel(object):
                 warnings.warn('Could not remotely retrieve full set of parameters. {0}'.format(e), MarvinUserWarning)
                 self._keys = []
             else:
-                self._marvinform = MarvinForm(release=self.release)
                 # this deals with all parameters from all releases at once
                 PARAM_CACHE.update(ii.getData())
                 self._check_aliases()

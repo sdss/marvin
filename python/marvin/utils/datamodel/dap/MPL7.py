@@ -5,8 +5,8 @@
 #
 # @Author: Brian Cherinka
 # @Date:   2018-04-04 23:07:41
-# @Last modified by: José Sánchez-Gallego (gallegoj@uw.edu)
-# @Last Modified time: 2018-04-24 17:05:30
+# @Last modified by:   Brian Cherinka
+# @Last Modified time: 2018-10-18 14:12:38
 
 from __future__ import absolute_import, division, print_function
 

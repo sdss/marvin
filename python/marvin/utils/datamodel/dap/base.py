@@ -748,7 +748,7 @@ class Property(object):
 
         self._parent = value
 
-        if self._binid is not None:
+        if hasattr(self, '_binid') and self._binid is not None:
             self._binid.parent = value
 
     def full(self, web=None):
