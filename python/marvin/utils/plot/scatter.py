@@ -5,14 +5,13 @@
 #
 # @Author: Brian Cherinka
 # @Date:   2017-08-21 17:11:22
-# @Last modified by:   andrews
-# @Last modified time: 2018-07-24 10:07:35
+# @Last modified by:   Brian Cherinka
+# @Last Modified time: 2018-10-18 14:56:05
 
 from __future__ import absolute_import, division, print_function
 
-import itertools
 import warnings
-from collections import OrderedDict, defaultdict
+from collections import defaultdict
 
 import matplotlib as mpl
 import matplotlib.pyplot as plt
@@ -378,15 +377,15 @@ def plot(x, y, **kwargs):
         cb = fig.colorbar(main, ax=ax_scat, label='Counts')
         #ax_scat.grid(color='gray', linestyle='dashed', alpha=0.8)
     elif count > 500000:
+        # abort if mpl-scatter-density is not installed
+        if not msd:
+            raise ImportError(msderr)
+
         scat_kwargs = _prep_func_kwargs(plt.imshow, kwargs)
         main = ax_scat.scatter_density(x, y, cmap='inferno', **scat_kwargs)
         cb = fig.colorbar(main, ax=ax_scat, label='Number of points per pixel')
         ax_scat.grid(color='gray', linestyle='dashed', alpha=0.8)
     else:
-        # abort if mpl-scatter-density is not installed
-        if not msd:
-            raise ImportError(msderr)
-
         # create the scatter plot
         scat_kwargs = _prep_func_kwargs(plt.scatter, kwargs)
         main = ax_scat.scatter(x, y, c=color, s=size, marker=marker, edgecolors=edgecolors, **scat_kwargs)

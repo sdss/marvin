@@ -381,14 +381,15 @@ class MarvinForm(object):
 
         self._release = kwargs.get('release', config.release)
         self.verbose = kwargs.get('verbose', False)
-        self._modelclasses = FuzzyDict(marvindb.buildUberClassDict(release=self._release))
-        self._param_form_lookup = ParamFormLookupDict(**kwargs)
-        self._param_fxn_lookup = ParamFxnLookupDict()
-        self._paramtree = tree()
-        self._generateFormClasses(self._modelclasses)
-        self._generateFxns()
-        self.SearchForm = SearchForm
-        self._cleanParams(**kwargs)
+        if marvindb:
+            self._modelclasses = FuzzyDict(marvindb.buildUberClassDict(release=self._release))
+            self._param_form_lookup = ParamFormLookupDict(**kwargs)
+            self._param_fxn_lookup = ParamFxnLookupDict()
+            self._paramtree = tree()
+            self._generateFormClasses(self._modelclasses)
+            self._generateFxns()
+            self.SearchForm = SearchForm
+            self._cleanParams(**kwargs)
 
     def __repr__(self):
         nforms = len([f for f in self.__dict__.keys() if 'Form' in f])

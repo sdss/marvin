@@ -326,7 +326,7 @@ class MarvinConfig(object):
 
         if self._urlmap is None or (isinstance(self._urlmap, dict) and len(self._urlmap) == 0):
             try:
-                response = Interaction('api/general/getroutemap', request_type='get', auth='netrc')
+                response = Interaction('/marvin/api/general/getroutemap', request_type='get', auth='netrc')
             except Exception as e:
                 warnings.warn('Cannot retrieve URLMap. Remote functionality will not work: {0}'.format(e),
                               MarvinUserWarning)
@@ -533,21 +533,39 @@ class MarvinConfig(object):
         '''
         assert sasmode in ['utah', 'local'], 'SAS mode can only be utah or local'
         base = base if base else os.environ.get('MARVIN_BASE', 'marvin')
+        test_domain = 'https://lore.sdss.utah.edu/'
         if sasmode == 'local':
             if ngrokid:
-                self.sasurl = 'http://{0}.ngrok.io/{1}/'.format(ngrokid, base)
+                self.sasurl = 'http://{0}.ngrok.io/'.format(ngrokid)
             else:
-                self.sasurl = 'http://localhost:{0}/{1}/'.format(port, base)
+                self.sasurl = 'http://localhost:{0}/'.format(port)
         elif sasmode == 'utah':
-            marvin_base = 'test/{0}/'.format(base) if test else '{0}/'.format(base)
+            # sort out the domain name
             if public:
-                base_url = re.sub(r'(dr[0-9]{1,2})', self._release.lower(), bconfig.public_api_url)
-                public_api = os.path.join(base_url, marvin_base)
-                self.sasurl = public_api
-                self._authtype = None
+                domain = test_domain if test else bconfig.public_api_url
+                if test:
+                    domain = '{0}{1}'.format(domain, 'public/')
+                else:
+                    domain = re.sub(r'(dr[0-9]{1,2})', self._release.lower(), domain)
             else:
-                self.sasurl = os.path.join(bconfig.collab_api_url, marvin_base)
-                self._authtype = 'token'
+                domain = test_domain if test else bconfig.collab_api_url
+
+            url = os.path.join(domain)
+            self.sasurl = url
+
+            # get a new urlmap (need to do for vetting)
+            self._urlmap = None
+            #__ = self.urlmap
+
+            # marvin_base = 'test/{0}/'.format(base) if test else '{0}/'.format(base)
+            # if public:
+            #     base_url = re.sub(r'(dr[0-9]{1,2})', self._release.lower(), bconfig.public_api_url)
+            #     public_api = os.path.join(base_url, marvin_base)
+            #     self.sasurl = public_api
+            #     self._authtype = None
+            # else:
+            #     self.sasurl = os.path.join(bconfig.collab_api_url, marvin_base)
+            #     self._authtype = 'token'
 
     def forceDbOff(self):
         ''' Force the database to be turned off '''
@@ -699,6 +717,7 @@ config = MarvinConfig()
 # up to here - time: 1.6 seconds
 
 # Inits the Database session and ModelClasses (time: 1.8 seconds)
+marvindb = None
 if config.db:
     from marvin.db.marvindb import MarvinDB
     marvindb = MarvinDB(dbtype=config.db, log=log, allowed_releases=config._allowed_releases.keys())

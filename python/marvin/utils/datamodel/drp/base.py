@@ -6,7 +6,7 @@
 # @Filename: base.py
 # @License: BSD 3-clause (http://www.opensource.org/licenses/BSD-3-Clause)
 #
-# @Last modified by: José Sánchez-Gallego (gallegoj@uw.edu)
+# @Last modified by:   Brian Cherinka
 # @Last modified time: 2018-07-25 18:32:35
 
 from __future__ import absolute_import, division, print_function
@@ -18,9 +18,8 @@ import astropy.table as table
 from astropy import units as u
 
 from marvin.core.exceptions import MarvinError
-
-from .. import DataModelList
-from ...general.structs import FuzzyList
+from marvin.utils.datamodel import DataModelList
+from marvin.utils.general.structs import FuzzyList
 
 
 class DRPCubeDataModel(object):

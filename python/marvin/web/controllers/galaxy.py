@@ -14,7 +14,7 @@ from __future__ import print_function
 from __future__ import division
 from flask import Blueprint, render_template, session as current_session, request, jsonify
 from flask_classful import route
-from marvin import marvindb
+import marvin
 from marvin.utils.general.general import (convertImgCoords, parseIdentifier, getDefaultMapPath,
                                           getDapRedux, _db_row_to_dict, target_status)
 from brain.utils.general.general import convertIvarToErr
@@ -205,6 +205,7 @@ def get_nsa_dict(name, drpver, makenew=None):
         nsadict = marvin_pickle.restore(nsapickle_file)
     else:
         # make from scratch from db
+        marvindb = marvin.marvindb
         session = marvindb.session
         sampledb = marvindb.sampledb
         allnsa = session.query(sampledb.NSA, marvindb.datadb.Cube.plateifu).\

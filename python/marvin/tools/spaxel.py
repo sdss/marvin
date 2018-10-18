@@ -17,6 +17,7 @@ import itertools
 import warnings
 
 import numpy as np
+import six
 
 import marvin
 import marvin.core.exceptions
@@ -140,6 +141,10 @@ class Spaxel(object):
 
         if lazy is False:
             self.load()
+
+        # Load VACs
+        from marvin.contrib.vacs.base import VACMixIn
+        self.vacs = VACMixIn.get_vacs(self)
 
     def __dir__(self):
 

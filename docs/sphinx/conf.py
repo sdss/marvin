@@ -19,19 +19,18 @@ import sys
 
 # Importing matplotlib here with agg to prevent tkinter error in readthedocs
 import matplotlib
-import matplotlib.sphinxext.only_directives
 # Matplolib plot directive
 import matplotlib.sphinxext.plot_directive
+matplotlib.use('agg')
+
 # Comment if you do not want to use bootstrap themes.
 import sphinx_rtd_theme
 from sphinx.ext.napoleon.docstring import GoogleDocstring
 
 import marvin
 
-
 if marvin.config.db is not None:
     marvin.config.forceDbOff()
-
 
 matplotlib.use('agg')
 
@@ -61,7 +60,6 @@ extensions = [
     'sphinx.ext.autodoc', 'sphinx.ext.napoleon', 'sphinx.ext.autosummary',
     'sphinx.ext.todo', 'sphinx.ext.viewcode', 'sphinx.ext.mathjax',
     'sphinx.ext.inheritance_diagram', 'sphinx.ext.graphviz',
-    'matplotlib.sphinxext.only_directives',
     'matplotlib.sphinxext.plot_directive',
     'sphinxcontrib.httpdomain',
     'sphinxcontrib.autohttp.flask',

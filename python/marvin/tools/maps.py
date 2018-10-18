@@ -6,9 +6,8 @@
 # @Filename: maps.py
 # @License: BSD 3-clause (http://www.opensource.org/licenses/BSD-3-Clause)
 #
-# @Last modified by:   andrews
+# @Last modified by:   Brian Cherinka
 # @Last modified time: 2018-10-16 10:10:19
-
 
 from __future__ import absolute_import, division, print_function
 
@@ -34,7 +33,6 @@ import marvin.utils.general.general
 from marvin.utils.datamodel.dap import datamodel
 from marvin.utils.datamodel.dap.base import Channel, Property
 from marvin.utils.general import FuzzyDict, turn_off_ion
-
 from .core import MarvinToolsClass
 from .mixins import DAPallMixIn, GetApertureMixIn, NSAMixIn
 from .quantities import AnalysisProperty
@@ -393,8 +391,6 @@ class Maps(MarvinToolsClass, NSAMixIn, DAPallMixIn, GetApertureMixIn):
     def _get_spaxel_quantities(self, x, y, spaxel=None):
         """Returns a dictionary of spaxel quantities."""
 
-        mdb = marvin.marvindb
-
         maps_quantities = FuzzyDict({})
 
         if self.data_origin == 'file' or self.data_origin == 'db':
@@ -423,6 +419,8 @@ class Maps(MarvinToolsClass, NSAMixIn, DAPallMixIn, GetApertureMixIn):
                             data[key] = self.data[extname].data[y, x]
 
                     elif self.data_origin == 'db':
+
+                        mdb = marvin.marvindb
 
                         table = getattr(mdb.dapdb, dm.model)
 

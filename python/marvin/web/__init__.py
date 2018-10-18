@@ -11,7 +11,7 @@ from flask import Flask, Blueprint, send_from_directory, request
 import flask_jsglue as jsg
 # Marvin imports
 from brain.utils.general.general import getDbMachine
-from marvin import config, log, marvindb
+from marvin import config, log
 from marvin.web.web_utils import updateGlobalSession, check_access, configFeatures
 from marvin.web.jinja_filters import jinjablue
 from marvin.web.error_handlers import errors
@@ -35,6 +35,9 @@ from marvin.api.rss import RSSView
 from marvin.api.query import QueryView
 from marvin.api.general import GeneralRequestsView
 
+if config.db:
+    from marvin import marvindb
+
 # ================================================================================
 
 
@@ -42,9 +45,8 @@ def create_app(debug=False, local=False, object_config=None):
 
     # ----------------------------------
     # Create App
-    marvin_base = request.environ.get('MARVIN_BASE', None)
-    if not marvin_base:
-        marvin_base = os.environ.get('MARVIN_BASE', 'marvin')
+    marvin_base = os.environ.get('MARVIN_BASE', 'marvin')
+
     app = Flask(__name__, static_url_path='/{0}/static'.format(marvin_base))
     api = Blueprint("api", __name__, url_prefix='/{0}/api'.format(marvin_base))
     app.debug = debug

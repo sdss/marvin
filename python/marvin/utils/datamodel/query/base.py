@@ -5,7 +5,7 @@
 #
 # @Author: Brian Cherinka
 # @Date:   2017-08-22 22:43:15
-# @Last modified by:   andrews
+# @Last modified by:   Brian Cherinka
 # @Last modified time: 2018-10-15 11:10:90
 
 from __future__ import absolute_import, division, print_function
@@ -62,6 +62,11 @@ class QueryDataModel(object):
         return ('<QueryDataModel release={0!r}, n_groups={1}, n_parameters={2}, n_total={3}>'
                 .format(self.release, len(self.groups), len(self.parameters), len(self._keys)))
 
+    def copy(self):
+        """Returns a copy of the datamodel."""
+
+        return copy_mod.deepcopy(self)
+
     def _get_parameters(self):
         ''' Get the parameters for the datamodel '''
 
@@ -87,27 +92,45 @@ class QueryDataModel(object):
         ''' Get the keys from a remote source '''
 
         from marvin.api.api import Interaction
+        print('release', self.release)
+        # if not urlmap then exit
+        if not config.urlmap:
+            self._keys = []
+            print('exiting remote call')
+            return
+
         # try to get the url
         try:
-            url = config.urlmap['api']['getparams']['url']
+            url = config.urlmap['api']['getallparams']['url']
         except Exception as e:
             warnings.warn('Cannot access Marvin API to get the full list of query parameters. '
                           'for the Query Datamodel. Only showing the best ones.', MarvinUserWarning)
             url = None
-            self._cleanup_keys()
+            self._keys = []
+            #self._cleanup_keys()
+
         # make the call
         if url:
+            print('making remote call to', url, self.release)
             try:
                 ii = Interaction(url, params={'release': self.release, 'paramdisplay': 'all'})
             except Exception as e:
                 warnings.warn('Could not remotely retrieve full set of parameters. {0}'.format(e), MarvinUserWarning)
                 self._keys = []
             else:
-                # TODO when ready update this code to use the getallparams url call
-                #PARAM_CACHE = ii.getData()
-                #self._keys = PARAM_CACHE[self.release]
-                self._keys = ii.getData()
-                self._remove_query_params()
+                # this deals with all parameters from all releases at once
+                PARAM_CACHE.update(ii.getData())
+                self._check_aliases()
+                for key in PARAM_CACHE.keys():
+                    self._keys = PARAM_CACHE[key] if key in PARAM_CACHE else []
+                    print('length of keys', len(self._keys))
+                    self._remove_query_params()
+
+    def _check_aliases(self):
+        ''' Check the release of the return parameters against the aliases '''
+        for key, val in PARAM_CACHE.items():
+            if key != self.release and key in self.aliases:
+                PARAM_CACHE[self.release] = val
 
     def _remove_query_params(self):
         ''' Remove keys from query_params best list '''
@@ -845,11 +868,11 @@ class QueryParameter(object):
 
     def _in_form(self):
         ''' Check in parameters is in the Marvin Form '''
-        try:
-            return self.full in self.parent._marvinform._param_form_lookup
-        except AttributeError:
+
+        if not hasattr(self.parent, '_marvinform'):
             return False
 
+        return self.full in self.parent._marvinform._param_form_lookup
 
 # # Get the Common Parameters from the filelist
 

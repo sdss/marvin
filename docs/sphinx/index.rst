@@ -27,8 +27,6 @@ Marvin is a tool specifically designed to visualise and analyse `MaNGA <https://
 * Abstract the datamodel and forget where the data actually lives.
 * Make good visualisation and scientific decisions by preventing common mistakes when accessing the data.
 
-Marvin's code is publicly available in our `Github <https://github.com/sdss/marvin>`__ page. If you are using Marvin in any way (Web, API, or Tools) to do your science, please remember to :ref:`acknowledge and cite<marvin-citation>` us in your paper!
-
 To install marvin simply run ``pip install sdss-marvin``. More details and known problem with installation can be found :ref:`here <marvin-installation>`.
 
 .. note:: This documentation assumes that you are familiar with MaNGA data and its acronyms. If that is not your case, consider reading `this <https://www.sdss.org/manga/getting-started/>`_.
@@ -61,6 +59,7 @@ If you are new to Marvin check the following links before diving into the full d
    tutorials/index
    known-issues
    faq
+   contributing/contributing
 
 
 .. toctree::
@@ -94,3 +93,4 @@ Indices and tables
 * :ref:`modindex`
 
 * :ref:`search`
+

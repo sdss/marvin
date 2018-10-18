@@ -5,16 +5,14 @@
 #
 # @Author: Brian Cherinka
 # @Date:   2017-09-20 10:31:11
-# @Last modified by: José Sánchez-Gallego (gallegoj@uw.edu)
+# @Last modified by:   Brian Cherinka
 # @Last modified time: 2018-08-04 13:22:38
 
 from __future__ import absolute_import, division, print_function
 
 import copy
 from collections import OrderedDict
-
 import six
-
 from marvin import config
 
 
@@ -93,6 +91,7 @@ class DataModelLookup(object):
         from marvin.utils.datamodel.drp import datamodel as drp_cube_dms
         from marvin.utils.datamodel.drp import datamodel_rss as drp_rss_dms
         from marvin.utils.datamodel.query import datamodel as query_dms
+        from marvin.utils.datamodel.vacs import datamodel as vac_dms
 
         self.release = release if release else config.release
         assert release in query_dms.keys(), 'release must be a valid MPL'
@@ -102,8 +101,9 @@ class DataModelLookup(object):
         self.drpcubedm = drp_cube_dms[release]
         self.drprssdm = drp_rss_dms[release]
         self.querydm = query_dms[release]
+        self.vacdm = vac_dms[release] if release in vac_dms else None
         self._dm = None
-        self.model_map = ['drp_cube', 'drp_rss', 'dap', 'query']
+        self.model_map = ['drp_cube', 'drp_rss', 'dap', 'query', 'vac']
 
     def __repr__(self):
 
@@ -135,7 +135,8 @@ class DataModelLookup(object):
         indrprss = value in self.drprssdm
         indap = value in self.dapdm
         inquery = value in self.querydm
-        true_map = [indrpcube, indrprss, indap, inquery]
+        invac = value in self.vacdm if self.vacdm else False
+        true_map = [indrpcube, indrprss, indap, inquery, invac]
 
         if model == 'dap':
             self._dm = self.dapdm
@@ -149,6 +150,8 @@ class DataModelLookup(object):
         elif model == 'query':
             self._dm = self.querydm
             return inquery
+        elif model == 'vac':
+            self._dm = self.vacdm
         else:
             # check all of them
             tootrue = sum([indrpcube, indrprss, indap]) > 1
@@ -159,7 +162,7 @@ class DataModelLookup(object):
                                                                                        subset))
             else:
                 model = 'drp_cube' if indrpcube else 'drp_rss' if indrprss else \
-                    'dap' if indap else 'query' if inquery else None
+                    'dap' if indap else 'query' if inquery else 'vac' if invac else None
 
             if not model:
                 print('{0} not found in any datamodels. '
@@ -194,6 +197,8 @@ class DataModelLookup(object):
             param = value == self.dapdm
         elif checked == 'query':
             param = value == self.querydm
+        elif checked == 'vac':
+            param = value == self.vacdm
         elif not checked:
             print('No matching parameter found for {0} in model {1}'.format(value, model))
             param = None
@@ -203,26 +208,22 @@ class DataModelLookup(object):
     def write_csv(self, path=None, filename=None, model=None, overwrite=None, **kwargs):
         ''' Writes the datamodels out to CSV '''
 
-        assert model in self.model_map + [None], 'model must be drp, dap, or query'
+        assert model in self.model_map + [None], 'model must be drp, dap, query, or vac'
 
         if model == 'query':
             self.querydm.write_csv(path=path, filename=filename,
                                    overwrite=overwrite, db=True)
         elif model == 'dap':
-            self.dapdm.properties.write_csv(path=path, filename=filename,
-                                            overwrite=overwrite, **kwargs)
-            self.dapdm.models.write_csv(path=path, filename=filename,
-                                        overwrite=overwrite, **kwargs)
+            self.dapdm.properties.write_csv(path=path, filename=filename, overwrite=overwrite, **kwargs)
+            self.dapdm.models.write_csv(path=path, filename=filename, overwrite=overwrite, **kwargs)
         elif model == 'drp_cube':
-            self.drpcubedm.spectra.write_csv(path=path, filename=filename,
-                                             overwrite=overwrite, **kwargs)
-            self.drpcubedm.datacubes.write_csv(path=path, filename=filename,
-                                               overwrite=overwrite, **kwargs)
+            self.drpcubedm.spectra.write_csv(path=path, filename=filename, overwrite=overwrite, **kwargs)
+            self.drpcubedm.datacubes.write_csv(path=path, filename=filename, overwrite=overwrite, **kwargs)
         elif model == 'drp_rss':
-            self.drprssdm.spectra.write_csv(path=path, filename=filename,
-                                            overwrite=overwrite, **kwargs)
-            self.drprssdm.rss.write_csv(path=path, filename=filename,
-                                        overwrite=overwrite, **kwargs)
+            self.drprssdm.spectra.write_csv(path=path, filename=filename, overwrite=overwrite, **kwargs)
+            self.drprssdm.rss.write_csv(path=path, filename=filename, overwrite=overwrite, **kwargs)
+        elif model == 'vac':
+            pass
 
     def write_csvs(self, overwrite=None, **kwargs):
         ''' Write out all models to CSV files '''
