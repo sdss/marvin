@@ -12,6 +12,7 @@ from webargs import ValidationError, fields, validate
 from webargs.flaskparser import parser, use_args, use_kwargs
 
 from marvin import config
+from marvin.core.exceptions import MarvinError
 from marvin.utils.datamodel.dap import datamodel as dm
 from marvin.utils.general import validate_jwt
 
@@ -310,7 +311,12 @@ class ArgValidator(object):
         ''' Build the final argument list for webargs validation '''
 
         # get the dapver
-        drpver, self.dapver = config.lookUpVersions(self.release)
+        #drpver, self.dapver = config.lookUpVersions(self.release)
+
+        try:
+            drpver, self.dapver = config.lookUpVersions(self.release)
+        except MarvinError as e:
+            pass
 
         # reset the final args
         self._reset_final_args()
