@@ -25,7 +25,7 @@ proc ModulesHelp {{ }} {{
 # prevents multiple versions from being loaded simultaneously.  Do not
 # change it.
 #
-set product {name}
+set product {namesdss_python_module}
 set version {version}
 # conflict $product
 #
@@ -73,7 +73,7 @@ setenv [string toupper $product]_DIR $PRODUCT_DIR
 # Add any non-standard Module code below this point.
 #
 module unload sdss_python_module
-module load sdss_python_module/marvin
+#module load /marvin
 module unload tree
 module load tree/sdsswork
 module load sdss_access
