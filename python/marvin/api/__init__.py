@@ -39,6 +39,7 @@ viewargs = {'name': fields.String(required=True, location='view_args', validate=
             'paramdisplay': fields.String(required=True, location='view_args', validate=validate.OneOf(['all', 'best'])),
             'cube_extension': fields.String(required=True, location='view_args',
                                             validate=validate.OneOf(['flux', 'ivar', 'mask',
+                                                                     'disp', 'predisp',
                                                                      'specres', 'specresd',
                                                                      'prespecres',
                                                                      'prespecresd'])),
