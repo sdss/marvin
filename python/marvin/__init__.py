@@ -717,6 +717,7 @@ config = MarvinConfig()
 # up to here - time: 1.6 seconds
 
 # Inits the Database session and ModelClasses (time: 1.8 seconds)
+marvindb = None
 if config.db:
     from marvin.db.marvindb import MarvinDB
     marvindb = MarvinDB(dbtype=config.db, log=log, allowed_releases=config._allowed_releases.keys())

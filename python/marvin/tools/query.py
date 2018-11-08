@@ -6,7 +6,7 @@
 # @Author: Brian Cherinka
 # @Date:   2018-08-04 20:09:38
 # @Last modified by:   Brian Cherinka
-# @Last Modified time: 2018-09-03 18:36:33
+# @Last Modified time: 2018-10-17 14:07:33
 
 from __future__ import print_function, division, absolute_import, unicode_literals
 
@@ -778,6 +778,8 @@ class Query(object):
 
         release = release or config.release
         if paramdisplay == 'all':
+            if release not in datamodel:
+                raise MarvinError('release {0} not found in query datamodel'.format(release))
             qparams = datamodel[release].groups.list_params('full')
         elif paramdisplay == 'best':
             qparams = query_params

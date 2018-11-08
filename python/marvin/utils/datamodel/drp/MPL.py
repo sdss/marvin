@@ -89,8 +89,14 @@ MPL7 = DRPCubeDataModel('MPL-7', aliases=['MPL7', 'v2_4_3', 'DR15'],
                         bitmasks=get_maskbits('MPL-7'),
                         qual_flag='DRP3QUAL')
 
+DR15 = DRPCubeDataModel('DR15', aliases=['DR15', 'v2_4_3'],
+                        datacubes=MPL4_datacubes + MPL6_datacubes,
+                        spectra=MPL4_spectra + MPL6_spectra,
+                        bitmasks=get_maskbits('MPL-7'),
+                        qual_flag='DRP3QUAL')
+
 # The DRP Cube Datamodel
-datamodel = DRPCubeDataModelList([MPL4, MPL5, MPL6, MPL7])
+datamodel = DRPCubeDataModelList([MPL4, MPL5, MPL6, MPL7, DR15])
 
 # Define the RSS Datamodel. Start by copying the Cube datamodel for convenience.
 datamodel_rss = datamodel.copy()
