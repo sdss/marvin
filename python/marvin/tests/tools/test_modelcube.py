@@ -7,7 +7,7 @@
 # @License: BSD 3-clause (http://www.opensource.org/licenses/BSD-3-Clause)
 #
 # @Last modified by: José Sánchez-Gallego (gallegoj@uw.edu)
-# @Last modified time: 2018-07-20 19:13:16
+# @Last modified time: 2018-11-08 15:08:26
 
 
 from __future__ import absolute_import, division, print_function
@@ -98,6 +98,12 @@ class TestModelCube(object):
         shape = tuple([4563] + galaxy.shape)
         assert model_cube.binned_flux.shape == shape
 
+    @marvin_test_if(mark='include', galaxy={'plateifu': '8485-1901'})
+    def test_get_flux_remote(self, galaxy):
+        model_cube = ModelCube(plateifu=galaxy.plateifu, mode='remote')
+        shape = tuple([4563] + galaxy.shape)
+        assert model_cube.binned_flux.shape == shape
+
     def test_get_cube_file(self, galaxy):
         model_cube = ModelCube(filename=galaxy.modelpath)
         assert isinstance(model_cube.getCube(), Cube)
@@ -112,7 +118,7 @@ class TestModelCube(object):
             pytest.skip('only running this test for MPL6')
 
         with pytest.raises(MarvinError) as cm:
-            maps = ModelCube(plateifu=galaxy.plateifu, bintype='ALL', release=galaxy.release)
+            ModelCube(plateifu=galaxy.plateifu, bintype='ALL', release=galaxy.release)
 
         assert 'Specified bintype ALL is not available in the DB' in str(cm.value)
 
