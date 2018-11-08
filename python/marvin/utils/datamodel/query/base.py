@@ -5,8 +5,8 @@
 #
 # @Author: Brian Cherinka
 # @Date:   2017-08-22 22:43:15
-# @Last modified by:   Brian Cherinka
-# @Last modified time: 2017-11-14 11:11:27
+# @Last modified by: José Sánchez-Gallego (gallegoj@uw.edu)
+# @Last modified time: 2018-11-08 12:26:08
 
 from __future__ import absolute_import, division, print_function
 
@@ -22,11 +22,14 @@ import yamlordereddictloader
 from astropy.table import Table
 from fuzzywuzzy import fuzz, process
 from sqlalchemy_utils import get_hybrid_properties
+
 from marvin import config
 from marvin.core.exceptions import MarvinError, MarvinUserWarning
 from marvin.utils.datamodel import DataModelList
 from marvin.utils.datamodel.maskbit import get_maskbits
 from marvin.utils.general.structs import FuzzyList
+
+
 if config.db:
     from marvin.utils.datamodel.query.forms import MarvinForm
 else:
@@ -121,7 +124,8 @@ class QueryDataModel(object):
                 # this deals with all parameters from all releases at once
                 PARAM_CACHE.update(ii.getData())
                 self._check_aliases()
-                for key in PARAM_CACHE.keys():
+
+                for key in list(PARAM_CACHE.keys()):
                     self._keys = PARAM_CACHE[key] if key in PARAM_CACHE else []
                     print('length of keys', len(self._keys))
                     self._remove_query_params()
