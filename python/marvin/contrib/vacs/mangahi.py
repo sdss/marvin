@@ -6,15 +6,16 @@
 # @Author: Brian Cherinka
 # @Date:   2018-10-11 17:51:43
 # @Last modified by:   Brian Cherinka
-# @Last Modified time: 2018-10-17 00:26:52
+# @Last Modified time: 2018-10-20 11:04:01
 
 from __future__ import print_function, division, absolute_import
 
 import numpy as np
 import astropy
-import matplotlib.pyplot as plt
+import astropy.units as u
 import marvin.tools
-from marvin.utils.general.general import get_drpall_table, get_drpall_row
+from marvin.tools.quantities.spectrum import Spectrum
+from marvin.utils.general.general import get_drpall_table
 from marvin.utils.plot.scatter import plot as scatplot
 
 from .base import VACMixIn
@@ -113,14 +114,10 @@ class HIData(object):
             if not self._specdata:
                 self._specdata = self._open_file(self._specfile)
 
-            fig, ax = plt.subplots()
             vel = self._specdata['VHI'][0]
             flux = self._specdata['FHI'][0]
-            ax.plot(vel, flux)
-            ax.set_xlim(min(vel), max(vel))
-            ax.set_xlabel('HI Velocity [km/s]')
-            ax.set_ylabel('HI Flux [Jy]')
-            ax.set_title(self._plateifu)
+            spec = Spectrum(flux, unit=u.Jy, wavelength=vel, wavelength_unit=u.km/u.s)
+            ax = spec.plot(ylabel='HI\ Flux', xlabel='Velocity', title=self._plateifu, ytrim='minmax')
             return ax
         return None
 
