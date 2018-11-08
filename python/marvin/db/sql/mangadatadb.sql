@@ -125,7 +125,7 @@ create schema history;
 create table history.query (pk serial primary key not null, searchfilter text, n_run integer, count integer,
 	release varchar(8), created timestamp, updated timestamp, return_params text, sql text);
 create index concurrently filter_idx on history.query using btree(searchfilter);
-create index concurrently filter_idx on history.query using btree(sql);
+create index concurrently sql_idx on history.query using btree(sql);
 
 create table history.user (pk serial primary key not null, username varchar(64), email varchar(120), password_hash varchar(256),
 	created timestamp, updated timestamp, login_count integer, last_ip varchar(100), current_ip varchar(100));

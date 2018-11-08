@@ -45,3 +45,10 @@ MPL-7 Maskbits
    :bitmasks:
    :bittype: Target
 
+
+MPL-7 VACs
+----------
+
+.. datamodel:: marvin.utils.datamodel.vacs:datamodel
+   :prog: Available VACs
+   :vac: MPL-7

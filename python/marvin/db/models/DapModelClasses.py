@@ -7,21 +7,23 @@ new mangadap db model classes - Sept 7 , for alternate schema
 '''
 
 from __future__ import division, print_function
-from sqlalchemy.orm import relationship
-from sqlalchemy.engine import reflection
-from sqlalchemy import ForeignKeyConstraint
-from sqlalchemy.inspection import inspect
-from sqlalchemy.schema import Column
-from sqlalchemy.types import Integer
-from sqlalchemy.ext.hybrid import hybrid_property
-from sqlalchemy import case, cast, Float
+
 import re
+
+import marvin.db.models.DataModelClasses as datadb
+import numpy as np
+from astropy.io import fits
+from marvin.core.caching_query import RelationshipCache
 from marvin.db.database import db
 from marvin.utils.datamodel.dap import datamodel
-import marvin.db.models.DataModelClasses as datadb
-from astropy.io import fits
-import numpy as np
-from marvin.core.caching_query import RelationshipCache
+from sqlalchemy import Float, ForeignKeyConstraint, and_, case, cast, select
+from sqlalchemy.engine import reflection
+from sqlalchemy.ext.hybrid import hybrid_property
+from sqlalchemy.inspection import inspect
+from sqlalchemy.orm import configure_mappers, relationship
+from sqlalchemy.schema import Column
+from sqlalchemy.types import Integer
+
 
 # ========================
 # Define database classes
@@ -84,6 +86,25 @@ class File(Base):
         fluxhdu = [h for h in self.hdus if h.extname.name == name][0]
         return fluxhdu.header
 
+    @hybrid_property
+    def quality(self):
+        hdr = self.primary_header
+        bits = hdr.get('DAPQUAL', None)
+        if bits:
+            return int(bits)
+        else:
+            return None
+
+    @quality.expression
+    def quality(cls):
+        return select([HeaderValue.value.cast(Integer)]).\
+                      where(and_(HeaderKeyword.pk==HeaderValue.header_keyword_pk,
+                                 HduToHeaderValue.header_value_pk==HeaderValue.pk,
+                                 HduToHeaderValue.hdu_pk==Hdu.pk,
+                                 Hdu.file_pk==cls.pk,
+                                 HeaderKeyword.name.ilike('DAPQUAL')
+                        )).\
+                      label('dapqual')
 
 class CurrentDefault(Base):
     __tablename__ = 'current_default'
@@ -367,6 +388,16 @@ class DapAll(Base):
         return '<DapAll (pk={0}, file={1})'.format(self.pk, self.file_pk)
 
 
+if 'testtable' in db.engine.table_names('mangadapdb'):
+    class TestTable(Base):
+        __tablename__ = 'testtable'
+        __table_args__ = {'autoload': True, 'schema': 'mangadapdb'}
+
+        file = relationship(File, backref="testtable")
+
+        def __repr__(self):
+            return ('<TestTable pk={0}, file={1}>'.format(self.pk, self.file_pk))
+
 # -----
 # Buld Relationships
 # -----
@@ -416,7 +447,7 @@ if fks:
 # ---------------------------------------------------------
 # Test that all relationships/mappings are self-consistent.
 # ---------------------------------------------------------
-from sqlalchemy.orm import configure_mappers
+
 try:
     configure_mappers()
 except RuntimeError as error:
@@ -436,4 +467,3 @@ for classname, class_model in spaxel_tables.items():
 del class_model
 del cleanclass
 del newclass
-

@@ -15,7 +15,7 @@ from __future__ import division
 from brain.api.api import BrainInteraction
 from marvin import config
 
-configkeys = ['release', 'session_id']
+configkeys = ['release', 'session_id', 'compression']
 
 
 class Interaction(BrainInteraction):
@@ -35,22 +35,27 @@ class Interaction(BrainInteraction):
     Parameters:
         route (str):
             Required.  Relative url path of the API call you want to make
-
         params (dict):
             dictionary of parameters you are passing into the API function call
-
         request_type (str):
             the method type of the API call, can be either "get" or "post" (default: post)
-
         auth (str):
             the authentication method used for the API.  Currently set as default to use
-            netrc authentication.
-
+            JSON Web token authentication.
         timeout (float|tuple):
             A float or tuple of floats indicating the request timeout limit in seconds.
             If the server has not sent a respsonse by the time limit, an exception is raised.
             The default timeout is set to 5 minutes.
             See http://docs.python-requests.org/en/master/user/advanced/#timeouts
+        headers (dict):
+            A custom header to send with the request
+        stream (bool):
+            If True, iterates over the response data.  Default is False.  When set, avoids reading the
+            content all at once into memory for large responses.
+            See `request streaming <http://docs.python-requests.org/en/master/user/advanced/#streaming-requests>`_
+        datastream (bool):
+            If True, expects the response content to be streamed back using a Python generator.
+            All matters when Marvin Query return_all is True.
 
     Returns:
         results (dict):

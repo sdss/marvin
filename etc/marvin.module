@@ -72,8 +72,8 @@ setenv [string toupper $product]_DIR $PRODUCT_DIR
 #
 # Add any non-standard Module code below this point.
 #
-module unload sdss_python_module
-module load sdss_python_module/marvin
+#module unload sdss_python_module
+#module load sdss_python_module/marvin
 module unload tree
 module load tree/sdsswork
 module load sdss_access

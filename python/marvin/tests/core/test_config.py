@@ -6,14 +6,19 @@
 # @Author: Brian Cherinka
 # @Date:   2018-03-08 18:08:34
 # @Last modified by:   Brian Cherinka
-# @Last Modified time: 2018-08-14 18:10:06
+# @Last Modified time: 2018-10-07 23:41:13
 
 from __future__ import print_function, division, absolute_import
 import pytest
 import os
 import warnings
 
-from marvin import config, MarvinConfig
+try:
+    from urlparse import urlsplit, urlunsplit
+except ImportError:
+    from urllib.parse import urlsplit, urlunsplit
+
+from marvin import config
 from marvin.core.exceptions import MarvinError, MarvinUserWarning
 from brain import bconfig
 from brain.core.exceptions import BrainError, BrainUserWarning
@@ -118,7 +123,7 @@ class TestAccess(object):
 
 class TestReleases(object):
 
-    @pytest.mark.parametrize('release', [('dr15'), ('dr14'), ('mpl-5')])
+    @pytest.mark.parametrize('release', [('dr15'), ('mpl-5')])
     def test_tree(self, bestnet, release):
         assert config.access == 'collab'
         assert 'mangawork' in os.environ['MANGA_SPECTRO_REDUX']
@@ -202,29 +207,53 @@ class TestSasUrl(object):
 
     def test_sasurl_nonetrc(self, initconfig, netrc):
         assert 'DR' in config.release
-        assert 'dr15.sdss.org/api/marvin' in config.sasurl
+        assert 'dr15.sdss.org/api/' in config.sasurl
 
     @pytest.mark.parametrize('release',
                              [('MPL-6'), ('DR15')],
                              ids=['collab', 'public'])
     def test_sasurl(self, bestnet, release):
-        assert 'api.sdss.org/marvin' in config.sasurl
+        assert 'api.sdss.org' in config.sasurl
         config.setRelease(release)
-        sasurl = 'dr15.sdss.org/api/marvin' if 'DR' in release else 'api.sdss.org/marvin'
+        sasurl = 'dr15.sdss.org/api' if 'DR' in release else 'api.sdss.org'
         assert sasurl in config.sasurl
 
     @pytest.mark.parametrize('sas, exp',
                              [('utah', 'api.sdss.org'),
                               ('public', 'dr15.sdss.org/api'),
-                              ('test', 'api.sdss.org/test'),
+                              ('test', 'lore.sdss.utah.edu'),
+                              ('testpub', 'lore.sdss.utah.edu/public'),
                               ('local', 'localhost')],
                              )
     def test_sasurl_switch(self, sas, exp):
         public = sas == 'public'
         test = sas == 'test'
-        sas = 'utah' if sas == 'public' or sas == 'test' else sas
+        if sas == 'testpub':
+            public = test = True
+        sas = 'utah' if sas != 'local' else sas
         config.switchSasUrl(sas, public=public, test=test)
         assert exp in config.sasurl
+
+    @pytest.mark.parametrize('sas, exp',
+                             [('utah', 'https://api.sdss.org/marvin/api/cubes/8485-1901/'),
+                              ('public', 'https://dr15.sdss.org/api/marvin/api/cubes/8485-1901/'),
+                              ('test', 'https://lore.sdss.utah.edu/marvin/api/cubes/8485-1901/'),
+                              ('testpub', 'https://lore.sdss.utah.edu/public/marvin/api/cubes/8485-1901/'),
+                              ('local', 'http://localhost:5000/marvin/api/cubes/8485-1901/')],
+                             )
+    def test_sasurl_join(self, sas, exp):
+        url = config.urlmap['api']['getCube']['url'].format(name='8485-1901')
+        public = sas == 'public'
+        test = sas == 'test'
+        if sas == 'testpub':
+            public = test = True
+        sas = 'utah' if sas != 'local' else sas
+        config.switchSasUrl(sas, public=public, test=test)
+
+        e = urlsplit(config.sasurl)
+        t = urlsplit(url)
+        final = urlunsplit(tuple(strjoin(*z) for z in zip(e, t)))
+        assert exp == final
 
     # @pytest.mark.parametrize('set_default, defrel, exp',
     #                          [('MPL-5', 'MPL-5', 'api.sdss.org'),
@@ -232,6 +261,14 @@ class TestSasUrl(object):
     # def test_sasurl_default_release(self, set_default, defrel, exp):
     #     assert config.release == defrel
     #     assert exp in config.sasurl
+    #
 
 
+def strjoin(str1, str2):
+    ''' joins two url strings '''
+    if not str2.startswith(str1):
+        f = os.path.join(str1, str2.lstrip('/')) if str2 else str1
+    else:
+        f = str2
+    return f
 

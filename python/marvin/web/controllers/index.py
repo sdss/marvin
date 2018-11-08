@@ -41,7 +41,7 @@ class Marvin(BaseWebView):
 
     @route('/versions/')
     def get_versions(self):
-        vers = {'sess_vers': current_session['versions'], 'config_vers': config._allowed_releases.keys(),
+        vers = {'sess_vers': current_session['versions'], 'config_vers': list(config._allowed_releases.keys()),
                 'access': config.access, 'release': config.release, 'session_release': current_session['release']}
         return jsonify(result=vers)
 

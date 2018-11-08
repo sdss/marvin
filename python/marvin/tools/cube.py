@@ -6,7 +6,7 @@
 # @Filename: cube.py
 # @License: BSD 3-clause (http://www.opensource.org/licenses/BSD-3-Clause)
 #
-# @Last modified by: José Sánchez-Gallego (gallegoj@uw.edu)
+# @Last modified by:   Brian Cherinka
 # @Last modified time: 2018-08-12 04:35:22
 
 
@@ -27,7 +27,6 @@ from marvin.core.exceptions import MarvinError, MarvinUserWarning
 from marvin.tools.quantities import DataCube, Spectrum
 from marvin.utils.datamodel.drp import datamodel
 from marvin.utils.general import FuzzyDict, get_nsa_data
-
 from .core import MarvinToolsClass
 from .mixins import GetApertureMixIn, NSAMixIn
 

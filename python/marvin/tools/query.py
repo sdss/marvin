@@ -1,58 +1,55 @@
-#!/usr/bin/env python
-# encoding: utf-8
-
+# !usr/bin/env python
+# -*- coding: utf-8 -*-
+#
 # Licensed under a 3-clause BSD license.
+#
+# @Author: Brian Cherinka
+# @Date:   2018-08-04 20:09:38
+# @Last modified by:   Brian Cherinka
+# @Last Modified time: 2018-09-03 18:36:33
 
-# Revision History:
-#     Initial Version: 2016-02-17 14:13:28 by Brett Andrews
-#     2016-02-23 - Modified to test a programmatic query using a test sample form - B. Cherinka
-#     2016-03-02 - Generalized to many parameters and many forms - B. Cherinka
-#                - Added config drpver info
-#     2016-03-12 - Changed parameter input to be a natural language string
+from __future__ import print_function, division, absolute_import, unicode_literals
 
-from __future__ import division, print_function, unicode_literals
-
-import datetime
 import os
 import re
 import warnings
-from collections import OrderedDict, defaultdict
+import datetime
+from collections import Counter, defaultdict
 from functools import wraps
 from operator import eq, ge, gt, le, lt, ne
 
 import numpy as np
 import six
-from marvin import config, marvindb
+from marvin import config
 from marvin.api.api import Interaction
 from marvin.core import marvin_pickle
-from marvin.core.exceptions import (MarvinBreadCrumb, MarvinError, MarvinUserWarning)
+from marvin.core.exceptions import MarvinError, MarvinUserWarning
 from marvin.tools.results import Results, remote_mode_only
+from marvin.utils.general import temp_setattr
 from marvin.utils.datamodel.query import datamodel
 from marvin.utils.datamodel.query.base import query_params
-from marvin.utils.general import temp_setattr
-from marvin.utils.general.structs import string_folding_wrapper
-from sqlalchemy import bindparam, func
-from sqlalchemy.dialects import postgresql
-from sqlalchemy.orm import aliased
-from sqlalchemy.sql.expression import desc
-from sqlalchemy_boolean_search import (BooleanSearchException, parse_boolean_search)
+
+if config.db:
+    from marvin import marvindb
+    from marvin.utils.general.structs import string_folding_wrapper
+    from sqlalchemy import bindparam, func, and_
+    from sqlalchemy.dialects import postgresql
+    from sqlalchemy.orm import aliased
+    from sqlalchemy.sql.expression import desc
+    from sqlalchemy_boolean_search import (BooleanSearchException, parse_boolean_search)
 
 try:
     import cPickle as pickle
 except:
     import pickle
 
+
 __all__ = ['Query', 'doQuery']
+
 opdict = {'<=': le, '>=': ge, '>': gt, '<': lt, '!=': ne, '=': eq, '==': eq}
 
-breadcrumb = MarvinBreadCrumb()
 
-
-def tree():
-    return defaultdict(tree)
-
-
-def doQuery(*args, **kwargs):
+def doQuery(**kwargs):
     """Convenience function for building a Query and retrieving the Results.
 
     Parameters:
@@ -68,9 +65,10 @@ def doQuery(*args, **kwargs):
     """
     start = kwargs.pop('start', None)
     end = kwargs.pop('end', None)
-    q = Query(*args, **kwargs)
+    query_type = kwargs.pop('query_type', None)
+    q = Query(**kwargs)
     try:
-        res = q.run(start=start, end=end)
+        res = q.run(start=start, end=end, query_type=query_type)
     except TypeError as e:
         warnings.warn('Cannot run, query object is None: {0}.'.format(e), MarvinUserWarning)
         res = None
@@ -78,336 +76,695 @@ def doQuery(*args, **kwargs):
     return q, res
 
 
-def updateConfig(f):
-    """Decorator that updates query object with new config drpver version."""
+def update_config(f):
+    """Decorator that updates query object with new config drpver and dapver versions."""
 
     @wraps(f)
     def wrapper(self, *args, **kwargs):
-        if self.query and self.mode == 'local':
+        if self.query and self.data_origin == 'db':
             self.query = self.query.params({'drpver': self._drpver, 'dapver': self._dapver})
         return f(self, *args, **kwargs)
     return wrapper
 
 
-def makeBaseQuery(f):
-    """Decorator that makes the base query if it does not already exist."""
-
-    @wraps(f)
-    def wrapper(self, *args, **kwargs):
-        if not self.query and self.mode == 'local':
-            self._createBaseQuery()
-        return f(self, *args, **kwargs)
-    return wrapper
-
-
-def checkCondition(f):
-    """Decorator that checks if filter is set, if it does not already exist."""
-
-    @wraps(f)
-    def wrapper(self, *args, **kwargs):
-        if self.mode == 'local' and self.filterparams and not self._alreadyInFilter(self.filterparams.keys()):
-            self.add_condition()
-        return f(self, *args, **kwargs)
-
-    return wrapper
+def tree():
+    return defaultdict(tree)
 
 
 class Query(object):
     ''' A class to perform queries on the MaNGA dataset.
 
-    This class is the main way of performing a query.  A query works minimally
-    by specifying a list of desired parameters, along with a string filter
-    condition in a natural language SQL format.
+    This class is the main way of performing a query.  A query works by minimally
+    specifying a string filter a string filter condition in a natural language SQL format,
+    as well as, a list of desired parameters to return.
 
-    A local mode query assumes a local database.  A remote mode query uses the
-    API to run a query on the Utah server, and return the results.
+    Query will use a local database if it finds on.  Otherwise a remote query uses
+    the API to run a query on the Utah Server and return the results.
 
-    By default, the query returns a list of tupled parameters.  The parameters
-    are a combination of user-defined parameters, parameters used in the
-    filter condition, and a set of pre-defined default parameters.  The object
-    plate-IFU or mangaid is always returned by default.
+    The Query returns a list of tupled parameters and passed them into the
+    Marvin Results object.  The parameters are a combination of user-defined
+    return parameters, parameters used in the filter condition, and a set of pre-defined
+    default parameters.  The object plateifu or mangaid is always returned by default.
+    For queries involving DAP properties, the bintype, template, and spaxel x and y are
+    also returned by default.
 
     Parameters:
-        returnparams (str list):
-            A list of string parameters names desired to be returned in the query
-        searchfilter (str):
+        search_filter (str):
             A (natural language) string containing the filter conditions
-            in the query; written as you would say it.
-        returntype (str):
+            in the query.
+        return_params (list):
+            A list of string parameter names desired to be returned in the query
+        return_type (str):
             The requested Marvin Tool object that the results are converted into
+        targets (list):
+            A list of manga_target flags to filter on
+        quality (list):
+            A list of quality flags to filter on
         mode ({'local', 'remote', 'auto'}):
             The load mode to use. See :doc:`Mode secision tree</mode_decision>`.
+        return_all (bool):
+            If True, attempts to return the entire set of results. Default is False.
+        default_params (list):
+            Optionally specify additional parameters as defaults
         sort (str):
             The parameter name to sort the query on
         order ({'asc', 'desc'}):
             The sort order.  Can be either ascending or descending.
         limit (int):
             The number limit on the number of returned results
-
-    Returns:
-        results:
-            An instance of the :class:`~marvin.tools.query.results.Results`
-            class containing the results of your Query.
-
-    Example:
-        >>> # filter of "NSA redshift less than 0.1 and IFU names starting with 19"
-        >>> searchfilter = 'nsa.z < 0.1 and ifu.name = 19*'
-        >>> returnparams = ['cube.ra', 'cube.dec']
-        >>> q = Query(searchfilter=searchfilter, returnparams=returnparams)
-        >>> results = q.run()
+        count_threshold (int):
+            The threshold number to begin paginating results.  Default is 1000.
+        nexus (str):
+            The name of the database table to use as the nexus point for building
+            the join table tree.  Can only be set in local mode.
+        caching (bool):
+            If True, turns on the dogpile memcache caching of results. Default is True.
+        verbose (bool):
+            If True, turns on verbosity.
 
     '''
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, search_filter=None, return_params=None, return_type=None, targets=None,
+                 quality=None, mode=None, return_all=False, default_params=None, nexus='cube',
+                 sort='mangaid', order='asc', caching=True, limit=100, count_threshold=1000,
+                 verbose=False, **kwargs):
 
-        self._release = kwargs.pop('release', config.release)
-        self._drpver, self._dapver = config.lookUpVersions(release=self._release)
+        # basic parameters
+        self.release = kwargs.pop('release', config.release)
+        self._drpver, self._dapver = config.lookUpVersions(release=self.release)
+        self.mode = mode if mode is not None else config.mode
+        self.data_origin = None
 
-        self.query = None
+        # main parameters
+        self.search_filter = search_filter
+        self.return_params = return_params
+        self.return_type = return_type
+        self.default_params = default_params
+        self.targets = targets
+        self.quality = quality
+        self.filter_params = {}
         self.params = []
-        self.filterparams = {}
-        self.queryparams = None
-        self.myparamtree = tree()
-        self._paramtree = None
-        self.session = marvindb.session
-        self.filter = None
-        self.joins = []
-        self.myforms = defaultdict(str)
-        self.quiet = kwargs.get('quiet', None)
-        self._errors = []
-        self._basetable = None
-        self._modelgraph = marvindb.modelgraph
-        self._returnparams = []
-        self._caching = kwargs.get('caching', True)
-        self.verbose = kwargs.get('verbose', True)
-        self.count_threshold = kwargs.get('count_threshold', 1000)
-        self.allspaxels = kwargs.get('allspaxels', None)
-        self.mode = kwargs.get('mode', None)
-        self.limit = int(kwargs.get('limit', 100))
-        self.sort = kwargs.get('sort', 'mangaid')
-        self.order = kwargs.get('order', 'asc')
-        self.return_all = kwargs.get('return_all', False)
-        self.datamodel = datamodel[self._release]
-        self.marvinform = self.datamodel._marvinform
+        self._nexus = nexus
+        self._results = None
+        self.datamodel = datamodel[self.release]
 
-        # drop breadcrumb
-        breadcrumb.drop(message='Initializing MarvinQuery {0}'.format(self.__class__),
-                        category=self.__class__)
+        # optional parameters
+        self.return_all = return_all
+        self.sort = sort
+        self.order = order
+        self._caching = caching
+        self.count_threshold = count_threshold
+        self.limit = limit
+        self.verbose = verbose
 
-        # set the mode
-        if self.mode is None:
-            self.mode = config.mode
+        # add db specific parameters
+        if config.db:
+            self._marvinform = self.datamodel._marvinform
+            self.session = marvindb.session
+            self._modelgraph = marvindb.modelgraph
 
-        if self.mode == 'local':
-            self._doLocal()
-        if self.mode == 'remote':
-            self._doRemote()
-        if self.mode == 'auto':
-            try:
-                self._doLocal()
-            except Exception as e:
-                warnings.warn('local mode failed. Trying remote now.', MarvinUserWarning)
-                self._doRemote()
+        # timings
+        self._run_time = None
+        self._final_time = None
 
-        # get return type
-        self.returntype = kwargs.get('returntype', None)
+        # define the Query MMA
+        self._set_mma()
 
-        # set default parameters
-        self.set_defaultparams()
-
-        # get user-defined input parameters
-        returnparams = kwargs.get('returnparams', [])
-        if returnparams:
-            self.set_returnparams(returnparams)
-
-        # if searchfilter is set then set the parameters
-        searchfilter = kwargs.get('searchfilter', None)
-        if searchfilter:
-            self.set_filter(searchfilter=searchfilter)
-            self._isdapquery = self._checkInFilter(name='dapdb')
-
-        # Don't do anything if nothing specified
-        allnot = [not searchfilter, not returnparams]
-        if not all(allnot) and self.mode == 'local':
-            # create query parameter ModelClasses
-            self._create_query_modelclasses()
-            # this adds spaxel x, y into default for query 1 dap zonal query
-            self._adjust_defaults()
-
-            # join tables
-            self._join_tables()
-
-            # add condition
-            if searchfilter:
-                self.add_condition()
-
-            # add PipelineInfo
-            self._addPipeline()
-
-            # check if query if a dap query
-            if self._isdapquery:
-                self._buildDapQuery()
-                self._check_dapall_query()
+        # initialize a query
+        if self.data_origin == 'file':
+            raise MarvinError('Cannot currently query a file')
+        elif self.data_origin == 'db':
+            self._init_local_query()
+        elif self.data_origin == 'api':
+            self._init_remote_query()
 
     def __repr__(self):
-        return ('Marvin Query(filter={4}, mode={0}, limit={1}, sort={2}, order={3})'
-                .format(repr(self.mode), self.limit, self.sort, repr(self.order), self.searchfilter))
+        return ('Marvin Query(filter={0}, mode={1}, data_origin={2})'
+                .format(repr(self.search_filter), repr(self.mode), repr(self.data_origin)))
 
-    def _doLocal(self):
-        ''' Tests if it is possible to perform queries locally. '''
+    @property
+    def nexus(self):
+        return self._nexus
 
-        if not config.db or not self.session:
+    @nexus.setter
+    def nexus(self, value):
+        if not self.data_origin == 'db':
+            raise MarvinError('Can only set nexus point with a local db origin')
+        self._nexus = value
+
+    def _set_mma(self):
+        ''' Sets up the Query MMA system '''
+
+        if self.mode == 'local':
+            self._do_local()
+        if self.mode == 'remote':
+            self._do_remote()
+        if self.mode == 'auto':
+            try:
+                self._do_local()
+            except MarvinError as e:
+                warnings.warn('local mode failed. Trying remote now.', MarvinUserWarning)
+                self._do_remote()
+
+        # Sanity check to make sure data_origin has been properly set.
+        assert self.data_origin in ['file', 'db', 'api'], 'data_origin is not properly set.'
+
+    def _do_local(self):
+        ''' Sets up to perform queries locally. '''
+
+        if not config.db:
             warnings.warn('No local database found. Cannot perform queries.', MarvinUserWarning)
             raise MarvinError('No local database found.  Query cannot be run in local mode')
         else:
             self.mode = 'local'
+            self.data_origin = 'db'
 
-    def _doRemote(self):
+    def _do_remote(self):
         ''' Sets up to perform queries remotely. '''
 
         if not config.urlmap:
             raise MarvinError('No URL Map found.  Cannot make remote query calls!')
         else:
             self.mode = 'remote'
+            self.data_origin = 'api'
 
-    def _check_query(self, name):
-        ''' Check if string is inside the query statement '''
+    def _init_local_query(self):
+        ''' Initialize a local database query '''
 
-        qstate = str(self.query.statement.compile(compile_kwargs={'literal_binds':True}))
-        return name in qstate
+        # set default parameters
+        self._set_defaultparams()
 
-    def _checkInFilter(self, name='dapdb'):
-        ''' Check if the given name is in the schema of any of the filter params '''
+        # get user-defined input parameters
+        self._set_returnparams()
 
-        if self.mode == 'local':
-            fparams = self.marvinform._param_form_lookup.mapToColumn(self.filterparams.keys())
-            fparams = [fparams] if not isinstance(fparams, list) else fparams
-            inschema = [name in c.class_.__table__.schema for c in fparams]
-        elif self.mode == 'remote':
-            inschema = []
-        return True if any(inschema) else False
+        # setup the search filter
+        self._set_filter()
 
-    def _check_shortcuts_in_filter(self, strfilter):
-        ''' Check for shortcuts in string filter
+        # build the query
+        self._build_query()
 
-            Replaces shortcuts in string searchfilter
-            with the full tables and names.
+    def _init_remote_query(self):
+        ''' Initialize a remote API query '''
 
-            is there a better way?
-        '''
-        # table shortcuts
-        # for key in self.marvinform._param_form_lookup._tableShortcuts.keys():
-        #     #if key in strfilter:
-        #     if re.search('{0}.[a-z]'.format(key), strfilter):
-        #         strfilter = strfilter.replace(key, self.marvinform._param_form_lookup._tableShortcuts[key])
+        # set up the parameters
+        returns = ','.join(self.return_params) if self.return_params else None
+        defaults = ','.join(self.default_params) if self.default_params else None
+        targets = ','.join(self.targets) if self.targets else None
+        quality = ','.join(self.quality) if self.quality else None
 
-        # name shortcuts
-        for key in self.marvinform._param_form_lookup._nameShortcuts.keys():
-            if key in strfilter:
-                # strfilter = strfilter.replace(key, self.marvinform._param_form_lookup._nameShortcuts[key])
-                param_form_lookup = self.marvinform._param_form_lookup
-                strfilter = re.sub(r'\b{0}\b'.format(key),
-                                   '{0}'.format(param_form_lookup._nameShortcuts[key]),
-                                   strfilter)
-        return strfilter
+        self._remote_params = {'searchfilter': self.search_filter,
+                               'returnparams': returns,
+                               'returntype': self.return_type,
+                               'defaults': defaults,
+                               'targets': targets,
+                               'quality': quality,
+                               'release': self.release,
+                               'sort': self.sort,
+                               'order': self.order,
+                               'limit': self.limit,
+                               'return_all': self.return_all,
+                               'caching': self._caching}
 
-    def _adjust_defaults(self):
-        ''' Adjust the default parameters to include necessary parameters
+    def run(self, start=None, end=None, query_type=None):
+        ''' Runs a Query
 
-        For any query involving DAP DB, always return the spaxel index
-        TODO: change this to spaxel x and y
-
-        TODO: change this entirely
-
-        '''
-        dapschema = ['dapdb' in c.class_.__table__.schema for c in self.queryparams]
-        if any(dapschema):
-            dapcols = ['spaxelprop.x', 'spaxelprop.y', 'bintype.name', 'template.name']
-            self.defaultparams.extend(dapcols)
-            self.params.extend(dapcols)
-            self.params = list(OrderedDict.fromkeys(self.params))
-            self._create_query_modelclasses()
-            # qpdap = self.marvinform._param_form_lookup.mapToColumn(dapcols)
-            # self.queryparams.extend(qpdap)
-            # self.queryparams_order.extend([q.key for q in qpdap])
-
-    def set_returnparams(self, returnparams):
-        ''' Loads the user input parameters into the query params limit
-
-        Adds a list of string parameter names into the main list of
-        query parameters to return
+        Runs a query either locally or remotely.
 
         Parameters:
-            returnparams (list):
-                A string list of the parameters you wish to return in the query
+            start (int):
+                A starting index when slicing the query
+            end (int):
+                An ending index when slicing the query
+            query_type (str):
+                The type of SQLAlchemy to submit. Can be "raw", "core", "orm"
+
+        Returns:
+            An instance of the :class:`~marvin.tools.query.results.Results`
+            class containing the results of your Query.
+
+        Example:
+            >>> # filter of "NSA redshift less than 0.1 and stellar mass > 1.e10"
+            >>> searchfilter = 'nsa.z < 0.1 and nsa.elpetro_mass > 1.e10'
+            >>> returnparams = ['cube.ra', 'cube.dec']
+            >>> q = Query(search_filter=searchfilter, return_params=returnparams)
+            >>> results = q.run()
 
         '''
-        if returnparams:
-            returnparams = [returnparams] if not isinstance(returnparams, list) else returnparams
 
-            # look up shortcut names for the return parameters
-            full_returnparams = [self.marvinform._param_form_lookup._nameShortcuts[rp]
-                                 if rp in self.marvinform._param_form_lookup._nameShortcuts else rp
-                                 for rp in returnparams]
+        if self.data_origin == 'api':
+            results = self._run_remote(start=start, end=end, query_type=query_type)
+        elif self.data_origin == 'db':
+            results = self._run_local(start=start, end=end, query_type=query_type)
 
-            self._returnparams = full_returnparams
+        return results
 
-        # remove any return parameters that are also defaults
-        use_only = [f for f in full_returnparams if f not in self.defaultparams]
+    def _run_remote(self, start=None, end=None, query_type=None):
+        ''' Run a remote Query
 
-        self.params.extend(use_only)
+        Runs a query remotely.  Creates a dictionary of all input parameters and
+        performs the appropriate API call.  On return, converts the JSON results
+        into a Marvin Results object.
 
-    def set_defaultparams(self):
-        ''' Loads the default params for a given return type
-        TODO - change mangaid to plateifu once plateifu works in
+        Parameters:
+            start (int):
+                A starting index when slicing the query
+            end (int):
+                An ending index when slicing the query
+            query_type (str):
+                The type of SQLAlchemy to submit. Can be "raw", "core", "orm"
 
-        cube, maps, rss, modelcube - file objects
-        spaxel, map, rssfiber - derived objects (no file)
+        Returns:
+            An instance of the :class:`~marvin.tools.query.results.Results`
+            class containing the results of your Query.
 
-        these are also the default params except
-        any query on spaxelprop should return spaxel_index (x/y)
-
-        Minimum parameters to instantiate a Marvin Tool
-        cube - return plateifu/mangaid
-        modelcube - return plateifu/mangaid, bintype, template
-        rss - return plateifu/mangaid
-        maps - return plateifu/mangaid, bintype, template
-        spaxel - return plateifu/mangaid, spaxel x and y
-
-        map - do not instantiate directly (plateifu/mangaid, bintype, template, property name, channel)
-        rssfiber - do not instantiate directly (plateifu/mangaid, fiberid)
-
-        return any of our tools
         '''
-        assert self.returntype in [None, 'cube', 'spaxel', 'maps',
-                                   'rss', 'modelcube'], 'Query returntype must be either cube, spaxel, maps, modelcube, rss'
-        self.defaultparams = ['cube.mangaid', 'cube.plate', 'cube.plateifu', 'ifu.name']
-        if self.returntype == 'spaxel':
-            pass
-            #self.defaultparams.extend(['spaxel.x', 'spaxel.y'])
-        elif self.returntype == 'modelcube':
-            self.defaultparams.extend(['bintype.name', 'template.name'])
-        elif self.returntype == 'rss':
-            pass
-        elif self.returntype == 'maps':
-            self.defaultparams.extend(['bintype.name', 'template.name'])
-            # self.defaultparams.extend(['spaxelprop.x', 'spaxelprop.y'])
 
-        # add to main set of params
-        self.params.extend(self.defaultparams)
+        if self.return_all:
+            warnings.warn('Warning: Attempting to return all results. This may take a while or crash.')
 
-    def _create_query_modelclasses(self):
-        ''' Creates a list of database ModelClasses from a list of parameter names '''
-        self.params = [item for item in self.params if item in set(self.params)]
-        self.queryparams = self.marvinform._param_form_lookup.mapToColumn(self.params)
-        self.queryparams = [item for item in self.queryparams if item in set(self.queryparams)]
-        self.queryparams_order = [q.key for q in self.queryparams]
+        # Get the query route
+        url = config.urlmap['api']['querycubes']['url']
 
-    def get_available_params(self, paramdisplay='best'):
+        # Update the remote params
+        self._remote_params.update({'start': start, 'end': end, 'query_type': query_type})
+
+        # set the start time of query
+        starttime = datetime.datetime.now()
+
+        # Request the query
+        try:
+            ii = Interaction(route=url, params=self._remote_params, stream=True, datastream=self.return_all)
+        except Exception as e:
+            raise MarvinError('API Query call failed: {0}'.format(e))
+        else:
+            # retrive and set some parameters
+            remotes = self._get_remote_parameters(ii)
+            remotes.update({'start': start, 'end': end})
+
+        # do results stuff here
+        if self.return_all:
+            msg = 'Returning all {0} results'.format(remotes['totalcount'])
+        else:
+            msg = 'Only returning the first {0} results.'.format(remotes['count'])
+
+        if self.verbose:
+            print('Results contain of a total of {0}. {1}'.format(remotes['totalcount'], msg))
+
+        # get Marvin Results
+        final = Results(**remotes)
+
+        # get the final time
+        posttime = datetime.datetime.now()
+        self._final_time = (posttime - starttime)
+
+        return final
+
+    def _get_remote_parameters(self, interaction):
+        ''' Retrieve or set parameters needed
+
+        Parameters:
+            interaction (object):
+                The Marvin Interaction response object
+
+        Returns:
+            A dict of parameters needed to pass into Marvin Results
+
+        '''
+
+        results = interaction.results
+        response_time = interaction.response_time
+        assert isinstance(results, dict), 'Interaction results must be a dictionary'
+
+        # get some parameters
+        data = interaction.getData()
+        params = results.get('params', None)
+        query = results.get('query', self.search_filter)
+        count = results.get('count', None)
+        chunk = results.get('chunk', self.limit)
+        totalcount = results.get('totalcount', None)
+        runtime = results.get('runtime', None)
+
+        # set some parameters when only data is available
+        if len(results) == 1 and 'data' in results:
+            # check first data row
+            row = data[0]
+            isstr = any([isinstance(i, six.string_types) for i in row])
+            data = data[1:] if isstr else data
+            # compute additional info
+            params = row if isstr else []
+            totalcount = len(data)
+            count = totalcount
+            chunk = self.limit
+            runtime = response_time
+
+        self.query = query
+        self.params = params
+        remotes = dict(response_time=response_time, params=params, query=query, results=data,
+                       totalcount=totalcount, count=count, runtime=runtime, chunk=int(chunk),
+                       mode=self.mode, queryobj=self)
+
+        return remotes
+
+    def _run_local(self, start=None, end=None, query_type=None):
+        ''' Run a local database Query
+
+        Parameters:
+            start (int):
+                A starting index when slicing the query
+            end (int):
+                An ending index when slicing the query
+            query_type (str):
+                The type of SQLAlchemy to submit. Can be "raw", "core", "orm"
+
+        Returns:
+            An instance of the :class:`~marvin.tools.query.results.Results`
+            class containing the results of your Query.
+
+        '''
+
+        # Check for adding a sort
+        self._sort_query()
+
+        # Check to add the cache
+        if self._caching:
+            from marvin.core.caching_query import FromCache
+            self.query = self.query.options(FromCache("default")).\
+                options(*marvindb.cache_bits)
+
+        # turn on streaming of results
+        self.query = self.query.execution_options(stream_results=True)
+
+        # set the start time of query
+        starttime = datetime.datetime.now()
+
+        # check for query and get count
+        totalcount = self._get_query_count()
+
+        # slice the query
+        query = self._slice_query(start=start, end=end, totalcount=totalcount)
+
+        # run the query and get the results
+        results = self._get_results(query, query_type=query_type, totalcount=totalcount)
+
+        # get the runtime
+        endtime = datetime.datetime.now()
+        self._run_time = (endtime - starttime)
+
+        # clear the session
+        self.session.close()
+
+        # convert to Marvin Results
+        final = Results(results=results, query=query, count=self._count, mode=self.mode,
+                        returntype=self.return_type, queryobj=self, totalcount=totalcount,
+                        chunk=self.limit, runtime=self._run_time, start=self._start, end=self._end)
+
+        # get the final time
+        posttime = datetime.datetime.now()
+        self._final_time = (posttime - starttime)
+
+        return final
+
+    def _sort_query(self):
+        ''' Sort the SQLA query object by a given parameter '''
+
+        if not isinstance(self.sort, type(None)):
+            # set the sort variable ModelClass parameter
+            if '.' in self.sort:
+                param = self.datamodel.parameters[str(self.sort)].full
+            else:
+                param = self.datamodel.parameters.get_full_from_remote(self.sort)
+            sortparam = self._marvinform._param_form_lookup.mapToColumn(param)
+
+            # check if sort param actually in the parameter list
+            if sortparam.class_ not in self._modellist:
+                return
+
+            # If order is specified, then do the sort
+            if self.order:
+                assert self.order in ['asc', 'desc'], 'Sort order parameter must be either "asc" or "desc"'
+
+                # Check if order by already applied
+                if 'ORDER' in str(self.query.statement):
+                    self.query = self.query.order_by(None)
+                # Do the sorting
+                if 'desc' in self.order:
+                    self.query = self.query.order_by(desc(sortparam))
+                else:
+                    self.query = self.query.order_by(sortparam)
+
+    def _get_query_count(self):
+        ''' Get the SQL query count of rows
+
+        First checks the query history table to look up if this query has
+        already been run and a count produced.
+
+        Returns:
+            The total count of rows for the query
+
+        '''
+
+        totalcount = None
+        if marvindb.isdbconnected:
+            qm = self._check_history(check_only=True)
+            totalcount = qm.count if qm else None
+
+        # run count if it doesn't exist
+        if totalcount is None:
+            totalcount = self.query.count()
+
+        return totalcount
+
+    def _check_history(self, check_only=None, totalcount=None):
+        ''' Check the query against the query history schema
+
+        Looks up the current query in the query table of
+        the history schema and if found, returns the SQLA object
+
+        Parameters:
+            check_only (bool):
+                If True, only checks the history schema but does not write to it
+            totalcount (int):
+                The total count of rows to add, when adding a new query to the table
+
+        Returns:
+            The SQLAlchemy row from the query table of the history schema
+
+        '''
+
+        sqlcol = self._marvinform._param_form_lookup.mapToColumn('sql')
+        stringfilter = self.search_filter.strip().replace(' ', '') if self.search_filter else ''
+        rawsql = self.show().strip()
+        returns = ','.join(self.return_params) if self.return_params else ''
+        qm = self.session.query(sqlcol.class_).\
+            filter(sqlcol == rawsql, sqlcol.class_.release == self.release).one_or_none()
+
+        if check_only:
+            return qm
+
+        with self.session.begin():
+            if not qm:
+                qm = sqlcol.class_(searchfilter=stringfilter, n_run=1, release=self.release,
+                                   count=totalcount, sql=rawsql, return_params=returns)
+                self.session.add(qm)
+            else:
+                qm.n_run += 1
+
+        return qm
+
+    def _slice_query(self, start=None, end=None, totalcount=None):
+        ''' Slice the SQLA query object
+
+        Parameters:
+            start (int):
+                A starting index when slicing the query
+            end (int):
+                An ending index when slicing the query
+            totalcount (int):
+                The total count of rows of the query
+
+        Returns:
+            A new SQLA query object that has been sliced
+
+        '''
+
+        # get the new count if start and end exist
+        if start and end:
+            count = (end - start)
+        else:
+            count = totalcount
+
+        # # run the query
+        # res = self.query.slice(start, end).all()
+        # count = len(res)
+        # self.totalcount = count if not self.totalcount else self.totalcount
+
+        # check history
+        if marvindb.isdbconnected:
+            __ = self._check_history(totalcount=totalcount)
+
+        if count > self.count_threshold and self.return_all is False:
+            # res = res[0:self.limit]
+            start = 0
+            end = self.limit
+            count = (end - start)
+            warnings.warn('Results contain more than {0} entries.  '
+                          'Only returning first {1}'.format(self.count_threshold, self.limit), MarvinUserWarning)
+        elif self.return_all is True:
+            warnings.warn('Warning: Attempting to return all results. This may take a long time or crash.', MarvinUserWarning)
+            start = None
+            end = None
+        elif start and end:
+            warnings.warn('Getting subset of data {0} to {1}'.format(start, end), MarvinUserWarning)
+
+        # slice the query
+        query = self.query.slice(start, end)
+
+        # set updated start, end, count, and total
+        self._start = start
+        self._end = end
+        self._count = count
+        self._total = totalcount
+
+        return query
+
+    def _get_results(self, query, query_type=None, totalcount=None):
+        ''' Get the raw results of the query
+
+        Runs the SQLAlchemy query.  query_type will determine how the query is run.
+        "raw" means the query is run using the psycopg2 cursor object. "core" means
+        the query is run using the SQLA connection object.  The "raw" and "core" methods
+        will submit the raw sql string and retrieve the results in chunks using `fetchall`.
+        orm" means the query is running using the SQLA query object.  This uses yield_per
+        to generate the results in chunk.  It also folds similar strings together.
+
+        Parameters:
+            query (object):
+                The current SQLA query object
+            query_type (str):
+                The type of SQLAlchemy to submit. Can be "raw", "core", "orm". Default is raw.
+            totalcount (int):
+                The total count of rows of the query
+
+        Returns:
+            A list of tupled results
+
+        '''
+
+        if query_type:
+            assert query_type in ['raw', 'core', 'orm'], 'Query Type can only be raw, core, or orm.'
+        else:
+            query_type = 'raw'
+
+        # run the query
+        if query_type == 'raw':
+            # use the db api cursor
+            sql = str(self._get_sql(query))
+            conn = marvindb.db.engine.raw_connection()
+            cursor = conn.cursor('query_cursor')
+            cursor.execute(sql)
+            res = self._fetch_data(cursor)
+            conn.close()
+        elif query_type == 'core':
+            # use the core connection
+            sql = str(self._get_sql(query))
+            with marvindb.db.engine.connect() as conn:
+                results = conn.execution_options(stream_results=True).execute(sql)
+                res = self._fetch_data(results)
+        elif query_type == 'orm':
+            # use the orm query
+            yield_num = int(10**(np.floor(np.log10(totalcount))))
+            results = string_folding_wrapper(query.yield_per(yield_num), keys=self.params)
+            res = list(results)
+
+        return res
+
+    def _fetch_data(self, obj, n_rows=100000):
+        ''' Fetch query results using fetchall or fetchmany
+
+        Parameters:
+            obj (object):
+                SQLAlchemy connection object or Pyscopg2 cursor object
+            n_rows (int):
+                The number of rows to fetch at a time
+
+        Returns:
+            A list of results from a query
+
+        '''
+
+        res = []
+
+        if not self.return_all:
+            res = obj.fetchall()
+        else:
+            while True:
+                rows = obj.fetchmany(n_rows)
+                if rows:
+                    res.extend(rows)
+                else:
+                    break
+        return res
+
+    @staticmethod
+    def _get_sql(query):
+        ''' Get the sql for a given query
+
+        Parameters:
+            query (object):
+                An SQLAlchemy Query object
+
+        Returns:
+            A raw sql string
+        '''
+
+        return query.statement.compile(dialect=postgresql.dialect(), compile_kwargs={'literal_binds': True})
+
+    def show(self, prop='query'):
+        ''' Prints into the console
+
+        Displays the query to the console with parameter variables plugged in.
+        Works only in local mode.  Input prop can be one of query, joins, or filter.
+
+        Allowed Values for Prop:
+            - query: displays the entire query (default if nothing specified)
+            - joins: displays the tables that have been joined in the query
+            - filter: displays only the filter used on the query
+
+        Parameters:
+            prop (str):
+                The type of info to print.  Can be 'query', 'joins', or 'filter'.
+
+        Returns:
+            The SQL string
+
+        '''
+
+        assert prop in [None, 'query', 'joins', 'filter'], 'Input must be query, joins, or filter'
+
+        if self.data_origin == 'db':
+            if not prop or prop == 'query':
+                sql = self._get_sql(self.query)
+            elif prop == 'joins':
+                sql = self._joins
+            elif prop == 'filter':
+                if hasattr(self.query, 'whereclause'):
+                    sql = self.query.whereclause.compile(dialect=postgresql.dialect(), compile_kwargs={'literal_binds': True})
+                else:
+                    sql = 'cannot extract filter from where clause'
+            else:
+                sql = self.__getattribute__(prop)
+
+            return str(sql)
+        elif self.data_origin == 'api':
+            sql = self.search_filter
+            return sql
+
+    @classmethod
+    def get_available_params(cls, paramdisplay='best', release=None):
         ''' Retrieve the available parameters to query on
 
-        Retrieves a list of the available query parameters.
-        Can either retrieve a list of all the parameters or only the vetted parameters.
+        Retrieves a list of the available query parameters. Can either
+        retrieve a list of all the parameters or only the vetted parameters.
 
         Parameters:
             paramdisplay (str {all|best}):
@@ -415,13 +772,13 @@ class Query(object):
                 Default is to only return 'best', i.e. vetted parameters
 
         Returns:
-            qparams (list):
-                a list of all of the available queryable parameters
+            A list of all of the available queryable parameters
         '''
         assert paramdisplay in ['all', 'best'], 'paramdisplay can only be either "all" or "best"!'
 
+        release = release or config.release
         if paramdisplay == 'all':
-            qparams = self.datamodel.groups.list_params('full')
+            qparams = datamodel[release].groups.list_params('full')
         elif paramdisplay == 'best':
             qparams = query_params
         return qparams
@@ -442,7 +799,7 @@ class Query(object):
 
         '''
 
-        sf = self.searchfilter.replace(' ', '') if self.searchfilter else 'anon'
+        sf = self.search_filter.replace(' ', '') if self.search_filter else 'anon'
         # set the path
         if not path:
             path = os.path.expanduser('~/marvin_query_{0}.mpf'.format(sf))
@@ -465,7 +822,7 @@ class Query(object):
             os.makedirs(dirname)
 
         # set bad pickled attributes to None
-        attrs = ['session', 'datamodel', 'marvinform', 'myform', '_modelgraph']
+        attrs = ['session', 'datamodel', '_marvinform', '_modelgraph']
 
         # pickle the query
         try:
@@ -496,591 +853,604 @@ class Query(object):
         obj = marvin_pickle.restore(path, delete=delete)
         obj._modelgraph = marvindb.modelgraph
         obj.session = marvindb.session
-        obj.datamodel = datamodel[obj._release]
-        # if obj.allspaxels:
-        #     obj.datamodel.use_all_spaxels()
+        obj.datamodel = datamodel[obj.release]
         obj.marvinform = obj.datamodel._marvinform
         return obj
 
-    def set_filter(self, searchfilter=None):
-        ''' Parses a filter string and adds it into the query.
+    def update_return_params(self, params):
+        ''' Update the list of return parameters '''
 
-        Parses a natural language string filter into the appropriate SQL
-        filter syntax.  String is a boolean join of one or more conditons
-        of the form "PARAMETER_NAME OPERAND VALUE"
+    #
+    # This section describes the methods that run for local database queries
+    #
+    def _set_defaultparams(self):
+        ''' Set the default parameters
 
-        Parameter names must be uniquely specified. For example, nsa.z is
-        a unique parameter name in the database and can be specified thusly.
-        On the other hand, name is not a unique parameter name in the database,
-        and must be clarified with the desired table.
+        Loads any default parameters set.  Will also include appropriate
+        defaults when specifying an object return type
 
-        Parameter Naming Convention:
-            NSA redshift == nsa.z
-            IFU name == ifu.name
-            Pipeline name == pipeline_info.name
+        Default Parameters for Objects:
+            - Cubes/RSS - plateifu/mangaid
+            - Maps/ModelCube - plateifu/mangaid, bintype, template
+            - Spaxel - plateifu/mangaid, x, y, bintype, template
 
-        Allowed Joins:
-            AND | OR | NOT
-
-            In the absence of parantheses, the precedence of
-            joins follow: NOT > AND > OR
-
-        Allowed Operands:
-            == | != | <= | >= | < | > | =
-
-            Notes:
-                Operand == maps to a strict equality (x == 5 --> x is equal to 5)
-
-                Operand = maps to SQL LIKE
-
-                (x = 5 --> x contains the string 5; x = '%5%')
-
-                (x = 5* --> x starts with the string 5; x = '5%')
-
-                (x = *5 --> x ends with the string 5; x = '%5')
-
-        Parameters:
-            searchfilter (str):
-                A (natural language) string containing the filter conditions
-                in the query; written as you would say it.
-
-        Example:
-            >>> # Filter string
-            >>> filter = "nsa.z < 0.012 and ifu.name = 19*"
-            >>> # Converts to
-            >>> and_(nsa.z<0.012, ifu.name=19*)
-            >>> # SQL syntax
-            >>> mangasampledb.nsa.z < 0.012 AND lower(mangadatadb.ifudesign.name) LIKE lower('19%')
-
-            >>> # Filter string
-            >>> filter = 'cube.plate < 8000 and ifu.name = 19 or not (nsa.z > 0.1 or not cube.ra > 225.)'
-            >>> # Converts to
-            >>> or_(and_(cube.plate<8000, ifu.name=19), not_(or_(nsa.z>0.1, not_(cube.ra>225.))))
-            >>> # SQL syntax
-            >>> mangadatadb.cube.plate < 8000 AND lower(mangadatadb.ifudesign.name) LIKE lower(('%' || '19' || '%'))
-            >>> OR NOT (mangasampledb.nsa.z > 0.1 OR mangadatadb.cube.ra <= 225.0)
         '''
 
-        if searchfilter:
-            # if params is a string, then parse and filter
-            if isinstance(searchfilter, six.string_types):
-                searchfilter = self._check_shortcuts_in_filter(searchfilter)
-                try:
-                    parsed = parse_boolean_search(searchfilter)
-                except BooleanSearchException as e:
-                    raise MarvinError('Your boolean expression contained a syntax error: {0}'.format(e))
-            else:
-                raise MarvinError('Input parameters must be a natural language string!')
+        if self.return_type:
+            assert self.return_type in ['cube', 'spaxel', 'maps', 'rss',
+                                        'modelcube'], ('Query return_type must be either cube, spaxel, '
+                                                       'maps, modelcube, rss')
 
-            # update the parameters dictionary
-            self.searchfilter = searchfilter
-            self._parsed = parsed
-            self._checkParsed()
-            self.strfilter = str(parsed)
-            self.filterparams.update(parsed.params)
-            filterkeys = [key for key in parsed.uniqueparams if key not in self.params]
-            self.params.extend(filterkeys)
+        # set some initial defaults
+        assert isinstance(self.default_params, (list, type(None))), 'default_params must be a list'
+        defaults = self.default_params or (['cube.mangaid', 'cube.plateifu'] if self.nexus == 'cube' else [])
 
-            # print filter
-            if not self.quiet:
-                print('Your parsed filter is: ')
-                print(parsed)
+        extras = []
+        if self.return_type == 'cube':
+            extras = ['cube.mangaid', 'cube.plateifu']
+        elif self.return_type == 'spaxel':
+            pass
+        elif self.return_type == 'modelcube':
+            extras = ['bintype.name', 'template.name']
+        elif self.return_type == 'rss':
+            pass
+        elif self.return_type == 'maps':
+            extras = ['bintype.name', 'template.name']
 
-            # Perform local vs remote modes
-            if self.mode == 'local':
-                # Pass into Marvin Forms
-                try:
-                    self._setForms()
-                except KeyError as e:
-                    self.reset()
-                    raise MarvinError('Could not set parameters. Multiple entries found for key.  Be more specific: {0}'.format(e))
-            elif self.mode == 'remote':
-                # Is it possible to build a query remotely but still allow for user manipulation?
-                pass
+        defaults.extend([e for e in extras if e not in defaults])
+        self.default_params = defaults
 
-    def _setForms(self):
-        ''' Set the appropriate WTForms in myforms and set the parameters '''
-        self._paramtree = self.marvinform._paramtree
-        for key in self.filterparams.keys():
-            self.myforms[key] = self.marvinform.callInstance(self.marvinform._param_form_lookup[key], params=self.filterparams)
-            self.myparamtree[self.myforms[key].Meta.model.__name__][key]
+        # add the defaults to the main set of parameters
+        self.params.extend(self.default_params)
 
-    def _validateForms(self):
-        ''' Validate all the data in the forms '''
+    def _set_returnparams(self):
+        ''' Set the return parameters '''
 
-        formkeys = list(self.myforms.keys())
-        isgood = [form.validate() for form in self.myforms.values()]
-        if not all(isgood):
-            inds = np.where(np.invert(isgood))[0]
-            for index in inds:
-                self._errors.append(list(self.myforms.values())[index].errors)
-            raise MarvinError('Parameters failed to validate: {0}'.format(self._errors))
+        # set the initial returns list
+        returns = self.return_params or []
+        returns = [returns] if not isinstance(returns, list) else returns
 
-    def add_condition(self):
-        ''' Loop over all input forms and add a filter condition based on the input parameter form data. '''
+        # look up shortcut names for the return parameters
+        full_returnparams = [self._marvinform._param_form_lookup._nameShortcuts[rp]
+                             if rp in self._marvinform._param_form_lookup._nameShortcuts else rp
+                             for rp in returns]
 
-        # validate the forms
-        self._validateForms()
+        self.return_params = full_returnparams
 
-        # build the actual filter
-        self.build_filter()
+        # remove any return parameters that are also defaults
+        use_only = [f for f in full_returnparams if f not in self.default_params]
 
-        # add the filter to the query
-        if not isinstance(self.filter, type(None)):
-            self.query = self.query.filter(self.filter)
+        # add the return parameters to the main set of parameters
+        self.params.extend(use_only)
 
-    @makeBaseQuery
+    def _set_filter(self):
+        ''' Set up the search filter '''
+
+        # do nothing if nothing
+        if not self.search_filter:
+            return
+
+        # check and parse the SQL string
+        self._parse_sql_string()
+
+    def _parse_sql_string(self):
+        ''' Parse the SQL string '''
+
+        # if params is a string, then parse and filter
+        if not isinstance(self.search_filter, six.string_types):
+            raise MarvinError('Input parameters must be a natural language string!')
+        else:
+            self._check_shortcuts_in_filter()
+            try:
+                parsed = parse_boolean_search(self.search_filter)
+            except BooleanSearchException as e:
+                raise MarvinError('Your boolean expression contained a syntax error: {0}'.format(e))
+
+        # update the parameters dictionary
+        self._check_parsed(parsed)
+        self.filter_params.update(parsed.params)
+        filterkeys = [key for key in parsed.uniqueparams if key not in self.params]
+        self.params.extend(filterkeys)
+
+    def _check_shortcuts_in_filter(self):
+        ''' Check for shortcuts in string filter and replace them '''
+
+        # find all named parameters in the filter
+        keys = re.findall('(?<!\d)[a-z\._]+\d*', self.search_filter)
+        # remove the boolean operators
+        keys = [i for i in keys if i not in ['and', 'or', 'not']]
+        # look up real names of all keys
+        real_names = {k: self._marvinform._param_form_lookup.get_real_name(k) for k in keys}
+
+        # replace the shortcut names with real ones
+        sf = self.search_filter
+        for key, value in real_names.items():
+            if key in sf:
+                sf = sf.replace(key, value)
+        self.search_filter = sf
+
+    def _check_parsed(self, parsed):
+        ''' Check the boolean parsed object
+
+            check for function conditions vs normal.  This should be moved
+            into SQLalchemy Boolean Search
+        '''
+
+        # Triggers for only one filter and it is a function condition
+        if hasattr(parsed, 'fxn_name'):
+            parsed.functions = [parsed]
+
+        self._parsed = parsed
+
+    def _check_for(self, parameters, schema=None, tables=None):
+        ''' Check if a schema or test of tables names are in the provided parameters '''
+
+        fparams = self._marvinform._param_form_lookup.mapToColumn(parameters)
+        fparams = [fparams] if not isinstance(fparams, list) else fparams
+        if schema:
+            inschema = [schema in c.class_.__table__.schema for c in fparams]
+            return True if any(inschema) else False
+        if tables:
+            tables = [tables] if not isinstance(tables, list) else tables
+            intables = sum([[t in c.class_.__table__.name for c in fparams] for t in tables], [])
+            return True if any(intables) else False
+
+    def _build_query(self):
+        ''' Build the query '''
+
+        # create SQLA query parameters
+        self._set_query_parameters()
+
+        # create base SQLA object
+        self._create_base_query()
+
+        # join tables
+        self._join_tables()
+
+        # add condition
+        self._add_condition()
+
+        # add PipelineInfo
+        self._add_pipeline()
+
+        # check if the query filter is functional
+        self._run_functional_queries()
+
+        # check if the query filter is against the DAP
+        if self._check_for(self.filter_params.keys(), schema='dapdb'):
+            self._check_dapall_query()
+
+    def _set_query_parameters(self):
+        ''' Creates a list of database ModelClasses from a list of parameter names '''
+
+        # adjust the default parameters for any necessary DAP
+        self._add_default_params(['spaxelprop.x', 'spaxelprop.y', 'bintype.name', 'template.name'],
+                                 tables=['spaxelprop', 'modelspaxel'])
+
+        # adjust the default parameters for any necessary DAP
+        self._add_default_params(['bintype.name', 'template.name'], tables=['dapall'])
+
+        # adjust the default parameters for any necessary DAP
+        self._add_default_params(['obsinfo.expnum', 'obsinfo.mgdpos'], tables=['obsinfo'])
+
+        self.params = [item for item in self.params if item in set(self.params)]
+
+        # create the list of parameter attributes
+        queryparams = self._marvinform._param_form_lookup.mapToColumn(self.params)
+        if not isinstance(queryparams, list):
+            queryparams = [queryparams]
+
+        # create a list of key names maintaining the column order
+        self._query_params = [item for item in queryparams if item in set(queryparams)]
+        self._query_params_order = [q.key for q in self._query_params]
+
+    def _add_default_params(self, columns, tables=None):
+        ''' Add new default parameters into the query
+
+        Parameters:
+            columns (list):
+                A list of column names to add
+            tables (list):
+                A list of table names to check exists within the query
+        '''
+
+        # adjust the default parameters for any necessary columns
+        if self._check_for(self.params, tables=tables):
+            # remove any columns that are also defaults
+            use_only = [c for c in columns if c not in self.default_params]
+            self.default_params.extend(use_only)
+            self.params.extend(use_only)
+
+    def _create_base_query(self):
+        ''' Create the base query session object.  Passes in a list of parameters defined in
+            returnparams, filterparams, and defaultparams
+        '''
+        labeledqps = [qp.label(self.params[i]) for i, qp in enumerate(self._query_params)]
+        self.query = self.session.query(*labeledqps)
+
+    @update_config
     def _join_tables(self):
         ''' Build the join statement from the input parameters '''
-        self._modellist = [param.class_ for param in self.queryparams]
+
+        # from marvin import marvindb
+        ifu = marvindb.datadb.IFUDesign
+
+        self._joins = []
+
+        # build list of SQLA models for the joins from the parameters
+        self._modellist = []
+        for param in self._query_params:
+            # add the proper parameter Model
+            if param.class_ not in self._modellist:
+                self._modellist.append(param.class_)
+
+            # if plateifu is a parameter, make sure we add the IFUDesign Model
+            if 'plateifu' in str(param) and ifu not in self._modellist:
+                self._modellist.append(ifu)
+
+        # if there are no additional join tables, return
+        if len(set(self._modellist)) == 1:
+            return
+
+        # Look up the nexus point.  If nexus is still none, takes the most common table from
+        # the list of query parameters.  Default nexus is cube.
+        nexus = self._marvinform.look_up_table(self.nexus)
+        if not nexus:
+            nexus = Counter(self._modellist).most_common(1)[0][0]
 
         # Gets the list of joins from ModelGraph. Uses Cube as nexus, so that
         # the order of the joins is the correct one.
-        # TODO: at some point, all the queries should be generalised so that
-        # we don't assume that we are querying a cube.
-        joinmodellist = self._modelgraph.getJoins(self._modellist, format_out='models', nexus=marvindb.datadb.Cube)
+        joinmodellist = self._modelgraph.getJoins(self._modellist, format_out='models', nexus=nexus)
 
-        # sublist = [model for model in modellist if model.__tablename__ not in self._basetable and not self._tableInQuery(model.__tablename__)]
-        # self.joins.extend([model.__tablename__ for model in sublist])
-        # self.query = self.query.join(*sublist)
+        # Add the tables from the join list into the query
         for model in joinmodellist:
             name = '{0}.{1}'.format(model.__table__.schema, model.__tablename__)
-            if not self._tableInQuery(name):
-                self.joins.append(model.__tablename__)
+            if not self._table_in_query(name):
+                self._joins.append(model.__tablename__)
                 if 'template' not in model.__tablename__:
                     self.query = self.query.join(model)
                 else:
                     # assume template_kin only now, TODO deal with template_pop later
                     self.query = self.query.join(model, marvindb.dapdb.Structure.template_kin)
 
-    def build_filter(self):
+    def _table_in_query(self, name):
+        ''' Checks if a given SQL table is already in the SQL query '''
+
+        # do the check
+        try:
+            isin = name in str(self.query._from_obj[0])
+        except IndexError as e:
+            isin = False
+        except AttributeError as e:
+            if isinstance(self.query, six.string_types):
+                isin = name in self.query
+            else:
+                isin = False
+        return isin
+
+    def _add_condition(self):
+        ''' Loop over all input forms and add a filter condition based on the input parameter form data. '''
+
+        # validate the forms
+        self._validate_forms()
+
+        # build the actual filter
+        self._build_filter()
+
+        # add the filter to the query
+        if self.search_filter and not isinstance(self.filter, type(None)):
+            self.query = self.query.filter(self.filter)
+
+        # check for targets and quality flags to add in the filter
+        self._check_targets()
+        self._check_quality()
+
+    def _validate_forms(self):
+        ''' Validate all the data in the forms '''
+
+        errors = []
+        forms = self._set_forms()
+        isgood = [form.validate() for form in forms.values()]
+        if not all(isgood):
+            inds = np.where(np.invert(isgood))[0]
+            for index in inds:
+                errors.append(list(forms.values())[index].errors)
+            raise MarvinError('Parameters failed to validate: {0}'.format(errors))
+
+    def _set_forms(self):
+        ''' Set the appropriate WTForms in myforms and set the parameters '''
+
+        forms = defaultdict(str)
+        paramtree = tree()
+        for key in self.filter_params.keys():
+            forms[key] = self._marvinform.callInstance(self._marvinform._param_form_lookup[key], params=self.filter_params)
+            paramtree[forms[key].Meta.model.__name__][key]
+        return forms
+
+    def _build_filter(self):
         ''' Builds a filter condition to load into sqlalchemy filter. '''
+
+        # do nothing if nothing
+        if not self.search_filter:
+            return
+
         try:
             self.filter = self._parsed.filter(self._modellist)
         except BooleanSearchException as e:
             raise MarvinError('Your boolean expression could not me mapped to model: {0}'.format(e))
 
-    def update_params(self, param):
-        ''' Update the input parameters '''
-        # param = {key: unicode(val) if '*' not in unicode(val) else unicode(val.replace('*', '%')) for key, val in param.items() if key in self.filterparams.keys()}
-        param = {key: val.decode('UTF-8') if '*' not in val.decode('UTF-8') else val.replace('*', '%').decode('UTF-8') for key, val in param.items() if key in self.filterparams.keys()}
-        self.filterparams.update(param)
-        self._setForms()
+    def _check_targets(self):
+        ''' Check for any target flags to add into the filter
 
-    def _update_params(self, param):
-        ''' this is now broken, this should update the boolean params in the filter condition '''
+        Checks for input manga_target flag labels in the Query.targets attribute
+        and adds them to the Query filter condition.  All target labels are joined with
+        a Boolean "or", then joined to the existing filter through a Boolean "and".
 
-        ''' Update any input parameters that have been bound already.  Input is a dictionary of key, value pairs representing
-            parameter name to update, and the value (number only) to update.  This does not allow to change the operand.
-            Does not update self.params
-            e.g.
-            original input parameters {'nsa.z': '< 0.012'}
-            newparams = {'nsa.z': '0.2'}
-            update_params(newparams)
-            new condition will be nsa.z < 0.2
+        To perform a bitwise not on a quality flag, specify the flag and value explicitly
+        in the search_filter. E.g. "cube.manga_target1 & ~1024"
+
+        Available target options are:
+            primary - selects targets in both the PRIMARY_V1_2_0 and COLOR_ENHANCED_V1_2_0 samples
+            color-enhanced - selects targets in the COLOR_ENHANCED_V1_2_0 sample
+            secondary - selects targets in the SECONDARY_V1_2_0 sample
+            ancillary - selects any targets in the ANCILLARY sample
+            stellar libraray - selects targets from the stellar library
+            flux standards - selects flux standard stars
+            any ancillary catalog name, e.g. 'MWA', or 'DWARF'
+
+        Example
+            >>> # perform query selecting primary and secondary targets
+            >>> q = Query(targets=['primary', 'secondary'])
+            >>>
+            >>> # select ancillary targets from Milky Way Analogs and Dwarfs
+            >>> q = Query(targets=['MWA', 'DWARF'])
+            >>>
+            >>> # select all targets that are not a part of the PRIMARY_v1_2_0 sample
+            >>> q = Query(search_filter='cube.manga_target & ~1024')
+            >>>
         '''
-        param = {key: unicode(val) if '*' not in unicode(val) else unicode(val.replace('*', '%')) for key, val in param.items() if key in self.filterparams.keys()}
-        self.query = self.query.params(param)
 
-    def _alreadyInFilter(self, names):
-        ''' Checks if the parameter name already added into the filter '''
+        if not self.targets:
+            return
 
-        infilter = None
-        if names:
-            if not isinstance(self.query, type(None)):
-                if not isinstance(self.query.whereclause, type(None)):
-                    wc = str(self.query.whereclause.compile(dialect=postgresql.dialect(), compile_kwargs={'literal_binds': True}))
-                    infilter = any([name in wc for name in names])
+        targets = [self.targets] if not isinstance(self.targets, list) else self.targets
+        targets = [t.upper() for t in targets]
 
-        return infilter
+        # check for ancillary targets
+        ancillaries = [a.upper() for a in self.datamodel.bitmasks['MANGA_TARGET3'].schema.label]
+        anc_labels = list(set(targets) & set(ancillaries))
+        targets = list(set(targets) - set(ancillaries))
 
-    @makeBaseQuery
-    @checkCondition
-    @updateConfig
-    def run(self, start=None, end=None, raw=None, orm=None, core=None):
-        ''' Runs a Marvin Query
+        # build the string filter
+        target_filter = ''
+        for target in targets:
+            target_filter = self._create_target_filter(target, target_filter=target_filter)
 
-            Runs the query and return an instance of Marvin Results class
-            to deal with results.
+        # add in any ancillary targets
+        if anc_labels:
+            target_filter = self._create_target_filter('ancillary', target_filter=target_filter, ancillaries=anc_labels)
 
-            Parameters:
-                start (int):
-                    Starting value of a subset.  Default is None
-                end (int):
-                    Ending value of a subset.  Default is None
+        # parse the filter and add to the main
+        self._add_filter(target_filter)
 
-            Returns:
-                results (object):
-                    An instance of the Marvin Results class containing the
-                    results from the Query.
+    def _create_target_filter(self, target, target_filter='', ancillaries=None):
+        ''' Create a string target bitwise filter
 
-        '''
-        if self.mode == 'local':
-
-            # Check for adding a sort
-            self._sortQuery()
-
-            # Check to add the cache
-            if self._caching:
-                from marvin.core.caching_query import FromCache
-                self.query = self.query.options(FromCache("default")).\
-                    options(*marvindb.cache_bits)
-
-            # turn on streaming of results
-            self.query = self.query.execution_options(stream_results=True)
-
-            # get total count, and if more than 150 results, paginate and only return the first 100
-            starttime = datetime.datetime.now()
-
-            # check for query and get count
-            if marvindb.isdbconnected:
-                qm = self._check_history(check_only=True)
-                self.totalcount = qm.count if qm else None
-
-            # run count if it doesn't exist
-            if self.totalcount is None:
-                self.totalcount = self.query.count()
-
-            # get the new count if start and end exist
-            if start and end:
-                count = (end - start)
-            else:
-                count = self.totalcount
-
-            # # run the query
-            # res = self.query.slice(start, end).all()
-            # count = len(res)
-            # self.totalcount = count if not self.totalcount else self.totalcount
-
-            # check history
-            if marvindb.isdbconnected:
-                query_meta = self._check_history()
-
-            if count > self.count_threshold and self.return_all is False:
-                # res = res[0:self.limit]
-                start = 0
-                end = self.limit
-                count = (end - start)
-                warnings.warn('Results contain more than {0} entries.  '
-                              'Only returning first {1}'.format(self.count_threshold, self.limit), MarvinUserWarning)
-            elif self.return_all is True:
-                warnings.warn('Warning: Attempting to return all results. This may take a long time or crash.', MarvinUserWarning)
-                start = None
-                end = None
-            elif start and end:
-                warnings.warn('Getting subset of data {0} to {1}'.format(start, end), MarvinUserWarning)
-
-            # slice the query
-            query = self.query.slice(start, end)
-
-            # run the query
-            if not any([raw, core, orm]):
-                raw = True
-
-            if raw:
-                # use the db api cursor
-                sql = str(self._get_sql(query))
-                conn = marvindb.db.engine.raw_connection()
-                cursor = conn.cursor('query_cursor')
-                cursor.execute(sql)
-                res = self._fetch_data(cursor)
-                conn.close()
-            elif core:
-                # use the core connection
-                sql = str(self._get_sql(query))
-                with marvindb.db.engine.connect() as conn:
-                    results = conn.execution_options(stream_results=True).execute(sql)
-                    res = self._fetch_data(results)
-            elif orm:
-                # use the orm query
-                yield_num = int(10**(np.floor(np.log10(self.totalcount))))
-                results = string_folding_wrapper(query.yield_per(yield_num), keys=self.params)
-                res = list(results)
-
-            # get the runtime
-            endtime = datetime.datetime.now()
-            self.runtime = (endtime - starttime)
-
-            # clear the session
-            self.session.close()
-
-            # pass the results into Marvin Results
-            final = Results(results=res, query=query, count=count, mode=self.mode,
-                            returntype=self.returntype, queryobj=self, totalcount=self.totalcount,
-                            chunk=self.limit, runtime=self.runtime, start=start, end=end)
-
-            # get the final time
-            posttime = datetime.datetime.now()
-            self.finaltime = (posttime - starttime)
-
-            return final
-
-        elif self.mode == 'remote':
-            # Fail if no route map initialized
-            if not config.urlmap:
-                raise MarvinError('No URL Map found.  Cannot make remote call')
-
-            if self.return_all:
-                warnings.warn('Warning: Attempting to return all results. This may take a long time or crash.')
-
-            # Get the query route
-            url = config.urlmap['api']['querycubes']['url']
-
-            params = {'searchfilter': self.searchfilter,
-                      'params': ','.join(self._returnparams) if self._returnparams else None,
-                      'returntype': self.returntype,
-                      'limit': self.limit,
-                      'sort': self.sort, 'order': self.order,
-                      'release': self._release,
-                      'return_all': self.return_all,
-                      'start': start,
-                      'end': end,
-                      'caching': self._caching}
-            try:
-                ii = Interaction(route=url, params=params, stream=True)
-            except Exception as e:
-                # if a remote query fails for any reason, then try to clean them up
-                # self._cleanUpQueries()
-                raise MarvinError('API Query call failed: {0}'.format(e))
-            else:
-                res = ii.getData()
-                self.queryparams_order = ii.results['queryparams_order']
-                self.params = ii.results['params']
-                self.query = ii.results['query']
-                count = ii.results['count']
-                chunk = int(ii.results['chunk'])
-                totalcount = ii.results['totalcount']
-                query_runtime = ii.results['runtime']
-                resp_runtime = ii.response_time
-
-            if self.return_all:
-                msg = 'Returning all {0} results'.format(totalcount)
-            else:
-                msg = 'Only returning the first {0} results.'.format(count)
-
-            if not self.quiet:
-                print('Results contain of a total of {0}. {1}'.format(totalcount, msg))
-            return Results(results=res, query=self.query, mode=self.mode, queryobj=self, count=count,
-                           returntype=self.returntype, totalcount=totalcount, chunk=chunk,
-                           runtime=query_runtime, response_time=resp_runtime, start=start, end=end)
-
-    def _fetch_data(self, obj):
-        ''' Fetch query using fetchall or fetchmany '''
-
-        res = []
-
-        if not self.return_all:
-            res = obj.fetchall()
-        else:
-            while True:
-                rows = obj.fetchmany(100000)
-                if rows:
-                    res.extend(rows)
-                else:
-                    break
-        return res
-
-    def _check_history(self, check_only=None):
-        ''' Check the query against the query history schema '''
-
-        sqlcol = self.marvinform._param_form_lookup.mapToColumn('sql')
-        stringfilter = self.searchfilter.strip().replace(' ', '')
-        rawsql = self.show().strip()
-        return_params = ','.join(self._returnparams)
-        qm = self.session.query(sqlcol.class_).\
-            filter(sqlcol == rawsql, sqlcol.class_.release == self._release).one_or_none()
-
-        if check_only:
-            return qm
-
-        with self.session.begin():
-            if not qm:
-                qm = sqlcol.class_(searchfilter=stringfilter, n_run=1, release=self._release,
-                                   count=self.totalcount, sql=rawsql, return_params=return_params)
-                self.session.add(qm)
-            else:
-                qm.n_run += 1
-
-        return qm
-
-    def _cleanUpQueries(self):
-        ''' Attempt to clean up idle queries on the server
-
-        This is a hack to try to kill all idl processes on the server.
-        Using pg_terminate_backend and pg_stat_activity it terminates all
-        transactions that are in an idle, or idle in transaction, state
-        that have running for > 1 minute, and whose application_name is
-        not psql, and the process is not the one initiating the terminate.
-
-        The rank part ranks the processes and originally killed all > 1, to
-        leave one alive as a warning to the others.  I've changed this to 0
-        to kill everything.
-
-        I think this will sometimes also leave a newly orphaned idle
-        ROLLBACK transaction.  Not sure why.
-
-        '''
-        if self.mode == 'local':
-            sql = ("with inactive as (select p.pid, rank() over (partition by \
-                   p.client_addr order by p.backend_start ASC) as rank from \
-                   pg_stat_activity as p where p.application_name !~ 'psql' \
-                   and p.state ilike '%idle%' and p.pid <> pg_backend_pid() and \
-                   current_timestamp-p.state_change > interval '1 minutes') \
-                   select pg_terminate_backend(pid) from inactive where rank > 0;")
-            self.session.expire_all()
-            self.session.expunge_all()
-            res = self.session.execute(sql)
-            tmp = res.fetchall()
-            #self.session.close()
-            #marvindb.db.engine.dispose()
-        elif self.mode == 'remote':
-            # Fail if no route map initialized
-            if not config.urlmap:
-                raise MarvinError('No URL Map found.  Cannot make remote call')
-
-            # Get the query route
-            url = config.urlmap['api']['cleanupqueries']['url']
-
-            params = {'task': 'clean', 'release': self._release}
-
-            try:
-                ii = Interaction(route=url, params=params)
-            except Exception as e:
-                raise MarvinError('API Query call failed: {0}'.format(e))
-            else:
-                res = ii.getData()
-
-    def _getIdleProcesses(self):
-        ''' Get a list of all idle processes on server
-
-        This grabs a list of all processes in a state of
-        idle, or idle in transaction using pg_stat_activity
-        and returns the process id, the state, and the query
-
-        '''
-        if self.mode == 'local':
-            sql = ("select p.pid,p.state,p.query from pg_stat_activity as p \
-                   where p.state ilike '%idle%';")
-            res = self.session.execute(sql)
-            procs = res.fetchall()
-        elif self.mode == 'remote':
-            # Fail if no route map initialized
-            if not config.urlmap:
-                raise MarvinError('No URL Map found.  Cannot make remote call')
-
-            # Get the query route
-            url = config.urlmap['api']['cleanupqueries']['url']
-
-            params = {'task': 'getprocs', 'release': self._release}
-
-            try:
-                ii = Interaction(route=url, params=params)
-            except Exception as e:
-                raise MarvinError('API Query call failed: {0}'.format(e))
-            else:
-                procs = ii.getData()
-        return procs
-
-    def _sortQuery(self):
-        ''' Sort the query by a given parameter '''
-
-        if not isinstance(self.sort, type(None)):
-            # set the sort variable ModelClass parameter
-            if '.' in self.sort:
-                param = self.datamodel.parameters[str(self.sort)].full
-            else:
-                param = self.datamodel.parameters.get_full_from_remote(self.sort)
-            sortparam = self.marvinform._param_form_lookup.mapToColumn(param)
-
-            # If order is specified, then do the sort
-            if self.order:
-                assert self.order in ['asc', 'desc'], 'Sort order parameter must be either "asc" or "desc"'
-
-                # Check if order by already applied
-                if 'ORDER' in str(self.query.statement):
-                    self.query = self.query.order_by(None)
-                # Do the sorting
-                if 'desc' in self.order:
-                    self.query = self.query.order_by(desc(sortparam))
-                else:
-                    self.query = self.query.order_by(sortparam)
-
-    @updateConfig
-    def show(self, prop=None):
-        ''' Prints into to the console
-
-        Displays the query to the console with parameter variables plugged in.
-        Works only in local mode.  Input prop can be one of Can be one of query,
-        tables, joins, or filter.
-
-        Only works in LOCAL mode.
-
-        Allowed Values for Prop:
-            query - displays the entire query (default if nothing specified)
-            tables - displays the tables that have been joined in the query
-            joins -  same as table
-            filter - displays only the filter used on the query
+        Creates a string manga_target filter bitwise filter.  If passed an existing
+        target_filter string, it will append the new filter as an "or" boolean condition.
+        Example filter syntax is 'cube.manga_target1 & 5120'
 
         Parameters:
-            prop (str):
-                The type of info to print.
+            target (str):
+                The name of the target sample to load
+            target_filter (str):
+                The current existing target filter string
+            ancillarites (list):
+                A list of ancillary target labels
 
-        Example:
-            TODO add example
+        Returns:
+            A string filter condition
+
+        '''
+        target = target.lower()
+        defaults = ['primary', 'color-enhanced', 'secondary', 'ancillary', 'stellar library', 'flux standards']
+        #options = defaults + ancillaries
+        assert target in defaults, 'target list can only contain one of {0}'.format(defaults)
+
+        if 'primary' == target:
+            name = 'manga_target1'
+            value = self.datamodel.bitmasks['MANGA_TARGET1'].labels_to_value(['PRIMARY_v1_2_0', 'COLOR_ENHANCED_v1_2_0'])
+        elif 'color-enhanced' == target:
+            name = 'manga_target1'
+            value = self.datamodel.bitmasks['MANGA_TARGET1'].labels_to_value(['COLOR_ENHANCED_v1_2_0'])
+        elif 'secondary' == target:
+            name = 'manga_target1'
+            value = self.datamodel.bitmasks['MANGA_TARGET1'].labels_to_value(['SECONDARY_v1_2_0'])
+        elif 'ancillary' == target:
+            name = 'manga_target3'
+            value = self.datamodel.bitmasks['MANGA_TARGET3'].labels_to_value(ancillaries) if ancillaries else 0
+        elif 'stellar library' == target:
+            name = 'manga_target2'
+            value = sum([1<<i for i in (self.datamodel.bitmasks['MANGA_TARGET2'].schema.bit[2:17])])
+        elif 'flux standards' == target:
+            name = 'manga_target2'
+            bits = [20, 22, 23, 25, 26, 27]
+            value = sum([1<<i for i in bits])
+
+        # add the column to the query
+        self._add_columns('cube.{0}'.format(name))
+
+        base = ' or ' if target_filter else ''
+        op = '>' if value == 0 else '&'
+        target_filter += '{0}cube.{1} {2} {3}'.format(base, name, op, value)
+        return target_filter
+
+    def _check_quality(self):
+        ''' Check for any quality flags to add into the filter
+
+        Checks for input DRP or DAP quality flag labels in the Query.quality attribute
+        and adds them to the Query filter condition.  All quality labels are joined with
+        a Boolean "or", then joined to the existing filter through a Boolean "and".
+
+        To perform a bitwise not on a quality flag, specify the flag and value explicitly
+        in the search_filter. E.g. "cube.quality & ~64"
+
+        Example
+            >>> # perform query selecting galaxies with a bad flux calibration
+            >>> q = Query(quality=['BADFLUX'])
+            >>>
+            >>> # select galaxies that do not have bad flux calibration
+            >>> q = Query(search_filter='cube.quality & ~256')
+            >>>
 
         '''
 
-        assert prop in [None, 'query', 'tables', 'joins', 'filter'], 'Input must be query, tables, joins, or filter'
+        if not self.quality:
+            return
 
-        if self.mode == 'local':
-            if not prop or 'query' in prop:
-                sql = self._get_sql(self.query)
-            elif prop == 'tables':
-                sql = self.joins
-            elif prop == 'filter':
-                '''oddly this does not update when bound parameters change, but the statement above does '''
-                sql = self.query.whereclause.compile(dialect=postgresql.dialect(), compile_kwargs={'literal_binds': True})
-            else:
-                sql = self.__getattribute__(prop)
+        # format the quality flags
+        quality = [self.quality] if not isinstance(self.quality, list) else self.quality
+        quality = [t.upper() for t in quality]
 
-            return str(sql)
-        elif self.mode == 'remote':
-            sql = 'Cannot show full SQL query in remote mode, use the Results showQuery'
-            warnings.warn(sql, MarvinUserWarning)
-            return sql
+        # get all the available flags
+        flags = sum([list(i.schema.label) for i in self.datamodel.bitmasks.values()
+            if 'QUAL' in i.name or 'MASK' in i.name], [])
+        assert set(quality).issubset(set(flags)), 'quality flag must be one of {0}'.format(flags)
 
-    def _get_sql(self, query):
-        ''' Get the sql for a given query
+        # get any individual label sets
+        drplabels = self._get_labelset(quality, name='MANGA_DRP3QUAL')
+        daplabels = self._get_labelset(quality, name='MANGA_DAPQUAL')
+        dapspeclabels = self._get_labelset(quality, name='MANGA_DAPSPECMASK')
+        dappixlabels = self._get_labelset(quality, name='MANGA_DAPPIXMASK')
+
+        # build the quality filter
+        quality_filter = ''
+        if drplabels:
+            quality_filter = self._create_quality_filter(drplabels, flag='DRP3QUAL', quality_filter=quality_filter)
+        if daplabels:
+            quality_filter = self._create_quality_filter(daplabels, flag='DAPQUAL', quality_filter=quality_filter)
+
+        # parse the filter and add to the main
+        if quality_filter:
+            spaxelprop = marvindb.dapdb.__getattribute__('Clean{0}'.format(self.datamodel.dap_datamodel.property_table))
+            models = [marvindb.datadb.Cube, marvindb.dapdb.File, spaxelprop]
+            self._add_filter(quality_filter, modellist=models)
+
+    def _get_labelset(self, flags, name=None):
+        ''' Return matching labels in the set of flags
+
+        Selects out those labels that are in the set of labels from the
+        named flag.
 
         Parameters:
-            query (object):
-                An SQLAlchemy Query object
+            flags (list):
+                A list of the input flag labels
+            name (str):
+                The name of the flag set to match against
 
-        Returms:
-            A raw sql string
+        Returns:
+            The list of labels that are in the named flag set
         '''
 
-        return query.statement.compile(dialect=postgresql.dialect(), compile_kwargs={'literal_binds': True})
+        # return empty list if the bitmask set not available
+        if name not in self.datamodel.bitmasks:
+            return []
 
-    def reset(self):
-        ''' Resets all query attributes '''
-        self.__init__()
+        labels = [q.upper() for q in self.datamodel.bitmasks[name].schema.label]
+        flags = [f.upper() for f in flags]
+        inset = list(set(flags) & set(labels))
+        return inset
 
-    @updateConfig
-    def _createBaseQuery(self):
-        ''' Create the base query session object.  Passes in a list of parameters defined in
-            returnparams, filterparams, and defaultparams
+    def _create_quality_filter(self, labels, flag='DRP3QUAL', quality_filter=''):
+        ''' Create a string quality bitwise filter
+
+        Creates a string quality filter bitwise filter.  If passed an existing
+        quality_filter string, it will append the new filter as an "or" boolean condition.
+        Example filter syntax is 'cube.quality & 64'
+
+        Parameters:
+            labels (list):
+                A list of string quality flag labels
+            flag (str):
+                The short hand name of the flag, i.e. MANGA_XXXX
+            quality_filter(str):
+                An existing string quality filter condition
+
+        Returns:
+            A string quality filter condition
+
         '''
-        labeledqps = [qp.label(self.params[i]) for i, qp in enumerate(self.queryparams)]
-        self.query = self.session.query(*labeledqps)
 
-    def _query_column(self, column_name):
-        ''' query and return a specific column from the current query '''
-        qp = self.marvinform._param_form_lookup.mapToColumn(column_name)
-        qp = qp.label(column_name)
-        return self.query.from_self(qp).all()
+        # get the value given the labels
+        name = 'MANGA_{0}'.format(flag.upper())
+        value = self.datamodel.bitmasks[name].labels_to_value(labels)
 
-    def _getPipeInfo(self, pipename):
+        # add the column to the query
+        colname = 'cube.quality' if 'DRP' in flag else 'file.quality'
+        self._add_columns(colname)
+
+        base = ' or ' if quality_filter else ''
+        quality_filter += '{0}{1} & {2}'.format(base, colname, value)
+        return quality_filter
+
+    def _add_filter(self, strfilter, modellist=None):
+        ''' Parse and add a string filter into the query
+
+        Pass a string filter condition into the boolean parser and
+        explicitly add it to the query filter
+
+        Parameters:
+            strfilter (str):
+                The filter condition to parse
+            modellist (list):
+                A list of models needed for the filter to
+                identify the correct parameters
+
+        '''
+
+        modellist = modellist if modellist else marvindb.datadb
+        # parse the filter and add to the main
+        parsed = parse_boolean_search(strfilter)
+        f = parsed.filter(modellist)
+        self.query = self.query.filter(and_(f))
+
+    def _add_columns(self, columns):
+        ''' Add columns to the query
+
+        Parameters:
+            columns (list):
+                A list of string column names to add to the query
+        '''
+
+        # get new columns not already added
+        columns = [columns] if not isinstance(columns, list) else columns
+        new_columns = list(set(columns) - set(self.params))
+        if any(new_columns):
+            colattrs = self._marvinform._param_form_lookup.mapToColumn([c for c in new_columns])
+            colattrs = [colattrs] if not isinstance(colattrs, list) else colattrs
+            self.query = self.query.add_columns(*colattrs)
+            self.params.extend(new_columns)
+
+    def _add_pipeline(self):
+        ''' Adds the DRP and DAP Pipeline Info into the Query '''
+
+        self._drp_alias = aliased(marvindb.datadb.PipelineInfo, name='drpalias')
+        self._dap_alias = aliased(marvindb.datadb.PipelineInfo, name='dapalias')
+
+        drppipe = self._get_pipe_info('drp')
+        dappipe = self._get_pipe_info('dap')
+
+        # Add DRP pipeline version
+        if drppipe:
+            self.query = self.query.join(self._drp_alias, marvindb.datadb.Cube.pipelineInfo).\
+                filter(self._drp_alias.pk == drppipe.pk)
+
+        # Add DAP pipeline version
+        if dappipe:
+            self.query = self.query.join(self._dap_alias, marvindb.dapdb.File.pipelineinfo).\
+                filter(self._dap_alias.pk == dappipe.pk)
+
+    def _get_pipe_info(self, pipename):
         ''' Retrieve the pipeline Info for a given pipeline version name '''
 
         assert pipename.lower() in ['drp', 'dap'], 'Pipeline Name must either be DRP or DAP'
@@ -1091,9 +1461,9 @@ class Query(object):
 
         # class names
         if pipename.lower() == 'drp':
-            inclasses = self._tableInQuery('cube') or 'cube' in str(self.query.statement.compile())
+            inclasses = self._table_in_query('cube') or 'cube' in str(self.query.statement.compile())
         elif pipename.lower() == 'dap':
-            inclasses = self._tableInQuery('file') or 'file' in str(self.query.statement.compile())
+            inclasses = self._table_in_query('file') or 'file' in str(self.query.statement.compile())
 
         # set alias
         pipealias = self._drp_alias if pipename.lower() == 'drp' else self._dap_alias
@@ -1109,41 +1479,6 @@ class Query(object):
 
         return pipeinfo
 
-    def _addPipeline(self):
-        ''' Adds the DRP and DAP Pipeline Info into the Query '''
-
-        self._drp_alias = aliased(marvindb.datadb.PipelineInfo, name='drpalias')
-        self._dap_alias = aliased(marvindb.datadb.PipelineInfo, name='dapalias')
-
-        drppipe = self._getPipeInfo('drp')
-        dappipe = self._getPipeInfo('dap')
-
-        # Add DRP pipeline version
-        if drppipe:
-            self.query = self.query.join(self._drp_alias, marvindb.datadb.Cube.pipelineInfo).\
-                filter(self._drp_alias.pk == drppipe.pk)
-
-        # Add DAP pipeline version
-        if dappipe:
-            self.query = self.query.join(self._dap_alias, marvindb.dapdb.File.pipelineinfo).\
-                filter(self._dap_alias.pk == dappipe.pk)
-
-    @makeBaseQuery
-    def _tableInQuery(self, name):
-        ''' Checks if a given SQL table is already in the SQL query '''
-
-        # do the check
-        try:
-            isin = name in str(self.query._from_obj[0])
-        except IndexError as e:
-            isin = False
-        except AttributeError as e:
-            if isinstance(self.query, six.string_types):
-                isin = name in self.query
-            else:
-                isin = False
-        return isin
-
     def _group_by(self, params=None):
         ''' Group the query by a set of parameters
 
@@ -1156,29 +1491,49 @@ class Query(object):
         '''
 
         if not params:
-            params = [d for d in self.defaultparams if 'spaxelprop' not in d]
+            params = [d for d in self.default_params if 'spaxelprop' not in d]
 
-        newdefaults = self.marvinform._param_form_lookup.mapToColumn(params)
+        #newdefaults = self._marvinform._param_form_lookup.mapToColumn(params)
+        newdefaults = [d for d in self._query_params if str(d).lower() in params]
+        self.default_params = params
         self.params = params
         newq = self.query.from_self(*newdefaults).group_by(*newdefaults)
         return newq
 
-    # ------------------------------------------------------
-    #  DAP Specific Query Modifiers - subqueries, etc go below here
-    #  -----------------------------------------------------
+    def _check_query(self, name):
+        ''' Check if string is inside the query statement '''
 
-    def _buildDapQuery(self):
-        ''' Builds a DAP zonal query
-        '''
+        qstate = str(self.query.statement.compile(compile_kwargs={'literal_binds': True}))
+        return name in qstate
 
-        # get the appropriate Junk (SpaxelProp) ModelClass
-        self._junkclass = self.marvinform.\
-            _param_form_lookup['spaxelprop.file'].Meta.model
+    def _update_filter_params(self, param):
+        ''' Update the input parameters '''
+        param = {key: val.decode('UTF-8') if '*' not in val.decode('UTF-8') else
+                 val.replace('*', '%').decode('UTF-8') for key, val in param.items()
+                 if key in self.filter_params.keys()}
+        self.filter_params.update(param)
 
-        # get good spaxels
-        # bingood = self.getGoodSpaxels()
-        # self.query = self.query.\
-        #     join(bingood, bingood.c.binfile == marvindb.dapdb.Junk.file_pk)
+    def _already_in_filter(self, names):
+        ''' Checks if the parameter name already added into the filter '''
+
+        infilter = None
+        if names:
+            if not isinstance(self.query, type(None)):
+                if not isinstance(self.query.whereclause, type(None)):
+                    wc = str(self.query.whereclause.compile(dialect=postgresql.dialect(),
+                             compile_kwargs={'literal_binds': True}))
+                    infilter = any([name in wc for name in names])
+
+        return infilter
+
+    #
+    # Methods specific to functional queries
+    #
+    def _run_functional_queries(self):
+        ''' Checks for functional filter conditions and runs them '''
+
+        if not self.search_filter:
+            return
 
         # check for additional modifier criteria
         if self._parsed.functions:
@@ -1186,27 +1541,19 @@ class Query(object):
             for fxn in self._parsed.functions:
                 # look up the function name in the marvinform dictionary
                 try:
-                    methodname = self.marvinform._param_fxn_lookup[fxn.fxnname]
+                    methodname = self._marvinform._param_fxn_lookup[fxn.fxn_name]
                 except KeyError as e:
-                    self.reset()
                     raise MarvinError('Could not set function: {0}'.format(e))
                 else:
                     # run the method
                     methodcall = self.__getattribute__(methodname)
                     methodcall(fxn)
 
-    def _check_dapall_query(self):
-        ''' Checks if the query is on the DAPall table.  '''
-
-        isdapall = self._check_query('dapall')
-        if isdapall:
-            self.query = self._group_by()
-
-    def _getGoodSpaxels(self):
+    def _get_good_spaxels(self):
         ''' Subquery - Counts the number of good spaxels
 
         Counts the number of good spaxels with binid != -1
-        Uses the junk.bindid_pk != 9999 since this is known and set.
+        Uses the spaxelprop.bindid_pk != 9999 since this is known and set.
         Removes need to join to the binid table
 
         Returns:
@@ -1214,20 +1561,20 @@ class Query(object):
                 An SQLalchemy subquery to be joined into the main query object
         '''
 
-        spaxelname = self._junkclass.__name__
-        bincount = self.session.query(self._junkclass.file_pk.label('binfile'),
-                                      func.count(self._junkclass.pk).label('goodcount'))
+        spaxelname = self._spaxelclass.__name__
+        bincount = self.session.query(self._spaxelclass.file_pk.label('binfile'),
+                                      func.count(self._spaxelclass.pk).label('goodcount'))
 
         # optionally add the filter if the table is SpaxelProp
         if 'CleanSpaxelProp' not in spaxelname:
-            bincount = bincount.filter(self._junkclass.binid != -1)
+            bincount = bincount.filter(self._spaxelclass.binid != -1)
 
         # group the results by file_pk
-        bincount = bincount.group_by(self._junkclass.file_pk).subquery('bingood', with_labels=True)
+        bincount = bincount.group_by(self._spaxelclass.file_pk).subquery('bingood', with_labels=True)
 
         return bincount
 
-    def _getCountOf(self, expression):
+    def _get_count_of(self, expression):
         ''' Subquery - Counts spaxels satisfying an expression
 
         Counts the number of spaxels of a given
@@ -1242,24 +1589,24 @@ class Query(object):
                 An SQLalchemy subquery to be joined into the main query object
 
         Example:
-            >>> expression = 'junk.emline_gflux_ha_6564 >= 25'
+            >>> expression = 'spaxelprop.emline_gflux_ha_6564 >= 25'
         '''
 
         # parse the expression into name, operator, value
-        param, ops, value = self._parseExpression(expression)
+        param, ops, value = self._parse_expression(expression)
         # look up the InstrumentedAttribute, Operator, and convert Value
-        attribute = self.marvinform._param_form_lookup.mapToColumn(param)
+        attribute = self._marvinform._param_form_lookup.mapToColumn(param)
         op = opdict[ops]
         value = float(value)
         # Build the subquery
-        valcount = self.session.query(self._junkclass.file_pk.label('valfile'),
-                                      (func.count(self._junkclass.pk)).label('valcount')).\
+        valcount = self.session.query(self._spaxelclass.file_pk.label('valfile'),
+                                      (func.count(self._spaxelclass.pk)).label('valcount')).\
             filter(op(attribute, value)).\
-            group_by(self._junkclass.file_pk).subquery('goodhacount', with_labels=True)
+            group_by(self._spaxelclass.file_pk).subquery('goodhacount', with_labels=True)
 
         return valcount
 
-    def getPercent(self, fxn, **kwargs):
+    def _get_percent(self, fxn, **kwargs):
         ''' Query - Computes count comparisons
 
         Retrieves the number of objects that have satisfy a given expression
@@ -1267,7 +1614,7 @@ class Query(object):
         Parameter Operand Value. This function is mapped to
         the "npergood" filter name.
 
-        Syntax: fxnname(expression) operator value
+        Syntax: fxn_name(expression) operator value
 
         Parameters:
             fxn (str):
@@ -1282,51 +1629,75 @@ class Query(object):
             >>> 20% of their (good) spaxels.
         '''
 
+        # get the appropriate SpaxelProp ModelClass
+        self._spaxelclass = self._marvinform._param_form_lookup['spaxelprop.file'].Meta.model
+
         # parse the function into name, condition, operator, and value
-        name, condition, ops, value = self._parseFxn(fxn)
+        name, condition, ops, value = self._parse_fxn(fxn)
         percent = float(value) / 100.
         op = opdict[ops]
 
         # Retrieve the necessary subqueries
-        bincount = self._getGoodSpaxels()
-        valcount = self._getCountOf(condition)
+        bincount = self._get_good_spaxels()
+        valcount = self._get_count_of(condition)
 
         # Join to the main query
-        self.query = self.query.join(bincount, bincount.c.binfile == self._junkclass.file_pk).\
-            join(valcount, valcount.c.valfile == self._junkclass.file_pk).\
+        self.query = self.query.join(bincount, bincount.c.binfile == self._spaxelclass.file_pk).\
+            join(valcount, valcount.c.valfile == self._spaxelclass.file_pk).\
             filter(op(valcount.c.valcount, percent * bincount.c.goodcount))
 
-        # Group the results by main defaultdatadb parameters,
-        # so as not to include all spaxels
-        newdefs = [d for d in self.defaultparams if 'spaxelprop' not in d]
+        # Group the results by main default datadb parameters, so as not to include all spaxels
+        newdefs = [d for d in self.default_params if 'spaxelprop' not in d]
         self.query = self._group_by(params=newdefs)
-        # newdefaults = self.marvinform._param_form_lookup.mapToColumn(newdefs)
-        # self.params = newdefs
-        # self.query = self.query.from_self(*newdefaults).group_by(*newdefaults)
 
-    def _parseFxn(self, fxn):
+    def _parse_fxn(self, fxn):
         ''' Parse a fxn condition '''
-        return fxn.fxnname, fxn.fxncond, fxn.op, fxn.value
+        return fxn.fxn_name, fxn.condition, fxn.operator, fxn.value
 
-    def _parseExpression(self, expr):
+    def _parse_expression(self, expr):
         ''' Parse an expression '''
         return expr.fullname, expr.op, expr.value
 
-    def _checkParsed(self):
-        ''' Check the boolean parsed object
+    def _check_dapall_query(self):
+        ''' Checks if the query is on the DAPall table, and regroup the parameters plateifu'''
 
-            check for function conditions vs normal.  This should be moved
-            into SQLalchemy Boolean Search
+        isdapall = self._check_query('dapall')
+        # if isdapall:
+        #     self.query = self._group_by()
+
+    def _radial_query(self, fxn, **kwargs):
+        ''' Runs a radial cone search around an RA, Dec
+
+        Performs a radial cone search around an RA, Dec point
+        within some specified radial distance in units of degrees.
+
+        Syntax: radial(ra, dec, radius)
+
+        Parameters:
+            fxn (str):
+                The function condition used in the query filter
+
+        Example:
+            >>> fxn = 'radial(232.5447, 48.6902, 1)'
+            >>> Syntax: radial() - function name
+            >>>         radial(ra, dec, radius)
+            >>>
+            >>> Select objects that are within 1 degree of
+            >>> RA, Dec = (232.5447, 48.6902)
+
         '''
 
-        # Triggers for only one filter and it is a function condition
-        if hasattr(self._parsed, 'fxn'):
-            self._parsed.functions = [self._parsed]
+        # extract the RA, Dec and search radius
+        ra, dec = map(float, (fxn.coords))
+        radius = float(fxn.value)
 
-        # Checks for shortcut names and replaces them in params
-        # now redundant after pre-check on searchfilter
-        for key, val in self._parsed.params.items():
-            if key in self.marvinform._param_form_lookup._nameShortcuts.keys():
-                newkey = self.marvinform._param_form_lookup._nameShortcuts[key]
-                self._parsed.params.pop(key)
-                self._parsed.params.update({newkey: val})
+        # add RA, Dec as returned columns
+        self._add_columns(['cube.ra', 'cube.dec'])
+
+        # Join to the main query
+        cone_filter = func.q3c_radial_query(marvindb.datadb.Cube.ra, marvindb.datadb.Cube.dec, ra, dec, radius)
+        self.query = self.query.filter(cone_filter)
+
+
+
+

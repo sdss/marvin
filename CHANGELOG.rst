@@ -7,6 +7,7 @@ Marvin's Change Log
 Breaking changes
 ^^^^^^^^^^^^^^^^
 - Removed ``Bin`` class. Bin information is now available on a per-quantity basis (:issue:`109`). See :ref:`What's new? <whats-new>` and documentation for details.
+- Syntax on the inputs to the ``Query`` and ``Results`` tools has been changed.
 
 Added
 ^^^^^
@@ -25,6 +26,8 @@ Added
 - New ``Bundle`` and ``Cutout`` utility classes
 - New ``MMAMixIn`` for providing multi-modal data access
 - ``qual_flag`` and ``pixmask_flag`` are now stored in the datamodel (:issue:`479,482`).
+- ``Query`` tool now accepts a new ``targets`` and ``quality`` keyword argument which enables querying on target or quality maskbit labels. (:issue:`485`)
+- Added a new API route for streaming large query results.  This uses a generator to stream large results back to the client to minimize memory usage and bulk responses.
 
 Changed
 ^^^^^^^
@@ -44,6 +47,7 @@ Changed
 - The name of the channel is now shown in the ``Property`` description (:issue:`424`).
 - Replaced inconsistent parameter ``model`` in `~marvin.tools.maps.Maps.getSpaxel`. Use ``models`` instead.
 - MarvinError now accepts an optional `ignore_git` keyword to locally turn off the git addition to the message
+- Using the `return_all` keyword in ``Query`` or `getAll` in ``Results`` now calls the streaming API route instead.
 
 Fixed
 ^^^^^
@@ -69,6 +73,7 @@ Refactored
 - Reimplemented `~marvin.tools.mixins.aperture.GetApertureMixIn.getAperture` as a mixin using photutils apertures (:issue:`3,315`).
 - Reimplemented `~marvin.tools.rss.RSS` as a list of `~marvin.tools.rss.RSSFiber` objects (:issue:`27,504`).
 - Moved pieces of MarvinToolsClass into `marvin.tools.mixins`.
+- Reimplemented `~marvin.tools.query.Query` to remove local query dependencies from remote mode usage.
 
 
 [2.2.5] - 2018/04/26

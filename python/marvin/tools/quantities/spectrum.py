@@ -6,7 +6,7 @@
 # @Filename: spectrum.py
 # @License: BSD 3-clause (http://www.opensource.org/licenses/BSD-3-Clause)
 #
-# @Last modified by: José Sánchez-Gallego (gallegoj@uw.edu)
+# @Last modified by:   Brian Cherinka
 # @Last modified time: 2018-07-21 16:43:21
 
 
@@ -195,11 +195,11 @@ class Spectrum(Quantity, QuantityMixIn):
         if use_mask:
             value = self.masked
             wave = np.ma.array(self.wavelength.value, mask=donotuse_mask)
-            std = self.std.value
+            std = self.std.value if self.std else None
         else:
             value = self.value
             wave = self.wavelength.value
-            std = np.ma.array(self.std.value, mask=donotuse_mask)
+            std = np.ma.array(self.std.value, mask=donotuse_mask) if self.std else None
 
         ax.plot(wave, value, **kwargs)
 

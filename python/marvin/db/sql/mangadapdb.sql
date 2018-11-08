@@ -256,6 +256,18 @@ CREATE INDEX CONCURRENTLY emline6_gflux_sii_idx ON mangadapdb.spaxelprop6 using 
 CREATE INDEX CONCURRENTLY emline6_gflux_oii_idx ON mangadapdb.spaxelprop6 using BTREE(emline_gflux_oiid_3728);
 CREATE INDEX CONCURRENTLY emline6_gflux_nii_idx ON mangadapdb.spaxelprop6 using BTREE(emline_gflux_nii_6585);
 
+CREATE INDEX CONCURRENTLY binid7_idx ON mangadapdb.spaxelprop7 using BTREE(binid);
+CREATE INDEX CONCURRENTLY file7_pk_idx ON mangadapdb.spaxelprop7 using BTREE(file_pk);
+CREATE INDEX CONCURRENTLY spaxel7_index_idx ON mangadapdb.spaxelprop7 using BTREE(spaxel_index);
+create index concurrently spx7_x_idx on mangadapdb.spaxelprop7 using btree(x);
+create index concurrently spx7_y_idx on mangadapdb.spaxelprop7 using btree(y);
+CREATE INDEX CONCURRENTLY emline7_gflux_ha_idx ON mangadapdb.spaxelprop7 using BTREE(emline_gflux_ha_6564);
+CREATE INDEX CONCURRENTLY emline7_gflux_hb_idx ON mangadapdb.spaxelprop7 using BTREE(emline_gflux_hb_4862);
+CREATE INDEX CONCURRENTLY emline7_gflux_oiii_idx ON mangadapdb.spaxelprop7 using BTREE(emline_gflux_oiii_5008);
+CREATE INDEX CONCURRENTLY emline7_gflux_sii_idx ON mangadapdb.spaxelprop7 using BTREE(emline_gflux_sii_6718);
+CREATE INDEX CONCURRENTLY emline7_gflux_oii_idx ON mangadapdb.spaxelprop7 using BTREE(emline_gflux_oiid_3728);
+CREATE INDEX CONCURRENTLY emline7_gflux_nii_idx ON mangadapdb.spaxelprop7 using BTREE(emline_gflux_nii_6585);
+
 CREATE INDEX CONCURRENTLY mc_file_pk_idx ON mangadapdb.modelcube using BTREE(file_pk);
 CREATE INDEX CONCURRENTLY rc_mc_pk_idx ON mangadapdb.redcorr using BTREE(modelcube_pk);
 CREATE INDEX CONCURRENTLY mc_pk_idx ON mangadapdb.modelspaxel using BTREE(modelcube_pk);
@@ -360,6 +372,8 @@ CREATE INDEX CONCURRENTLY dapall_file_pk_idx ON mangadapdb.dapall using BTREE(fi
 -- CREATE INDEX CONCURRENTLY clean_binid7_pk_idx ON mangadapdb.cleanspaxelprop7 using BTREE(binid);
 -- CREATE INDEX CONCURRENTLY clean_file7_pk_idx ON mangadapdb.cleanspaxelprop7 using BTREE(file_pk);
 -- CREATE INDEX CONCURRENTLY clean_spaxel7_index_idx ON mangadapdb.cleanspaxelprop7 using BTREE(spaxel_index);
+-- create index concurrently clean_spx7_x_idx on mangadapdb.cleanspaxelprop7 using btree(x);
+-- create index concurrently clean_spx7_y_idx on mangadapdb.cleanspaxelprop7 using btree(y);
 -- CREATE INDEX CONCURRENTLY clean_emline7_gflux_ha_idx ON mangadapdb.cleanspaxelprop7 using BTREE(emline_gflux_ha_6564);
 -- CREATE INDEX CONCURRENTLY clean_emline7_gflux_hb_idx ON mangadapdb.cleanspaxelprop7 using BTREE(emline_gflux_hb_4862);
 -- CREATE INDEX CONCURRENTLY clean_emline7_gflux_oiii_idx ON mangadapdb.cleanspaxelprop7 using BTREE(emline_gflux_oiii_5008);

@@ -207,7 +207,7 @@ def set_sasurl(loc='local', port=None):
     config.switchSasUrl(loc, test=istest, port=port)
     global URLMAP
     if not URLMAP:
-        response = Interaction('api/general/getroutemap', request_type='get', auth='netrc')
+        response = Interaction('/marvin/api/general/getroutemap', request_type='get', auth='netrc')
         config.urlmap = response.getRouteMap()
         URLMAP = config.urlmap
 
@@ -639,7 +639,7 @@ def query(request, monkeyauth, release, mode, db):
     if mode == 'local' and not db:
         pytest.skip('cannot use queries in local mode without a db')
     searchfilter = request.param if hasattr(request, 'param') else None
-    q = Query(searchfilter=searchfilter, mode=mode, release=release)
+    q = Query(search_filter=searchfilter, mode=mode, release=release)
     q.expdata = data
     yield q
     config.forceDbOn()
