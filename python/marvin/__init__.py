@@ -6,6 +6,8 @@ and a REST-like API, under tools/, web/, and api/, respectively.  Core functiona
 of Marvin stems from Marvin's Brain.
 """
 
+# isort:skip_file
+
 import os
 import re
 import warnings
@@ -98,6 +100,9 @@ class MarvinConfig(object):
         self.use_sentry = True
         self.add_github_message = True
         self._allowed_releases = {}
+
+        # What access modes provide access to the DAP queries.
+        self._dap_query_modes = []
 
         # perform some checks
         self._load_defaults()

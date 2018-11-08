@@ -10,29 +10,40 @@ Revision History:
     Last Modified On: 2016-04-26 10:42:12 by Brian
 
 '''
-from __future__ import print_function, division
-from flask import Blueprint, render_template, session as current_session, request, jsonify
-from flask_classful import route
-from brain.api.base import processRequest
-from marvin.core.exceptions import MarvinError
-from marvin.tools.query import doQuery, Query
-from marvin.utils.datamodel.query.forms import MarvinForm
-from marvin.web.controllers import BaseWebView
-from marvin.api.base import arg_validate as av
-from marvin.utils.datamodel.query.base import query_params, bestparams
-from wtforms import ValidationError
-from marvin.utils.general import getImagesByList
-from marvin.web.web_utils import buildImageDict
-from marvin.web.extensions import limiter
+from __future__ import division, print_function
+
 import random
+
+from brain.api.base import processRequest
+from flask import Blueprint, jsonify, render_template, request
+from flask import session as current_session
+from flask_classful import route
+from wtforms import ValidationError
+
+from marvin import config
+from marvin.api.base import arg_validate as av
+from marvin.core.exceptions import MarvinError
+from marvin.tools.query import Query, doQuery
+from marvin.utils.datamodel.query.base import bestparams, query_params
+from marvin.utils.datamodel.query.forms import MarvinForm
+from marvin.utils.general import getImagesByList
+from marvin.web.controllers import BaseWebView
+from marvin.web.extensions import limiter
+from marvin.web.web_utils import buildImageDict
+
 
 search = Blueprint("search_page", __name__)
 
 
 def getRandomQuery():
     ''' Return a random query from this list '''
-    samples = ['nsa.z < 0.02', 'cube.plate < 8000', 'haflux > 25',
-               'nsa.sersic_logmass > 9.5 and nsa.sersic_logmass < 11', 'emline_ew_ha_6564 > 3']
+
+    samples = ['nsa.z < 0.02', 'cube.plate < 8000',
+               'nsa.sersic_logmass > 9.5 and nsa.sersic_logmass < 11']
+
+    if config.access in config._dap_query_modes:
+        samples += ['haflux > 25', 'emline_ew_ha_6564 > 3']
+
     q = random.choice(samples)
     return q
 
@@ -101,6 +112,8 @@ class Search(BaseWebView):
                 try:
                     q, res = doQuery(search_filter=searchvalue, release=self._release, return_params=returnparams)
                 except MarvinError as e:
+                    self.search['errmsg'] = 'Could not perform query: {0}'.format(e)
+                except NotImplementedError as e:  # DAP queries disabled
                     self.search['errmsg'] = 'Could not perform query: {0}'.format(e)
                 else:
                     self.search['filter'] = q.search_filter
@@ -250,4 +263,3 @@ class Search(BaseWebView):
 
 
 Search.register(search)
-

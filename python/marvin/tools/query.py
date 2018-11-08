@@ -1018,7 +1018,13 @@ class Query(object):
 
         # check if the query filter is against the DAP
         if self._check_for(self.filter_params.keys(), schema='dapdb'):
-            self._check_dapall_query()
+
+            if config.access not in config._dap_query_modes:
+                raise NotImplementedError(
+                    'DAP spaxel queries are disabled in this version. '
+                    'We plan to reintroduce this feature in the future.')
+            else:
+                self._check_dapall_query()
 
     def _set_query_parameters(self):
         ''' Creates a list of database ModelClasses from a list of parameter names '''

@@ -5,8 +5,8 @@
 #
 # @Author: Brian Cherinka
 # @Date:   2017-08-22 22:43:15
-# @Last modified by:   Brian Cherinka
-# @Last modified time: 2017-11-14 11:11:27
+# @Last modified by: José Sánchez-Gallego (gallegoj@uw.edu)
+# @Last modified time: 2018-11-08 11:18:15
 
 from __future__ import absolute_import, division, print_function
 
@@ -22,11 +22,14 @@ import yamlordereddictloader
 from astropy.table import Table
 from fuzzywuzzy import fuzz, process
 from sqlalchemy_utils import get_hybrid_properties
+
 from marvin import config
 from marvin.core.exceptions import MarvinError, MarvinUserWarning
 from marvin.utils.datamodel import DataModelList
 from marvin.utils.datamodel.maskbit import get_maskbits
 from marvin.utils.general.structs import FuzzyList
+
+
 if config.db:
     from marvin.utils.datamodel.query.forms import MarvinForm
 else:
@@ -228,7 +231,13 @@ class QueryDataModel(object):
     def add_to_group(self, group, value=None):
         ''' Add free-floating Parameters into a Group '''
 
-        thegroup = self._groups == group
+        # This helps in case that a group does not exist in the parameters,
+        # for instance because we loaded the metadata query params.
+        try:
+            thegroup = self._groups == group
+        except ValueError:
+            return
+
         keys = []
         allkeys = copy_mod.copy(self._keys)
         if value is None:
@@ -851,8 +860,14 @@ class QueryParameter(object):
 # # Get the Common Parameters from the filelist
 
 def get_params():
-    bestpath = os.path.join(os.path.dirname(os.path.abspath(__file__)), '../../../data',
-                            'query_params_best.cfg')
+
+    if config.access not in config._dap_query_modes:
+        file = 'query_params_metadata.cfg'
+    else:
+        file = 'query_params_best.cfg'
+
+    bestpath = os.path.join(os.path.dirname(os.path.abspath(__file__)), '../../../data', file)
+
     if os.path.isfile(bestpath):
         with open(bestpath, 'r') as stream:
             bestparams = yaml.load(stream, Loader=yamlordereddictloader.Loader)
