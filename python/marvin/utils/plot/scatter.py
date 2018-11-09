@@ -6,14 +6,12 @@
 # @Author: Brian Cherinka
 # @Date:   2017-08-21 17:11:22
 # @Last modified by:   Brian Cherinka
-# @Last Modified time: 2018-10-17 10:33:41
+# @Last Modified time: 2018-11-08 16:21:30
 
 from __future__ import print_function, division, absolute_import
 from marvin import config
 from marvin.utils.datamodel.dap import datamodel
 from marvin.core.exceptions import MarvinUserWarning
-from marvin.utils.datamodel.query.base import QueryParameter
-from marvin.utils.datamodel.dap.base import Property
 from marvin.utils.general import invalidArgs, isCallableWithArgs
 from matplotlib.gridspec import GridSpec
 from collections import defaultdict, OrderedDict
@@ -127,6 +125,9 @@ def _get_dap_datamodel_property_label(quantity):
 
 def _get_axis_label(column, axis=''):
     ''' Create an axis label '''
+
+    from marvin.utils.datamodel.query.base import QueryParameter
+    from marvin.utils.datamodel.dap.base import Property
 
     if isinstance(column, QueryParameter):
         if hasattr(column, 'property') and column.property:

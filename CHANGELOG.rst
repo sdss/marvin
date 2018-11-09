@@ -62,10 +62,12 @@ Fixed
 - Issue :issue:`423` - adding marvin.yml documentation
 - Issue :issue:`431` - adding login documentation
 - Issue :issue:`151` - adding web spectrum tooltips
+- Issue :issue:`548` - failed to retrieve ModelCube extension in remote mode
 - Fixed typo by in method name ``Spectrum.derredden -> Spectrum.deredden``.
 - Fixed `#305 <https://github.com/sdss/marvin/issues/305>`_ - adding ivar propogation for np.log10(Map)
 - A bug when explicitly returning default parameters in a query (:issue:`484`)
 - Fixed `#510 <https://github.com/sdss/marvin/issues/510>`_ - fixes incorrect conversion to sky coordinates in map plotting.
+- Fixed `#563 <https://github.com/sdss/marvin/issues/563>`_ - fail retrieving Query datamodels in Python 3.6+.
 - Fixes bug with sasurl not properly being set to api.sdss.org on initial import
 
 Refactored
