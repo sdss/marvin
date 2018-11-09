@@ -8,6 +8,7 @@ Breaking changes
 ^^^^^^^^^^^^^^^^
 - Removed ``Bin`` class. Bin information is now available on a per-quantity basis (:issue:`109`). See :ref:`What's new? <whats-new>` and documentation for details.
 - Syntax on the inputs to the ``Query`` and ``Results`` tools has been changed.
+- DAP spaxel queries have been disabled due to performance issues. We expect to bring them back soon. Metadata queries (those querying the NSA or DAPall tables) are still available.
 
 Added
 ^^^^^
