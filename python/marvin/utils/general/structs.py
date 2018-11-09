@@ -6,13 +6,16 @@
 # @Filename: structs.py
 # @License: BSD 3-clause (http://www.opensource.org/licenses/BSD-3-Clause)
 #
-# @Last modified by:   Brian Cherinka
-# @Last modified time: 2018-08-11 20:20:17
+# @Last modified by: José Sánchez-Gallego (gallegoj@uw.edu)
+# @Last modified time: 2018-11-08 18:58:09
 
 
 from __future__ import absolute_import, division, print_function
 
+import gzip
+import tempfile
 from collections import OrderedDict
+from contextlib import contextmanager
 
 import six
 from fuzzywuzzy import fuzz as fuzz_fuzz
@@ -20,7 +23,7 @@ from fuzzywuzzy import process as fuzz_proc
 
 
 __ALL__ = ['FuzzyDict', 'Dotable', 'DotableCaseInsensitive', 'get_best_fuzzy',
-           'FuzzyList', 'string_folding_wrapper']
+           'FuzzyList', 'string_folding_wrapper', 'gunzip']
 
 
 class Dotable(dict):
@@ -285,3 +288,15 @@ def string_folding_wrapper(results, keys=None):
             folder.fold_string(row.__getattribute__(key))
             for key in keys
         )
+
+
+@contextmanager
+def gunzip(filename):
+
+    temp_file = tempfile.NamedTemporaryFile(mode='wb')
+    temp_file.file.write(gzip.GzipFile(filename).read())
+
+    try:
+        yield temp_file
+    finally:
+        temp_file.close()
