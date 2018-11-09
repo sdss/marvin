@@ -7,7 +7,7 @@
 # @License: BSD 3-clause (http://www.opensource.org/licenses/BSD-3-Clause)
 #
 # @Last modified by: José Sánchez-Gallego (gallegoj@uw.edu)
-# @Last modified time: 2018-11-08 18:58:09
+# @Last modified time: 2018-11-08 19:01:24
 
 
 from __future__ import absolute_import, division, print_function
@@ -292,6 +292,7 @@ def string_folding_wrapper(results, keys=None):
 
 @contextmanager
 def gunzip(filename):
+    """Context manager than gunzips a file temporarily."""
 
     temp_file = tempfile.NamedTemporaryFile(mode='wb')
     temp_file.file.write(gzip.GzipFile(filename).read())
