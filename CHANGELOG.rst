@@ -48,6 +48,7 @@ Changed
 - Replaced inconsistent parameter ``model`` in `~marvin.tools.maps.Maps.getSpaxel`. Use ``models`` instead.
 - MarvinError now accepts an optional `ignore_git` keyword to locally turn off the git addition to the message
 - Using the `return_all` keyword in ``Query`` or `getAll` in ``Results`` now calls the streaming API route instead.
+- When `~marvin.tool.cube.Cube` or `~marvin.tool.modelcube.ModelCube` are instantiated from file, gunzip the file to a temporary location to speed up subsequent access (:issue:`525`).
 
 Fixed
 ^^^^^
