@@ -584,10 +584,10 @@ class Cube(MarvinToolsClass, NSAMixIn, GetApertureMixIn):
     def getMaps(self, **kwargs):
         """Retrieves the DAP :class:`~marvin.tools.maps.Maps` for this cube.
 
-        If called without additional ``kwargs``, :func:`getMaps` will initilise
-        the :class:`~marvin.tools.maps.Maps` using the ``plateifu`` of this
-        :class:`~marvin.tools.cube.Cube`. Otherwise, the ``kwargs`` will be
-        passed when initialising the :class:`~marvin.tools.maps.Maps`.
+        If called without additional ``kwargs``, :func:`getMaps` will
+        initialise the :class:`~marvin.tools.maps.Maps` using the ``plateifu``
+        of this :class:`~marvin.tools.cube.Cube`. Otherwise, the ``kwargs``
+        will be passed when initialising the :class:`~marvin.tools.maps.Maps`.
 
         """
 
@@ -595,5 +595,5 @@ class Cube(MarvinToolsClass, NSAMixIn, GetApertureMixIn):
             kwargs.update({'plateifu': self.plateifu, 'release': self._release})
 
         maps = marvin.tools.maps.Maps(**kwargs)
-        maps._cube = self
+
         return maps
