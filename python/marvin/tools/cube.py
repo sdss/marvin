@@ -6,8 +6,8 @@
 # @Filename: cube.py
 # @License: BSD 3-clause (http://www.opensource.org/licenses/BSD-3-Clause)
 #
-# @Last modified by:   Brian Cherinka
-# @Last modified time: 2018-08-12 04:35:22
+# @Last modified by: José Sánchez-Gallego (gallegoj@uw.edu)
+# @Last modified time: 2018-11-08 19:13:31
 
 
 from __future__ import absolute_import, division, print_function
@@ -26,7 +26,8 @@ import marvin.utils.general.general
 from marvin.core.exceptions import MarvinError, MarvinUserWarning
 from marvin.tools.quantities import DataCube, Spectrum
 from marvin.utils.datamodel.drp import datamodel
-from marvin.utils.general import FuzzyDict, get_nsa_data
+from marvin.utils.general import FuzzyDict, get_nsa_data, gunzip
+
 from .core import MarvinToolsClass
 from .mixins import GetApertureMixIn, NSAMixIn
 
@@ -176,7 +177,8 @@ class Cube(MarvinToolsClass, NSAMixIn, GetApertureMixIn):
             assert isinstance(data, fits.HDUList), 'data is not an HDUList object'
         else:
             try:
-                self.data = fits.open(self.filename)
+                with gunzip(self.filename) as gg:
+                    self.data = fits.open(gg.name)
             except (IOError, OSError) as err:
                 raise OSError('filename {0} cannot be found: {1}'.format(self.filename, err))
 
@@ -186,8 +188,7 @@ class Cube(MarvinToolsClass, NSAMixIn, GetApertureMixIn):
         self._check_file(self.data[0].header, self.data, 'Cube')
 
         self._wavelength = self.data['WAVE'].data
-        self._shape = (self.data['FLUX'].header['NAXIS2'],
-                       self.data['FLUX'].header['NAXIS1'])
+        self._shape = (self.header['NAXIS2'], self.header['NAXIS1'])
 
         self._do_file_checks(self)
 

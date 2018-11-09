@@ -6,8 +6,8 @@
 # @Filename: modelcube.py
 # @License: BSD 3-clause (http://www.opensource.org/licenses/BSD-3-Clause)
 #
-# @Last modified by:   Brian Cherinka
-# @Last modified time: 2018-08-12 13:35:11
+# @Last modified by: José Sánchez-Gallego (gallegoj@uw.edu)
+# @Last modified time: 2018-11-08 19:00:44
 
 
 from __future__ import absolute_import, division, print_function
@@ -27,7 +27,7 @@ import marvin.utils.general.general
 from marvin.core.exceptions import MarvinError
 from marvin.tools.quantities import DataCube, Map, Spectrum
 from marvin.utils.datamodel.dap import Model, datamodel
-from marvin.utils.general import FuzzyDict
+from marvin.utils.general import FuzzyDict, gunzip
 
 from .core import MarvinToolsClass
 from .mixins import DAPallMixIn, GetApertureMixIn, NSAMixIn
@@ -178,7 +178,8 @@ class ModelCube(MarvinToolsClass, NSAMixIn, DAPallMixIn, GetApertureMixIn):
             assert isinstance(self.data, fits.HDUList), 'data is not an HDUList object'
         else:
             try:
-                self.data = fits.open(self.filename)
+                with gunzip(self.filename) as gg:
+                    self.data = fits.open(gg.name)
             except IOError as err:
                 raise IOError('filename {0} cannot be found: {1}'.format(self.filename, err))
 
