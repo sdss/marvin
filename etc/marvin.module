@@ -80,7 +80,3 @@ module load inspection/trunk
 setenv [string toupper $product]_INI_FILE       $PRODUCT_DIR/python/marvin/web/uwsgi_conf_files/uwsgi_marvin_mangawork.ini
 setenv SAS_URL                                  https://sas.sdss.org
 setenv TRAC_URL                                 https://trac.sdss.org
-
-
-
-

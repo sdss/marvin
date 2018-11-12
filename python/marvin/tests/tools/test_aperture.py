@@ -7,12 +7,13 @@
 # @License: BSD 3-clause (http://www.opensource.org/licenses/BSD-3-Clause)
 #
 # @Last modified by: José Sánchez-Gallego (gallegoj@uw.edu)
-# @Last modified time: 2018-07-27 13:06:25
+# @Last modified time: 2018-11-08 19:41:10
 
 import numpy
 import pytest
 
 import marvin
+from marvin.tests.conftest import set_the_config
 
 
 # Inputs are [class, plateifu, release, coords,
@@ -40,6 +41,8 @@ def test_get_aperture(inputs, outputs):
 
     class_name, plateifu, release, coords, \
         aperture_params, aperture_type, coord_type, threshold = inputs
+
+    set_the_config(release)
 
     aperture_params = numpy.atleast_1d(aperture_params)
 

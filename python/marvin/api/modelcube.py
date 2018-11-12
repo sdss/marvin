@@ -10,20 +10,21 @@
 #       Initial version
 
 
-from __future__ import division
-from __future__ import print_function
+from __future__ import division, print_function
 
 import json
 import os
 
+from flask import Response, jsonify
 from flask_classful import route
-from flask import jsonify, Response
 
 from marvin import config
-from marvin.tools.modelcube import ModelCube
-from marvin.api.base import BaseView, arg_validate as av
+from marvin.api.base import BaseView
+from marvin.api.base import arg_validate as av
 from marvin.core.exceptions import MarvinError
-from marvin.utils.general import parseIdentifier, mangaid2plateifu
+from marvin.tools.modelcube import ModelCube
+from marvin.utils.general import mangaid2plateifu, parseIdentifier
+
 
 try:
     from sdss_access.path import Path
@@ -324,7 +325,7 @@ class ModelCubeView(BaseView):
             try:
                 model = modelcube.datamodel.from_fits_extension(modelcube_extension)
                 binid_data = modelcube.get_binid(model)
-                self.results['data'] = {'binid': binid_data.tolist()}
+                self.results['data'] = {'binid': binid_data.value.tolist()}
             except Exception as ee:
                 self.results['error'] = str(ee)
 

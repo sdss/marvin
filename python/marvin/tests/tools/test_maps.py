@@ -7,7 +7,7 @@
 # @License: BSD 3-clause (http://www.opensource.org/licenses/BSD-3-Clause)
 #
 # @Last modified by: José Sánchez-Gallego (gallegoj@uw.edu)
-# @Last modified time: 2018-08-06 12:12:16
+# @Last modified time: 2018-11-09 10:00:49
 
 
 from __future__ import absolute_import, division, print_function
@@ -27,8 +27,6 @@ from marvin.core.exceptions import MarvinError
 from marvin.tests import marvin_test_if
 from marvin.tools.maps import Maps
 from marvin.utils.datamodel.dap.base import Property
-
-from ..conftest import set_the_config
 
 
 def _assert_maps(maps, galaxy):
@@ -171,6 +169,9 @@ class TestMaps(object):
                         assert getattr(value, key) == getattr(value2, key)
 
                 elif isinstance(value, marvin.tools.cube.Cube):
+                    pass
+
+                elif attr in ['vacs']:
                     pass
 
                 elif (isinstance(value, list) and len(value) > 0 and

@@ -111,7 +111,7 @@ class Search(BaseWebView):
                 # try the query
                 try:
                     q, res = doQuery(search_filter=searchvalue, release=self._release, return_params=returnparams)
-                except MarvinError as e:
+                except (MarvinError, KeyError) as e:
                     self.search['errmsg'] = 'Could not perform query: {0}'.format(e)
                 except NotImplementedError as e:  # DAP queries disabled
                     self.search['errmsg'] = 'Could not perform query: {0}'.format(e)
