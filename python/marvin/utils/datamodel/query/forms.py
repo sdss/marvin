@@ -290,9 +290,10 @@ class ParamFormLookupDict(dict):
                     cut = {name.lower(): current.lower().replace('spaxelprop', spaxname)}
                     dapcut.update(cut)
 
-        # add junk shortcuts
-        junkcuts = {k.replace('spaxelprop', 'junk'): v for k, v in dapcut.items()}
-        dapcut.update(junkcuts)
+            # since for DRs spaxelprop may not be in the dictionary a la MPL4: SpaxelProp
+            # we need to add it in so the shortcut "spaxelprop" can correctly point to the right db param
+            if 'spaxelprop' not in dapcut and current:
+                dapcut.update({'spaxelprop': current.lower().replace('spaxelprop', spaxname)})
 
         # update the main dictionary
         self._tableShortcuts.update(dapcut)

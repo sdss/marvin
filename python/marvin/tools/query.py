@@ -6,7 +6,7 @@
 # @Author: Brian Cherinka
 # @Date:   2018-08-04 20:09:38
 # @Last modified by:   Brian Cherinka
-# @Last Modified time: 2018-10-17 14:07:33
+# @Last Modified time: 2018-11-12 16:25:22
 
 from __future__ import print_function, division, absolute_import, unicode_literals
 
@@ -1636,7 +1636,7 @@ class Query(object):
                 The function condition used in the query filter
 
         Example:
-            >>> fxn = 'npergood(junk.emline_gflux_ha_6564 > 25) >= 20'
+            >>> fxn = 'npergood(spaxelprop.emline_gflux_ha_6564 > 25) >= 20'
             >>> Syntax: npergood() - function name
             >>>         npergood(expression) operator value
             >>>
