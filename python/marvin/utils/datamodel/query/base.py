@@ -885,16 +885,21 @@ class QueryParameter(object):
 
 def get_params():
 
-    if config.access not in config._dap_query_modes:
-        file = 'query_params_metadata.cfg'
-    else:
-        file = 'query_params_best.cfg'
-
-    bestpath = os.path.join(os.path.dirname(os.path.abspath(__file__)), '../../../data', file)
+    bestpath = os.path.join(os.path.dirname(os.path.abspath(__file__)), '../../../data', 'query_params_best.cfg')
 
     if os.path.isfile(bestpath):
         with open(bestpath, 'r') as stream:
             bestparams = yaml.load(stream, Loader=yamlordereddictloader.Loader)
+
+        # remove DAP spaxel properties from the list
+        if config.access not in config._dap_query_modes:
+            b = bestparams.copy()
+            for grp, props in b.items():
+                props = [prop for prop in props if prop['table'] != 'spaxelprop']
+                bestparams[grp] = props
+                if not props:
+                    bestparams.pop(grp)
+
         return bestparams
     else:
         return None
