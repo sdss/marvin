@@ -6,7 +6,7 @@
 # @Author: Brian Cherinka
 # @Date:   2017-09-20 13:24:13
 # @Last modified by:   Brian Cherinka
-# @Last Modified time: 2018-11-13 12:37:09
+# @Last Modified time: 2018-11-13 13:09:14
 
 from __future__ import absolute_import, division, print_function
 
@@ -30,6 +30,7 @@ def groups():
 # exclude the DAP tables
 daptables = ['modelcube', 'modelspaxel', 'redcorr']
 if not config._allow_DAP_queries:
+    # add the spaxelprop table to list of things to remove
     daptables.append('spaxelprop')
 
 # MPL-4
@@ -47,6 +48,7 @@ MPL4 = QueryDataModel(release='MPL-4', groups=groups(), aliases=['MPL4', 'v1_5_1
 
 # list of tables to exclude
 if not config._allow_DAP_queries:
+    # remove the spaxelprop table from the list to re-include
     daptables.remove('spaxelprop')
 EX5 = set(EXCLUDE) - set(daptables) | set(['executionplan', 'current_default'])
 
