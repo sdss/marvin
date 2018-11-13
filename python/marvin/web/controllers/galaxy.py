@@ -10,25 +10,29 @@ Revision History:
     Last Modified On: 2016-04-08 14:31:34 by Brian
 
 '''
-from __future__ import print_function
-from __future__ import division
-from flask import Blueprint, render_template, session as current_session, request, jsonify
-from flask_classful import route
-import marvin
-from marvin.utils.general.general import (convertImgCoords, parseIdentifier, getDefaultMapPath,
-                                          getDapRedux, _db_row_to_dict, target_status)
+from __future__ import division, print_function
+
+import os
+
+import numpy as np
 from brain.utils.general.general import convertIvarToErr
+from flask import Blueprint, jsonify, render_template, request
+from flask import session as current_session
+from flask_classful import route
+
+import marvin
+from marvin.api.base import arg_validate as av
+from marvin.core import marvin_pickle
+from marvin.core.caching_query import FromCache
 from marvin.core.exceptions import MarvinError
 from marvin.tools.cube import Cube
 from marvin.utils.datamodel.dap import datamodel
+from marvin.utils.general.general import (_db_row_to_dict, convertImgCoords, getDapRedux,
+                                          getDefaultMapPath, parseIdentifier, target_status)
 from marvin.utils.general.maskbit import Maskbit
 from marvin.web.controllers import BaseWebView
 from marvin.web.extensions import cache
-from marvin.api.base import arg_validate as av
-from marvin.core.caching_query import FromCache
-from marvin.core import marvin_pickle
-import os
-import numpy as np
+
 
 try:
     from sdss_access.path import Path
@@ -318,7 +322,9 @@ class Galaxy(BaseWebView):
                     self.galaxy['image'] = sdss_path.url('mangaimage', drpver=cube._drpver, plate=cube.plate, ifu=cube.ifu, dir3d=cube.dir3d)
                     cubelink = sdss_path.url('mangacube', drpver=cube._drpver, plate=cube.plate, ifu=cube.ifu)
                     rsslink = sdss_path.url('mangarss', drpver=cube._drpver, plate=cube.plate, ifu=cube.ifu)
-                    maplink = getDefaultMapPath(release=self._release, plate=cube.plate, ifu=cube.ifu, daptype='SPX-GAU-MILESHC', mode='MAPS')
+                    daptype = 'HYB10' if is_public or int(self._release.split('-')[1]) >= 6 else 'SPX'
+                    maplink = getDefaultMapPath(release=self._release, plate=cube.plate, ifu=cube.ifu,
+                                                daptype=daptype + '-GAU-MILESHC', mode='MAPS')
                     self.galaxy['links'] = {'cube': cubelink, 'rss': rsslink, 'map': maplink}
                 else:
                     self.galaxy['image'] = cube.data.image
