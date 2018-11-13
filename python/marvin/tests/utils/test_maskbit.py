@@ -5,15 +5,15 @@
 #
 # @Author: Brett Andrews <andrews>
 # @Date:   2017-10-06 10:10:00
-# @Last modified by:   andrews
-# @Last modified time: 2018-01-06 12:01:68
+# @Last modified by: José Sánchez-Gallego (gallegoj@uw.edu)
+# @Last modified time: 2018-11-12 21:26:29
 
 
-from __future__ import division, print_function, absolute_import
+from __future__ import absolute_import, division, print_function
 
-import pytest
-import pandas as pd
 import numpy as np
+import pandas as pd
+import pytest
 
 from marvin.utils.general.maskbit import Maskbit
 
@@ -157,4 +157,14 @@ class TestMaskbit(object):
         mb = Maskbit(name=name, schema=schema, description=description)
         mb.mask = mask
         actual = mb.get_mask(labels, mask=custom_mask, dtype=bool)
+        assert (actual == expected).all()
+
+    @pytest.mark.parametrize('labels, dtype, expected',
+                             [('BITFAKE', bool, np.array([[False, False], [False, False]])),
+                              ('BITFAKE', int, np.array([[0, 0], [0, 0]]))])
+    def test_get_mask_nonpresent_label(self, labels, dtype, expected):
+
+        mb = Maskbit(name=name, schema=schema, description=description)
+        mb.mask = mask
+        actual = mb.get_mask(labels, mask=custom_mask, dtype=dtype)
         assert (actual == expected).all()
