@@ -41,7 +41,7 @@ def getRandomQuery():
     samples = ['nsa.z < 0.02', 'cube.plate < 8000',
                'nsa.sersic_logmass > 9.5 and nsa.sersic_logmass < 11']
 
-    if config.access in config._dap_query_modes:
+    if config._allow_DAP_queries:
         samples += ['haflux > 25', 'emline_ew_ha_6564 > 3']
 
     q = random.choice(samples)
