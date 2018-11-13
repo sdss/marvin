@@ -892,7 +892,8 @@ def get_params():
             bestparams = yaml.load(stream, Loader=yamlordereddictloader.Loader)
 
         # remove DAP spaxel properties from the list
-        if config.access not in config._dap_query_modes:
+        #if config.access not in config._dap_query_modes:
+        if not config._allow_DAP_queries:
             b = bestparams.copy()
             for grp, props in b.items():
                 props = [prop for prop in props if prop['table'] != 'spaxelprop']
