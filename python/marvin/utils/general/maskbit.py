@@ -6,7 +6,7 @@
 # @Author: Brett Andrews <andrews>
 # @Date:   2017-10-06 10:10:00
 # @Last modified by: José Sánchez-Gallego (gallegoj@uw.edu)
-# @Last modified time: 2018-11-12 19:10:03
+# @Last modified time: 2018-11-12 21:19:45
 
 from __future__ import absolute_import, division, print_function
 
@@ -326,9 +326,8 @@ class Maskbit(object):
         bit_values = []
         for label in labels:
             bit = self.schema.bit[self.schema.label == label]
-            if bit.empty:
-                continue
-            bit_values.append(bit.values[0])
+            if not bit.empty:
+                bit_values.append(bit.values[0])
 
         return np.sum([2**value for value in bit_values])
 
