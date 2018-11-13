@@ -101,8 +101,8 @@ class MarvinConfig(object):
         self.add_github_message = True
         self._allowed_releases = {}
 
-        # What access modes provide access to the DAP queries.
-        self._dap_query_modes = []
+        # Allow DAP queries
+        self._allow_DAP_queries = False
 
         # perform some checks
         self._load_defaults()

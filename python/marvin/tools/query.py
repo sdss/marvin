@@ -1028,7 +1028,7 @@ class Query(object):
                       if 'dapdb' in c.class_.__table__.schema]
             all_dapall = all([tt == 'dapall' for tt in tables])
 
-            if not all_dapall and config.access not in config._dap_query_modes:
+            if not all_dapall and not config._allow_DAP_queries:
                 raise NotImplementedError(
                     'DAP spaxel queries are disabled in this version. '
                     'We plan to reintroduce this feature in the future.')

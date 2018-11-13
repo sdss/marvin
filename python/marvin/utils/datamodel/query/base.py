@@ -5,8 +5,8 @@
 #
 # @Author: Brian Cherinka
 # @Date:   2017-08-22 22:43:15
-# @Last modified by:   Brian Cherinka
-# @Last modified time: 2018-11-09 14:47:34
+# @Last modified by: José Sánchez-Gallego (gallegoj@uw.edu)
+# @Last modified time: 2018-11-12 17:06:25
 
 from __future__ import absolute_import, division, print_function
 
@@ -885,7 +885,7 @@ class QueryParameter(object):
 
 def get_params():
 
-    if config.access not in config._dap_query_modes:
+    if not config._allow_DAP_queries:
         file = 'query_params_metadata.cfg'
     else:
         file = 'query_params_best.cfg'
