@@ -122,7 +122,7 @@ class MMAMixIn(object, six.with_metaclass(abc.ABCMeta)):
 
         self.datamodel = None
         self._set_datamodel()
-
+        print(self.mode)
         if self.mode == 'local':
             self._doLocal()
         elif self.mode == 'remote':
