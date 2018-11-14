@@ -35,7 +35,7 @@ Marvin Tools provide:
 Getting started
 ---------------
 
-We call Marvin galaxy Tools to the four main classes (`~cube.Cube`, `~rss.RSS`, `~maps.Maps`, and `~modelcube.ModelCube`) associated to the analogous DRP and DAP data products, the `quantities <marvin-quantities>` representing multidimensional data, and a variety of utilities and mixins that provide additional functionality. Sub-region galaxy tools (`~spaxel.Spaxel` and `~spaxel.Bin`) are explained `in their own section <marvin-subregion-tools>`. The four main Tools classes inherit from `~tools.core.MarvinToolsClass` and thus much of their functionality and logic is shared. In this section we will prominently use the `~cube.Cube` but most of what we explain here also applies to the remaining Tools.
+We call Marvin galaxy Tools to the four main classes (`~cube.Cube`, `~rss.RSS`, `~maps.Maps`, and `~modelcube.ModelCube`) associated to the analogous DRP and DAP data products, the `quantities <marvin-quantities>` representing multidimensional data, and a variety of utilities and mixins that provide additional functionality. Sub-region galaxy tools (`~spaxel.Spaxel` and binning information) are explained :ref:`in their own section <marvin-subregion-tools>`. The four main Tools classes inherit from `~tools.core.MarvinToolsClass` and thus much of their functionality and logic is shared. In this section we will prominently use the `~cube.Cube` but most of what we explain here also applies to the remaining Tools.
 
 All the Tools classes can be accessed from the :ref:`marvin.tools <marvin-tools-ref>` module. Let's load a DRP Cube ::
 
