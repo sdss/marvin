@@ -571,13 +571,15 @@ class MarvinConfig(object):
         ''' Force the database to be turned off '''
         config.db = None
         from marvin import marvindb
-        marvindb.forceDbOff()
+        if marvindb:
+            marvindb.forceDbOff()
 
     def forceDbOn(self):
         ''' Force the database to be reconnected '''
         self._setDbConfig()
         from marvin import marvindb
-        marvindb.forceDbOn(dbtype=self.db)
+        if marvindb:
+            marvindb.forceDbOn(dbtype=self.db)
 
     def _addExternal(self, name):
         ''' Adds an external product into the path '''
