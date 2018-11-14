@@ -122,7 +122,7 @@ class QueryDataModel(object):
         # make the call
         if url:
             try:
-                ii = Interaction(url, params={'release': self.release, 'paramdisplay': 'all'})
+                ii = Interaction(url, params={'release': self.release, 'paramdisplay': 'all'}, base=bconfig._collab_api_url)
             except Exception as e:
                 warnings.warn('Could not remotely retrieve full set of parameters. {0}'.format(e), MarvinUserWarning)
                 self._keys = []
