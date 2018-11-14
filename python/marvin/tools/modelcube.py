@@ -7,7 +7,7 @@
 # @License: BSD 3-clause (http://www.opensource.org/licenses/BSD-3-Clause)
 #
 # @Last modified by: José Sánchez-Gallego (gallegoj@uw.edu)
-# @Last modified time: 2018-11-08 19:00:44
+# @Last modified time: 2018-11-14 11:43:13
 
 
 from __future__ import absolute_import, division, print_function
@@ -304,7 +304,7 @@ class ModelCube(MarvinToolsClass, NSAMixIn, DAPallMixIn, GetApertureMixIn):
         self.mangaid = str(self.header['MANGAID'].strip())
 
     def getSpaxel(self, x=None, y=None, ra=None, dec=None,
-                  drp=True, properties=True, **kwargs):
+                  cube=False, maps=False, **kwargs):
         """Returns the :class:`~marvin.tools.spaxel.Spaxel` matching certain coordinates.
 
         The coordinates of the spaxel to return can be input as ``x, y`` pixels
@@ -331,12 +331,12 @@ class ModelCube(MarvinToolsClass, NSAMixIn, DAPallMixIn, GetApertureMixIn):
                 spatial dimensions of the cube, or ``'lower'`` for the
                 lower-left corner. This keyword is ignored if ``ra`` and
                 ``dec`` are defined.
-            drpa (bool):
+            cube (bool):
                 If ``True``, the |spaxel| will be initialised with the
-                corresponding DRP data.
-            properties (bool):
+                corresponding DRP cube data.
+            maps (bool):
                 If ``True``, the |spaxel| will be initialised with the
-                corresponding DAP properties for this spaxel.
+                corresponding DAP Maps properties for this spaxel.
 
         Returns:
             spaxels (list):
@@ -348,9 +348,15 @@ class ModelCube(MarvinToolsClass, NSAMixIn, DAPallMixIn, GetApertureMixIn):
 
         """
 
+        for old_param in ['drp', 'properties']:
+            if old_param in kwargs:
+                raise marvin.core.exceptions.MarvinDeprecationError(
+                    'the {0} parameter has been deprecated. '
+                    'Use cube or maps.'.format(old_param))
+
         return marvin.utils.general.general.getSpaxel(
             x=x, y=y, ra=ra, dec=dec,
-            cube=drp, maps=properties, modelcube=self, **kwargs)
+            cube=cube, maps=maps, modelcube=self, **kwargs)
 
     def _get_extension_data(self, name, ext=None):
         """Returns the data from an extension."""

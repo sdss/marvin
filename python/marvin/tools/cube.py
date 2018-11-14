@@ -7,7 +7,7 @@
 # @License: BSD 3-clause (http://www.opensource.org/licenses/BSD-3-Clause)
 #
 # @Last modified by: José Sánchez-Gallego (gallegoj@uw.edu)
-# @Last modified time: 2018-11-08 19:13:31
+# @Last modified time: 2018-11-14 10:49:33
 
 
 from __future__ import absolute_import, division, print_function
@@ -530,7 +530,7 @@ class Cube(MarvinToolsClass, NSAMixIn, GetApertureMixIn):
         return cube_quantities
 
     def getSpaxel(self, x=None, y=None, ra=None, dec=None,
-                  properties=True, models=False, **kwargs):
+                  maps=False, modelcube=False, **kwargs):
         """Returns the :class:`~marvin.tools.spaxel.Spaxel` matching certain coordinates.
 
         The coordinates of the spaxel to return can be input as ``x, y`` pixels
@@ -553,10 +553,10 @@ class Cube(MarvinToolsClass, NSAMixIn, GetApertureMixIn):
                 lower-left corner. This keyword is ignored if ``ra`` and
                 ``dec`` are defined. ``xyorig`` defaults to
                 ``marvin.config.xyorig.``
-            properties (bool):
+            maps (`~marvin.tools.maps.Maps` or None or bool):
                 If ``True``, the spaxel will be initiated with the DAP
                 properties from the default Maps matching this cube.
-            models (`~marvin.tools.modelcube.ModelCube` or None or bool):
+            modelcube (`~marvin.tools.modelcube.ModelCube` or None or bool):
                 A :class:`~marvin.tools.modelcube.ModelCube` object
                 representing the DAP modelcube entity. If None, the |spaxel|
                 will be returned without model information. Default is False.
@@ -571,10 +571,17 @@ class Cube(MarvinToolsClass, NSAMixIn, GetApertureMixIn):
 
         """
 
+        for old_param in ['properties', 'model', 'models']:
+            if old_param in kwargs:
+                raise marvin.core.exceptions.MarvinDeprecationError(
+                    'the {0} parameter has been deprecated. '
+                    'Use maps or modelcube.'.format(old_param))
+
         return marvin.utils.general.general.getSpaxel(x=x, y=y, ra=ra, dec=dec,
                                                       cube=self,
-                                                      maps=properties,
-                                                      modelcube=models, **kwargs)
+                                                      maps=maps,
+                                                      modelcube=modelcube,
+                                                      **kwargs)
 
     def getRSS(self):
         """Returns the `~marvin.tools.rss.RSS` associated with this Cube."""
