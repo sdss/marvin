@@ -437,13 +437,13 @@ In this case the returned Quantity is a 1D `~marvin.tools.quantities.spectrum.Sp
 
     import marvin
 
-    my_cube = marvin.tools.Cube('7443-12701')
+    my_cube = marvin.tools.Cube('7443-12703')
     flux = my_cube[20, 20].flux
     flux.plot()
 
 Let's now have a look at the Marvin 2D Quantity: the `~marvin.tools.quantities.map.Map`. ::
 
-    >>> maps_obj = Maps('7443-12701')
+    >>> maps_obj = Maps('7443-12703')
     >>> ha = maps_obj.emline_gflux_ha_6564
     <Marvin Map (property='emline_gflux_ha_6564')>
     [[0. 0. 0. ... 0. 0. 0.]
@@ -465,7 +465,7 @@ We can still use all the tools we discussed above. For example, let's plot the s
 
     import marvin
     import matplotlib.pyplot as plt
-    maps_obj = marvin.tools.Maps('7443-12701')
+    maps_obj = marvin.tools.Maps('7443-12703')
     ha_snr = maps_obj.emline_gflux_ha_6564.snr
     plt.imshow(ha_snr, origin='lower')
 
@@ -489,7 +489,7 @@ Map objects are a bit especial, though, and we will discuss them in detail in :r
     :include-source: False
 
     import marvin
-    maps_obj = marvin.tools.Maps('7443-12701')
+    maps_obj = marvin.tools.Maps('7443-12703')
     ha = maps_obj.emline_gflux_ha_6564
     hb = maps_obj.emline_gew_hb_4862
     ha_hb = ha / hb
