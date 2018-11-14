@@ -295,9 +295,9 @@ All Quantities behave similarly. Let's start by getting a datacube (3D Quantity)
                 [0., 0., 0., ..., 0., 0., 0.],
                 [0., 0., 0., ..., 0., 0., 0.]],
 
-            ...,
+                ...,
 
-            [[0., 0., 0., ..., 0., 0., 0.],
+               [[0., 0., 0., ..., 0., 0., 0.],
                 [0., 0., 0., ..., 0., 0., 0.],
                 [0., 0., 0., ..., 0., 0., 0.],
                 ...,
@@ -317,9 +317,9 @@ A slice of a `~marvin.tools.quantities.datacube.DataCube` is another datacube ::
                 [0.0177076 , 0.024134  , 0.0270703 , 0.0271202 , 0.0312836 ],
                 [0.0052256 , 0.0119592 , 0.0181215 , 0.0243616 , 0.0311569 ]],
 
-            ...,
+                ...,
 
-            [[0.0448547 , 0.0435139 , 0.041652  , 0.0415161 , 0.0468557 ],
+               [[0.0448547 , 0.0435139 , 0.041652  , 0.0415161 , 0.0468557 ],
                 [0.0408965 , 0.0431359 , 0.0441348 , 0.0448875 , 0.0507026 ],
                 [0.0375406 , 0.0409193 , 0.0423735 , 0.0434993 , 0.0484709 ],
                 [0.0306319 , 0.0335499 , 0.0357318 , 0.0381165 , 0.0422256 ],
@@ -334,9 +334,9 @@ Note that in addition to the array the `~marvin.tools.quantities.datacube.DataCu
             [0.0177076 , 0.024134  , 0.0270703 , 0.0271202 , 0.0312836 ],
             [0.0052256 , 0.0119592 , 0.0181215 , 0.0243616 , 0.0311569 ]],
 
-        ...,
+           ...,
 
-        [[0.0448547 , 0.0435139 , 0.041652  , 0.0415161 , 0.0468557 ],
+           [[0.0448547 , 0.0435139 , 0.041652  , 0.0415161 , 0.0468557 ],
             [0.0408965 , 0.0431359 , 0.0441348 , 0.0448875 , 0.0507026 ],
             [0.0375406 , 0.0409193 , 0.0423735 , 0.0434993 , 0.0484709 ],
             [0.0306319 , 0.0335499 , 0.0357318 , 0.0381165 , 0.0422256 ],
@@ -368,27 +368,27 @@ The mask associated with the values is easily accessible via the ``mask`` attrib
     >>> flux_section.masked
     masked_array(
     data=[[[--, 0.0455479, 0.0421016, 0.0391036, 0.0412236],
-            [0.048177, 0.0437978, 0.0384898, 0.0335415, 0.0345823],
-            [0.0358995, 0.0385949, 0.0338827, 0.0293836, 0.0337355],
-            [0.0177076, 0.024134, 0.0270703, 0.0271202, 0.0312836],
-            [0.0052256, 0.0119592, 0.0181215, 0.0243616, 0.0311569]],
+           [0.048177, 0.0437978, 0.0384898, 0.0335415, 0.0345823],
+           [0.0358995, 0.0385949, 0.0338827, 0.0293836, 0.0337355],
+           [0.0177076, 0.024134, 0.0270703, 0.0271202, 0.0312836],
+           [0.0052256, 0.0119592, 0.0181215, 0.0243616, 0.0311569]],
 
-            ...,
+           ...,
 
-            [[--, 0.0435139, 0.041652, 0.0415161, 0.0468557],
+           [[--, 0.0435139, 0.041652, 0.0415161, 0.0468557],
             [0.0408965, 0.0431359, 0.0441348, 0.0448875, 0.0507026],
             [0.0375406, 0.0409193, 0.0423735, 0.0434993, 0.0484709],
             [0.0306319, 0.0335499, 0.0357318, 0.0381165, 0.0422256],
             [0.0261617, 0.0271262, 0.0294177, 0.033631, 0.039794]]],
     mask=[[[ True, False, False, False, False],
-            [False, False, False, False, False],
-            [False, False, False, False, False],
-            [False, False, False, False, False],
-            [False, False, False, False, False]],
+           [False, False, False, False, False],
+           [False, False, False, False, False],
+           [False, False, False, False, False],
+           [False, False, False, False, False]],
 
-            ...,
+           ...,
 
-            [[ True, False, False, False, False],
+           [[ True, False, False, False, False],
             [False, False, False, False, False],
             [False, False, False, False, False],
             [False, False, False, False, False],
@@ -409,9 +409,9 @@ Quantities have an associated `~marvin.tools.quantities.base_quantity.QuantityMi
             [1, 1, 1, ..., 1, 1, 1],
             [1, 1, 1, ..., 1, 1, 1]],
 
-        ...,
+            ...,
 
-        [[1, 1, 1, ..., 1, 1, 1],
+           [[1, 1, 1, ..., 1, 1, 1],
             [1, 1, 1, ..., 1, 1, 1],
             [1, 1, 1, ..., 1, 1, 1],
             ...,
@@ -476,12 +476,12 @@ Map objects are a bit especial, though, and we will discuss them in detail in :r
     >>> ha_hb
     <Marvin EnhancedMap>
     array([[nan, nan, nan, ..., nan, nan, nan],
-        [nan, nan, nan, ..., nan, nan, nan],
-        [nan, nan, nan, ..., nan, nan, nan],
-        ...,
-        [nan, nan, nan, ..., nan, nan, nan],
-        [nan, nan, nan, ..., nan, nan, nan],
-        [nan, nan, nan, ..., nan, nan, nan]], dtype=float32) '1e-17 erg / (Angstrom cm2 s spaxel)'
+           [nan, nan, nan, ..., nan, nan, nan],
+           [nan, nan, nan, ..., nan, nan, nan],
+           ...,
+           [nan, nan, nan, ..., nan, nan, nan],
+           [nan, nan, nan, ..., nan, nan, nan],
+           [nan, nan, nan, ..., nan, nan, nan]], dtype=float32) '1e-17 erg / (Angstrom cm2 s spaxel)'
     >>> ha_hb.plot()
 
 .. plot::
