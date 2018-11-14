@@ -48,6 +48,7 @@ Changed
 - Replaced inconsistent parameter ``model`` in `~marvin.tools.maps.Maps.getSpaxel`. Use ``models`` instead.
 - MarvinError now accepts an optional `ignore_git` keyword to locally turn off the git addition to the message
 - Using the `return_all` keyword in ``Query`` or `getAll` in ``Results`` now calls the streaming API route instead.
+- Convert MMA warnings to debug messages (:issues:`580`).
 
 Fixed
 ^^^^^

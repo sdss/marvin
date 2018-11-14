@@ -5,20 +5,21 @@
 #
 # @Author: Brian Cherinka
 # @Date:   2018-07-31 23:52:31
-# @Last modified by:   Brian Cherinka
+# @Last modified by: José Sánchez-Gallego (gallegoj@uw.edu)
 # @Last Modified time: 2018-08-01 03:34:02
 
-from __future__ import print_function, division, absolute_import
+from __future__ import absolute_import, division, print_function
 
 import os
 import sys
 import warnings
-from functools import wraps
 from distutils.version import StrictVersion
+from functools import wraps
 
 import numpy as np
 import PIL
 import requests
+
 import marvin
 from marvin.core.exceptions import MarvinDeprecationWarning, MarvinError, MarvinUserWarning
 from marvin.utils.general import mangaid2plateifu, parseIdentifier
@@ -482,7 +483,7 @@ def showImage(path=None, plateifu=None, release=None, return_image=True, show_im
                 filepath = _do_local_plateifu()
                 mode = 'local'
             except MarvinError as e:
-                warnings.warn('Local mode failed.  Trying remote.', MarvinUserWarning)
+                marvin.log.debug('Local mode failed.  Trying remote.')
                 filepath = _do_remote_plateifu()
                 mode = 'remote'
 
@@ -630,6 +631,3 @@ def get_random_images(num, release=None, download=None):
         _download_images(images, label='by_random')
 
     return images
-
-
-
