@@ -9,6 +9,8 @@ Bintypes and templates
 Accessing individual maps
 -------------------------
 
+.. _marvin-map:
+
 The Map quantity
 ----------------
 

@@ -1,4 +1,4 @@
-.. _marvin-utils-maskbit:
+.. _marvin-maskbit:
 
 =====================================================
 Maskbit (:mod:`marvin.utils.general.maskbit.Maskbit`)
