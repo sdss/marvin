@@ -13,33 +13,29 @@
 # serve to show the default.
 
 import os
-import re
 import subprocess
 import sys
 
 # Importing matplotlib here with agg to prevent tkinter error in readthedocs
-import matplotlib
-# Matplolib plot directive
-import matplotlib.sphinxext.plot_directive
-matplotlib.use('agg')
-
-# Comment if you do not want to use bootstrap themes.
-import sphinx_rtd_theme
+import matplotlib  # noqa
 from sphinx.ext.napoleon.docstring import GoogleDocstring
 
 import marvin
+# Comment if you do not want to use bootstrap themes.
+import sphinx_rtd_theme
+
 
 if marvin.config.db is not None:
     marvin.config.forceDbOff()
-
-matplotlib.use('agg')
-
 
 try:
     marvin_version = marvin.__version__
 except ValueError:
     marvin_version = 'dev'
 
+
+# Hotfix to make sure local mode works
+os.environ['MANGA_LOCALHOST'] = 1
 
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
@@ -402,5 +398,3 @@ def setup(app):
 
     if os.environ.get('READTHEDOCS') == 'True':
         get_test_data()
-
-print(marvin.config.mode)
