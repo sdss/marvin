@@ -35,7 +35,7 @@ except ValueError:
 
 
 # Hotfix to make sure local mode works
-os.environ['MANGA_LOCALHOST'] = 1
+os.environ['MANGA_LOCALHOST'] = '1'
 
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
