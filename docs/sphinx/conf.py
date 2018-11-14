@@ -402,3 +402,5 @@ def setup(app):
 
     if os.environ.get('READTHEDOCS') == 'True':
         get_test_data()
+
+print(marvin.config.mode)
