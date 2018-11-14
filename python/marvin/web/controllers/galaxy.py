@@ -10,25 +10,29 @@ Revision History:
     Last Modified On: 2016-04-08 14:31:34 by Brian
 
 '''
-from __future__ import print_function
-from __future__ import division
-from flask import Blueprint, render_template, session as current_session, request, jsonify
-from flask_classful import route
-import marvin
-from marvin.utils.general.general import (convertImgCoords, parseIdentifier, getDefaultMapPath,
-                                          getDapRedux, _db_row_to_dict, target_status)
+from __future__ import division, print_function
+
+import os
+
+import numpy as np
 from brain.utils.general.general import convertIvarToErr
+from flask import Blueprint, jsonify, render_template, request
+from flask import session as current_session
+from flask_classful import route
+
+import marvin
+from marvin.api.base import arg_validate as av
+from marvin.core import marvin_pickle
+from marvin.core.caching_query import FromCache
 from marvin.core.exceptions import MarvinError
 from marvin.tools.cube import Cube
 from marvin.utils.datamodel.dap import datamodel
+from marvin.utils.general.general import (_db_row_to_dict, convertImgCoords, getDapRedux,
+                                          getDefaultMapPath, parseIdentifier, target_status)
 from marvin.utils.general.maskbit import Maskbit
 from marvin.web.controllers import BaseWebView
 from marvin.web.extensions import cache
-from marvin.api.base import arg_validate as av
-from marvin.core.caching_query import FromCache
-from marvin.core import marvin_pickle
-import os
-import numpy as np
+
 
 try:
     from sdss_access.path import Path
@@ -45,8 +49,8 @@ def getWebSpectrum(cube, x, y, xyorig=None, byradec=False):
     has_models = cube.data.has_modelspaxels(name=default_bintype) if hasattr(cube.data, 'has_modelspaxels') else False
 
     # set the spaxel kwargs
-    kwargs = {'xyorig': xyorig, 'properties': False}
-    kwargs['models'] = has_models
+    kwargs = {'xyorig': xyorig, 'maps': False}
+    kwargs['modelcube'] = has_models
     if byradec:
         kwargs.update({'ra': x, 'dec': y})
     else:
