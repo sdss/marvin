@@ -5,7 +5,7 @@
 #
 # @Author: Brian Cherinka
 # @Date:   2018-06-21 17:01:09
-# @Last modified by:   Brian Cherinka
+# @Last modified by: José Sánchez-Gallego (gallegoj@uw.edu)
 # @Last Modified time: 2018-10-17 00:22:19
 
 from __future__ import absolute_import, division, print_function
@@ -21,6 +21,29 @@ import six
 import marvin
 import marvin.tools.plate
 from marvin.core.exceptions import MarvinError
+
+
+__ALL__ = ['VACContainer', 'VACMixIn']
+
+
+class VACContainer(object):
+
+    def __repr__(self):
+        return '<VACContainer ({0})>'.format(', '.join(map(repr, list(self))))
+
+    def __dir__(self):
+        props = []
+        for value in self.__class__.__dict__.keys():
+            if not value.startswith('_'):
+                props.append(value)
+        return props
+
+    def __getitem__(self, value):
+        return getattr(self, value)
+
+    def __iter__(self):
+        for value in self.__dir__():
+            yield value
 
 
 class VACMixIn(object, six.with_metaclass(abc.ABCMeta)):
@@ -107,25 +130,6 @@ class VACMixIn(object, six.with_metaclass(abc.ABCMeta)):
             for to each on of the VACs that subclass from `VACMixIn`.
 
         """
-
-        class VACContainer(object):
-
-            def __repr__(self):
-                return '<VACContainer ({0})>'.format(', '.join(map(repr, list(self))))
-
-            def __dir__(self):
-                props = []
-                for value in self.__class__.__dict__.keys():
-                    if not value.startswith('_'):
-                        props.append(value)
-                return props
-
-            def __getitem__(self, value):
-                return getattr(self, value)
-
-            def __iter__(self):
-                for value in self.__dir__():
-                    yield value
 
         vac_container = VACContainer()
 

@@ -7,7 +7,7 @@
 # @License: BSD 3-clause (http://www.opensource.org/licenses/BSD-3-Clause)
 #
 # @Last modified by: José Sánchez-Gallego (gallegoj@uw.edu)
-# @Last modified time: 2018-11-14 11:43:13
+# @Last modified time: 2018-11-14 11:48:16
 
 
 from __future__ import absolute_import, division, print_function
@@ -201,7 +201,7 @@ class ModelCube(MarvinToolsClass, NSAMixIn, DAPallMixIn, GetApertureMixIn):
         file_ver = marvin.config.lookUpRelease(file_drpver)
         assert file_ver is not None, 'cannot find file version.'
 
-        if file_ver != self._release:
+        if file_drpver != self._drpver:
             warnings.warn('mismatch between file version={0} and object release={1}. '
                           'Setting object release to {0}'.format(file_ver, self._release),
                           marvin.core.exceptions.MarvinUserWarning)
