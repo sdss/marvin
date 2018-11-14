@@ -47,6 +47,7 @@ PARAM_CACHE = {}
 class QueryDataModel(object):
     """ A class representing a Query datamodel """
 
+
     def __init__(self, release, groups=[], aliases=[], exclude=[], **kwargs):
 
         self.release = release
@@ -57,6 +58,7 @@ class QueryDataModel(object):
         self.dap_datamodel = kwargs.get('dapdm', None)
         self.bitmasks = get_maskbits(self.release)
         self._mode = kwargs.get('mode', config.mode)
+        self._keys = []
         self._get_parameters()
         self._check_datamodels()
 
@@ -72,6 +74,11 @@ class QueryDataModel(object):
 
     def _get_parameters(self):
         ''' Get the parameters for the datamodel '''
+
+        # if the release isn't in the allowed releases then do nothing
+        # if self.release not in config._allowed_releases:
+        #     self._groups = ParameterGroupList([])
+        #     return
 
         # check cache for parameters
         if self.release in PARAM_CACHE:
@@ -95,6 +102,7 @@ class QueryDataModel(object):
         ''' Get the keys from a remote source '''
 
         from marvin.api.api import Interaction
+        from brain import bconfig
 
         # if not urlmap then exit
         if not config.urlmap:
@@ -103,7 +111,7 @@ class QueryDataModel(object):
 
         # try to get the url
         try:
-            url = config.urlmap['api']['getallparams']['url']
+            url = config.urlmap['api']['getparams']['url']
         except Exception as e:
             warnings.warn('Cannot access Marvin API to get the full list of query parameters. '
                           'for the Query Datamodel. Only showing the best ones.', MarvinUserWarning)
@@ -120,12 +128,19 @@ class QueryDataModel(object):
                 self._keys = []
             else:
                 # this deals with all parameters from all releases at once
-                PARAM_CACHE.update(ii.getData())
-                self._check_aliases()
+                # PARAM_CACHE.update(ii.getData())
+                # self._check_aliases()
 
-                for key in list(PARAM_CACHE.keys()):
-                    self._keys = PARAM_CACHE[key] if key in PARAM_CACHE else []
-                    self._remove_query_params()
+                # for key in list(PARAM_CACHE.keys()):
+                #     keys = PARAM_CACHE[key] if key in PARAM_CACHE else []
+                #     self._remove_query_params(keys=keys)
+
+                # this deals with parameters per release
+                self._keys = ii.getData()
+                PARAM_CACHE[self.release] = self._keys
+                self._check_aliases()
+                self._remove_query_params()
+
 
     def _check_aliases(self):
         ''' Check the release of the return parameters against the aliases '''
@@ -133,16 +148,18 @@ class QueryDataModel(object):
             if key != self.release and key in self.aliases:
                 PARAM_CACHE[self.release] = val
 
-    def _remove_query_params(self):
+    def _remove_query_params(self, keys=None):
         ''' Remove keys from query_params best list '''
+        keys = keys or self._keys
         origlist = query_params.list_params('full')
         for okey in origlist:
-            if okey in self._keys:
-                self._keys.remove(okey)
+            if okey in keys:
+                keys.remove(okey)
 
         # add the final list to the cache
+        self._keys = keys
         if self.release not in PARAM_CACHE:
-            PARAM_CACHE[self.release] = self._keys
+            PARAM_CACHE[self.release] = keys
 
     def _cleanup_keys(self):
         ''' Cleans up the list for MarvinForm keys '''
