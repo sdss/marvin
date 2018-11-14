@@ -7,6 +7,15 @@ Quantity Classes
 
 .. _marvin-tools-datacube:
 
+Base classes
+------------
+
+.. automodule:: marvin.tools.quantities.base_quantity
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+
 Datacube
 --------
 
