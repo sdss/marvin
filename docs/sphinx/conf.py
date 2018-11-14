@@ -12,9 +12,15 @@
 # All configuration values have a default; values that are commented out
 # serve to show the default.
 
+# flake8: noqa
+# isort:skip_file
+
 import os
 import subprocess
 import sys
+
+# Hotfix to make sure local mode works
+os.environ['MANGA_LOCALHOST'] = '1'
 
 # Importing matplotlib here with agg to prevent tkinter error in readthedocs
 import matplotlib  # noqa
@@ -33,9 +39,6 @@ try:
 except ValueError:
     marvin_version = 'dev'
 
-
-# Hotfix to make sure local mode works
-os.environ['MANGA_LOCALHOST'] = '1'
 
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
