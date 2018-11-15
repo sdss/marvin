@@ -31,8 +31,8 @@ from sphinx.ext.napoleon.docstring import GoogleDocstring
 
 import marvin
 
-# if marvin.config.db is not None:
-#     marvin.config.forceDbOff()
+if marvin.config.db is not None:
+    marvin.config.forceDbOff()
 
 
 # Comment if you do not want to use bootstrap themes.
