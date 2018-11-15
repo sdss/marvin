@@ -23,13 +23,18 @@ import sys
 os.environ['MANGA_LOCALHOST'] = '1'
 
 # Importing matplotlib here with agg to prevent tkinter error in readthedocs
-import matplotlib  # noqa
-matplotlib.use('agg')
+# import matplotlib  # noqa
+# matplotlib.use('agg')
 
 
 from sphinx.ext.napoleon.docstring import GoogleDocstring
 
 import marvin
+
+if marvin.config.db is not None:
+    marvin.config.forceDbOff()
+
+
 # Comment if you do not want to use bootstrap themes.
 import sphinx_rtd_theme
 
@@ -371,19 +376,14 @@ GoogleDocstring._parse = patched_parse
 
 
 plot_pre_code = """
-import matplotlib
-matplotlib.use('agg')
+import matplotlib.pyplot as plt
 
-import marvin
-
-if marvin.config.db is not None:
-    marvin.config.forceDbOff()
-
+plt.style.use(['seaborn-dark', 'seaborn-darkgrid'])
 """
 
-plot_apply_rcparams = False
+# plot_apply_rcparams = False
 
-plot_formats = [('png', 100), ('pdf', 100)]
+# plot_formats = [('png', 100)]
 
 
 def get_test_data():
