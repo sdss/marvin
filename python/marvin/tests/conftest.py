@@ -198,7 +198,6 @@ def check_config():
 URLMAP = None
 
 
-#@pytest.fixture(scope='session')
 def set_sasurl(loc='local', port=None):
     """Set the sasurl to local or test-utah, and regenerate the urlmap."""
     if not port:

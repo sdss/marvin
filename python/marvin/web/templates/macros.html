@@ -13,6 +13,7 @@
       <li><a id='rss'  data-toggle='modal' data-target='#{{target}}' onclick='utils.rsyncFiles()'>RSS</a></li>
       {% if session['drpver'] >= 'v1_5_0' %}
             <li><a id='maps'  data-toggle='modal' data-target='#{{target}}' onclick='utils.rsyncFiles()'>MAPS</a></li>
+            <li><a id='mc'  data-toggle='modal' data-target='#{{target}}' onclick='utils.rsyncFiles()'>ModelCube</a></li>
       {% endif %}
     </ul>
   </div>
@@ -101,6 +102,9 @@
       <li><a href="{{links.cube|default('#')}}">Cube</a></li>
       <li><a href="{{links.rss|default('#')}}">RSS</a></li>
       <li><a href="{{links.map|default('#')}}">Default MAPS</a></li>
+      {% if session['drpver'] >= 'v2_0_0' %}
+          <li><a href="{{links.mc|default('#')}}">Default ModelCube</a></li>
+      {% endif %}
     </ul>
   </div>
 {% endmacro %}
