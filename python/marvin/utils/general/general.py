@@ -694,7 +694,7 @@ def getDefaultMapPath(**kwargs):
             The plate id
         ifu (int):
             The ifu number
-        bintype (str):
+        mode (str):
             The bintype of the default file to grab, i.e. MAPS or LOGCUBE. Defaults to MAPS
         daptype (str):
             The daptype of the default map to grab.  Defaults to SPX-GAU-MILESHC
@@ -710,7 +710,8 @@ def getDefaultMapPath(**kwargs):
     plate = kwargs.get('plate', None)
     ifu = kwargs.get('ifu', None)
     daptype = kwargs.get('daptype', 'SPX-GAU-MILESHC')
-    bintype = kwargs.get('bintype', 'MAPS')
+    mode = kwargs.get('mode', 'MAPS')
+    assert mode in ['MAPS', 'LOGCUBE'], 'mode can either be MAPS or LOGCUBE'
 
     # get sdss_access Path
     if not Path:
@@ -729,7 +730,7 @@ def getDefaultMapPath(**kwargs):
 
     # construct the url link to default maps file
     maplink = sdss_path.url(name, drpver=drpver, dapver=dapver, mpl=release,
-                            plate=plate, ifu=ifu, daptype=daptype, mode=bintype)
+                            plate=plate, ifu=ifu, daptype=daptype, mode=mode)
     return maplink
 
 

@@ -324,9 +324,9 @@ class Galaxy(BaseWebView):
                     cubelink = sdss_path.url('mangacube', drpver=cube._drpver, plate=cube.plate, ifu=cube.ifu)
                     rsslink = sdss_path.url('mangarss', drpver=cube._drpver, plate=cube.plate, ifu=cube.ifu)
                     daptype = "{0}-{1}".format(dm.default_bintype, dm.default_template)
-                    maplink = getDefaultMapPath(release=self._release, plate=cube.plate, ifu=cube.ifu,
-                                                daptype=daptype, mode='MAPS')
-                    self.galaxy['links'] = {'cube': cubelink, 'rss': rsslink, 'map': maplink}
+                    maplink = getDefaultMapPath(release=self._release, plate=cube.plate, ifu=cube.ifu, daptype=daptype, mode='MAPS')
+                    mclink = getDefaultMapPath(release=self._release, plate=cube.plate, ifu=cube.ifu, daptype=daptype, mode='LOGCUBE')
+                    self.galaxy['links'] = {'cube': cubelink, 'rss': rsslink, 'map': maplink, 'mc': mclink}
                 else:
                     self.galaxy['image'] = cube.data.image
 
