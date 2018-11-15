@@ -24,6 +24,9 @@ os.environ['MANGA_LOCALHOST'] = '1'
 
 # Importing matplotlib here with agg to prevent tkinter error in readthedocs
 import matplotlib  # noqa
+matplotlib.use('agg')
+
+
 from sphinx.ext.napoleon.docstring import GoogleDocstring
 
 import marvin
@@ -376,6 +379,8 @@ if os.environ.get('READTHEDOCS') != 'True':
 import matplotlib
 matplotlib.use('agg')
 """
+
+plot_apply_rcparams = False
 
 plot_formats = [('png', 100), ('pdf', 100)]
 

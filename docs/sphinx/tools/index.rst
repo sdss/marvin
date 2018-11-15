@@ -1,9 +1,6 @@
-.. role:: notoc-h1
-    :class: rubric-h1
 
-.. title:: User Docs
-
-.. rubric:: :notoc-h1:`User Docs`
+Marvin Tools
+------------
 
 .. toctree::
     :maxdepth: 2
