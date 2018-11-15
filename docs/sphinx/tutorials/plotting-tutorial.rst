@@ -54,9 +54,9 @@ Quick Spectrum Plot
     :align: center
     :include-source: True
 
-    from marvin.tools.maps import Maps
-    maps = Maps('8485-1901')
-    spax = maps[17, 17]
+    from marvin.tools.cube import Cube
+    cube = Cube('8485-1901')
+    spax = cube[17, 17]
     spax.flux.plot()
 
 
@@ -74,7 +74,7 @@ Quick Model Fit Plot
 
     # must use Maps.getSpaxel() to get modelcube
     # (the bracket slicing of Maps does not return the modelcube)
-    spax = maps.getSpaxel(x=17, y=17, xyorig='lower', model=True)
+    spax = maps.getSpaxel(x=17, y=17, xyorig='lower', modelcube=True)
 
     # extra arguments to plot are passed to the matplotlib routine
     ax = spax.flux.plot(label='observed')
@@ -309,7 +309,7 @@ Custom Spectrum and Model Fit
     from marvin.tools.maps import Maps
 
     maps = Maps('1-209232')
-    spax = maps.getSpaxel(x=0, y=0, xyorig='center', model=True)
+    spax = maps.getSpaxel(x=0, y=0, xyorig='center', modelcube=True)
 
     fig, ax = plt.subplots()
 
