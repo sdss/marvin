@@ -69,6 +69,7 @@ Fixed
 - Fixed `#563 <https://github.com/sdss/marvin/issues/563>`_ - fail retrieving Query datamodels in Python 3.6+.
 - Fixes bug with sasurl not properly being set to api.sdss.org on initial import
 - Incorrect setting of the default bintype to download from web (:issue:`531`).
+- Fixed :issue:`536`, :issue:`537`, :issue:`538`.  Added modelcube to downloadList.
 
 Refactored
 ^^^^^^^^^^
