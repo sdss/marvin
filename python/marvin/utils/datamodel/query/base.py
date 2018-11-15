@@ -556,6 +556,11 @@ class ParameterGroupList(QueryFuzzyList):
     def add_group(self, group, copy=True, parent=None):
         ''' '''
 
+        # don't add the group if already in there
+        name = str(group)
+        if name in self:
+            return
+
         new_grp = copy_mod.copy(group) if copy else group
         if isinstance(new_grp, ParameterGroup):
             self.append(new_grp)

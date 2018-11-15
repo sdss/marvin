@@ -6,7 +6,7 @@
 # @Author: Brian Cherinka
 # @Date:   2017-09-20 13:24:13
 # @Last modified by:   Brian Cherinka
-# @Last Modified time: 2018-11-14 18:00:04
+# @Last Modified time: 2018-11-15 12:00:27
 
 from __future__ import absolute_import, division, print_function
 
@@ -18,11 +18,12 @@ from .base import QueryDataModel
 
 
 # Current Total Parameter Count (with spaxel properties and without)
-# MPL-4 - 571 (309)
-# MPL-5 - 703 (322)
-# MPL-6 - 1676 (1008)
-# MPL-7 - 1676 (1008)
-# DR15 - 1676 (1008)
+# all, no spaxelprop, no daptables
+# MPL-4 - 571 (309) (309)
+# MPL-5 - 703 (322) (301)
+# MPL-6 - 1676 (1008) (987)
+# MPL-7 - 1676 (1008) (987)
+# DR15 - 1676 (1008) (987)
 
 def groups():
     return copy.deepcopy(query_params)
@@ -50,7 +51,8 @@ MPL4 = QueryDataModel(release='MPL-4', groups=groups(), aliases=['MPL4', 'v1_5_1
 if not config._allow_DAP_queries:
     # remove the spaxelprop table from the list to re-include
     daptables.remove('spaxelprop')
-EX5 = set(EXCLUDE) - set(daptables) | set(['executionplan', 'current_default'])
+dapset = set(daptables) if config._allow_DAP_queries else set()
+EX5 = set(EXCLUDE) - dapset | set(['executionplan', 'current_default'])
 
 MPL5 = QueryDataModel(release='MPL-5', groups=groups(), aliases=['MPL5', 'v2_0_2', '2.0.1'], exclude=EX5, dapdm=datamodel['MPL-5'])
 

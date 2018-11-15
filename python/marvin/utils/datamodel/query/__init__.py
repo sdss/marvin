@@ -6,11 +6,10 @@
 # @Author: Brian Cherinka
 # @Date:   2017-08-22 22:43:15
 # @Last modified by:   Brian Cherinka
-# @Last Modified time: 2018-11-14 18:00:14
+# @Last Modified time: 2018-11-15 11:08:16
 
 from __future__ import print_function, division, absolute_import
 
-from marvin import config
 from .base import QueryDataModelList
 from .MPL import MPL4, MPL5, MPL6, MPL7, DR15
 
