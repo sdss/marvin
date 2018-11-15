@@ -34,9 +34,6 @@ import marvin
 import sphinx_rtd_theme
 
 
-if marvin.config.db is not None:
-    marvin.config.forceDbOff()
-
 try:
     marvin_version = marvin.__version__
 except ValueError:
@@ -373,11 +370,15 @@ GoogleDocstring._unpatched_parse = GoogleDocstring._parse
 GoogleDocstring._parse = patched_parse
 
 
-if os.environ.get('READTHEDOCS') != 'True':
-
-    plot_pre_code = """
+plot_pre_code = """
 import matplotlib
 matplotlib.use('agg')
+
+import marvin
+
+if marvin.config.db is not None:
+    marvin.config.forceDbOff()
+
 """
 
 plot_apply_rcparams = False
