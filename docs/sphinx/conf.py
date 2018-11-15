@@ -23,8 +23,8 @@ import sys
 os.environ['MANGA_LOCALHOST'] = '1'
 
 # Importing matplotlib here with agg to prevent tkinter error in readthedocs
-# import matplotlib  # noqa
-# matplotlib.use('agg')
+import matplotlib  # noqa
+matplotlib.use('agg')
 
 
 from sphinx.ext.napoleon.docstring import GoogleDocstring
