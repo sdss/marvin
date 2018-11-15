@@ -508,7 +508,7 @@ Data access modes
 .. toctree::
     :maxdepth: 2
 
-    data-access-modes
+    ../core/data-access-modes
 
 Storing data
 ^^^^^^^^^^^^
