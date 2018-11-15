@@ -5,7 +5,7 @@
 #
 # @Author: Brian Cherinka
 # @Date:   2018-07-28 17:26:41
-# @Last modified by:   Brian Cherinka
+# @Last modified by: José Sánchez-Gallego (gallegoj@uw.edu)
 # @Last Modified time: 2018-08-27 13:57:09
 
 from __future__ import absolute_import, division, print_function
@@ -17,10 +17,12 @@ import time
 import warnings
 
 import six
-from marvin import config
-from marvin.core.exceptions import (MarvinError, MarvinMissingDependency, MarvinUserWarning)
+
+from marvin import config, log
+from marvin.core.exceptions import MarvinError, MarvinMissingDependency, MarvinUserWarning
 from marvin.utils.db import testDbConnection
 from marvin.utils.general.general import mangaid2plateifu
+
 
 try:
     from sdss_access.path import Path
@@ -136,7 +138,7 @@ class MMAMixIn(object, six.with_metaclass(abc.ABCMeta)):
                     # If the input contains a filename we don't want to go into remote mode.
                     raise(ee)
                 else:
-                    warnings.warn('local mode failed. Trying remote now.', MarvinUserWarning)
+                    log.debug('local mode failed. Trying remote now.')
                     self._doRemote()
 
         # Sanity check to make sure data_origin has been properly set.
@@ -287,8 +289,8 @@ class MMAMixIn(object, six.with_metaclass(abc.ABCMeta)):
                         self.download()
                         self.data_origin = 'file'
                     else:
-                        raise MarvinError('this is the end of the road. '
-                                          'Try using some reasonable inputs.')
+                        raise MarvinError('failed to retrieve data using '
+                                          'input parameters.')
 
     def _doRemote(self):
         """Tests if remote connection is possible."""
@@ -371,4 +373,3 @@ class MMAMixIn(object, six.with_metaclass(abc.ABCMeta)):
         """Returns the IFU."""
 
         return int(self.plateifu.split('-')[1])
-

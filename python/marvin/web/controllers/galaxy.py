@@ -49,8 +49,8 @@ def getWebSpectrum(cube, x, y, xyorig=None, byradec=False):
     has_models = cube.data.has_modelspaxels(name=default_bintype) if hasattr(cube.data, 'has_modelspaxels') else False
 
     # set the spaxel kwargs
-    kwargs = {'xyorig': xyorig, 'properties': False}
-    kwargs['models'] = has_models
+    kwargs = {'xyorig': xyorig, 'maps': False}
+    kwargs['modelcube'] = has_models
     if byradec:
         kwargs.update({'ra': x, 'dec': y})
     else:

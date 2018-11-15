@@ -6,8 +6,8 @@
 # @Filename: modelcube.py
 # @License: BSD 3-clause (http://www.opensource.org/licenses/BSD-3-Clause)
 #
-# @Last modified by:   Brian Cherinka
-# @Last modified time: 2018-08-12 13:35:11
+# @Last modified by: José Sánchez-Gallego (gallegoj@uw.edu)
+# @Last modified time: 2018-11-14 11:48:16
 
 
 from __future__ import absolute_import, division, print_function
@@ -27,7 +27,7 @@ import marvin.utils.general.general
 from marvin.core.exceptions import MarvinError
 from marvin.tools.quantities import DataCube, Map, Spectrum
 from marvin.utils.datamodel.dap import Model, datamodel
-from marvin.utils.general import FuzzyDict
+from marvin.utils.general import FuzzyDict, gunzip
 
 from .core import MarvinToolsClass
 from .mixins import DAPallMixIn, GetApertureMixIn, NSAMixIn
@@ -178,7 +178,8 @@ class ModelCube(MarvinToolsClass, NSAMixIn, DAPallMixIn, GetApertureMixIn):
             assert isinstance(self.data, fits.HDUList), 'data is not an HDUList object'
         else:
             try:
-                self.data = fits.open(self.filename)
+                with gunzip(self.filename) as gg:
+                    self.data = fits.open(gg.name)
             except IOError as err:
                 raise IOError('filename {0} cannot be found: {1}'.format(self.filename, err))
 
@@ -200,7 +201,7 @@ class ModelCube(MarvinToolsClass, NSAMixIn, DAPallMixIn, GetApertureMixIn):
         file_ver = marvin.config.lookUpRelease(file_drpver)
         assert file_ver is not None, 'cannot find file version.'
 
-        if file_ver != self._release:
+        if file_drpver != self._drpver:
             warnings.warn('mismatch between file version={0} and object release={1}. '
                           'Setting object release to {0}'.format(file_ver, self._release),
                           marvin.core.exceptions.MarvinUserWarning)
@@ -303,7 +304,7 @@ class ModelCube(MarvinToolsClass, NSAMixIn, DAPallMixIn, GetApertureMixIn):
         self.mangaid = str(self.header['MANGAID'].strip())
 
     def getSpaxel(self, x=None, y=None, ra=None, dec=None,
-                  drp=True, properties=True, **kwargs):
+                  cube=False, maps=False, **kwargs):
         """Returns the :class:`~marvin.tools.spaxel.Spaxel` matching certain coordinates.
 
         The coordinates of the spaxel to return can be input as ``x, y`` pixels
@@ -330,12 +331,12 @@ class ModelCube(MarvinToolsClass, NSAMixIn, DAPallMixIn, GetApertureMixIn):
                 spatial dimensions of the cube, or ``'lower'`` for the
                 lower-left corner. This keyword is ignored if ``ra`` and
                 ``dec`` are defined.
-            drpa (bool):
+            cube (bool):
                 If ``True``, the |spaxel| will be initialised with the
-                corresponding DRP data.
-            properties (bool):
+                corresponding DRP cube data.
+            maps (bool):
                 If ``True``, the |spaxel| will be initialised with the
-                corresponding DAP properties for this spaxel.
+                corresponding DAP Maps properties for this spaxel.
 
         Returns:
             spaxels (list):
@@ -347,9 +348,15 @@ class ModelCube(MarvinToolsClass, NSAMixIn, DAPallMixIn, GetApertureMixIn):
 
         """
 
+        for old_param in ['drp', 'properties']:
+            if old_param in kwargs:
+                raise marvin.core.exceptions.MarvinDeprecationError(
+                    'the {0} parameter has been deprecated. '
+                    'Use cube or maps.'.format(old_param))
+
         return marvin.utils.general.general.getSpaxel(
             x=x, y=y, ra=ra, dec=dec,
-            cube=drp, maps=properties, modelcube=self, **kwargs)
+            cube=cube, maps=maps, modelcube=self, **kwargs)
 
     def _get_extension_data(self, name, ext=None):
         """Returns the data from an extension."""
