@@ -8,6 +8,8 @@ Breaking changes
 ^^^^^^^^^^^^^^^^
 - Removed ``Bin`` class. Bin information is now available on a per-quantity basis (:issue:`109`). See :ref:`What's new? <whats-new>` and documentation for details.
 - Syntax on the inputs to the ``Query`` and ``Results`` tools has been changed.
+- ``getSpaxel`` now only loads the quantities from the parent object (that means that, for example, ``Maps.getSpaxel`` only loads ``Maps`` properties by default). Additional quantities can be loaded using `~marvin.tools.spaxel.Spaxel.load`.
+- ``getSpaxel`` accepted arguments have been changed to ``cube``, ``maps``, and ``modelcube``. The formerly accepted arguments (``drp``, ``properties``, ``model(s)``) now raise a deprecation error.
 
 Added
 ^^^^^
@@ -48,6 +50,7 @@ Changed
 - Replaced inconsistent parameter ``model`` in `~marvin.tools.maps.Maps.getSpaxel`. Use ``models`` instead.
 - MarvinError now accepts an optional `ignore_git` keyword to locally turn off the git addition to the message
 - Using the `return_all` keyword in ``Query`` or `getAll` in ``Results`` now calls the streaming API route instead.
+- When `~marvin.tool.cube.Cube` or `~marvin.tool.modelcube.ModelCube` are instantiated from file, gunzip the file to a temporary location to speed up subsequent access (:issue:`525`).
 - Convert MMA warnings to debug messages (:issues:`580`).
 
 Fixed
