@@ -7,7 +7,7 @@
 # @License: BSD 3-clause (http://www.opensource.org/licenses/BSD-3-Clause)
 #
 # @Last modified by:   Brian Cherinka
-# @Last modified time: 2018-07-21 16:43:21
+# @Last modified time: 2018-10-19 20:10:13
 
 
 from __future__ import absolute_import, division, print_function
@@ -125,7 +125,7 @@ class Spectrum(Quantity, QuantityMixIn):
     def plot(self, xlim=None, ylim=None, show_std=True, use_mask=True,
              n_sigma=1, xlabel='Wavelength', ylabel='Flux', show_units=True,
              plt_style='seaborn-darkgrid', figure=None, return_figure=False,
-             **kwargs):
+             title=None, ytrim='positive', **kwargs):
         """Plots the spectrum.
 
         Displays the spectrum showing, optionally, the :math:`n\\sigma` region,
@@ -154,6 +154,13 @@ class Spectrum(Quantity, QuantityMixIn):
                 The axis labels to be passed to the plot. If not defined, the y
                 axis will be labelled as ``Flux`` and the x axis as
                 ``Wavelength``.
+            ytrim (str):
+                The default y-limit behavior when no ylim specified. Can be "positive",
+                "percentile", or "minmax". "positive" imposes a lower y bound of 0.
+                "percentile" performs a 10% sigma clipping on the data to compute the bounds.
+                "minmax" uses the straight min/max of the data.  Default is "positive".
+            title (str):
+                The title of the plot
             plt_style (str):
                 Matplotlib style sheet to use. Default is 'seaborn-darkgrid'.
             figure (`~matplotlib.figure.Figure` or None):
@@ -189,6 +196,9 @@ class Spectrum(Quantity, QuantityMixIn):
             fig = plt.figure() if figure is None else figure
             ax = fig.add_subplot(111)
 
+        if self.mask is None:
+            use_mask = False
+
         if use_mask:
             donotuse_mask = self.pixmask.get_mask('DONOTUSE') > 0
 
@@ -199,7 +209,7 @@ class Spectrum(Quantity, QuantityMixIn):
         else:
             value = self.value
             wave = self.wavelength.value
-            std = np.ma.array(self.std.value, mask=donotuse_mask) if self.std else None
+            std = self.std.value if self.std else None
 
         ax.plot(wave, value, **kwargs)
 
@@ -213,11 +223,16 @@ class Spectrum(Quantity, QuantityMixIn):
         ax.set_xlim(xlim)
 
         if ylim is None:
-            # Uses percentiles to get the optimal limits
-            # ylim_0 = -np.percentile(-value[value < 0], 90)
-            # ylim_1 = np.percentile(value[value > 0], 99.5)
-            # ylim = (ylim_0, ylim_1)
-            ylim = (0, None)
+            if ytrim == 'positive':
+                ylim = (0, None)
+            elif ytrim == 'percentile':
+                # Uses percentiles to get the optimal limits
+                ylim_0 = -np.percentile(-value[value < 0], 90)
+                ylim_1 = np.percentile(value[value > 0], 99.5)
+                ylim = (ylim_0, ylim_1)
+            elif ytrim == 'minmax':
+                # let matplotlib decide
+                ylim = (np.min(value), np.max(value))
 
         ax.set_ylim(ylim)
 
@@ -232,6 +247,9 @@ class Spectrum(Quantity, QuantityMixIn):
                 ylabel = '$\\mathrm{{{}}}\\,[${}$]$'.format(ylabel,
                                                             self.unit.to_string('latex_inline'))
             ax.set_ylabel(ylabel)
+
+        if title:
+            ax.set_title(title)
 
         if return_figure:
             return (ax, fig)

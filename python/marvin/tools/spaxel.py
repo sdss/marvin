@@ -6,8 +6,8 @@
 # @Filename: spaxel.py
 # @License: BSD 3-clause (http://www.opensource.org/licenses/BSD-3-Clause)
 #
-# @Last modified by:   andrews
-# @Last modified time: 2018-10-16 10:10:58
+# @Last modified by: José Sánchez-Gallego (gallegoj@uw.edu)
+# @Last modified time: 2018-11-08 18:00:34
 
 
 from __future__ import absolute_import, division, print_function
@@ -17,7 +17,6 @@ import itertools
 import warnings
 
 import numpy as np
-import six
 
 import marvin
 import marvin.core.exceptions

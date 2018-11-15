@@ -17,6 +17,8 @@ Breaking changes
 ^^^^^^^^^^^^^^^^
 - Removed ``Bin`` class. Bin information is now available on a per-quantity basis (:issue:`109`). See :ref:`What's new? <whats-new>` and documentation for details.
 - Syntax on the inputs to the ``Query`` and ``Results`` tools has been changed.
+- ``getSpaxel`` now only loads the quantities from the parent object (that means that, for example, ``Maps.getSpaxel`` only loads ``Maps`` properties by default). Additional quantities can be loaded using `~marvin.tools.spaxel.Spaxel.load`.
+- ``getSpaxel`` accepted arguments have been changed to ``cube``, ``maps``, and ``modelcube``. The formerly accepted arguments (``drp``, ``properties``, ``model(s)``) now raise a deprecation error.
 
 Added
 ^^^^^
@@ -60,6 +62,8 @@ Changed
 - Replaced inconsistent parameter ``model`` in `~marvin.tools.maps.Maps.getSpaxel`. Use ``models`` instead.
 - MarvinError now accepts an optional `ignore_git` keyword to locally turn off the git addition to the message
 - Using the `return_all` keyword in ``Query`` or `getAll` in ``Results`` now calls the streaming API route instead.
+- When `~marvin.tool.cube.Cube` or `~marvin.tool.modelcube.ModelCube` are instantiated from file, gunzip the file to a temporary location to speed up subsequent access (:issue:`525`).
+- Convert MMA warnings to debug messages (:issues:`580`).
 
 Fixed
 ^^^^^
@@ -73,11 +77,14 @@ Fixed
 - Issue :issue:`423` - adding marvin.yml documentation
 - Issue :issue:`431` - adding login documentation
 - Issue :issue:`151` - adding web spectrum tooltips
+- Issue :issue:`548` - failed to retrieve ModelCube extension in remote mode
 - Fixed typo by in method name ``Spectrum.derredden -> Spectrum.deredden``.
 - Fixed `#305 <https://github.com/sdss/marvin/issues/305>`_ - adding ivar propogation for np.log10(Map)
 - A bug when explicitly returning default parameters in a query (:issue:`484`)
 - Fixed `#510 <https://github.com/sdss/marvin/issues/510>`_ - fixes incorrect conversion to sky coordinates in map plotting.
+- Fixed `#563 <https://github.com/sdss/marvin/issues/563>`_ - fail retrieving Query datamodels in Python 3.6+.
 - Fixes bug with sasurl not properly being set to api.sdss.org on initial import
+- Incorrect mismatch warning between MPL-7 and DR15 (:issue:`495`).
 
 Refactored
 ^^^^^^^^^^

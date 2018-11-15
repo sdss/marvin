@@ -6,17 +6,16 @@
 # @Filename: dapall.py
 # @License: BSD 3-clause (http://www.opensource.org/licenses/BSD-3-Clause)
 #
-# @Last modified by: José Sánchez-Gallego
-# @Last modified time: 2018-07-13 16:56:35
+# @Last modified by: José Sánchez-Gallego (gallegoj@uw.edu)
+# @Last modified time: 2018-11-14 12:03:58
 
 import distutils
 import os
-import warnings
 
 import astropy.io.fits
 
 import marvin
-from marvin.core.exceptions import MarvinError, MarvinUserWarning
+from marvin.core.exceptions import MarvinError
 from marvin.utils.general import get_dapall_file, map_dapall
 
 
@@ -53,8 +52,7 @@ class DAPallMixIn(object):
             try:
                 dapall_data = self._get_dapall_from_file()
             except IOError:
-                warnings.warn('cannot find DAPall file. Trying remote request.',
-                              MarvinUserWarning)
+                marvin.log.debug('cannot find DAPall file. Trying remote request.')
                 dapall_data = self._get_from_api()
         elif self.data_origin == 'db':
             dapall_data = self._get_dapall_from_db()

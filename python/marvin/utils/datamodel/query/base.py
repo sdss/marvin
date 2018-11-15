@@ -5,7 +5,7 @@
 #
 # @Author: Brian Cherinka
 # @Date:   2017-08-22 22:43:15
-# @Last modified by: José Sánchez-Gallego (gallegoj@uw.edu)
+# @Last modified by:   Brian Cherinka
 # @Last modified time: 2018-11-08 12:26:08
 
 from __future__ import absolute_import, division, print_function
@@ -95,11 +95,10 @@ class QueryDataModel(object):
         ''' Get the keys from a remote source '''
 
         from marvin.api.api import Interaction
-        print('release', self.release)
+
         # if not urlmap then exit
         if not config.urlmap:
             self._keys = []
-            print('exiting remote call')
             return
 
         # try to get the url
@@ -114,7 +113,6 @@ class QueryDataModel(object):
 
         # make the call
         if url:
-            print('making remote call to', url, self.release)
             try:
                 ii = Interaction(url, params={'release': self.release, 'paramdisplay': 'all'})
             except Exception as e:
@@ -127,7 +125,6 @@ class QueryDataModel(object):
 
                 for key in list(PARAM_CACHE.keys()):
                     self._keys = PARAM_CACHE[key] if key in PARAM_CACHE else []
-                    print('length of keys', len(self._keys))
                     self._remove_query_params()
 
     def _check_aliases(self):

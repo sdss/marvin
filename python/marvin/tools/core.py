@@ -5,8 +5,8 @@
 # @Filename: core.py
 # @License: BSD 3-clause (http://www.opensource.org/licenses/BSD-3-Clause)
 #
-# @Last modified by:   Brian Cherinka
-# @Last modified time: 2018-08-11 20:35:37
+# @Last modified by: José Sánchez-Gallego (gallegoj@uw.edu)
+# @Last modified time: 2018-11-09 09:55:04
 
 from __future__ import absolute_import, division, print_function
 
@@ -220,7 +220,12 @@ class MarvinToolsClass(MMAMixIn):
 
         """
 
-        return marvin_pickle.restore(path, delete=delete)
+        from marvin.contrib.vacs.base import VACMixIn
+
+        res = marvin_pickle.restore(path, delete=delete)
+        res.vacs = VACMixIn.get_vacs(res)
+
+        return res
 
     def __del__(self):
         """Destructor for closing FITS files."""
