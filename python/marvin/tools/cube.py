@@ -7,7 +7,7 @@
 # @License: BSD 3-clause (http://www.opensource.org/licenses/BSD-3-Clause)
 #
 # @Last modified by: José Sánchez-Gallego (gallegoj@uw.edu)
-# @Last modified time: 2018-11-14 11:47:42
+# @Last modified time: 2018-11-15 07:19:30
 
 
 from __future__ import absolute_import, division, print_function
@@ -177,8 +177,8 @@ class Cube(MarvinToolsClass, NSAMixIn, GetApertureMixIn):
             assert isinstance(data, fits.HDUList), 'data is not an HDUList object'
         else:
             try:
-                with gunzip(self.filename) as gg:
-                    self.data = fits.open(gg.name)
+                # with gunzip(self.filename) as gg:
+                self.data = fits.open(self.filename)
             except (IOError, OSError) as err:
                 raise OSError('filename {0} cannot be found: {1}'.format(self.filename, err))
 
