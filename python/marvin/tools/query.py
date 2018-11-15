@@ -20,7 +20,7 @@ from operator import eq, ge, gt, le, lt, ne
 
 import numpy as np
 import six
-from marvin import config
+from marvin import config, log
 from marvin.api.api import Interaction
 from marvin.core import marvin_pickle
 from marvin.core.exceptions import MarvinError, MarvinUserWarning
@@ -223,7 +223,7 @@ class Query(object):
             try:
                 self._do_local()
             except MarvinError as e:
-                warnings.warn('local mode failed. Trying remote now.', MarvinUserWarning)
+                log.debug('local mode failed. Trying remote now.')
                 self._do_remote()
 
         # Sanity check to make sure data_origin has been properly set.
