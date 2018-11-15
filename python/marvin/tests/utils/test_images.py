@@ -6,7 +6,7 @@
 # @Author: Brian Cherinka
 # @Date:   2017-06-20 16:36:37
 # @Last modified by:   Brian Cherinka
-# @Last Modified time: 2017-11-13 15:16:57
+# @Last Modified time: 2018-11-15 11:57:23
 
 from __future__ import print_function, division, absolute_import
 from marvin.utils.general.images import getImagesByList, getImagesByPlate, getRandomImages, getDir3d, showImage
@@ -60,7 +60,7 @@ def base(mode, asurl):
 
 
 @pytest.fixture(scope='session', params=newgals)
-def newgalaxy(request, maindb, get_params, set_sasurl):
+def newgalaxy(request, maindb, get_params, saslocal):
     release, bintype, template = get_params
 
     gal = Galaxy(request.param)

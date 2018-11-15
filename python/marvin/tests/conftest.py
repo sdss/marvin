@@ -198,7 +198,7 @@ def check_config():
 URLMAP = None
 
 
-@pytest.fixture(scope='session')
+#@pytest.fixture(scope='session')
 def set_sasurl(loc='local', port=None):
     """Set the sasurl to local or test-utah, and regenerate the urlmap."""
     if not port:
@@ -219,7 +219,7 @@ def saslocal():
 
 
 @pytest.fixture(scope='session')
-def urlmap(set_sasurl):
+def urlmap(saslocal):
     """Yield the config urlmap."""
     return config.urlmap
 
