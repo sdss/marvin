@@ -743,16 +743,18 @@ def downloadList(inputlist, dltype='cube', **kwargs):
 
     i.e. $SAS_BASE_DIR/mangawork/manga/spectro/redux
 
-    Can download cubes, rss files, maps, mastar cubes, png images, default maps, or
-    the entire plate directory.
+    Can download cubes, rss files, maps, modelcubes, mastar cubes,
+    png images, default maps, or the entire plate directory.
+    dltype=`dap` is a special keyword that downloads all DAP files.  It sets binmode
+    and daptype to '*'
 
     Parameters:
         inputlist (list):
             Required.  A list of objects to download.  Must be a list of plate IDs,
             plate-IFUs, or manga-ids
-        dltype ({'cube', 'map', 'image', 'rss', 'mastar', 'default', 'plate'}):
+        dltype ({'cube', 'maps', 'modelcube', 'dap', image', 'rss', 'mastar', 'default', 'plate'}):
             Indicated type of object to download.  Can be any of
-            plate, cube, imagea, mastar, rss, map, or default (default map).
+            plate, cube, image, mastar, rss, map, modelcube, or default (default map).
             If not specified, the dltype defaults to cube.
         release (str):
             The MPL/DR version of the data to download.
@@ -771,6 +773,8 @@ def downloadList(inputlist, dltype='cube', **kwargs):
             Turns on verbosity during rsync
         limit (int):
             A limit to the number of items to download
+        test (bool):
+            If True, tests the download path construction but does not download
 
     Returns:
         NA: Downloads
@@ -786,11 +790,12 @@ def downloadList(inputlist, dltype='cube', **kwargs):
     release = kwargs.get('release', marvin.config.release)
     drpver, dapver = marvin.config.lookUpVersions(release=release)
     bintype = kwargs.get('bintype', '*')
-    binmode = kwargs.get('binmode', '*')
+    binmode = kwargs.get('binmode', None)
     daptype = kwargs.get('daptype', '*')
     dir3d = kwargs.get('dir3d', '*')
     n = kwargs.get('n', '*')
     limit = kwargs.get('limit', None)
+    test = kwargs.get('test', None)
 
     # check for sdss_access
     if not RsyncAccess:
@@ -798,8 +803,11 @@ def downloadList(inputlist, dltype='cube', **kwargs):
 
     # Assert correct dltype
     dltype = 'cube' if not dltype else dltype
-    assert dltype in ['plate', 'cube', 'mastar', 'rss', 'map', 'image',
-                      'default'], 'dltype must be one of plate, cube, mastar, image, rss, map, default'
+    assert dltype in ['plate', 'cube', 'mastar', 'modelcube', 'dap', 'rss', 'maps', 'image',
+                      'default'], ('dltype must be one of plate, cube, mastar, '
+                                   'image, rss, maps, modelcube, dap, default')
+
+    assert binmode in [None, '*', 'MAPS', 'LOGCUBE'], 'binmode can only be *, MAPS or LOGCUBE'
 
     # Assert correct dir3d
     if dir3d != '*':
@@ -819,12 +827,20 @@ def downloadList(inputlist, dltype='cube', **kwargs):
         name = 'mangadefault'
     elif dltype == 'plate':
         name = 'mangaplate'
-    elif dltype == 'map':
+    elif dltype == 'maps':
         # needs to change to include DR
         if '4' in release:
             name = 'mangamap'
         else:
             name = 'mangadap5'
+            binmode = 'MAPS'
+    elif dltype == 'modelcube':
+        name = 'mangadap5'
+        binmode = 'LOGCUBE'
+    elif dltype == 'dap':
+        name = 'mangadap5'
+        binmode = '*'
+        daptype = '*'
     elif dltype == 'mastar':
         name = 'mangamastar'
     elif dltype == 'image':
@@ -864,7 +880,10 @@ def downloadList(inputlist, dltype='cube', **kwargs):
 
     # get the list and download
     listofitems = rsync_access.get_urls() if as_url else rsync_access.get_paths()
-    rsync_access.commit(limit=limit)
+    if test:
+        return listofitems
+    else:
+        rsync_access.commit(limit=limit)
 
 
 def get_drpall_file(drpall=None, drpver=None):
