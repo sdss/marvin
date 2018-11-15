@@ -5,8 +5,8 @@
 #
 # @Author: Brian Cherinka
 # @Date:   2017-06-10 16:46:40
-# @Last modified by:   andrews
-# @Last modified time: 2018-10-16 10:10:98
+# @Last modified by: José Sánchez-Gallego (gallegoj@uw.edu)
+# @Last modified time: 2018-11-14 19:37:22
 
 from __future__ import absolute_import, division, print_function
 
@@ -36,7 +36,7 @@ def build_docs(ctx, clean=False):
 
     print('Building the docs')
     os.chdir('docs/sphinx')
-    ctx.run("make html")
+    ctx.run("make html", pty=True)
 
 
 @task
