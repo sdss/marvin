@@ -198,7 +198,7 @@ See the :ref:`datamodel <marvin-datamodel>` section for more information on how 
 
 Note that the `~marvin.tools.quantities.map.Map.plot` method returns the matplotlib `~matplotlib.figure.Figure` and `~matplotlib.axes.Axes` for the plot. We can use those to modify or save the plot. :ref:`Marvin plotting routines <marvin-plotting>` try to select the best parameters, colour maps, and dynamic ranges. You can modify those by passing extra arguments to `~marvin.tools.quantities.map.Map.plot`. You can learn more in the :ref:`Map plotting <marvin-utils-plot-map>` section. We will talk about the `~marvin.tools.quantities.map.Map` class in detail in :ref:`marvin-quantities` and in :ref:`marvin-map`.
 
-Let's take a step back and go back to ``hyb_maps``, our `~marvin.tools.maps.Maps` instance. We can access the `targeting bits <~marvin.tools.core.MarvinToolsClass.target_flags>` for that galaxy (for an introduction to maskbits check `this page <https://www.sdss.org/dr14/algorithms/bitmasks/>`) ::
+Let's take a step back and go back to ``hyb_maps``, our `~marvin.tools.maps.Maps` instance. We can access the `targeting bits <~marvin.tools.core.MarvinToolsClass.target_flags>` for that galaxy (for an introduction to maskbits check `this page <https://www.sdss.org/algorithms/bitmasks/>`) ::
 
     >>> hyb_maps.target_flags
     [<Maskbit 'MANGA_TARGET1' ['PRIMARY_PLUS_COM', 'COLOR_ENHANCED_COM', 'PRIMARY_v1_1_0', 'COLOR_ENHANCED_COM2', 'PRIMARY_v1_2_0']>,
@@ -280,7 +280,7 @@ or we can use `~cube.Cube.getSpaxel`, which accepts multiple arguments (refer to
 Working with quantities
 -----------------------
 
-Marvin presents scientific data in the form of `Astropy Quantities <http://docs.astropy.org/en/stable/units/quantity.html#quantity>`__. A Quantity is essentially a number with an associated physical unit. In Marvin we expand on that concept and extend the Quantities with a mask, an inverse variance (`why do we use ivar in MaNGA? <https://www.sdss.org/dr14/manga/manga-tutorials/manga-faq/#WhydoyououtputIVAR(inversevariance)insteadoferrors?>`__) and, when relevant, the associated wavelength. Marvin Quantities also provide useful methods to, for instance, calculate the SNR or plot the value. Marvin provides Quantities for 1D (`~marvin.tools.quantities.spectrum.Spectrum`, `~marvin.tools.quantities.analysis_props.AnalysisProperty`), 2D (`~marvin.tools.quantities.map.Map`), and 3D data (`~marvin.tools.quantities.datacube.DataCube`).
+Marvin presents scientific data in the form of `Astropy Quantities <http://docs.astropy.org/en/stable/units/quantity.html#quantity>`__. A Quantity is essentially a number with an associated physical unit. In Marvin we expand on that concept and extend the Quantities with a mask, an inverse variance (`why do we use ivar in MaNGA? <https://www.sdss.org/manga/manga-tutorials/manga-faq/#WhydoyououtputIVAR(inversevariance)insteadoferrors?>`__) and, when relevant, the associated wavelength. Marvin Quantities also provide useful methods to, for instance, calculate the SNR or plot the value. Marvin provides Quantities for 1D (`~marvin.tools.quantities.spectrum.Spectrum`, `~marvin.tools.quantities.analysis_props.AnalysisProperty`), 2D (`~marvin.tools.quantities.map.Map`), and 3D data (`~marvin.tools.quantities.datacube.DataCube`).
 
 All Quantities behave similarly. Let's start by getting a datacube (3D Quantity) from a `~marvin.tools.cube.Cube` object ::
 
