@@ -14,7 +14,8 @@ Accessing individual maps
 The Map quantity
 ----------------
 
-.. include:: bpt.rst
+BPT Diagrams
+------------
 
 Using the ModelCube class
 =========================

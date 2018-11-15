@@ -570,6 +570,7 @@ Plotting
     :maxdepth: 2
 
     utils/plotting
+    bpt
 
 Image utilities
 ^^^^^^^^^^^^^^^
