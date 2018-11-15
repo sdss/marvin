@@ -577,7 +577,7 @@ Image utilities
 .. toctree::
     :maxdepth: 2
 
-    utils/images
+    image
 
 
 .. _visual-guide:

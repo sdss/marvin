@@ -5,6 +5,7 @@ Image
 
 :ref:`marvin-tools-image` is a class to interact with MaNGA optical images for each galaxy.
 
+
 Getting Started
 ---------------
 
@@ -45,6 +46,7 @@ Or conversely, quickly access the image from any of the Marvin Tools
     im = cube.getImage()
     print(im)
     <Marvin Image (plateifu='8485-1901', mode='local', data-origin='file')>
+
 
 .. _marvin-image-using:
 
@@ -95,7 +97,7 @@ While ``Image.show`` produces a raw image, you have finer control over the image
 
     # plot the image and return the axis object
     from marvin.tools.image import Image
-    im = Image('8485-1901')
+    im = Image('8553-9102')
     ax = im.plot()
 
 Once you have the plot, you can overlay additional features, such as the IFU or sky fibers, or change the hexagon.
@@ -105,7 +107,7 @@ Once you have the plot, you can overlay additional features, such as the IFU or 
     :include-source: True
 
     from marvin.tools.image import Image
-    im = Image('8485-1901')
+    im = Image('8553-9102')
     ax = im.plot()
 
     # overlay the IFU fibers
@@ -122,7 +124,6 @@ By default the sky fibers are not loaded in the bundle. ``Image.bundle.skies`` w
 
 Note however that the sky fibers are often positioned far away from the central galaxy.  If the sky fiber coordinates are outside the range of your image, you will see the error message, ``MarvinError: Cannot overlay sky fibers.  Image is too small.  Please retrieve a bigger image cutout``.  You will need to generate a larger cutout image of the galaxy.
 
-
 Generating a new Image Cutout
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -133,7 +134,7 @@ There is a new utility class, :class:`marvin.utils.general.bundle.Cutout` which 
     :include-source: True
 
     from marvin.tools.image import Image
-    im = Image('8485-1901')
+    im = Image('8553-9102')
 
     # generate a new image
     # inputs are height and width in arcsec, and a arcsec/pixel scale
@@ -190,20 +191,24 @@ The old :ref:`marvin-images` functions documented there have been deprecated and
 
 They all work in much the same way except now they utilize the ``Marvin Image`` tool.  The ``get_xxx`` functions now return a list of Marvin Images.  Each function accepts a ``download`` keyword argument that, when set, will download all the images in the list in bulk using ``sdss_access``.
 
+
 .. _marvin-image-api:
 
 Reference/API
 -------------
 
-.. rubric:: Class Inheritance Diagram
+Class Inheritance Diagram
+^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. inheritance-diagram:: marvin.tools.image.Image
 
-.. rubric:: Class
+Class
+^^^^^
 
 .. autosummary:: marvin.tools.image.Image
 
-.. rubric:: Methods
+Methods
+^^^^^^^
 
 .. autosummary::
 
@@ -218,4 +223,3 @@ Reference/API
     marvin.tools.image.Image.get_random
     marvin.tools.image.Image.by_plate
     marvin.tools.image.Image.from_list
-
