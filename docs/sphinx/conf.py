@@ -375,11 +375,11 @@ GoogleDocstring._unpatched_parse = GoogleDocstring._parse
 GoogleDocstring._parse = patched_parse
 
 
-plot_pre_code = """
-import matplotlib.pyplot as plt
+# plot_pre_code = """
+# import matplotlib.pyplot as plt
 
-plt.style.use(['seaborn-dark', 'seaborn-darkgrid'])
-"""
+# plt.style.use(['seaborn-dark', 'seaborn-darkgrid'])
+# """
 
 # plot_apply_rcparams = False
 
