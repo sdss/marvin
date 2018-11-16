@@ -6,12 +6,25 @@
 # @Author: Brian Cherinka
 # @Date:   2017-05-24 18:27:50
 # @Last modified by:   Brian Cherinka
-# @Last Modified time: 2017-11-09 20:55:57
+# @Last Modified time: 2018-11-16 14:33:17
 
-from __future__ import print_function, division, absolute_import
-from marvin.utils.datamodel.query.base import query_params, QueryParameter
-import pytest
+from __future__ import absolute_import, division, print_function
+
 import itertools
+from imp import reload
+
+import marvin
+import pytest
+from marvin import config
+from marvin.utils.datamodel.query.base import query_params
+
+
+@pytest.fixture(scope='function', autouse=True)
+def allow_dap(monkeypatch):
+    monkeypatch.setattr(config, '_allow_DAP_queries', True)
+    global query_params
+    reload(marvin.utils.datamodel.query.base)
+    from marvin.utils.datamodel.query.base import query_params
 
 
 @pytest.fixture(scope='session')
@@ -102,7 +115,7 @@ class TestParamList(object):
         assert myparam.name == name
 
     @pytest.mark.parametrize('group, param, ltype, expname',
-                             [('kin', 'havel', None, None),
+                             [('kin', 'havel', None, 'spaxelprop.emline_gvel_ha_6564'),
                               ('kin', 'havel', 'full', 'spaxelprop.emline_gvel_ha_6564'),
                               ('kin', 'havel', 'short', 'havel'),
                               ('kin', 'havel', 'display', 'Halpha Velocity')])
@@ -110,7 +123,7 @@ class TestParamList(object):
         kwargs = {'name_type': ltype} if ltype else {}
         params = query_params[group].list_params(**kwargs)
         if not ltype:
-            assert isinstance(params[0], QueryParameter)
+            assert params[0].full == expname
         else:
             assert params[0] == expname
 
@@ -191,4 +204,3 @@ class TestQueryParams(object):
         grp = query_params[group]
         qp = grp[name]
         assert qp.full == full
-
