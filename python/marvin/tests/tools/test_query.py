@@ -6,7 +6,7 @@
 # @Author: Brian Cherinka
 # @Date:   2017-05-25 10:11:21
 # @Last modified by:   Brian Cherinka
-# @Last Modified time: 2018-11-16 16:20:06
+# @Last Modified time: 2018-11-16 18:05:57
 
 from __future__ import absolute_import, division, print_function
 
@@ -291,6 +291,9 @@ def rquery(request):
     q = None
     config.forceDbOn()
 
+#
+# Below here begins a low refactor of the query tests
+#
 
 class TestQueryLocal(object):
     mode = 'local'
@@ -330,17 +333,34 @@ class TestQueryLocal(object):
                               ('stellar_z < 0.1', None, 'dapdb', 'dapall', True),
                               ('sb_1re > 0.2', None, 'dapdb', 'cube', False)
                               ],
-                             ids=['nsaz', 'nodap', 'dap', 'daprp', 'dapallrp', 'dapall', 'wrongtableinschema'])
+                             ids=['nsaz', 'nodap', 'daprp', 'dap', 'dapallrp',
+                                  'dapall', 'wrongtableinschema'])
     def test_checkfor(self, sf, rps, schema, tables, check):
         sf = sf or self.sf
         query = Query(search_filter=sf, return_params=rps, mode=self.mode)
         isin = query._check_for(query.params, schema=schema, tables=tables)
         assert isin == check
 
+    @pytest.mark.parametrize('sf, rps, schema, tables, check',
+                             [(None, None, None, ['cube', 'nsa'], True),
+                              ('sb_1re > 0.2', None, None, 'dapall', False),
+                              ('sb_1re > 0.2', None, 'dapdb', 'dapall', False),
+                              ('sb_1re > 0.2', None, 'dapdb', ['dapall', 'bintype', 'template'], True),
+                              (None, 'stellar_z', 'dapdb', ['dapall', 'bintype', 'template'], True)
+                              ],
+                             ids=['drp', 'noschema', 'onlydapall', 'good', 'goodrp'])
+    def test_checkonly(self, sf, rps, schema, tables, check):
+        sf = sf or self.sf
+        query = Query(search_filter=sf, return_params=rps, mode=self.mode)
+        isin = query._check_for(query.params, schema=schema, tables=tables, only=True)
+        assert isin == check
+
     @pytest.mark.parametrize('sf, rps',
                              [(None, 'stellar_vel'),
-                              ('emline_gflux_ha_6564 > 25', None)],
-                             ids=['nodaprp', 'nodap'])
+                              ('emline_gflux_ha_6564 > 25', None),
+                              ('stellar_z < 0.1 and stellar_vel > 50', None),
+                              ('sb_1re > 0.2', 'stellar_vel')],
+                             ids=['nodaprp', 'nodap', 'dapall', 'daprp'])
     def test_nodap(self, monkeypatch, sf, rps):
         sf = sf or self.sf
         monkeypatch.setattr(config, '_allow_DAP_queries', False)
@@ -371,7 +391,9 @@ class TestQueryRemote(object):
     mode = 'remote'
     sf = 'nsa.z < 0.1'
 
-    @pytest.mark.parametrize('rps', [(['g_r']), (['cube.ra', 'cube.dec']), (['emline_gflux_ha_6564'])], ids=['g-r', 'radec', 'haflux'])
+    @pytest.mark.parametrize('rps', [(['g_r']), (['cube.ra', 'cube.dec']),
+                                     (['emline_gflux_ha_6564'])],
+                             ids=['g-r', 'radec', 'haflux'])
     def test_return_params(self, rps):
         base = ['cube.ra', 'cube.dec']
         query = Query(search_filter=self.sf, mode=self.mode, return_params=base + rps)

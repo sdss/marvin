@@ -6,7 +6,7 @@
 # @Author: Brian Cherinka
 # @Date:   2018-08-04 20:09:38
 # @Last modified by:   Brian Cherinka
-# @Last Modified time: 2018-11-15 17:38:36
+# @Last Modified time: 2018-11-16 18:06:49
 
 from __future__ import print_function, division, absolute_import, unicode_literals
 
@@ -992,8 +992,8 @@ class Query(object):
         Parameters:
             parameters (list)
                 List of string parameters names to use in check
-            schema (list):
-                List of schema names to check for in parameter list
+            schema (str):
+                Schema name to check for in parameter list
             tables (list):
                 List of table names to check for in parameter list
             only (bool):
@@ -1009,13 +1009,23 @@ class Query(object):
 
         fparams = self._marvinform._param_form_lookup.mapToColumn(parameters)
         fparams = [fparams] if not isinstance(fparams, list) else fparams
-        if schema:
+        if schema and not tables:
             inschema = [schema in c.class_.__table__.schema for c in fparams]
             return True if fxn(inschema) else False
         if tables:
+            schema_cond = schema if schema else ''
             tables = [tables] if not isinstance(tables, list) else tables
-            intables = sum([[t in c.class_.__table__.name for c in fparams] for t in tables], [])
-            return True if fxn(intables) else False
+            # convert to full names
+            tables = [self._marvinform._param_form_lookup._tableShortcuts.get(t, t) for t in tables]
+            # get the parameter table names
+            param_tables = [c.class_.__table__.name for c in fparams
+                            if schema_cond in c.class_.__table__.schema]
+            if only:
+                diff = set(param_tables) ^ set(tables)
+                return diff == set()
+            else:
+                intables = sum([[t in c for c in param_tables] for t in tables], [])
+                return True if fxn(intables) else False
 
     def _build_query(self):
         ''' Build the query '''
@@ -1043,12 +1053,9 @@ class Query(object):
 
             # Checks if the only table queried from dapdb is dapall. In that
             # case we allow the query.
-            fparams = self._marvinform._param_form_lookup.mapToColumn(self.params)
-            fparams = [fparams] if not isinstance(fparams, list) else fparams
-            tables = [c.class_.__table__.name for c in fparams
-                      if 'dapdb' in c.class_.__table__.schema]
             # checking for dapall, bintype, template since we have default parameters now
-            all_dapall = all([tt in ['dapall', 'bintype', 'template'] for tt in tables])
+            all_dapall = self._check_for(self.params, schema='dapdb',
+                                         tables=['dapall', 'bintype', 'template'], only=True)
 
             if not all_dapall and not config._allow_DAP_queries:
                 raise NotImplementedError(
