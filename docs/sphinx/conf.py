@@ -24,6 +24,8 @@ os.environ['MANGA_LOCALHOST'] = '1'
 
 # Importing matplotlib here with agg to prevent tkinter error in readthedocs
 import matplotlib  # noqa
+import matplotlib.sphinxext.plot_directive
+
 matplotlib.use('agg')
 
 
