@@ -32,6 +32,8 @@ Marvin Tools provide:
 - Access to NSA and DRPall data.
 - Easy data download.
 
+.. _gal-tools-getting-started:
+
 Getting started
 ---------------
 
