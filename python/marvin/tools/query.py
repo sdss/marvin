@@ -6,7 +6,7 @@
 # @Author: Brian Cherinka
 # @Date:   2018-08-04 20:09:38
 # @Last modified by:   Brian Cherinka
-# @Last Modified time: 2018-10-17 14:07:33
+# @Last Modified time: 2018-11-16 18:06:49
 
 from __future__ import print_function, division, absolute_import, unicode_literals
 
@@ -984,18 +984,48 @@ class Query(object):
 
         self._parsed = parsed
 
-    def _check_for(self, parameters, schema=None, tables=None):
-        ''' Check if a schema or test of tables names are in the provided parameters '''
+    def _check_for(self, parameters, schema=None, tables=None, only=None):
+        ''' Check if a schema or test of tables names are in the provided parameters
+
+        Checks a list of parameters to see if any schema or table names are present
+
+        Parameters:
+            parameters (list)
+                List of string parameters names to use in check
+            schema (str):
+                Schema name to check for in parameter list
+            tables (list):
+                List of table names to check for in parameter list
+            only (bool):
+                If True, checks if all parameters match the schema/table name conditions
+
+        Returns:
+            True if any/all of the parameters match the schema or tables
+
+        '''
+
+        # function to check if all or any parameters meet conditions
+        fxn = all if only else any
 
         fparams = self._marvinform._param_form_lookup.mapToColumn(parameters)
         fparams = [fparams] if not isinstance(fparams, list) else fparams
-        if schema:
+        if schema and not tables:
             inschema = [schema in c.class_.__table__.schema for c in fparams]
-            return True if any(inschema) else False
+            return True if fxn(inschema) else False
         if tables:
+            schema_cond = schema if schema else ''
             tables = [tables] if not isinstance(tables, list) else tables
-            intables = sum([[t in c.class_.__table__.name for c in fparams] for t in tables], [])
-            return True if any(intables) else False
+            # convert to full names
+            tables = [self._marvinform._param_form_lookup._tableShortcuts.get(t, t) for t in tables]
+            # get the parameter table names
+            param_tables = [c.class_.__table__.name for c in fparams
+                            if schema_cond in c.class_.__table__.schema]
+            if only:
+                diff = set(param_tables) ^ set(tables)
+                return diff == set()
+            else:
+                intables = sum([[t in c for c in param_tables] for t in tables], [])
+                return True if fxn(intables) else False
 
     def _build_query(self):
         ''' Build the query '''
@@ -1018,8 +1048,20 @@ class Query(object):
         # check if the query filter is functional
         self._run_functional_queries()
 
-        # check if the query filter is against the DAP
-        if self._check_for(self.filter_params.keys(), schema='dapdb'):
+        # check if the query parameters are against the DAP
+        if self._check_for(self.params, schema='dapdb'):
+
+            # Checks if the only table queried from dapdb is dapall. In that
+            # case we allow the query.
+            # checking for dapall, bintype, template since we have default parameters now
+            all_dapall = self._check_for(self.params, schema='dapdb',
+                                         tables=['dapall', 'bintype', 'template'], only=True)
+
+            if not all_dapall and not config._allow_DAP_queries:
+                raise NotImplementedError(
+                    'DAP spaxel queries are disabled in this version. '
+                    'We plan to reintroduce this feature in the future.')
+
             self._check_dapall_query()
 
     def _set_query_parameters(self):
@@ -1623,7 +1665,7 @@ class Query(object):
                 The function condition used in the query filter
 
         Example:
-            >>> fxn = 'npergood(junk.emline_gflux_ha_6564 > 25) >= 20'
+            >>> fxn = 'npergood(spaxelprop.emline_gflux_ha_6564 > 25) >= 20'
             >>> Syntax: npergood() - function name
             >>>         npergood(expression) operator value
             >>>

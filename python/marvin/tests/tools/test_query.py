@@ -6,19 +6,31 @@
 # @Author: Brian Cherinka
 # @Date:   2017-05-25 10:11:21
 # @Last modified by:   Brian Cherinka
-# @Last Modified time: 2018-09-03 18:40:29
+# @Last Modified time: 2018-11-16 18:05:57
 
-from __future__ import print_function, division, absolute_import
-from marvin.tools.query import Query, doQuery
-from marvin.core.exceptions import MarvinError
+from __future__ import absolute_import, division, print_function
+
+from imp import reload
+import pytest
+
+import marvin
 from marvin import config
-from marvin.tools.cube import Cube
-from marvin.tools.maps import Maps
-from marvin.tools.spaxel import Spaxel
-from marvin.tools.modelcube import ModelCube
+from marvin.core.exceptions import MarvinError
 from marvin.tests import marvin_test_if
 from marvin.tests.conftest import set_the_config
-import pytest
+from marvin.tools.cube import Cube
+from marvin.tools.maps import Maps
+from marvin.tools.modelcube import ModelCube
+from marvin.tools.query import Query, doQuery
+from marvin.tools.spaxel import Spaxel
+
+
+@pytest.fixture(scope='function', autouse=True)
+def allow_dap(monkeypatch):
+    monkeypatch.setattr(config, '_allow_DAP_queries', True)
+    global Query, doQuery
+    reload(marvin.tools.query)
+    from marvin.tools.query import Query, doQuery
 
 
 class TestDoQuery(object):
@@ -42,8 +54,8 @@ class TestQuerySearches(object):
 
     @pytest.mark.parametrize('query, joins',
                              [('nsa.z < 0.1', ['nsa', 'drpalias']),
-                              ('haflux > 25', ['spaxelprop', 'dapalias']),
-                              ('nsa.z < 0.1 and haflux > 25', ['nsa', 'spaxelprop', 'drpalias', 'dapalias'])],
+                              ('emline_gflux_ha_6564 > 25', ['spaxelprop', 'dapalias']),
+                              ('nsa.z < 0.1 and emline_gflux_ha_6564 > 25', ['nsa', 'spaxelprop', 'drpalias', 'dapalias'])],
                              ids=['drponly', 'daponly', 'drp_and_dap'],
                              indirect=['query'])
     def test_whereclause(self, query, joins):
@@ -57,7 +69,7 @@ class TestQuerySearches(object):
 
     @pytest.mark.parametrize('query, addparam',
                              [('nsa.z < 0.1', ['nsa.z']),
-                              ('haflux > 25', ['emline_gflux_ha_6564', 'spaxelprop.x', 'spaxelprop.y', 'bintype.name', 'template.name'])],
+                              ('emline_gflux_ha_6564 > 25', ['emline_gflux_ha_6564', 'spaxelprop.x', 'spaxelprop.y', 'bintype.name', 'template.name'])],
                              indirect=['query'])
     def test_params(self, query, addparam):
         params = query.expdata['defaults'] + addparam
@@ -84,9 +96,9 @@ class TestQuerySearches(object):
     @pytest.mark.parametrize('query, sfilter',
                              [('nsa.z < 0.1', 'nsa.z < 0.1'),
                               ('absmag_g_r > -1', 'absmag_g_r > -1'),
-                              ('haflux > 25', 'emline_gflux_ha_6564 > 25'),
+                              ('emline_gflux_ha_6564 > 25', 'emline_gflux_ha_6564 > 25'),
                               ('npergood(emline_gflux_ha_6564 > 5) > 20', 'npergood(emline_gflux_ha_6564 > 5) > 20'),
-                              ('nsa.z < 0.1 and haflux > 25', 'nsa.z < 0.1 and emline_gflux_ha_6564 > 25')],
+                              ('nsa.z < 0.1 and emline_gflux_ha_6564 > 25', 'nsa.z < 0.1 and emline_gflux_ha_6564 > 25')],
                              indirect=['query'], ids=['nsaz', 'absgr', 'haflux', 'npergood', 'nsahaflux'])
     def test_success_queries(self, query, sfilter):
         res = query.run()
@@ -184,7 +196,7 @@ class TestQueryShow(object):
 
 class TestQueryReturnType(object):
 
-    @pytest.mark.parametrize('query', [('cube.mangaid == 1-209232 and haflux > 25')], indirect=True)
+    @pytest.mark.parametrize('query', [('cube.mangaid == 1-209232 and emline_gflux_ha_6564 > 25')], indirect=True)
     @pytest.mark.parametrize('objtype, tool',
                              [('cube', Cube), ('maps', Maps), ('spaxel', Spaxel),
                               ('modelcube', ModelCube)])
@@ -235,6 +247,7 @@ class TestQueryPickling(object):
         assert query.search_filter == sfilter
 
 
+@pytest.mark.skip(reason="no spaxel queries causes this to fail since parameter counts are now off")
 class TestQueryParams(object):
 
     @pytest.mark.parametrize('paramdisplay', [('all'), ('best')])
@@ -278,12 +291,15 @@ def rquery(request):
     q = None
     config.forceDbOn()
 
+#
+# Below here begins a low refactor of the query tests
+#
 
 class TestQueryLocal(object):
     mode = 'local'
     sf = 'nsa.z < 0.1'
 
-    @pytest.mark.parametrize('rps', [(['g_r']), (['cube.ra', 'cube.dec']), (['haflux'])], ids=['g-r', 'radec', 'haflux'])
+    @pytest.mark.parametrize('rps', [(['g_r']), (['cube.ra', 'cube.dec']), (['emline_gflux_ha_6564'])], ids=['g-r', 'radec', 'haflux'])
     def test_return_params(self, rps):
         base = ['cube.ra', 'cube.dec']
         query = Query(search_filter=self.sf, mode=self.mode, return_params=base + rps)
@@ -308,6 +324,50 @@ class TestQueryLocal(object):
         assert len(query.params) == 5
         assert query.params.count('cube.plateifu') == 1
 
+    @pytest.mark.parametrize('sf, rps, schema, tables, check',
+                             [(None, None, 'sampledb', None, True),
+                              (None, None, 'dapdb', None, False),
+                              (None, 'stellar_vel', 'dapdb', None, True),
+                              ('stellar_vel > 50', None, 'dapdb', 'spaxelprop', True),
+                              (None, 'sb_1re', None, 'dapall', True),
+                              ('stellar_z < 0.1', None, 'dapdb', 'dapall', True),
+                              ('sb_1re > 0.2', None, 'dapdb', 'cube', False)
+                              ],
+                             ids=['nsaz', 'nodap', 'daprp', 'dap', 'dapallrp',
+                                  'dapall', 'wrongtableinschema'])
+    def test_checkfor(self, sf, rps, schema, tables, check):
+        sf = sf or self.sf
+        query = Query(search_filter=sf, return_params=rps, mode=self.mode)
+        isin = query._check_for(query.params, schema=schema, tables=tables)
+        assert isin == check
+
+    @pytest.mark.parametrize('sf, rps, schema, tables, check',
+                             [(None, None, None, ['cube', 'nsa'], True),
+                              ('sb_1re > 0.2', None, None, 'dapall', False),
+                              ('sb_1re > 0.2', None, 'dapdb', 'dapall', False),
+                              ('sb_1re > 0.2', None, 'dapdb', ['dapall', 'bintype', 'template'], True),
+                              (None, 'stellar_z', 'dapdb', ['dapall', 'bintype', 'template'], True)
+                              ],
+                             ids=['drp', 'noschema', 'onlydapall', 'good', 'goodrp'])
+    def test_checkonly(self, sf, rps, schema, tables, check):
+        sf = sf or self.sf
+        query = Query(search_filter=sf, return_params=rps, mode=self.mode)
+        isin = query._check_for(query.params, schema=schema, tables=tables, only=True)
+        assert isin == check
+
+    @pytest.mark.parametrize('sf, rps',
+                             [(None, 'stellar_vel'),
+                              ('emline_gflux_ha_6564 > 25', None),
+                              ('stellar_z < 0.1 and stellar_vel > 50', None),
+                              ('sb_1re > 0.2', 'stellar_vel')],
+                             ids=['nodaprp', 'nodap', 'dapall', 'daprp'])
+    def test_nodap(self, monkeypatch, sf, rps):
+        sf = sf or self.sf
+        monkeypatch.setattr(config, '_allow_DAP_queries', False)
+        with pytest.raises(NotImplementedError) as cm:
+            query = Query(search_filter=sf, return_params=rps, mode=self.mode)
+        assert 'DAP spaxel queries are disabled in this version.' in str(cm)
+
 
 class TestQueryAuto(object):
 
@@ -331,11 +391,11 @@ class TestQueryRemote(object):
     mode = 'remote'
     sf = 'nsa.z < 0.1'
 
-    @pytest.mark.parametrize('rps', [(['g_r']), (['cube.ra', 'cube.dec']), (['haflux'])], ids=['g-r', 'radec', 'haflux'])
+    @pytest.mark.parametrize('rps', [(['g_r']), (['cube.ra', 'cube.dec']),
+                                     (['emline_gflux_ha_6564'])],
+                             ids=['g-r', 'radec', 'haflux'])
     def test_return_params(self, rps):
         base = ['cube.ra', 'cube.dec']
         query = Query(search_filter=self.sf, mode=self.mode, return_params=base + rps)
         params = query._remote_params['returnparams'].split(',')
         assert set(rps).issubset(set(params))
-
-

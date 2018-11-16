@@ -290,9 +290,10 @@ class ParamFormLookupDict(dict):
                     cut = {name.lower(): current.lower().replace('spaxelprop', spaxname)}
                     dapcut.update(cut)
 
-        # add junk shortcuts
-        junkcuts = {k.replace('spaxelprop', 'junk'): v for k, v in dapcut.items()}
-        dapcut.update(junkcuts)
+            # since for DRs spaxelprop may not be in the dictionary a la MPL4: SpaxelProp
+            # we need to add it in so the shortcut "spaxelprop" can correctly point to the right db param
+            if 'spaxelprop' not in dapcut and current:
+                dapcut.update({'spaxelprop': current.lower().replace('spaxelprop', spaxname)})
 
         # update the main dictionary
         self._tableShortcuts.update(dapcut)
@@ -360,9 +361,9 @@ class SearchForm(Form):
     ''' Main Search Level WTForm for Marvin '''
 
     searchbox = StringField("<a target='_blank' href='https://sdss-marvin.readthedocs.io/en/stable/tools/query/query_using.html'>Input Search Filter</a>",
-        [validators.Length(min=3, message='Input must have at least 3 characters'),
-                            validators.DataRequired(message='Input filter string required'),
-                            ValidOperand('[<>=between]', message='Input must contain a valid operand.')])
+                            [validators.Length(min=3, message='Input must have at least 3 characters'),
+                             validators.DataRequired(message='Input filter string required'),
+                             ValidOperand('[<>=betweenradial]', message='Input must contain a valid operand.')])
     returnparams = SelectMultipleField("<a target='_blank' href='https://api.sdss.org/doc/manga/marvin/query_params.html'>Return Parameters</a>")
     submitsearch = SubmitField('Search')
 
