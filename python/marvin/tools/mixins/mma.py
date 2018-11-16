@@ -275,7 +275,7 @@ class MMAMixIn(object, six.with_metaclass(abc.ABCMeta)):
             if marvindb:
                 testDbConnection(marvindb.session)
 
-            if marvindb.db and not self._ignore_db:
+            if marvindb and marvindb.db and not self._ignore_db:
                 self.mode = 'local'
                 self.data_origin = 'db'
             else:
