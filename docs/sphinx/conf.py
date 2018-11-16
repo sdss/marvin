@@ -20,21 +20,21 @@ import subprocess
 import sys
 
 # Hotfix to make sure local mode works
-os.environ['MANGA_LOCALHOST'] = '1'
+# os.environ['MANGA_LOCALHOST'] = '1'
 
 # Importing matplotlib here with agg to prevent tkinter error in readthedocs
-import matplotlib  # noqa
-import matplotlib.sphinxext.plot_directive
+# import matplotlib  # noqa
+# import matplotlib.sphinxext.plot_directive
 
-matplotlib.use('agg')
+# matplotlib.use('agg')
 
 
 from sphinx.ext.napoleon.docstring import GoogleDocstring
 
 import marvin
 
-if marvin.config.db is not None:
-    marvin.config.forceDbOff()
+# if marvin.config.db is not None:
+    # marvin.config.forceDbOff()
 
 
 # Comment if you do not want to use bootstrap themes.

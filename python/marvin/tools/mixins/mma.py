@@ -272,7 +272,8 @@ class MMAMixIn(object, six.with_metaclass(abc.ABCMeta)):
         elif self.plateifu:
 
             from marvin import marvindb
-            testDbConnection(marvindb.session)
+            if marvindb:
+                testDbConnection(marvindb.session)
 
             if marvindb.db and not self._ignore_db:
                 self.mode = 'local'
