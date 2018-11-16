@@ -6,15 +6,15 @@
 # @Author: Brian Cherinka
 # @Date:   2017-05-24 18:27:50
 # @Last modified by:   Brian Cherinka
-# @Last Modified time: 2018-11-16 14:33:17
+# @Last Modified time: 2018-11-16 14:35:44
 
 from __future__ import absolute_import, division, print_function
 
 import itertools
+import pytest
 from imp import reload
 
 import marvin
-import pytest
 from marvin import config
 from marvin.utils.datamodel.query.base import query_params
 

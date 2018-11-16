@@ -6,7 +6,7 @@
 # @Author: Brian Cherinka
 # @Date:   2018-11-15 10:27:30
 # @Last modified by:   Brian Cherinka
-# @Last Modified time: 2018-11-15 12:00:11
+# @Last Modified time: 2018-11-16 10:12:52
 
 from __future__ import print_function, division, absolute_import
 
@@ -38,6 +38,7 @@ def paramtype():
 
 
 class TestDataModel(object):
+
 
     def test_local_param_count(self, release, paramtype):
 
