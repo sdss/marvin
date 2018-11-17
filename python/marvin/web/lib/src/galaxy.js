@@ -2,7 +2,7 @@
 * @Author: Brian Cherinka
 * @Date:   2016-04-13 16:49:00
 * @Last Modified by:   Brian Cherinka
-* @Last Modified time: 2018-07-17 16:42:10
+* @Last Modified time: 2018-11-17 14:36:53
 */
 
 //
@@ -435,8 +435,9 @@ class Galaxy {
         if (type === 'galaxy') {
             let x = this.mygalaxy[this.nsachoices[index].x];
             let y = this.mygalaxy[this.nsachoices[index].y];
-            let xrev = (this.nsachoices[index].x.search('absmag') > -1) ? true : false;
-            let yrev = (this.nsachoices[index].y.search('absmag') > -1) ? true : false;
+            let pattern = 'absmag_[a-z]$';
+            let xrev = (this.nsachoices[index].x.search(pattern) > -1) ? true : false;
+            let yrev = (this.nsachoices[index].y.search(pattern) > -1) ? true : false;
             data = [{'name':this.plateifu,'x':x, 'y':y}];
             options = {xtitle:this.nsachoices[index].xtitle, ytitle:this.nsachoices[index].ytitle,
                        title:this.nsachoices[index].title, galaxy:{name:this.plateifu}, xrev:xrev,
