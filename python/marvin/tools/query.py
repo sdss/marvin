@@ -6,7 +6,7 @@
 # @Author: Brian Cherinka
 # @Date:   2018-08-04 20:09:38
 # @Last modified by:   Brian Cherinka
-# @Last Modified time: 2018-11-16 18:06:49
+# @Last Modified time: 2018-11-18 17:59:56
 
 from __future__ import print_function, division, absolute_import, unicode_literals
 
@@ -919,8 +919,8 @@ class Query(object):
 
         self.return_params = full_returnparams
 
-        # remove any return parameters that are also defaults
-        use_only = [f for f in full_returnparams if f not in self.default_params]
+        # remove any return parameters that aren't already in the list of params
+        use_only = self._filter_duplicates(full_returnparams)
 
         # add the return parameters to the main set of parameters
         self.params.extend(use_only)
@@ -951,7 +951,8 @@ class Query(object):
         # update the parameters dictionary
         self._check_parsed(parsed)
         self.filter_params.update(parsed.params)
-        filterkeys = [key for key in parsed.uniqueparams if key not in self.params]
+        # remove keys that are already in the list of params
+        filterkeys = self._filter_duplicates(parsed.uniqueparams)
         self.params.extend(filterkeys)
 
     def _check_shortcuts_in_filter(self):
@@ -983,6 +984,45 @@ class Query(object):
             parsed.functions = [parsed]
 
         self._parsed = parsed
+
+    def _filter_duplicates(self, columns, use_params='all'):
+        ''' Filter out parameter duplicates
+
+        Parameters:
+            columns (list):
+                A list of parameter names to check for duplicates in
+            use_params (str):
+                Indicates which parameter set to check the input columns against.
+                Choices are "all" (default), "default", "return", "or filter".
+                "all" uses self.params
+
+        Returns:
+            A list of new parameter names to add without existing duplicates
+        '''
+
+        assert use_params in ['all', 'default', 'return', 'filter'], (
+            'Can only be "all", "default", "return", or "filter"')
+
+        # get the params attribute
+        if use_params == 'all':
+            param_name = 'params'
+        else:
+            param_name = '{0}_params'.format(use_params)
+        params = self.__getattribute__(param_name)
+
+        # perform the check
+        use_only = []
+        for col in columns:
+            # get the shortcut name
+            shortcol = self._marvinform._param_form_lookup.get_shortcut_name(col)
+            # if column or short name is already in list of params, add it
+            if col not in params and shortcol not in params:
+                # don't use the real column name for spaxelprop
+                key = shortcol if 'spaxelprop' in col else col
+                use_only.append(key)
+
+        return use_only
+
 
     def _check_for(self, parameters, schema=None, tables=None, only=None):
         ''' Check if a schema or test of tables names are in the provided parameters
@@ -1077,7 +1117,10 @@ class Query(object):
         # adjust the default parameters for any necessary DAP
         self._add_default_params(['obsinfo.expnum', 'obsinfo.mgdpos'], tables=['obsinfo'])
 
-        self.params = [item for item in self.params if item in set(self.params)]
+        # final check to remove duplicates
+        parset = set()
+        psadd = parset.add
+        self.params = [item for item in self.params if not (item in parset or psadd(item))]
 
         # create the list of parameter attributes
         queryparams = self._marvinform._param_form_lookup.mapToColumn(self.params)

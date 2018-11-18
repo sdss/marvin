@@ -241,27 +241,32 @@ class ParamFormLookupDict(dict):
         self._init_table_shortcuts()
         self._init_name_shortcuts()
 
-    def _apply_shortcuts(self, key):
+    def _apply_shortcuts(self, key, reverse=None):
         ''' Apply the shortcuts to the key '''
 
+        full = self._reverse_shorts(self._fullShortcuts) if reverse else self._fullShortcuts
+        schema = self._reverse_shorts(self._schemaShortcuts) if reverse else self._schemaShortcuts
+        table = self._reverse_shorts(self._tableShortcuts) if reverse else self._tableShortcuts
+        name = self._reverse_shorts(self._nameShortcuts) if reverse else self._nameShortcuts
+
         # Apply any full name shortcuts
-        if key in self._fullShortcuts:
-            return self._fullShortcuts[key].split('.')
+        if key in full:
+            return full[key].split('.')
 
         # Gets the paths that match the key
         keySplits = key.split('.')
 
         # Apply schema shortcuts
-        if len(keySplits) >= 3 and keySplits[-3] in self._schemaShortcuts:
-            keySplits[-3] = self._schemaShortcuts[keySplits[-3]]
+        if len(keySplits) >= 3 and keySplits[-3] in schema:
+            keySplits[-3] = schema[keySplits[-3]]
 
         # Applies table shortcuts
-        if len(keySplits) >= 2 and keySplits[-2] in self._tableShortcuts:
-            keySplits[-2] = self._tableShortcuts[keySplits[-2]]
+        if len(keySplits) >= 2 and keySplits[-2] in table:
+            keySplits[-2] = table[keySplits[-2]]
 
         # Applies name shortcuts
-        if len(keySplits) >= 1 and keySplits[-1] in self._nameShortcuts:
-            keySplits[-1] = self._nameShortcuts[keySplits[-1]]
+        if len(keySplits) >= 1 and keySplits[-1] in name:
+            keySplits[-1] = name[keySplits[-1]]
 
         return keySplits
 
@@ -272,7 +277,13 @@ class ParamFormLookupDict(dict):
 
     def get_shortcut_name(self, key):
         ''' Returns the shortcutted full name given a real key '''
-        pass
+
+        keySplits = self._apply_shortcuts(key, reverse=True)
+        return '.'.join(keySplits)
+
+    def _reverse_shorts(self, data):
+        ''' Reverse a shorts dictionary '''
+        return {v: re.sub(r"spaxelprop[1-9]", "spaxelprop", k) for k, v in data.items()}
 
     def _set_junk_shortcuts(self):
         ''' Sets the DAP spaxelprop shortcuts based on MPL '''
