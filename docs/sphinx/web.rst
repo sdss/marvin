@@ -14,7 +14,7 @@ tools.
 Main
 ----
 
-The main Marvin splash page for the MaNGA survey contains a navgiation bar with links
+The main Marvin splash page for the MaNGA survey contains a navigation bar with links
 to other Marvin pages, a Log-In window, general information about Marvin
 and the development team, as well as quick contact information at the bottom.
 
