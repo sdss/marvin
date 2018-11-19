@@ -77,6 +77,7 @@ Fixed
 - Fixed :issue:`536`, :issue:`537`, :issue:`538`.  Added modelcube to downloadList.
 - Incorrect mismatch warning between MPL-7 and DR15 (:issue:`495`).
 - Fixed :issue:`534` - flipped axes in NSA scatterplot when plotting absmag colors
+- Fixed :issue:`559` - bug in check_marvin when marvindb is None
 
 Refactored
 ^^^^^^^^^^
