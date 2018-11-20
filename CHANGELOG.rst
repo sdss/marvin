@@ -80,6 +80,7 @@ Fixed
 - Fixed :issue:`559` - bug in check_marvin when marvindb is None
 - Fixed :issue:`579` - bug in MMA with marvindb preventing files from opening
 - Fixed :issue:`543`, :issue:`552`, :issue:`553` - bugs with various Query handlings
+- Fixed :issue:`575` - cannot access maps due to bug in login and authentication in Interaction class
 
 Refactored
 ^^^^^^^^^^
