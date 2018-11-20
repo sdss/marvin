@@ -6,7 +6,7 @@
 # @Author: Brian Cherinka
 # @Date:   2018-09-03 18:56:38
 # @Last modified by:   Brian Cherinka
-# @Last Modified time: 2018-11-14 17:47:27
+# @Last Modified time: 2018-11-20 12:06:47
 
 from __future__ import absolute_import, division, print_function
 
@@ -295,7 +295,7 @@ class QueryView(BaseView):
             return redirect(url_for('api.stream', **args))
 
         searchfilter = args.pop('searchfilter', None)
-        print('args', args)
+
         try:
             res = _getCubes(searchfilter, **args)
         except MarvinError as e:
@@ -357,6 +357,7 @@ class QueryView(BaseView):
         '''
         searchfilter = args.pop('searchfilter', None)
         format_type = args.pop('format_type', 'list')
+        colname = args.pop('colname', None)
 
         try:
             query, results = _run_query(searchfilter, **args)

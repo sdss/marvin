@@ -6,7 +6,7 @@
 # @Author: Brian Cherinka
 # @Date:   2017-05-25 10:11:21
 # @Last modified by:   Brian Cherinka
-# @Last Modified time: 2018-11-19 23:36:43
+# @Last Modified time: 2018-11-20 13:29:52
 
 from __future__ import absolute_import, division, print_function
 
@@ -273,24 +273,6 @@ class TestQueryModes(object):
         assert res.mode == expmode
         assert query.mode == res.mode
 
-
-@pytest.fixture(scope='class')
-def lquery(request):
-    searchfilter = request.param if hasattr(request, 'param') else None
-    q = Query(search_filter=searchfilter, mode='local')
-    yield q
-    q = None
-
-
-@pytest.fixture(scope='class')
-def rquery(request):
-    config.forceDbOff()
-    searchfilter = request.param if hasattr(request, 'param') else None
-    q = Query(search_filter=searchfilter, mode='remote')
-    yield q
-    q = None
-    config.forceDbOn()
-
 #
 # Below here begins a low refactor of the query tests
 #
@@ -405,10 +387,19 @@ class TestQueryLocal(object):
         q = Query(search_filter=sf, targets=targ, release='MPL-4')
         sql = q.show()
         for flag in flags.split(','):
-            assert flag.strip() in sql
+            ff = flag.strip()
+            assert (ff in sql or ff.replace('%', '%%') in sql)
         r = q.run()
         assert r.results is not None
         assert r.totalcount == count
+
+    @pytest.mark.parametrize('badinput', [('searchfilter'), ('returnparams')])
+    def test_bad_input(self, badinput):
+        data = 'nsa.z < 0.1' if badinput == 'searchfilter' else ['cube.plate']
+        kwargs = {badinput: data}
+        with pytest.raises(TypeError) as cm:
+            q = Query(**kwargs)
+        assert "__init__() got an unexpected keyword argument '{0}'".format(badinput) in str(cm.value)
 
 
 class TestQueryAuto(object):

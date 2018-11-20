@@ -6,7 +6,7 @@
 # @Author: Brian Cherinka
 # @Date:   2018-08-04 20:09:38
 # @Last modified by:   Brian Cherinka
-# @Last Modified time: 2018-11-19 10:43:20
+# @Last Modified time: 2018-11-19 23:55:51
 
 from __future__ import print_function, division, absolute_import, unicode_literals
 
@@ -147,10 +147,10 @@ class Query(object):
     def __init__(self, search_filter=None, return_params=None, return_type=None, targets=None,
                  quality=None, mode=None, return_all=False, default_params=None, nexus='cube',
                  sort='mangaid', order='asc', caching=True, limit=100, count_threshold=1000,
-                 verbose=False, **kwargs):
+                 verbose=False, release=None):
 
         # basic parameters
-        self.release = kwargs.pop('release', config.release)
+        self.release = release or config.release
         self._drpver, self._dapver = config.lookUpVersions(release=self.release)
         self.mode = mode if mode is not None else config.mode
         self.data_origin = None

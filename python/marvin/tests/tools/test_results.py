@@ -419,3 +419,95 @@ class TestResultsConvertTool(object):
             results.convertToTool(objtype, limit=1)
         assert cm.type == error
         assert errmsg in str(cm.value)
+
+
+#
+# Below here is beginnings of Results refactor
+#
+
+modes = ['local', 'remote']
+
+@pytest.fixture(scope='session', params=modes)
+def mode(request):
+    """Yield a data mode."""
+    return request.param
+
+
+@pytest.fixture(scope='class')
+def newr(mode):
+    if mode == 'remote':
+        config.forceDbOff()
+    q = Query(search_filter='nsa.z < 0.1', release='MPL-4', mode=mode)
+    r = q.run()
+    yield r
+    q = None
+    r = None
+    if mode == 'remote':
+        config.forceDbOn()
+
+
+@pytest.fixture(scope='function')
+def fxnr(mode):
+    if mode == 'remote':
+        config.forceDbOff()
+    q = Query(search_filter='nsa.z < 0.1', release='MPL-4', mode=mode)
+    r = q.run()
+    yield r
+    q = None
+    r = None
+    if mode == 'remote':
+        config.forceDbOn()
+
+
+class TestResultsPages(object):
+    sf = 'nsa.z < 0.1'
+    rel = 'MPL-4'
+    count = 1282
+    limit = 100
+
+    def page_asserts(self, res, chunk, useall=None):
+        assert res.totalcount == self.count
+        assert res.limit == self.limit
+        assert res.chunk == (chunk if chunk else self.limit)
+        assert res.count == self.count if useall else (chunk if chunk else self.limit)
+        assert len(res.results) == self.count if useall else (chunk if chunk else self.limit)
+
+    @pytest.mark.parametrize('chunk',
+                             [(None), (100), (20), (5)],
+                             ids=['none', 'chunk100', 'chunk20', 'chunk5'])
+    def test_next(self, newr, chunk):
+        assert newr.results is not None
+        newr.getNext(chunk=chunk)
+        self.page_asserts(newr, chunk)
+
+    @pytest.mark.parametrize('chunk',
+                             [(None), (100), (20), (5)],
+                             ids=['none', 'chunk100', 'chunk20', 'chunk5'])
+    def test_prev(self, newr, chunk):
+        assert newr.results is not None
+        newr.getNext(chunk=100)
+        newr.getPrevious(chunk=chunk)
+        self.page_asserts(newr, chunk)
+
+    def test_all(self, newr):
+        assert newr.results is not None
+        assert newr.totalcount == self.count
+        assert newr.count != self.count
+        newr.getAll()
+        self.page_asserts(newr, newr.chunk, useall=True)
+
+
+    @pytest.mark.parametrize('chunk, iters',
+                             [(None, 12), (100, 12), (500, 3)],
+                             ids=['none', 'chunk100', 'chunk500'])
+    def test_loop(self, fxnr, chunk, iters, capsys):
+        assert fxnr.results is not None
+        assert fxnr.totalcount == self.count
+        assert fxnr.count == self.limit
+        fxnr.loop(chunk=chunk)
+        self.page_asserts(fxnr, chunk, useall=True)
+        captured = capsys.readouterr()
+        out = captured.out
+        iterlines = len(out.split('\n')) - 1
+        assert iterlines == iters
+
