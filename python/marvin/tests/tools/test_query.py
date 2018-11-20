@@ -6,7 +6,7 @@
 # @Author: Brian Cherinka
 # @Date:   2017-05-25 10:11:21
 # @Last modified by:   Brian Cherinka
-# @Last Modified time: 2018-11-16 18:05:57
+# @Last Modified time: 2018-11-19 23:36:43
 
 from __future__ import absolute_import, division, print_function
 
@@ -367,6 +367,48 @@ class TestQueryLocal(object):
         with pytest.raises(NotImplementedError) as cm:
             query = Query(search_filter=sf, return_params=rps, mode=self.mode)
         assert 'DAP spaxel queries are disabled in this version.' in str(cm)
+
+    @pytest.mark.parametrize('sf',
+                             [('radial(232.5447, 48.6902, 1)'),
+                              ('npergood(emline_gflux_ha_6564 > 5) > 20')],
+                             ids=['radial', 'npergood'])
+    def test_function_queries(self, sf):
+        q = Query(search_filter=sf)
+        r = q.run()
+        assert r.results is not None
+
+    @pytest.mark.parametrize('sf, qual, flags, count',
+                             [(None, None, 'mangadatadb.cube', 5),
+                              (None, ['BADFLUX'], 'DRP3QUAL', 0),
+                              (None, ['BADFLUX', 'BADZ'], 'DRP3QUAL, DAPQUAL', 0),
+                              ('cube.quality = 0', None, 'DRP3QUAL', 5),
+                              ('cube.quality & 256', None, 'DRP3QUAL', 0),
+                              (None, ['FORESTAR'], 'DAPQUAL', 40),
+                              ('cube.quality & ~0', None, 'DRP3QUAL', 0)],
+                             ids=['all', 'drp', 'drpdap', 'goodqual',
+                                  'badflux', 'forestar', 'not0'])
+    def test_quality_queries(self, sf, qual, flags, count):
+        q = Query(search_filter=sf, quality=qual, release='MPL-5')
+        sql = q.show()
+        for flag in flags.split(','):
+            assert flag.strip() in sql
+        r = q.run()
+        assert r.results is not None
+        assert r.totalcount == count
+
+    @pytest.mark.parametrize('sf, targ, flags, count',
+                             [(None, None, 'mangadatadb.cube', 3282),
+                              (None, ['PRIMARY'], 'MNGT%RG1', 846),
+                              (None, ['mwa', 'dwarf'], 'MNGT%RG3', 4)],
+                             ids=['all', 'primary', 'anc'])
+    def test_target_queries(self, sf, targ, flags, count):
+        q = Query(search_filter=sf, targets=targ, release='MPL-4')
+        sql = q.show()
+        for flag in flags.split(','):
+            assert flag.strip() in sql
+        r = q.run()
+        assert r.results is not None
+        assert r.totalcount == count
 
 
 class TestQueryAuto(object):

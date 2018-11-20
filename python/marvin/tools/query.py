@@ -6,7 +6,7 @@
 # @Author: Brian Cherinka
 # @Date:   2018-08-04 20:09:38
 # @Last modified by:   Brian Cherinka
-# @Last Modified time: 2018-11-18 17:59:56
+# @Last Modified time: 2018-11-19 10:43:20
 
 from __future__ import print_function, division, absolute_import, unicode_literals
 
@@ -1401,7 +1401,7 @@ class Query(object):
 
         # get all the available flags
         flags = sum([list(i.schema.label) for i in self.datamodel.bitmasks.values()
-            if 'QUAL' in i.name or 'MASK' in i.name], [])
+                     if 'QUAL' in i.name or 'MASK' in i.name], [])
         assert set(quality).issubset(set(flags)), 'quality flag must be one of {0}'.format(flags)
 
         # get any individual label sets
