@@ -78,6 +78,7 @@ Fixed
 - Incorrect mismatch warning between MPL-7 and DR15 (:issue:`495`).
 - Fixed :issue:`534` - flipped axes in NSA scatterplot when plotting absmag colors
 - Fixed :issue:`559` - bug in check_marvin when marvindb is None
+- Fixed :issue:`579` - bug in MMA with marvindb preventing files from opening
 
 Refactored
 ^^^^^^^^^^
