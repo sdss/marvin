@@ -6,7 +6,7 @@
 # @Author: Brian Cherinka
 # @Date:   2018-08-04 20:09:38
 # @Last modified by:   andrews
-# @Last modified time: 2018-11-21 16:11:54
+# @Last modified time: 2018-11-21 16:11:35
 
 from __future__ import print_function, division, absolute_import, unicode_literals
 
@@ -114,9 +114,8 @@ class Query(object):
             in the query.
         return_params (list):
             A list of string parameter names desired to be returned in the query
-        return_type (str):
+        return_type ({'cube', 'spaxel', 'maps', 'rss', and 'modelcube'}):
             The requested Marvin Tool object that the results are converted into.
-            Valid options are "cube", "spaxel", "maps", "rss", and "modelcube".
         targets (list):
             A list of manga_target flags to filter on
         quality (list):
