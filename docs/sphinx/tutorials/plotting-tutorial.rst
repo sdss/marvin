@@ -307,6 +307,7 @@ Custom Spectrum and Model Fit
 
     import matplotlib.pyplot as plt
     from marvin.tools import Maps
+    plt.style.use('seaborn-darkgrid')
 
     maps = Maps('1-209232')
     spax = maps.getSpaxel(x=0, y=0, xyorig='center', cube=True, modelcube=True)
