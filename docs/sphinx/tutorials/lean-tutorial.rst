@@ -24,7 +24,7 @@ Create the query with :meth:`~marvin.tools.query.query.doQuery` and run it (limi
 .. code-block:: python
 
     from marvin.tools.query import doQuery
-    q, r = doQuery(searchfilter='nsa.sersic_logmass >= 10 and nsa.sersic_logmass <= 11', limit=3)
+    q, r = doQuery(search_filter='nsa.sersic_logmass >= 10 and nsa.sersic_logmass <= 11', limit=3)
 
 **Tip**: see :ref:`Marvin Query <marvin-query>` to learn the basics of querying.  See :ref:`Example Queries <marvin-query-examples>` and :ref:`Marvin Query Syntax Tutorial <marvin-sqlboolean>` for help with designing search filters.
 
@@ -92,13 +92,15 @@ Then we can create a :class:`~marvin.tools.spaxel.Spaxel` object by accessing th
 
 .. code-block:: python
 
-    spax = galaxies[0].getSpaxel(x=28, y=24, xyorig='lower', model=True)
+    spax = galaxies[1].getSpaxel(x=28, y=24, xyorig='lower', cube=True, modelcube=True)
 
 
 Now let's plot the spectrum and model fit:
 
 
-.. code-block:: python
+.. plot::
+    :align: center
+    :include-source: True
 
     # Set matplotlib style sheet. Undo with matplotib.rcdefaults().
     import matplotlib.pyplot as plt
@@ -111,9 +113,6 @@ Now let's plot the spectrum and model fit:
 
 .. image:: ../_static/spec_7992-6101.png
 
-Clearly something went horribly horribly wrong in the fit. In fact, the DAP did not even try to fit a emission line component to the H\ :math:`\alpha` and [NII] lines. This is unfortunate, but let's press on.
-
-
 
 Plot BPT Diagram
 ----------------
@@ -122,7 +121,7 @@ The :meth:`~marvin.tools.maps.Maps.get_bpt` returns masks for spaxels of differe
 
 .. code-block:: python
 
-    masks, fig, axes = galaxies[0].get_bpt()
+    masks, fig, axes = galaxies[1].get_bpt()
 
 .. image:: ../_static/bpt_7992-6101.png
 
@@ -163,7 +162,7 @@ Plot with our new mask:
 
 
 Plot [NII]/H\ :math:`\alpha` Flux Ratio for Star-forming Spaxels
------------------------------------------------------
+----------------------------------------------------------------
 
 Calculate [NII]6585/H\ :math:`\alpha` flux ratio:
 
@@ -187,7 +186,7 @@ Plot the [NII]/H\ :math:`\alpha` flux ratio for the star-forming spaxels:
 Next Steps
 ----------
 
-- :doc:`../first-steps` (more general introduction to Marvin)
+- :doc:`../getting-started` (more general introduction to Marvin)
 - :doc:`plotting-tutorial`
 - :doc:`Download Data <../core/downloads>` (avoid repeating the same remote API calls every time you run your script)
 
