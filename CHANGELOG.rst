@@ -81,6 +81,7 @@ Fixed
 - Fixed :issue:`579` - bug in MMA with marvindb preventing files from opening
 - Fixed :issue:`543`, :issue:`552`, :issue:`553` - bugs with various Query handlings
 - Fixed :issue:`575` - cannot access maps due to bug in login and authentication in Interaction class
+- Fixed :issue:`539` - print downloadList target directory
 
 Refactored
 ^^^^^^^^^^

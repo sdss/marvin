@@ -777,7 +777,7 @@ def downloadList(inputlist, dltype='cube', **kwargs):
             If True, tests the download path construction but does not download
 
     Returns:
-        NA: Downloads
+        If test=True, returns the list of full filepaths that will be downloaded
     """
 
     assert isinstance(inputlist, (list, np.ndarray)), 'inputlist must be a list or numpy array'
@@ -880,6 +880,15 @@ def downloadList(inputlist, dltype='cube', **kwargs):
 
     # get the list and download
     listofitems = rsync_access.get_urls() if as_url else rsync_access.get_paths()
+
+    # print download location
+    item = listofitems[0] if listofitems else None
+    if item:
+        ver = dapver if dapver in item else drpver
+        dlpath = item[:item.rfind(ver) + len(ver)]
+        if verbose:
+            print('Target download directory: {0}'.format(dlpath))
+
     if test:
         return listofitems
     else:
