@@ -111,6 +111,9 @@ Now let's plot the spectrum and model fit:
     ax.legend(list(ax.get_lines()), ['observed', 'model'])
     ax.axis([7100, 7500, 0.3, 0.65])
 
+
+Static image:
+
 .. image:: ../_static/spec_7992-6101.png
 
 
