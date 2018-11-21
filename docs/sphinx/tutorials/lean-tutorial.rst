@@ -98,9 +98,7 @@ Then we can create a :class:`~marvin.tools.spaxel.Spaxel` object by accessing th
 Now let's plot the spectrum and model fit:
 
 
-.. plot::
-    :align: center
-    :include-source: True
+.. code-block:: python
 
     # Set matplotlib style sheet. Undo with matplotib.rcdefaults().
     import matplotlib.pyplot as plt
@@ -110,9 +108,6 @@ Now let's plot the spectrum and model fit:
     ax.plot(spax.full_fit.wavelength, spax.full_fit.value)
     ax.legend(list(ax.get_lines()), ['observed', 'model'])
     ax.axis([7100, 7500, 0.3, 0.65])
-
-
-Static image:
 
 .. image:: ../_static/spec_7992-6101.png
 
