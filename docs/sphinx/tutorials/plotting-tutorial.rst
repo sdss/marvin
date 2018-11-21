@@ -404,7 +404,7 @@ Qualitative Colorbar
 
     cmap = ListedColormap(['#104e8b', '#5783ad', '#9fb8d0'])
     fig, ax, cb = mapplot.plot(dapmap=ha, value=ha_class, cmap=cmap, cbrange=(0.5, 3.5),
-                               title='', cblabel='', return_cb=True)
+                               title='', cblabel='Class', return_cb=True)
     cb.set_ticks([1, 2, 3])
     cb.set_ticklabels(['I', 'II', 'III'])
 
@@ -418,7 +418,7 @@ Custom Values and Custom Mask
     :align: center
     :include-source: True
 
-    from marvin.tools.maps import Maps
+    from marvin.tools import Maps
     import marvin.utils.plot.map as mapplot
 
     maps = Maps('8485-1901')
