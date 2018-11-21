@@ -59,6 +59,19 @@ def all_in(fullist):
     return _all_in
 
 
+def refine_error(error):
+    ''' Refine a search error message '''
+
+    errstr = str(error).replace("'", '')
+    if 'matches multiple parameters' in errstr:
+        base, params = errstr.split(':')
+        key = base.split('matches')[0].strip()
+        simplified = ', '.join([s.strip().split('.', 1)[-1] for s in params.split(',')])
+        error = '{0} is not a unique parameter name.  Please try one of: {1}'.format(key, simplified)
+
+    return error
+
+
 class Search(BaseWebView):
     route_base = '/search/'
 
@@ -112,7 +125,7 @@ class Search(BaseWebView):
                 try:
                     q, res = doQuery(search_filter=searchvalue, release=self._release, return_params=returnparams)
                 except (MarvinError, KeyError) as e:
-                    self.search['errmsg'] = 'Could not perform query: {0}'.format(e)
+                    self.search['errmsg'] = 'Could not perform query: {0}'.format(refine_error(e))
                 except NotImplementedError as e:  # DAP queries disabled
                     self.search['errmsg'] = 'Could not perform query: {0}'.format(e)
                 else:

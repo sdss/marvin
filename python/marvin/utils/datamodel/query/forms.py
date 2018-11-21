@@ -174,7 +174,7 @@ class ParamFormLookupDict(dict):
         else:
             # Multiple results. Raises a custom error.
             raise KeyError(
-                '{0} matches multiple parameters in the lookup table: {1}'
+                '{0} matches multiple parameters in the lookup table. Try one of: {1}'
                 .format(key, ', '.join(matches)))
 
     def mapToColumn(self, keys):
