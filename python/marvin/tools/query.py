@@ -5,8 +5,8 @@
 #
 # @Author: Brian Cherinka
 # @Date:   2018-08-04 20:09:38
-# @Last modified by:   Brian Cherinka
-# @Last Modified time: 2018-11-19 23:55:51
+# @Last modified by:   andrews
+# @Last modified time: 2018-11-21 16:11:54
 
 from __future__ import print_function, division, absolute_import, unicode_literals
 
@@ -115,7 +115,8 @@ class Query(object):
         return_params (list):
             A list of string parameter names desired to be returned in the query
         return_type (str):
-            The requested Marvin Tool object that the results are converted into
+            The requested Marvin Tool object that the results are converted into.
+            Valid options are "cube", "spaxel", "maps", "rss", and "modelcube".
         targets (list):
             A list of manga_target flags to filter on
         quality (list):
@@ -1784,7 +1785,3 @@ class Query(object):
         # Join to the main query
         cone_filter = func.q3c_radial_query(marvindb.datadb.Cube.ra, marvindb.datadb.Cube.dec, ra, dec, radius)
         self.query = self.query.filter(cone_filter)
-
-
-
-
