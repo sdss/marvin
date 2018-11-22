@@ -69,7 +69,7 @@ Good Idea
     params = ['emline_gflux_hb_4862', 'stellar_vel', 'nii_to_ha']
     q = Query(search_filter=filter, return_params=params, limit=10000)
     r = q.run()
-    Results contain of a total of 62065, only returning the first 10000 results
+    # Results contain of a total of 62065, only returning the first 10000 results
 
     # I want to collect all the results.  I can do fewer loops.
     uberresults = []
@@ -89,7 +89,7 @@ Bad Idea
     params = ['emline_gflux_hb_4862', 'stellar_vel', 'nii_to_ha']
     q = Query(search_filter=filter, return_params=params)
     r = q.run()
-    Results contain of a total of 62065, only returning the first 100 results
+    # Results contain of a total of 62065, only returning the first 100 results
 
     # I don't want to loop over 62,000 results in chunks of 100
 
@@ -141,7 +141,7 @@ Good Idea
     params = ['emline_gflux_hb_4862', 'stellar_vel', 'nii_to_ha', 'bintype.name', 'template.name']
     q = Query(search_filter=filter, return_params=params, limit=10000)
     r = q.run()
-    Results contain of a total of 22054, only returning the first 10000 results
+    # Results contain of a total of 22054, only returning the first 10000 results
 
     # Now our results only contain a total of 22000. Much more manageable.
 
@@ -155,7 +155,7 @@ Bad Idea
     params = ['emline_gflux_hb_4862', 'stellar_vel', 'nii_to_ha', 'bintype.name', 'template.name']
     q = Query(search_filter=filter, return_params=params, limit=10000)
     r = q.run()
-    Results contain of a total of 62065, only returning the first 10000 results
+    # Results contain of a total of 62065, only returning the first 10000 results
 
     # This list contains spaxels from all four bintypes.
     set(r.getListOf('bintype.name'))
