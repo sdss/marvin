@@ -6,7 +6,7 @@
 # @Author: Brian Cherinka
 # @Date:   2018-08-04 20:09:38
 # @Last modified by:   andrews
-# @Last modified time: 2018-11-21 16:11:35
+# @Last modified time: 2018-11-22 13:11:86
 
 from __future__ import print_function, division, absolute_import, unicode_literals
 
@@ -255,7 +255,7 @@ class Query(object):
         self._set_defaultparams()
 
         # get user-defined input parameters
-        self._set_returnparams()
+        self._set_return_params()
 
         # setup the search filter
         self._set_filter()
@@ -905,7 +905,7 @@ class Query(object):
         # add the defaults to the main set of parameters
         self.params.extend(self.default_params)
 
-    def _set_returnparams(self):
+    def _set_return_params(self):
         ''' Set the return parameters '''
 
         # set the initial returns list
