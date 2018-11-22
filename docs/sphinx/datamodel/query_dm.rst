@@ -132,7 +132,7 @@ Each `QueryParameter` also has a `property` attribute which references the DAP D
 Using within Marvin Queries
 ---------------------------
 
-The parameter syntax Marvin prefers for all input into **search_filter** and **returnparams** is the **full** attribute on the `QueryParameter`.
+The parameter syntax Marvin prefers for all input into **search_filter** and **return_params** is the **full** attribute on the `QueryParameter`.
 
 To generate a list of names that are formatted as ready-input into Marvin Queries, use the **full** keyword.
 
@@ -166,7 +166,7 @@ You can combine lists.  Make a list of the galaxy RA, Dec, NSA redshift, and g-r
 
     # input into a Marvin Query
     from marvin.tools.query import Query
-    query = Query(search_filter='nsa.z < 0.1', returnparams=myparams)
+    query = Query(search_filter='nsa.z < 0.1', return_params=myparams)
 
 If you want all parameters from all groups, use the `groups.list_params` method with the `full` keyword.
 
@@ -210,7 +210,7 @@ We can input these directly into a Marvin Query.  Note that returning lots of pa
 ::
 
     from marvin.tools.query import Query
-    query = Query(search_filter='nsa.z < 0.1', returnparams=myparams)
+    query = Query(search_filter='nsa.z < 0.1', return_params=myparams)
     results = query.run()
 
     results.results[0]

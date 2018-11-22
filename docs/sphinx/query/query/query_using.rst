@@ -26,11 +26,11 @@ Marvin can also accept filters in functional form.  We currently only have one a
 Handling Return Parameters
 --------------------------
 
-Queries will always return a set of default parameters: the galaxy **mangaid**, **plateifu**, **plate id**, and **ifu design name**.  You can return addtional parameters beyond the defaults and those used in the filter with the **returnparams** keyword.  This takes a list of paramater names.  All of the available parameters are contained in the Query `datamodel` attribute.  To learn more about query parameters, see :ref:`the Query Datamodel <query-dm>`.
+Queries will always return a set of default parameters: the galaxy **mangaid**, **plateifu**, **plate id**, and **ifu design name**.  You can return addtional parameters beyond the defaults and those used in the filter with the **return_params** keyword.  This takes a list of paramater names.  All of the available parameters are contained in the Query `datamodel` attribute.  To learn more about query parameters, see :ref:`the Query Datamodel <query-dm>`.
 
 ::
 
-    query = Query(search_filter='nsa.z < 0.1', returnparams=['cube.ra', 'cube.dec'])
+    query = Query(search_filter='nsa.z < 0.1', return_params=['cube.ra', 'cube.dec'])
     results = query.run()
 
     print(results.columns)

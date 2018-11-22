@@ -68,7 +68,7 @@ row-wise
 If the indices of all rows in the two `ResultSets` are the same, Marvin will add them row-wise.  This is useful when you want to combine different return parameters for the same query into a single set::
 
     # get and run a query 1
-    q = Query(search_filter='nsa.z < 0.1', returnparams=['absmag_g_r'])
+    q = Query(search_filter='nsa.z < 0.1', return_params=['absmag_g_r'])
     r = q.run()
 
     e = r.results[0:5]
@@ -81,7 +81,7 @@ If the indices of all rows in the two `ResultSets` are the same, Marvin will add
      ResultRow(mangaid=u'1-113379', plate=7815, plateifu=u'7815-6101', ifu_name=u'6101', elpetro_absmag_g_r=1.09770011901855, z=0.0171611)]
 
     # get and run a query 1 with additional return parameters
-    q2 = Query(search_filter='nsa.z < 0.1', returnparams=['nsa.elpetro_ba', 'nsa.sersic_logmass', 'cube.ra', 'cube.dec'])
+    q2 = Query(search_filter='nsa.z < 0.1', return_params=['nsa.elpetro_ba', 'nsa.sersic_logmass', 'cube.ra', 'cube.dec'])
     r2 = q2.run()
 
     e2 = r2.results[0:5]

@@ -29,7 +29,7 @@ Good Idea
     from marvin.tools.query import Query
     filter = 'nsa.z < 0.1 and emline_gflux_ha_6564 > 25'
     params = ['emline_gflux_hb_4862', 'stellar_vel', 'nii_to_ha']
-    q = Query(search_filter=filter, returnparams=params)
+    q = Query(search_filter=filter, return_params=params)
     r = q.run()
 
     # get list of stellar velocities
@@ -67,7 +67,7 @@ Good Idea
     from marvin.tools.query import Query
     filter = 'nsa.z < 0.1 and emline_gflux_ha_6564 > 25'
     params = ['emline_gflux_hb_4862', 'stellar_vel', 'nii_to_ha']
-    q = Query(search_filter=filter, returnparams=params, limit=10000)
+    q = Query(search_filter=filter, return_params=params, limit=10000)
     r = q.run()
     Results contain of a total of 62065, only returning the first 10000 results
 
@@ -87,7 +87,7 @@ Bad Idea
     from marvin.tools.query import Query
     filter = 'nsa.z < 0.1 and emline_gflux_ha_6564 > 25'
     params = ['emline_gflux_hb_4862', 'stellar_vel', 'nii_to_ha']
-    q = Query(search_filter=filter, returnparams=params)
+    q = Query(search_filter=filter, return_params=params)
     r = q.run()
     Results contain of a total of 62065, only returning the first 100 results
 
@@ -105,7 +105,7 @@ Good Idea
     from marvin.tools.query import Query
     filter = 'nsa.z < 0.1 and emline_gflux_ha_6564 > 25'
     params = ['emline_gflux_hb_4862', 'stellar_vel', 'nii_to_ha']
-    q = Query(search_filter=filter, returnparams=params, limit=10000)
+    q = Query(search_filter=filter, return_params=params, limit=10000)
     r = q.run()
     f='results_{0}_chunk{1}_to_{2}.mpf'.format(p.replace(' ','_'), r.start, r.end)
     r.save(f)
@@ -139,7 +139,7 @@ Good Idea
     filter = 'nsa.z < 0.1 and emline_gflux_ha_6564 > 25 and bintype.name==SPX'
 
     params = ['emline_gflux_hb_4862', 'stellar_vel', 'nii_to_ha', 'bintype.name', 'template.name']
-    q = Query(search_filter=filter, returnparams=params, limit=10000)
+    q = Query(search_filter=filter, return_params=params, limit=10000)
     r = q.run()
     Results contain of a total of 22054, only returning the first 10000 results
 
@@ -153,7 +153,7 @@ Bad Idea
     from marvin.tools.query import Query
     filter = 'nsa.z < 0.1 and emline_gflux_ha_6564 > 25'
     params = ['emline_gflux_hb_4862', 'stellar_vel', 'nii_to_ha', 'bintype.name', 'template.name']
-    q = Query(search_filter=filter, returnparams=params, limit=10000)
+    q = Query(search_filter=filter, return_params=params, limit=10000)
     r = q.run()
     Results contain of a total of 62065, only returning the first 10000 results
 

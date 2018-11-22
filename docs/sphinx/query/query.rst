@@ -9,7 +9,7 @@ Query
 Getting Started
 ^^^^^^^^^^^^^^^
 
-The basic usage of searching the MaNGA dataset with Marvin Queries is shown below.  Queries allow you to perform searches filtering the sample on specific parameter conditions, as well as return additional desired parameters.  Queries accept two basic keywords, **search_filter** and **returnparams**.
+The basic usage of searching the MaNGA dataset with Marvin Queries is shown below.  Queries allow you to perform searches filtering the sample on specific parameter conditions, as well as return additional desired parameters.  Queries accept two basic keywords, **search_filter** and **return_params**.
 
 You search the MaNGA dataset by constructing a string filter condition in a pseudo-SQL syntax of **parameter operand value**.  You only need to care about constructing your filter or **where clause**, and Marvin will do the rest.
 
@@ -27,7 +27,7 @@ You search the MaNGA dataset by constructing a string filter condition in a pseu
     # create a query
     query = Query(search_filter=myfilter)
 
-You can optionally return parameters using the **returnparams** keyword, specified as a list of strings.
+You can optionally return parameters using the **return_params** keyword, specified as a list of strings.
 
 ::
 
@@ -35,7 +35,7 @@ You can optionally return parameters using the **returnparams** keyword, specifi
     myfilter = 'nsa.z < 0.1'
     myparams = ['cube.ra', 'cube.dec']
 
-    query = Query(search_filter=myfilter, returnparams=myparams)
+    query = Query(search_filter=myfilter, return_params=myparams)
 
 Queries contain a datamodel.  You can access the datamodel used for a given query and data release with the `datamodel` attribute::
 

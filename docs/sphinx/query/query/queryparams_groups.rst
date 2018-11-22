@@ -192,7 +192,7 @@ Using **query_params**, it is easy to grab a set of paramters to return in a Mar
     kinparams = query_params.list_params('kin')
 
     # run a query and returning the kinematic parameters
-    query = Query('haflux > 25', returnparams=kinparams)
+    query = Query('haflux > 25', return_params=kinparams)
     results = query.run()
 
     print(results.columns)
