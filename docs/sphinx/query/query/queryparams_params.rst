@@ -139,7 +139,7 @@ As with the groups, you can pass your custom list into Marvin Queries
 
     # build and run a query and return your custom parameter set
     from marvin.tools.query import Query
-    query = Query(searchfilter='nsa.z < 0.1', returnparams=myparams)
+    query = Query(search_filter='nsa.z < 0.1', returnparams=myparams)
     results = query.run()
 
     print(results.columns)
@@ -150,4 +150,3 @@ As with the groups, you can pass your custom list into Marvin Queries
     (u'1-209232', 8485, u'8485-1901', u'1901', 232.544703894, 48.6902009334, 0.0407447, 1.16559028625488)
 
 |
-

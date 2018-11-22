@@ -53,7 +53,7 @@ Some parameters are not unique.  In this case, you must go one level up and spec
     # RA, Dec are not unique parameter names
     filter = 'ra > 180'
 
-    query = Query(searchfilter=filter)
+    query = Query(search_filter=filter)
     MarvinError: Could not set parameters. Multiple entries found for key.  Be more specific: 'ra matches multiple parameters in the lookup table: mangasampledb.nsa.ra, mangadatadb.cube.ra'.
 
     # Correct filter

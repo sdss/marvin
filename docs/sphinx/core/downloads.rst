@@ -89,8 +89,8 @@ Via Query Results
     from marvin.tools.query import Query
 
     # Make a query
-    searchfilter = 'nsa.z < 0.2'
-    q = Query(searchfilter=searchfilter)
+    search_filter = 'nsa.z < 0.2'
+    q = Query(search_filter=search_filter)
 
     # Run the query and retrieve the results
     r = q.run()

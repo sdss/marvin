@@ -72,7 +72,7 @@ Q4     1.1662       0.3331      783 ms per loop    810 ms per loop
 
 ::
 
-    q = Query(searchfilter=p, mode='remote')
+    q = Query(search_filter=p, mode='remote')
 
     # Best of 5 (1 loop)
     %timeit -n 1 -r 5 r = q.run()
@@ -106,5 +106,3 @@ Q2     31.123       11.120      8.56 s per loop
 Q3     81.319       25.612      25.4 s per loop
 Q4     0.588        0.5668      566 ms per loop
 =====  ===========  =========== ==================
-
-

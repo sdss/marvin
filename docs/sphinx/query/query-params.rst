@@ -103,7 +103,7 @@ You can combine lists.  Make a list of the galaxy RA, Dec, NSA redshift, and g-r
 
     # input into a Marvin Query
     from marvin.tools.query import Query
-    query = Query(searchfilter='nsa.z < 0.1', returnparams=myparams)
+    query = Query(search_filter='nsa.z < 0.1', returnparams=myparams)
 
 If you want all parameters from all groups, use the **query_params.list_params** method.
 
@@ -157,7 +157,7 @@ We can input these directly into a Marvin Query.  Note that returning lots of pa
 ::
 
     from marvin.tools.query import Query
-    query = Query(searchfilter='nsa.z < 0.1', returnparams=myparams)
+    query = Query(search_filter='nsa.z < 0.1', returnparams=myparams)
     results = query.run()
 
     print(results.columns)
@@ -265,4 +265,3 @@ NSA Catalog
 * **nsa.sersic_ba**: Axis ratio b/a from 2D Sersic fit.
 
 |
-

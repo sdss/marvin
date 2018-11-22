@@ -16,7 +16,7 @@ By default, Marvin Queries return a list of tuples of parameters.  You can conve
 
     # return Marvin Cube objects
 
-    query = Query(searchfilter='nsa.z < 0.1', returntype='cube')
+    query = Query(search_filter='nsa.z < 0.1', returntype='cube')
     results = query.run()
     Converting results to Marvin Cube objects
 

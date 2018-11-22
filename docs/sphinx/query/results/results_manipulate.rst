@@ -16,11 +16,11 @@ returned.  With Marvin `Results` you can perform two similar queries returning d
 into a single `Result` object.::
 
     # perform a query returning redshift, and absolute magnitude g-r color
-    q1 = Query(searchfilter='nsa.z < 0.1', returnparams=['absmag_g_r'])
+    q1 = Query(search_filter='nsa.z < 0.1', returnparams=['absmag_g_r'])
     r1 = q1.run()
 
     # perform a second query returning some NSA parameters and RA, Dec coordinates
-    q2 = Query(searchfilter='nsa.z < 0.1', returnparams=['nsa.elpetro_ba', 'nsa.sersic_logmass', 'cube.ra', 'cube.dec'])
+    q2 = Query(search_filter='nsa.z < 0.1', returnparams=['nsa.elpetro_ba', 'nsa.sersic_logmass', 'cube.ra', 'cube.dec'])
     r2 = q2.run()
 
     # combine the results
@@ -172,6 +172,3 @@ To restore a Marvin `Results` pickle file object, use the `restore` class method
 
     # load a Results pickle file
     my_results = Results.restore('myresults.mpf')
-
-
-

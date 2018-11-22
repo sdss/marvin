@@ -341,7 +341,7 @@ Previously, you have been dealing with individual objects, on a case by case bas
     myfilter = 'nsa.z < 0.2 and nsa.sersic_mass < 1e9'
 
     # create the Marvin Query
-    myquery = Query(searchfilter=myfilter)
+    myquery = Query(search_filter=myfilter)
 
     # run your query
     myresults = myquery.run()
@@ -434,4 +434,3 @@ This creates and returns a `Python Image Library object <https://pillow.readthed
     NAXIS : 0  0
 
 |
-

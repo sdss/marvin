@@ -14,7 +14,7 @@ The representation of the `ResultSet` indicates some metadata like the total res
 ::
 
     # let's get a sample ResultSet
-    q = Query(searchfilter='nsa.z < 0.1')
+    q = Query(search_filter='nsa.z < 0.1')
     r = q.run()
     res = r.results
 
@@ -58,7 +58,7 @@ Combining
 ^^^^^^^^^
 If you have more than one group of `ResultSets`, you can merge them together using the ``+`` operand.  Adding works in either the row-wise or
 column-wise direction, depending on the data one is adding.  Marvin will only add sets together that come from queries using the **same release** of data,
-as well as the **same searchfilter**.  These two parameters uniquely identify a query+results.  You cannot add results coming from different queries.
+as well as the **same search_filter**.  These two parameters uniquely identify a query+results.  You cannot add results coming from different queries.
 
 **Note:** This describes the underlying functionality of adding sets together.  However, in practice it is recommended to add Marvin Results together
 at the top level only.  See :ref:`marvin-results-add`.
@@ -68,7 +68,7 @@ row-wise
 If the indices of all rows in the two `ResultSets` are the same, Marvin will add them row-wise.  This is useful when you want to combine different return parameters for the same query into a single set::
 
     # get and run a query 1
-    q = Query(searchfilter='nsa.z < 0.1', returnparams=['absmag_g_r'])
+    q = Query(search_filter='nsa.z < 0.1', returnparams=['absmag_g_r'])
     r = q.run()
 
     e = r.results[0:5]
@@ -81,7 +81,7 @@ If the indices of all rows in the two `ResultSets` are the same, Marvin will add
      ResultRow(mangaid=u'1-113379', plate=7815, plateifu=u'7815-6101', ifu_name=u'6101', elpetro_absmag_g_r=1.09770011901855, z=0.0171611)]
 
     # get and run a query 1 with additional return parameters
-    q2 = Query(searchfilter='nsa.z < 0.1', returnparams=['nsa.elpetro_ba', 'nsa.sersic_logmass', 'cube.ra', 'cube.dec'])
+    q2 = Query(search_filter='nsa.z < 0.1', returnparams=['nsa.elpetro_ba', 'nsa.sersic_logmass', 'cube.ra', 'cube.dec'])
     r2 = q2.run()
 
     e2 = r2.results[0:5]
@@ -158,9 +158,3 @@ Using **numpy**, you can handle the `ResultSet` and extract a subset of elements
             ...
             ],
           dtype='<U14')
-
-
-
-
-
-

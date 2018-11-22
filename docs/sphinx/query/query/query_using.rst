@@ -8,7 +8,7 @@ This page describes how to interact with a Marvin Query.
 Applying a Filter
 -----------------
 
-The **searchfilter** keyword is a pseudo-natural language string dictating the filter conditions on your query.  It is most similar to an SQL where clause.  It's pseudo-natural language because you can type the condition almost as you would say it.  The pseudo-SQL syntax of the condition takes the form of **"parameter operand value"**.
+The **search_filter** keyword is a pseudo-natural language string dictating the filter conditions on your query.  It is most similar to an SQL where clause.  It's pseudo-natural language because you can type the condition almost as you would say it.  The pseudo-SQL syntax of the condition takes the form of **"parameter operand value"**.
 
 Filters can be simple, using a single parameter: :code:`nsa.z < 0.1`.  Or complex, using a combination of many parameters: :code:`(nsa.sersic_logmass < 10 or nsa.sersic_n < 2) and (haflux > 25 or emline_sew_ha_6564 > 6)`.
 
@@ -30,7 +30,7 @@ Queries will always return a set of default parameters: the galaxy **mangaid**, 
 
 ::
 
-    query = Query(searchfilter='nsa.z < 0.1', returnparams=['cube.ra', 'cube.dec'])
+    query = Query(search_filter='nsa.z < 0.1', returnparams=['cube.ra', 'cube.dec'])
     results = query.run()
 
     print(results.columns)
@@ -50,7 +50,7 @@ Alternatively you can set them after you create the query but before you run it.
 
 ::
 
-    query = Query(searchfilter='nsa.z < 0.1')
+    query = Query(search_filter='nsa.z < 0.1')
     query.set_returnparams(['cube.ra', 'cube.dec'])
     results = query.run()
 
@@ -128,7 +128,7 @@ You can return your results pre-sorted by some parameter using the **sort** keyw
 
 ::
 
-    query = Query(searchfilter='nsa.z < 0.1', sort='nsa.z')
+    query = Query(search_filter='nsa.z < 0.1', sort='nsa.z')
     results = query.run()
 
     print(results.results)
@@ -145,7 +145,7 @@ For queries that contain less than 1000 results, Marvin will return the entire r
 ::
 
     # return the first 10,000 rows
-    query = Query(searchfilter='haflux > 25', limit=10000)
+    query = Query(search_filter='haflux > 25', limit=10000)
     results = query.run()
     Results contain of a total of 67186, only returning the first 10000 results
 
@@ -164,7 +164,7 @@ You can create and run a query in a single step using the `doQuery` convienence 
     from marvin.tools.query import doQuery
 
     # run the query and retrieve the results in one step
-    query, results = doQuery(searchfilter='nsa.z < 0.1')
+    query, results = doQuery(search_filter='nsa.z < 0.1')
 
 
 Showing a Query
@@ -175,7 +175,7 @@ You can see the SQL-constructed query using the **show** method.  Note that this
 ::
 
     # show the SQL constructed query
-    query = Query(searchfilter='nsa.z < 0.1')
+    query = Query(search_filter='nsa.z < 0.1')
     query.show()
 
 

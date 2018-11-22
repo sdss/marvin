@@ -17,7 +17,7 @@ To perform a simple Query
 .. code-block:: python
 
     from marvin.tools.query import Query
-    q = Query(searchfilter='nsa.z < 0.1', returnparams=['absmag_g_r'])
+    q = Query(search_filter='nsa.z < 0.1', returnparams=['absmag_g_r'])
 
 and to get the Results, use the `run` method on your ``Query`` object.  Once your query is run you can access the list of query results from the
 `results` attribute.
@@ -58,7 +58,7 @@ Alternatively, you can perform it in a single step
 .. code-block:: python
 
     from marvin.tools.query import doQuery
-    q, r = doQuery(searchfilter='nsa.z < 0.1')
+    q, r = doQuery(search_filter='nsa.z < 0.1')
 
 
 .. _marvin_results_using
