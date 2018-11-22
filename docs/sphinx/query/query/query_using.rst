@@ -51,7 +51,7 @@ Alternatively you can set them after you create the query but before you run it.
 ::
 
     query = Query(search_filter='nsa.z < 0.1')
-    query.set_returnparams(['cube.ra', 'cube.dec'])
+    query.set_return_params(['cube.ra', 'cube.dec'])
     results = query.run()
 
     print(results.columns)
