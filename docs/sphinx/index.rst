@@ -27,7 +27,7 @@ Marvin is a tool specifically designed to visualise and analyse `MaNGA <https://
 * Abstract the datamodel and forget where the data actually lives.
 * Make good visualisation and scientific decisions by preventing common mistakes when accessing the data.
 
-To install marvin simply run ``pip install sdss-marvin``. More details and known problem with installation can be found :ref:`here <marvin-installation>`.
+.. To install marvin simply run ``pip install sdss-marvin``. More details and known problem with installation can be found :ref:`here <marvin-installation>`.
 
 .. note:: This documentation assumes that you are familiar with MaNGA data and its acronyms. If that is not your case, consider reading `this <https://www.sdss.org/manga/getting-started/>`_.
 
@@ -43,7 +43,7 @@ If you are new to Marvin check the following links before diving into the full d
 * The :ref:`Getting Started <marvin-getting_started>` is your quick start guide to Marvin.
 * For quick reference, download the :ref:`cheatsheet <marvin-cheatsheet>`.
 * :ref:`What's new in Marvin? <whats-new>`, :ref:`changelog <marvin-changelog>`, and :ref:`known issues <marvin-known-issues>`.
-* The :ref:`lean tutorial <marvin-lean-tutorial>` is an examlple end-to-end process of using Marvin for science.
+* The :ref:`lean tutorial <marvin-lean-tutorial>` is an example end-to-end process of using Marvin for science.
 * Marvin uses `quantities <http://docs.astropy.org/en/stable/units/quantity.html>`_ to represent data (spectra, data cubes, etc). Here is a quick :ref:`introduction <marvin-quantities>`.
 * More :ref:`tutorials <marvin-tutorials>` and :ref:`frequently asked questions <marvin-faq>`.
 * See :ref:`Citing Marvin <marvin-citation>` for how to cite and acknowledge the use of Marvin in your work.
@@ -51,7 +51,7 @@ If you are new to Marvin check the following links before diving into the full d
 
 .. toctree::
    :maxdepth: 2
-   :caption: Marvin at a Glance
+   :caption: At a Glance
    :hidden:
 
    installation
@@ -59,11 +59,8 @@ If you are new to Marvin check the following links before diving into the full d
    getting-started
    cheatsheet
    tutorials/index
-   citation
-   known-issues
-   faq
    contributing/contributing
-
+   citation
 
 .. toctree::
    :maxdepth: 3
@@ -77,16 +74,24 @@ If you are new to Marvin check the following links before diving into the full d
 
 .. toctree::
    :maxdepth: 3
-   :caption: Datamodel
+   :caption: Datamodels
 
    datamodel/datamodels
-
 
 .. toctree::
    :maxdepth: 2
    :caption: API/Code Reference
 
    reference/index
+
+.. toctree::
+   :maxdepth: 1
+   :caption: Project Details
+   :hidden:
+
+   Changelog <changelog>
+   Known Issues <known-issues>
+   faq
 
 
 Indices and tables
@@ -96,4 +101,3 @@ Indices and tables
 * :ref:`modindex`
 
 * :ref:`search`
-
