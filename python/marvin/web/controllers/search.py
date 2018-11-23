@@ -142,11 +142,11 @@ class Search(BaseWebView):
                     self.search['reslen'] = len(res.results)
                     if returnparams:
                         returnparams = [str(r) for r in returnparams]
-                    rpstr = 'returnparams={0} <br>'.format(returnparams) if returnparams else ''
-                    qstr = ', returnparams=returnparams' if returnparams else ''
+                    rpstr = 'return_params={0} <br>'.format(returnparams) if returnparams else ''
+                    qstr = ', return_params=returnparams' if returnparams else ''
                     self.search['querystring'] = ("<html><samp>from marvin.tools.query import Query<br>\
-                        filter='{0}'<br> {1}\
-                        q = Query(searchfilter=filter{2})<br>\
+                        myfilter='{0}'<br> {1}\
+                        q = Query(search_filter=myfilter{2})<br>\
                         r = q.run()<br></samp></html>".format(searchvalue, rpstr, qstr))
 
         return render_template('search.html', **self.search)
