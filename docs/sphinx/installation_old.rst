@@ -20,55 +20,54 @@
 Installation
 ============
 
-Quick Install
--------------
+Pip Installation
+----------------
 
-To quickly install Marvin, use::
+**Painless Installation**::
 
-  pip install sdss-marvin
+    pip install sdss-marvin
 
-If you are using an Anaconda distribution of Python, you may use the following available ``conda`` environment, **link here**. Once downloaded, set up the virtual environment with::
+.. admonition:: Attention
+    :class: attention
 
-  conda env create -f marvin_2.3.0_env.yml.
+    If pip fails while installing ``python-memcached``, make sure that you have the latest version of ``setuptools`` by running ``pip install -U setuptools``. Then, try running ``pip install sdss-marvin`` again.
 
+**or to upgrade an existing Marvin installation**::
 
-Developers Installation
------------------------
+    pip install --upgrade sdss-marvin
 
-To develop for marvin, follow these instructions::
+.. admonition:: Hint
+    :class: hint
+
+    By default, ``pip`` will update any underlying package on which marvin depends. If you want to prevent that you can upgrade marvin with ``pip install -U --no-deps sdss-marvin``. This could, however, make marvin to not work correctly. Instead, you can try ``pip install -U --upgrade-strategy only-if-needed sdss-marvin``, which will upgrade a dependency only if needed.
+
+**Developer Installation (Medium Pain)**::
 
     git clone https://github.com/sdss/marvin
     cd marvin
-    git submodule update --init --recursive
-    python setup.py develop
+    git submodule init
+    git submodule update
+    python setup.py install
 
-This will checkout the repository, set up the git submodule dependencies, and install marvin into your python path.  You will only need to run this once.  Afterwards, you can start developing for Marvin.
+If you experience problem after the installation, check the :ref:`marvin-faq`.
 
-
-Access and Authentication
--------------------------
-
-Public Access
-^^^^^^^^^^^^^
-
-By default Marvin is set up to run in `public` access mode, with the latest SDSS public data release, e.g. DR15.  You can check your access from within an ``iPython`` terminal by typing::
-
-  from marvin import config
-  config.access
-
-A ``config.access`` of **public** means you are set up for public access only.  In this mode, you only have access to publically available data.  A ``config.access`` of **collab** indicates you are set up for SDSS collaboration proprietary data access.
+|
 
 
-SDSS Collaboration Access
-^^^^^^^^^^^^^^^^^^^^^^^^^
-
-For SDSS collaboration members, authentication is required to access proprietary collaboration data, and Marvin must have ``config.access`` set to **collab**.  See :ref:`more here <marvin-access>`. To set up authentication for Marvin, you must perform the following
-
+.. _setup-netrc:
 
 Set up your netrc
-~~~~~~~~~~~~~~~~~
+^^^^^^^^^^^^^^^^^
 
-SDSS uses ``.netrc`` authentication to access data content on many domains. To set this up, create and edit a file in your home called ``.netrc`` an copy these lines inside::
+.. admonition:: Note
+    :class: warning
+
+    If you are not a member of the SDSS collaboration, you do not need to perform this step.
+
+While Marvin is now publicly available, not all MaNGA data is so. As a result,
+you need to add some configuration to allow you to access proprietary data. To
+do that, create and edit a file in your home called ``.netrc`` an copy
+these lines inside::
 
     machine api.sdss.org
        login <username>
@@ -80,65 +79,12 @@ SDSS uses ``.netrc`` authentication to access data content on many domains. To s
 
 and replace ``<username>`` and ``<password>`` with your login credentials. The default SDSS username and password is also acceptable for anonymous access.  Finally, run ``chmod 600 ~/.netrc`` to make the file only accessible to your user.
 
-API Token Authentication
-~~~~~~~~~~~~~~~~~~~~~~~~
-
-Marvin requires token authentication to grant access and use of its API.  Marvin uses the standard `JSON Web Tokens <https://jwt.io/introduction/>`_ for token authentication.  To receive a valid token, you must :ref:`login <marvin-api-login>` with your valid SDSS credentials, via the ``.netrc``.  With your ``netrc`` access in place, you will receive a valid API token.  Tokens remain valid for 300 days.::
-
-  # login to receive a token
-  config.login()
-
-  # see token
-  config.token
-
-
-For Convenience
-~~~~~~~~~~~~~~~
-
-As the default mode of marvin is **public**, you will need to authenticate and change to **collab** access inside every new ``iPython`` session.  To simplify this process, marvin can be configured to automatically perform the access and authentication checks.  To configure marvin, you must set up a :ref:`custom marvin configuration file <marvin_custom_yaml>`.  Inside a ``~/.marvin/marvin.yml`` file, set the following lines::
-
-  check_access: True
-  use_token: [token]
-
-You can replace **[token]** with your authenticated API JSON token (without any string quotes).  Upon import of marvin, Marvin will check for valid credentials and automatically set up your collaboration access.
-
-.. _marvin-environment:
-
-Marvin Environment
-------------------
-
-Marvin requires a certain environment structure to access and (optionally) download data.  By default,
-marvin will look for data files in a directory structure that mirrors the
-`Science Archive Server <https://data.sdss.org/sas>`_. :ref:`Data downloaded via marvin <marvin-download-objects>` will
-also be stored according to that structure. The root of this directory structure is
-defined by the environment variable  ``$SAS_BASE_DIR``. For example, if marvin needs
-to use the ``drpall`` file for DR15, it will try to find it in
-``$SAS_BASE_DIR/dr15/manga/spectro/redux/v2_4_3/drpall-v2_4_3.fits``.
-
-The Marvin environment structure is as follows::
-
-  ======================   ==============================================   ======
-  Environment Variable     Default Path                                     Access
-  ======================   ==============================================   ======
-  SAS_BASE_DIR             $HOME/sas
-  MANGA_SPECTRO_REDUX      $SAS_BASE_DIR/dr15/manga/spectro/redux           DR15
-  MANGA_SPECTRO_ANALYSIS   $SAS_BASE_DIR/dr15/manga/spectro/analysis        DR15
-
-  MANGA_SPECTRO_REDUX      $SAS_BASE_DIR/mangawork/manga/spectro/redux      collab
-  MANGA_SPECTRO_ANALYSIS   $SAS_BASE_DIR/mangawork/manga/spectro/analysis   collab
-  ======================   ==============================================   ======
-
-Marvin will check for these environment variables in your local system.  If the above environment variables are
-not already defined, Marvin will use the specifed default paths.  Otherwise Marvin will adopt your custom paths.
-If you wish to define custom paths, you can update the environment variable paths in your
-``.bashrc`` or ``.cshrc`` file.  As a general advice, if you are
-not using other products that require setting those environment variables, you should only
-define ``$SAS_BASE_DIR`` (or not define it and let Marvin configure itself).
+|
 
 .. _marvin-sdss-depends:
 
-Dependencies on SDSS software
------------------------------
+Marvin dependencies on SDSS software
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Marvin depends on three pieces of SDSS-wide software:
 
@@ -147,11 +93,59 @@ Marvin depends on three pieces of SDSS-wide software:
 * `sdss_access <https://github.com/sdss/sdss_access>`_: tools for efficiently accessing data files, rsyncing data, etc.
 
 For convenience, marvin includes these products as external libraries. This means that
-you most likely do not need to worry about any of these products. However, with the exception of the **tree** product,
-if any of these libraries are already installed in your system (i.e., you have defined
-``$MARVIN_BRAIN_DIR``, or ``$SDSS_ACCESS_DIR``), marvin will use the system
+you most likely do not need to worry about any of these products. However, if any
+of these libraries are already installed in your system (i.e., you have defined
+``$MARVIN_BRAIN_DIR``, ``$TREE_DIR``, or ``$SDSS_ACCESS_DIR``), marvin will use the system
 wide products instead of its own versions. This is useful for development but note that
 it can also lead to confusions about what version marvin is using.
+
+|
+
+.. _marvin-sasdir:
+
+Local SAS directory structure
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Marvin requires a certain environment structure to access and (optionally) download data.  By default,
+marvin will look for data files in a directory structure that mirrors the
+`Science Archive Server <https://data.sdss.org/sas>`_. :ref:`Data downloaded via marvin <marvin-download-objects>` will
+also be stored according to that structure. The root of this directory structure is
+defined by the environment variable  ``$SAS_BASE_DIR``. For example, if marvin needs
+to use the ``drpall`` file for MPL-5, it will try to find it in
+``$SAS_BASE_DIR/mangawork/manga/spectro/redux/v2_0_1/drpall-v2_0_1.fits``.
+
+The Marvin environment structure is as follows::
+
+  ======================   ==============================================
+  Environment Variable     Default Path
+  ======================   ==============================================
+  SAS_BASE_DIR             $HOME/sas
+  MANGA_SPECTRO_REDUX      $SAS_BASE_DIR/mangawork/manga/spectro/redux
+  MANGA_SPECTRO_ANALYSIS   $SAS_BASE_DIR/mangawork/manga/spectro/analysis
+  ======================   ==============================================
+
+Marvin will check for these environment variables in your local system.  If the above environment variables are
+not already defined, Marvin will use the specifed default paths.  Otherwise Marvin will adopt your custom paths.
+If you wish to define custom paths, you can update the environment variable paths in your
+``.bashrc`` or ``.cshrc`` file.  As a general advice, if you are
+not using other products that require setting those environment variables, you should only
+define ``$SAS_BASE_DIR`` (or not define it and let Marvin configure itself).
+
+|
+
+.. _marvin-install-ipython:
+
+Using IPython
+^^^^^^^^^^^^^
+
+If you plan to work with Marvin interactively, from the Python terminal, we recommend you use
+`IPython <https://ipython.org/>`_, which provides many nice features such as autocompletion,
+between history, color coding, etc. It's also especially useful if you plan to use Matplotlib,
+as IPython comes with default interactive plotting. If you installed Python via the Anaconda or Miniconda
+distributions, then you already have IPython installed.  Just run ``ipython`` in your terminal.  If you
+need to install it, do ``pip install jupyter``.
+
+|
 
 
 .. _marvin-install-issues:
@@ -165,20 +159,14 @@ Install and Runtime Issues
     or have questions that should be addressed here, please
     `submit and issue <https://github.com/sdss/marvin/issues/new>`_.
 
-Pip Failure with Python-Memcache
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-If pip fails while installing ``python-memcached``, make sure that you have the latest version of ``setuptools`` by running ``pip install -U setuptools``. Then, try running ``pip install sdss-marvin`` again.
-
 How do I update marvin?
 ^^^^^^^^^^^^^^^^^^^^^^^
 
-To upgrade an existing Marvin installation, run::
-
-  pip install -U sdss-marvin
-
-By default, ``pip`` will update any underlying package on which marvin depends. If you want to prevent that you can upgrade marvin with ``pip install -U --no-deps sdss-marvin``. This could, however, make marvin to not work correctly. Instead, you can try ``pip install -U --upgrade-strategy only-if-needed sdss-marvin``, which will upgrade a dependency only if needed.
-
+Just do ``pip install --upgrade sdss-marvin``. Marvin will get updated to the latest
+version, along with all the dependencies. If you want to update marvin but keep other
+packages in their currrent versions, do
+``pip install --upgrade --upgrade-strategy only-if-needed sdss-marvin``. This will only
+update dependencies if marvin does need it.
 
 
 Permissions Error
@@ -260,24 +248,10 @@ As a reminder, we recommend these browsers for the best Marvin web experience:
 
 |
 
-.. _marvin-install-ipython:
-
-Using IPython
--------------
-
-If you plan to work with Marvin interactively, from the Python terminal, we recommend you use
-`IPython <https://ipython.org/>`_, which provides many nice features such as autocompletion,
-between history, color coding, etc. It's also especially useful if you plan to use Matplotlib,
-as IPython comes with default interactive plotting. If you installed Python via the Anaconda or Miniconda
-distributions, then you already have IPython installed.  Just run ``ipython`` in your terminal.  If you
-need to install it, do ``pip install jupyter``.
-
-|
-
 .. _marvin-install-windows:
 
-Marvin on Windows
------------------
+Installation on Windows
+-----------------------
 
 Marvin was originally designed to work on Mac or Linux operating systems. However it is possible at the moment to get Marvin working on Windows machines. The following guidelines have been tested on a Windows 10 machine running Python 3.6.
 
@@ -301,14 +275,4 @@ To add a permanent `HOME` path, follow these instructions.
 With this, you should be able to run Marvin in windows.  You can test it with `import marvin`.  Currently, Marvin cannot download files due to issues with forward slashes in `sdss-access` but this will be fixed soon.  We will continue to update these guidelines as we make further progress on a Windows-Marvin installation.
 
 |
-
-
-
-
-
-
-
-
-
-
 

@@ -35,16 +35,18 @@ To install marvin simply run ``pip install sdss-marvin``. More details and known
   Marvin 3 and following will require Python 3.6+.
 
 
-Getting Started
----------------
+At a Glance
+-----------
 
 If you are new to Marvin check the following links before diving into the full documentation:
 
-* The :ref:`lean tutorial <marvin-lean-tutorial>` is your quick start guide to Marvin.
+* The :ref:`Getting Started <marvin-getting_started>` is your quick start guide to Marvin.
 * For quick reference, download the :ref:`cheatsheet <marvin-cheatsheet>`.
 * :ref:`What's new in Marvin? <whats-new>`, :ref:`changelog <marvin-changelog>`, and :ref:`known issues <marvin-known-issues>`.
+* The :ref:`lean tutorial <marvin-lean-tutorial>` is an examlple end-to-end process of using Marvin for science.
 * Marvin uses `quantities <http://docs.astropy.org/en/stable/units/quantity.html>`_ to represent data (spectra, data cubes, etc). Here is a quick :ref:`introduction <marvin-quantities>`.
 * More :ref:`tutorials <marvin-tutorials>` and :ref:`frequently asked questions <marvin-faq>`.
+* See :ref:`Citing Marvin <marvin-citation>` for how to cite and acknowledge the use of Marvin in your work.
 
 
 .. toctree::
@@ -54,9 +56,10 @@ If you are new to Marvin check the following links before diving into the full d
 
    installation
    whats-new
-   tutorials/lean-tutorial
+   getting-started
    cheatsheet
    tutorials/index
+   citation
    known-issues
    faq
    contributing/contributing
