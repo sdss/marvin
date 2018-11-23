@@ -34,7 +34,7 @@ Marvin Tools provide:
 
 .. _gal-tools-getting-started:
 
-Getting started
+Getting Started
 ---------------
 
 We call Marvin galaxy Tools to the four main classes (`~cube.Cube`, `~rss.RSS`, `~maps.Maps`, and `~modelcube.ModelCube`) associated to the analogous DRP and DAP data products, the `quantities <marvin-quantities>` representing multidimensional data, and a variety of utilities and mixins that provide additional functionality. Sub-region galaxy tools (`~spaxel.Spaxel` and binning information) are explained :ref:`in their own section <marvin-subregion-tools>`. The four main Tools classes inherit from `~tools.core.MarvinToolsClass` and thus much of their functionality and logic is shared. In this section we will prominently use the `~cube.Cube` but most of what we explain here also applies to the remaining Tools.
@@ -278,8 +278,8 @@ or we can use `~cube.Cube.getSpaxel`, which accepts multiple arguments (refer to
 
 .. _marvin-quantities:
 
-Working with quantities
------------------------
+Working with Astropy Quantities
+-------------------------------
 
 Marvin presents scientific data in the form of `Astropy Quantities <http://docs.astropy.org/en/stable/units/quantity.html#quantity>`__. A Quantity is essentially a number with an associated physical unit. In Marvin we expand on that concept and extend the Quantities with a mask, an inverse variance (`why do we use ivar in MaNGA? <https://www.sdss.org/manga/manga-tutorials/manga-faq/#WhydoyououtputIVAR(inversevariance)insteadoferrors?>`__) and, when relevant, the associated wavelength. Marvin Quantities also provide useful methods to, for instance, calculate the SNR or plot the value. Marvin provides Quantities for 1D (`~marvin.tools.quantities.spectrum.Spectrum`, `~marvin.tools.quantities.analysis_props.AnalysisProperty`), 2D (`~marvin.tools.quantities.map.Map`), and 3D data (`~marvin.tools.quantities.datacube.DataCube`).
 
@@ -501,7 +501,7 @@ Map objects are a bit especial, though, and we will discuss them in detail in :r
 Finally, `~marvin.tools.quantities.analysis_props.AnalysisProperty` are 1D quantities associated with a value for a single spaxel on a `~marvin.tools.quantities.map.Map`. We will discuss them in depth when we talk about :ref:`marvin-subregion-tools`.
 
 
-Using the tools
+Using the Tools
 ---------------
 
 Data access modes

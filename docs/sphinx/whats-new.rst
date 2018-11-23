@@ -4,8 +4,8 @@
 .. error:: Many of the links in this page have changed and need to be redirected.
 
 
-What's new in Marvin
-====================
+What's New
+==========
 
 .. toctree::
     :hidden:

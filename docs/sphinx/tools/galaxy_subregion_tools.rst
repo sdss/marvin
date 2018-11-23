@@ -4,7 +4,7 @@
 Galaxy Sub-region Tools
 =======================
 
-Getting started
+Getting Started
 ---------------
 
 Working with Bin
