@@ -37,11 +37,6 @@ currently working with.  The default available releases are public data releases
 The Marvin login box.  Log in using your personal SDSS credentials or the general SDSS username and password to
 access collaboration data.
 
-.. _web-help:
-
-Help
-----
-A link to the Marvin Documentation page.
 
 .. _web-random:
 
@@ -232,5 +227,3 @@ In each box-and-whisker plot:
  * Outlier points are indicated as light grey open circles
 
 Find out more about box-and-whisker plots `here <https://en.wikipedia.org/wiki/Box_plot>`_.
-
-
