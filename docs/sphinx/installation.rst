@@ -66,7 +66,7 @@ SDSS Collaboration Access
 
 For SDSS collaboration members, authentication is required to access proprietary collaboration data, and Marvin must have ``config.access`` set to **collab**.  See :ref:`more here <marvin-access>`. To set up authentication for Marvin, you must perform the following
 
-.. _netrc-setup:
+.. _setup-netrc:
 
 Set up your netrc
 ~~~~~~~~~~~~~~~~~
@@ -176,6 +176,8 @@ Pip Failure with Python-Memcache
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 If pip fails while installing ``python-memcached``, make sure that you have the latest version of ``setuptools`` by running ``pip install -U setuptools``. Then, try running ``pip install sdss-marvin`` again.
+
+.. _marvin-update:
 
 How do I update marvin?
 ^^^^^^^^^^^^^^^^^^^^^^^
