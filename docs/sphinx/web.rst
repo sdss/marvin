@@ -208,8 +208,8 @@ Enable the map display by toggling the red Map/SpecView box.  This displays a se
 
 .. _galaxy_properties:
 
-Galaxy Properties
-^^^^^^^^^^^^^^^^^
+Galaxy Properties Display
+^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Clicking the Galaxy Properties tab will show you the `NASA-Sloan Atlas (NSA) catalog <https://www.sdss.org/dr13/manga/manga-target-selection/nsa/>`_ information for this galaxy in a table format.  In addition, there are two tabs for interactive display.
 
