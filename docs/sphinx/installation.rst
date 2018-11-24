@@ -59,11 +59,14 @@ By default Marvin is set up to run in `public` access mode, with the latest SDSS
 A ``config.access`` of **public** means you are set up for public access only.  In this mode, you only have access to publically available data.  A ``config.access`` of **collab** indicates you are set up for SDSS collaboration proprietary data access.
 
 
+.. _sdss-collaboration-access:
+
 SDSS Collaboration Access
 ^^^^^^^^^^^^^^^^^^^^^^^^^
 
 For SDSS collaboration members, authentication is required to access proprietary collaboration data, and Marvin must have ``config.access`` set to **collab**.  See :ref:`more here <marvin-access>`. To set up authentication for Marvin, you must perform the following
 
+.. _netrc-setup:
 
 Set up your netrc
 ~~~~~~~~~~~~~~~~~
@@ -78,7 +81,9 @@ SDSS uses ``.netrc`` authentication to access data content on many domains. To s
        login <username>
        password <password>
 
-and replace ``<username>`` and ``<password>`` with your login credentials. The default SDSS username and password is also acceptable for anonymous access.  Finally, run ``chmod 600 ~/.netrc`` to make the file only accessible to your user.
+and replace ``<username>`` and ``<password>`` with your login credentials. The default SDSS username and password is also acceptable for anonymous access.  **Finally, run** ``chmod 600 ~/.netrc`` **to make the file only accessible to your user.**
+
+.. _api-token-auth:
 
 API Token Authentication
 ~~~~~~~~~~~~~~~~~~~~~~~~
@@ -92,8 +97,10 @@ Marvin requires token authentication to grant access and use of its API.  Marvin
   config.token
 
 
-For Convenience
-~~~~~~~~~~~~~~~
+.. _auto-login:
+
+Automatically Logging In
+~~~~~~~~~~~~~~~~~~~~~~~~
 
 As the default mode of marvin is **public**, you will need to authenticate and change to **collab** access inside every new ``iPython`` session.  To simplify this process, marvin can be configured to automatically perform the access and authentication checks.  To configure marvin, you must set up a :ref:`custom marvin configuration file <marvin_custom_yaml>`.  Inside a ``~/.marvin/marvin.yml`` file, set the following lines::
 
@@ -301,14 +308,3 @@ To add a permanent `HOME` path, follow these instructions.
 With this, you should be able to run Marvin in windows.  You can test it with `import marvin`.  Currently, Marvin cannot download files due to issues with forward slashes in `sdss-access` but this will be fixed soon.  We will continue to update these guidelines as we make further progress on a Windows-Marvin installation.
 
 |
-
-
-
-
-
-
-
-
-
-
-
