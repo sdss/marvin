@@ -213,7 +213,7 @@ Marvin 2.2.0 brings significant improvements in the way you interact with MaNGA 
 
 * The NSA catalog information is now available via **Cube.nsa** in Marvin Cubes.
 
-* Marvin :ref:`marvin-web` now has a new :ref:`nsa_display` tab with interactive scatter, and box-and-whisker plots.
+* Marvin :ref:`marvin-web` now has a new :ref:`galaxy_properties` tab with interactive scatter, and box-and-whisker plots.
 
 * Marvin :ref:`marvin-web` has more python tips for working with Marvin :ref:`marvin-tools` objects.
 
