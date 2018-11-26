@@ -6,11 +6,12 @@
 # @Author: Brian Cherinka
 # @Date:   2018-09-03 18:56:38
 # @Last modified by:   Brian Cherinka
-# @Last Modified time: 2018-10-17 14:08:53
+# @Last Modified time: 2018-11-20 12:06:47
 
 from __future__ import absolute_import, division, print_function
 
 from brain.utils.general import compress_data
+from brain.utils.general.decorators import public
 from flask import Response, jsonify, redirect, stream_with_context, url_for
 from flask_classful import route
 from marvin import config
@@ -294,7 +295,7 @@ class QueryView(BaseView):
             return redirect(url_for('api.stream', **args))
 
         searchfilter = args.pop('searchfilter', None)
-        print('args', args)
+
         try:
             res = _getCubes(searchfilter, **args)
         except MarvinError as e:
@@ -356,6 +357,7 @@ class QueryView(BaseView):
         '''
         searchfilter = args.pop('searchfilter', None)
         format_type = args.pop('format_type', 'list')
+        colname = args.pop('colname', None)
 
         try:
             query, results = _run_query(searchfilter, **args)
@@ -466,6 +468,7 @@ class QueryView(BaseView):
         # this needs to be json.dumps until sas-vm at Utah updates to 2.7.11
         #return Response(json.dumps(self.results), mimetype='application/json')
 
+    @public
     @route('/getparamslist/', methods=['GET', 'POST'], endpoint='getparams')
     @av.check_args(use_params='query', required='paramdisplay')
     def getparamslist(self, args):
@@ -526,6 +529,7 @@ class QueryView(BaseView):
         output = jsonify(self.results)
         return output
 
+    @public
     @route('/getallparams/', methods=['GET', 'POST'], endpoint='getallparams')
     def getall(self):
         ''' Retrieve all the query parameters for all releases at once '''

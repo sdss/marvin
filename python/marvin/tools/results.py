@@ -916,6 +916,9 @@ class Results(object):
             if return_params and isinstance(return_params, list):
                 params['returnparams'] = ','.join(return_params)
 
+        # add the release just in case
+        params.update({'release': self.release})
+
         # check if we're getting all results
         datastream = calltype == 'getAll'
 

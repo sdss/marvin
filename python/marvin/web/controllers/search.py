@@ -10,29 +10,40 @@ Revision History:
     Last Modified On: 2016-04-26 10:42:12 by Brian
 
 '''
-from __future__ import print_function, division
-from flask import Blueprint, render_template, session as current_session, request, jsonify
-from flask_classful import route
-from brain.api.base import processRequest
-from marvin.core.exceptions import MarvinError
-from marvin.tools.query import doQuery, Query
-from marvin.utils.datamodel.query.forms import MarvinForm
-from marvin.web.controllers import BaseWebView
-from marvin.api.base import arg_validate as av
-from marvin.utils.datamodel.query.base import query_params, bestparams
-from wtforms import ValidationError
-from marvin.utils.general import getImagesByList
-from marvin.web.web_utils import buildImageDict
-from marvin.web.extensions import limiter
+from __future__ import division, print_function
+
 import random
+
+from brain.api.base import processRequest
+from flask import Blueprint, jsonify, render_template, request
+from flask import session as current_session
+from flask_classful import route
+from wtforms import ValidationError
+
+from marvin import config
+from marvin.api.base import arg_validate as av
+from marvin.core.exceptions import MarvinError
+from marvin.tools.query import Query, doQuery
+from marvin.utils.datamodel.query.base import bestparams, query_params
+from marvin.utils.datamodel.query.forms import MarvinForm
+from marvin.utils.general import getImagesByList
+from marvin.web.controllers import BaseWebView
+from marvin.web.extensions import limiter
+from marvin.web.web_utils import buildImageDict
+
 
 search = Blueprint("search_page", __name__)
 
 
 def getRandomQuery():
     ''' Return a random query from this list '''
-    samples = ['nsa.z < 0.02', 'cube.plate < 8000', 'haflux > 25',
-               'nsa.sersic_logmass > 9.5 and nsa.sersic_logmass < 11', 'emline_ew_ha_6564 > 3']
+
+    samples = ['nsa.z < 0.02', 'cube.plate < 8000',
+               'nsa.sersic_logmass > 9.5 and nsa.sersic_logmass < 11']
+
+    if config._allow_DAP_queries:
+        samples += ['haflux > 25', 'emline_ew_ha_6564 > 3']
+
     q = random.choice(samples)
     return q
 
@@ -46,6 +57,19 @@ def all_in(fullist):
         if outsiders:
             raise ValidationError(message)
     return _all_in
+
+
+def refine_error(error):
+    ''' Refine a search error message '''
+
+    errstr = str(error).replace("'", '')
+    if 'matches multiple parameters' in errstr:
+        base, params = errstr.split(':')
+        key = base.split('matches')[0].strip()
+        simplified = ', '.join([s.strip().split('.', 1)[-1] for s in params.split(',')])
+        error = '{0} is not a unique parameter name.  Please try one of: {1}'.format(key, simplified)
+
+    return error
 
 
 class Search(BaseWebView):
@@ -100,7 +124,9 @@ class Search(BaseWebView):
                 # try the query
                 try:
                     q, res = doQuery(search_filter=searchvalue, release=self._release, return_params=returnparams)
-                except MarvinError as e:
+                except (MarvinError, KeyError) as e:
+                    self.search['errmsg'] = 'Could not perform query: {0}'.format(refine_error(e))
+                except NotImplementedError as e:  # DAP queries disabled
                     self.search['errmsg'] = 'Could not perform query: {0}'.format(e)
                 else:
                     self.search['filter'] = q.search_filter
@@ -116,11 +142,11 @@ class Search(BaseWebView):
                     self.search['reslen'] = len(res.results)
                     if returnparams:
                         returnparams = [str(r) for r in returnparams]
-                    rpstr = 'returnparams={0} <br>'.format(returnparams) if returnparams else ''
-                    qstr = ', returnparams=returnparams' if returnparams else ''
+                    rpstr = 'return_params={0} <br>'.format(returnparams) if returnparams else ''
+                    qstr = ', return_params=returnparams' if returnparams else ''
                     self.search['querystring'] = ("<html><samp>from marvin.tools.query import Query<br>\
-                        filter='{0}'<br> {1}\
-                        q = Query(searchfilter=filter{2})<br>\
+                        myfilter='{0}'<br> {1}\
+                        q = Query(search_filter=myfilter{2})<br>\
                         r = q.run()<br></samp></html>".format(searchvalue, rpstr, qstr))
 
         return render_template('search.html', **self.search)
@@ -250,4 +276,3 @@ class Search(BaseWebView):
 
 
 Search.register(search)
-

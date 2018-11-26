@@ -1,0 +1,12 @@
+{% extends "errors/error.html" %}
+
+{% block error %}
+
+    <div class='errorcode' id='error_gt'>
+        <h1 id='quote'>"I’d give you advice, but you wouldn’t listen. No one ever does."</h1>
+
+        <h2>{{code}}: {{name}}</h2>
+        <h3>Timeout reason: {{message}}</h3>
+        <p>What you were trying to do was just too slow.  Servers typically time out after 1 minute. </p>
+    </div>
+{% endblock error %}

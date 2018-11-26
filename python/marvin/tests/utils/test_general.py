@@ -18,6 +18,7 @@ Revision history:
 from __future__ import division
 from __future__ import print_function
 
+import re
 import pytest
 import numpy as np
 from astropy.io import fits
@@ -32,7 +33,7 @@ from marvin.utils.general.structs import DotableCaseInsensitive
 from marvin.core.exceptions import MarvinError
 from marvin.utils.general import (convertCoords, get_nsa_data, getWCSFromPng,
                                   _sort_dir, getDapRedux, getDefaultMapPath, target_status,
-                                  target_is_observed)
+                                  target_is_observed, downloadList)
 from marvin.utils.datamodel.dap import datamodel
 
 
@@ -301,4 +302,22 @@ class TestTargetStatus(object):
         status = target_status(galid)
         assert status == exp
 
+
+class TestDownloadList(object):
+    dl = ['8485-1901', '7443-12701']
+
+    @pytest.mark.parametrize('dltype, exp',
+                             [('cube', 'redux.*LOGCUBE'),
+                              ('rss', 'redux.*LOGRSS'),
+                              ('maps', 'analysis.*MAPS'),
+                              ('modelcube', 'analysis.*LOGCUBE'),
+                              ('image', 'redux.*images.*png')])
+    def test_objects(self, dltype, exp):
+        res = downloadList(self.dl, dltype=dltype, test=True)
+        assert all([re.search(exp, s) for s in res]) is True
+
+    def test_dap(self):
+        res = downloadList(self.dl, dltype='dap', test=True)
+        good = all([re.search('(common|GAU).*(MAPS|LOGCUBE|SNRG)', s) for s in res])
+        assert good is True
 

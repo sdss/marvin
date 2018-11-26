@@ -6,7 +6,7 @@
 # @Author: Brian Cherinka
 # @Date:   2017-08-22 22:43:15
 # @Last modified by:   Brian Cherinka
-# @Last modified time: 2018-11-08 12:26:08
+# @Last modified time: 2018-11-12 17:06:25
 
 from __future__ import absolute_import, division, print_function
 
@@ -47,6 +47,7 @@ PARAM_CACHE = {}
 class QueryDataModel(object):
     """ A class representing a Query datamodel """
 
+
     def __init__(self, release, groups=[], aliases=[], exclude=[], **kwargs):
 
         self.release = release
@@ -57,6 +58,7 @@ class QueryDataModel(object):
         self.dap_datamodel = kwargs.get('dapdm', None)
         self.bitmasks = get_maskbits(self.release)
         self._mode = kwargs.get('mode', config.mode)
+        self._keys = []
         self._get_parameters()
         self._check_datamodels()
 
@@ -72,6 +74,11 @@ class QueryDataModel(object):
 
     def _get_parameters(self):
         ''' Get the parameters for the datamodel '''
+
+        # if the release isn't in the allowed releases then do nothing
+        # if self.release not in config._allowed_releases:
+        #     self._groups = ParameterGroupList([])
+        #     return
 
         # check cache for parameters
         if self.release in PARAM_CACHE:
@@ -95,6 +102,7 @@ class QueryDataModel(object):
         ''' Get the keys from a remote source '''
 
         from marvin.api.api import Interaction
+        from brain import bconfig
 
         # if not urlmap then exit
         if not config.urlmap:
@@ -103,7 +111,7 @@ class QueryDataModel(object):
 
         # try to get the url
         try:
-            url = config.urlmap['api']['getallparams']['url']
+            url = config.urlmap['api']['getparams']['url']
         except Exception as e:
             warnings.warn('Cannot access Marvin API to get the full list of query parameters. '
                           'for the Query Datamodel. Only showing the best ones.', MarvinUserWarning)
@@ -114,18 +122,25 @@ class QueryDataModel(object):
         # make the call
         if url:
             try:
-                ii = Interaction(url, params={'release': self.release, 'paramdisplay': 'all'})
+                ii = Interaction(url, params={'release': self.release, 'paramdisplay': 'all'}, base=bconfig._collab_api_url)
             except Exception as e:
                 warnings.warn('Could not remotely retrieve full set of parameters. {0}'.format(e), MarvinUserWarning)
                 self._keys = []
             else:
                 # this deals with all parameters from all releases at once
-                PARAM_CACHE.update(ii.getData())
-                self._check_aliases()
+                # PARAM_CACHE.update(ii.getData())
+                # self._check_aliases()
 
-                for key in list(PARAM_CACHE.keys()):
-                    self._keys = PARAM_CACHE[key] if key in PARAM_CACHE else []
-                    self._remove_query_params()
+                # for key in list(PARAM_CACHE.keys()):
+                #     keys = PARAM_CACHE[key] if key in PARAM_CACHE else []
+                #     self._remove_query_params(keys=keys)
+
+                # this deals with parameters per release
+                self._keys = ii.getData()
+                PARAM_CACHE[self.release] = self._keys
+                self._check_aliases()
+                self._remove_query_params()
+
 
     def _check_aliases(self):
         ''' Check the release of the return parameters against the aliases '''
@@ -133,16 +148,18 @@ class QueryDataModel(object):
             if key != self.release and key in self.aliases:
                 PARAM_CACHE[self.release] = val
 
-    def _remove_query_params(self):
+    def _remove_query_params(self, keys=None):
         ''' Remove keys from query_params best list '''
+        keys = keys or self._keys
         origlist = query_params.list_params('full')
         for okey in origlist:
-            if okey in self._keys:
-                self._keys.remove(okey)
+            if okey in keys:
+                keys.remove(okey)
 
         # add the final list to the cache
+        self._keys = keys
         if self.release not in PARAM_CACHE:
-            PARAM_CACHE[self.release] = self._keys
+            PARAM_CACHE[self.release] = keys
 
     def _cleanup_keys(self):
         ''' Cleans up the list for MarvinForm keys '''
@@ -252,7 +269,13 @@ class QueryDataModel(object):
     def add_to_group(self, group, value=None):
         ''' Add free-floating Parameters into a Group '''
 
-        thegroup = self._groups == group
+        # This helps in case that a group does not exist in the parameters,
+        # for instance because we loaded the metadata query params.
+        try:
+            thegroup = self._groups == group
+        except ValueError:
+            return
+
         keys = []
         allkeys = copy_mod.copy(self._keys)
         if value is None:
@@ -532,6 +555,11 @@ class ParameterGroupList(QueryFuzzyList):
 
     def add_group(self, group, copy=True, parent=None):
         ''' '''
+
+        # don't add the group if already in there
+        name = str(group)
+        if name in self:
+            return
 
         new_grp = copy_mod.copy(group) if copy else group
         if isinstance(new_grp, ParameterGroup):
@@ -878,11 +906,23 @@ class QueryParameter(object):
 # # Get the Common Parameters from the filelist
 
 def get_params():
-    bestpath = os.path.join(os.path.dirname(os.path.abspath(__file__)), '../../../data',
-                            'query_params_best.cfg')
+
+    bestpath = os.path.join(os.path.dirname(os.path.abspath(__file__)), '../../../data', 'query_params_best.cfg')
+
     if os.path.isfile(bestpath):
         with open(bestpath, 'r') as stream:
             bestparams = yaml.load(stream, Loader=yamlordereddictloader.Loader)
+
+        # remove DAP spaxel properties from the list
+        #if config.access not in config._dap_query_modes:
+        if not config._allow_DAP_queries:
+            b = bestparams.copy()
+            for grp, props in b.items():
+                props = [prop for prop in props if prop['table'] != 'spaxelprop']
+                bestparams[grp] = props
+                if not props:
+                    bestparams.pop(grp)
+
         return bestparams
     else:
         return None

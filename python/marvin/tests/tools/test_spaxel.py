@@ -308,7 +308,7 @@ class TestPickling(object):
         cube = Cube(filename=galaxy.cubepath)
         maps = Maps(filename=galaxy.mapspath)
 
-        spaxel = cube.getSpaxel(1, 3, properties=maps, models=False)
+        spaxel = cube.getSpaxel(1, 3, maps=maps, modelcube=False)
 
         file = temp_scratch.join('test_spaxel.mpf')
 
@@ -336,7 +336,7 @@ class TestPickling(object):
         cube = Cube(plateifu=galaxy.plateifu, mode='remote')
         maps = Maps(plateifu=galaxy.plateifu, mode='remote')
         modelcube = ModelCube(plateifu=galaxy.plateifu, mode='remote')
-        spaxel = cube.getSpaxel(1, 3, properties=maps, models=modelcube)
+        spaxel = cube.getSpaxel(1, 3, maps=maps, modelcube=modelcube)
 
         assert spaxel._cube.data_origin == 'api'
         assert spaxel._maps.data_origin == 'api'
@@ -376,7 +376,7 @@ class TestPickling(object):
 
         maps = Maps(filename=galaxy.mapspath)
         modelcube = ModelCube(filename=galaxy.modelpath)
-        spaxel = maps.getSpaxel(25, 15, xyorig='lower', drp=False, models=modelcube)
+        spaxel = maps.getSpaxel(25, 15, xyorig='lower', cube=False, modelcube=modelcube)
 
         file = temp_scratch.join('test_spaxel.mpf')
 
@@ -403,7 +403,7 @@ class TestMaskbit(object):
     @marvin_test_if(mark='skip', galaxy=dict(release=['MPL-4']))
     def test_quality_flags(self, galaxy):
         maps = Maps(plateifu=galaxy.plateifu)
-        sp = maps.getSpaxel(0, 0, models=True)
+        sp = maps.getSpaxel(0, 0, modelcube=True)
         assert len(sp.quality_flags) == 2
 
 
@@ -632,17 +632,20 @@ class TestMapsGetSpaxel(object):
             assert map[yy, xx].ivar == pytest.approx(channel_data['ivar'], abs=1.e-4)
 
     @marvin_test_if(mark='include', galaxy=dict(bintype=['SPX']))
-    def test_model_deprecated(self, galaxy, exporigin):
+    def test_deprecated(self, galaxy, exporigin):
 
         if exporigin != 'db':
             pytest.skip()
 
         maps = Maps(**self._get_maps_kwargs(galaxy, exporigin))
 
-        with pytest.raises(MarvinDeprecationError) as ee:
-            maps.getSpaxel(x=0, y=0, model=True)
+        for old_arg in ['drp', 'properties', 'model', 'models']:
 
-        assert 'the model parameter has been deprecated. Use models.' in str(ee)
+            with pytest.raises(MarvinDeprecationError) as ee:
+                kwargs = {old_arg: True}
+                maps.getSpaxel(x=0, y=0, **kwargs)
+
+            assert 'the {0} parameter has been deprecated.'.format(old_arg) in str(ee)
 
 
 @marvin_test_if_class(mark='skip', galaxy=dict(release=['MPL-4']))
@@ -689,7 +692,7 @@ class TestModelCubeGetSpaxel(object):
         model_cube = ModelCube(plateifu=galaxy.plateifu,
                                bintype=galaxy.bintype, template=galaxy.template,
                                release=galaxy.release, )
-        spaxel = _get_spaxel_helper(model_cube, 1, 2, properties=False, drp=False)
+        spaxel = _get_spaxel_helper(model_cube, 1, 2, maps=False, cube=False)
         self._test_getspaxel(spaxel, galaxy)
         assert isinstance(spaxel.getCube(), Cube)
         assert 'flux' not in spaxel.cube_quantities
