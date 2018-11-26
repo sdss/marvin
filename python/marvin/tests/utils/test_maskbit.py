@@ -6,7 +6,7 @@
 # @Author: Brett Andrews <andrews>
 # @Date:   2017-10-06 10:10:00
 # @Last modified by: José Sánchez-Gallego (gallegoj@uw.edu)
-# @Last modified time: 2018-11-12 21:26:29
+# @Last modified time: 2018-11-26 12:08:06
 
 
 from __future__ import absolute_import, division, print_function
@@ -21,7 +21,8 @@ from marvin.utils.general.maskbit import Maskbit
 bits = [(0, 'BITZERO', 'The zeroth bit.'),
         (1, 'BITONE', 'The first bit.'),
         (2, 'BITTWO', 'The second bit.'),
-        (3, 'BITTHREE', 'The third bit')]
+        (3, 'BITTHREE', 'The third bit'),
+        (4, 'BITFOUR', 'The fourth bit')]
 schema = pd.DataFrame(bits, columns=['bit', 'label', 'description'])
 name = 'MYMASK'
 description = 'My first Maskbit.'
@@ -159,10 +160,20 @@ class TestMaskbit(object):
         actual = mb.get_mask(labels, mask=custom_mask, dtype=bool)
         assert (actual == expected).all()
 
+    @pytest.mark.parametrize('labels', ['BITFAKE', ['BITFAKE', 'BITTHREE']])
+    def test_get_mask_nonpresent_label(self, labels):
+
+        mb = Maskbit(name=name, schema=schema, description=description)
+
+        with pytest.raises(ValueError) as ee:
+            mb.get_mask(labels)
+
+        assert 'label \'BITFAKE\' not found in the maskbit schema.' in str(ee)
+
     @pytest.mark.parametrize('labels, dtype, expected',
-                             [('BITFAKE', bool, np.array([[False, False], [False, False]])),
-                              ('BITFAKE', int, np.array([[0, 0], [0, 0]]))])
-    def test_get_mask_nonpresent_label(self, labels, dtype, expected):
+                             [('BITFOUR', bool, np.array([[False, False], [False, False]])),
+                              ('BITFOUR', int, np.array([[0, 0], [0, 0]]))])
+    def test_get_mask_empty(self, labels, dtype, expected):
 
         mb = Maskbit(name=name, schema=schema, description=description)
         mb.mask = mask

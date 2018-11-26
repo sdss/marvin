@@ -6,7 +6,7 @@
 # @Author: Brett Andrews <andrews>
 # @Date:   2017-10-06 10:10:00
 # @Last modified by: José Sánchez-Gallego (gallegoj@uw.edu)
-# @Last modified time: 2018-11-12 21:19:45
+# @Last modified time: 2018-11-26 11:51:50
 
 from __future__ import absolute_import, division, print_function
 
@@ -385,7 +385,16 @@ class Maskbit(object):
                    ...,
                    [ True,  True,  True, ...,  True,  True,  True]], dtype=bool)
         """
+
         assert dtype in [int, bool], '``dtype`` must be either ``int`` or ``bool``.'
+
+        if isinstance(labels, str):
+            labels = [labels]
+
+        schema_labels = self.schema.label.tolist()
+        for label in labels:
+            if label not in schema_labels:
+                raise ValueError('label {0!r} not found in the maskbit schema.'.format(label))
 
         bits = self.labels_to_bits(labels)
         mask = mask if mask is not None else self.mask
