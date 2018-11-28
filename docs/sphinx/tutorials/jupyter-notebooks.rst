@@ -1,6 +1,9 @@
 
 .. _marvin-jupyter:
 
+.. warning:: These notebooks are deprecated and should not be used.  Please see the notebooks in the :ref:`tutorial <marvin-tutorials>` section.
+
+
 Jupyter Notebooks
 =================
 
