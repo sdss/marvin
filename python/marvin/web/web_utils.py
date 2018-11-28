@@ -42,15 +42,28 @@ def check_access():
     # check for logged in status
     logged_in = current_session.get('loginready', None)
 
-    if not logged_in and not public_access:
-        config.access = 'public'
-    elif logged_in is True and public_access:
-        config.access = 'collab'
+
+    # commenting this out as this seems to cause problems with the collab web server
+    # switching back and forth between config.access public and collab and removing the allowed
+    # MPL releases from the collab version.  Leaving here in case we need to go back and I don't
+    # forget.
+
+    # if not logged_in and not public_access:
+    #     config.access = 'public'
+    # elif logged_in is True and public_access:
+    #     config.access = 'collab'
 
 
 def update_allowed():
     ''' Update the allowed versions '''
+    logged_in = current_session.get('loginready', None)
     mpls = list(config._allowed_releases.keys())
+
+    # this is to remove MPLs from the list of web versions when not logged in to the collaboration site
+    if not logged_in:
+        mpls = [mpl for mpl in mpls if 'DR' in mpl]
+        set_session_versions(max(mpls))
+
     versions = [{'name': mpl, 'subtext': str(config.lookUpVersions(release=mpl))} for mpl in mpls]
     return versions
 

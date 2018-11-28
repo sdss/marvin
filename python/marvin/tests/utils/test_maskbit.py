@@ -5,15 +5,15 @@
 #
 # @Author: Brett Andrews <andrews>
 # @Date:   2017-10-06 10:10:00
-# @Last modified by:   andrews
-# @Last modified time: 2018-01-06 12:01:68
+# @Last modified by: José Sánchez-Gallego (gallegoj@uw.edu)
+# @Last modified time: 2018-11-26 12:08:06
 
 
-from __future__ import division, print_function, absolute_import
+from __future__ import absolute_import, division, print_function
 
-import pytest
-import pandas as pd
 import numpy as np
+import pandas as pd
+import pytest
 
 from marvin.utils.general.maskbit import Maskbit
 
@@ -21,7 +21,8 @@ from marvin.utils.general.maskbit import Maskbit
 bits = [(0, 'BITZERO', 'The zeroth bit.'),
         (1, 'BITONE', 'The first bit.'),
         (2, 'BITTWO', 'The second bit.'),
-        (3, 'BITTHREE', 'The third bit')]
+        (3, 'BITTHREE', 'The third bit'),
+        (4, 'BITFOUR', 'The fourth bit')]
 schema = pd.DataFrame(bits, columns=['bit', 'label', 'description'])
 name = 'MYMASK'
 description = 'My first Maskbit.'
@@ -157,4 +158,24 @@ class TestMaskbit(object):
         mb = Maskbit(name=name, schema=schema, description=description)
         mb.mask = mask
         actual = mb.get_mask(labels, mask=custom_mask, dtype=bool)
+        assert (actual == expected).all()
+
+    @pytest.mark.parametrize('labels', ['BITFAKE', ['BITFAKE', 'BITTHREE']])
+    def test_get_mask_nonpresent_label(self, labels):
+
+        mb = Maskbit(name=name, schema=schema, description=description)
+
+        with pytest.raises(ValueError) as ee:
+            mb.get_mask(labels)
+
+        assert 'label \'BITFAKE\' not found in the maskbit schema.' in str(ee)
+
+    @pytest.mark.parametrize('labels, dtype, expected',
+                             [('BITFOUR', bool, np.array([[False, False], [False, False]])),
+                              ('BITFOUR', int, np.array([[0, 0], [0, 0]]))])
+    def test_get_mask_empty(self, labels, dtype, expected):
+
+        mb = Maskbit(name=name, schema=schema, description=description)
+        mb.mask = mask
+        actual = mb.get_mask(labels, mask=custom_mask, dtype=dtype)
         assert (actual == expected).all()

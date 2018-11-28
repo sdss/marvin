@@ -56,6 +56,8 @@ class Interaction(BrainInteraction):
         datastream (bool):
             If True, expects the response content to be streamed back using a Python generator.
             All matters when Marvin Query return_all is True.
+        base (str):
+            Optional replacement for domain API url.
 
     Returns:
         results (dict):

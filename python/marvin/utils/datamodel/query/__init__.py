@@ -6,7 +6,7 @@
 # @Author: Brian Cherinka
 # @Date:   2017-08-22 22:43:15
 # @Last modified by:   Brian Cherinka
-# @Last Modified time: 2018-10-18 14:58:54
+# @Last Modified time: 2018-11-15 11:08:16
 
 from __future__ import print_function, division, absolute_import
 
@@ -22,6 +22,9 @@ datamodel = QueryDataModelList(mpllist)
 GRPDICT = {'Emission': 'spaxelprop.emline', 'Kinematic': 'spaxelprop.stellar', 'Spectral Indices': 'spaxelprop.specindex', 'NSA Catalog': 'nsa'}
 
 for mpl in mpllist:
+    # if mpl.release not in config._allowed_releases:
+    #     continue
+
     mpl.regroup(GRPDICT)
     mpl.add_group('Other')
     mpl.add_to_group('Other')

@@ -5,8 +5,8 @@
 #
 # @Author: Brian Cherinka
 # @Date:   2018-08-04 20:09:38
-# @Last modified by:   Brian Cherinka
-# @Last Modified time: 2018-10-18 14:54:59
+# @Last modified by:   andrews
+# @Last modified time: 2018-11-22 13:11:86
 
 from __future__ import print_function, division, absolute_import, unicode_literals
 
@@ -114,8 +114,8 @@ class Query(object):
             in the query.
         return_params (list):
             A list of string parameter names desired to be returned in the query
-        return_type (str):
-            The requested Marvin Tool object that the results are converted into
+        return_type ({'cube', 'spaxel', 'maps', 'rss', and 'modelcube'}):
+            The requested Marvin Tool object that the results are converted into.
         targets (list):
             A list of manga_target flags to filter on
         quality (list):
@@ -147,10 +147,10 @@ class Query(object):
     def __init__(self, search_filter=None, return_params=None, return_type=None, targets=None,
                  quality=None, mode=None, return_all=False, default_params=None, nexus='cube',
                  sort='mangaid', order='asc', caching=True, limit=100, count_threshold=1000,
-                 verbose=False, **kwargs):
+                 verbose=False, release=None):
 
         # basic parameters
-        self.release = kwargs.pop('release', config.release)
+        self.release = release or config.release
         self._drpver, self._dapver = config.lookUpVersions(release=self.release)
         self.mode = mode if mode is not None else config.mode
         self.data_origin = None
@@ -255,7 +255,7 @@ class Query(object):
         self._set_defaultparams()
 
         # get user-defined input parameters
-        self._set_returnparams()
+        self._set_return_params()
 
         # setup the search filter
         self._set_filter()
@@ -905,7 +905,7 @@ class Query(object):
         # add the defaults to the main set of parameters
         self.params.extend(self.default_params)
 
-    def _set_returnparams(self):
+    def _set_return_params(self):
         ''' Set the return parameters '''
 
         # set the initial returns list
@@ -919,8 +919,8 @@ class Query(object):
 
         self.return_params = full_returnparams
 
-        # remove any return parameters that are also defaults
-        use_only = [f for f in full_returnparams if f not in self.default_params]
+        # remove any return parameters that aren't already in the list of params
+        use_only = self._filter_duplicates(full_returnparams)
 
         # add the return parameters to the main set of parameters
         self.params.extend(use_only)
@@ -951,7 +951,8 @@ class Query(object):
         # update the parameters dictionary
         self._check_parsed(parsed)
         self.filter_params.update(parsed.params)
-        filterkeys = [key for key in parsed.uniqueparams if key not in self.params]
+        # remove keys that are already in the list of params
+        filterkeys = self._filter_duplicates(parsed.uniqueparams)
         self.params.extend(filterkeys)
 
     def _check_shortcuts_in_filter(self):
@@ -984,18 +985,87 @@ class Query(object):
 
         self._parsed = parsed
 
-    def _check_for(self, parameters, schema=None, tables=None):
-        ''' Check if a schema or test of tables names are in the provided parameters '''
+    def _filter_duplicates(self, columns, use_params='all'):
+        ''' Filter out parameter duplicates
+
+        Parameters:
+            columns (list):
+                A list of parameter names to check for duplicates in
+            use_params (str):
+                Indicates which parameter set to check the input columns against.
+                Choices are "all" (default), "default", "return", "or filter".
+                "all" uses self.params
+
+        Returns:
+            A list of new parameter names to add without existing duplicates
+        '''
+
+        assert use_params in ['all', 'default', 'return', 'filter'], (
+            'Can only be "all", "default", "return", or "filter"')
+
+        # get the params attribute
+        if use_params == 'all':
+            param_name = 'params'
+        else:
+            param_name = '{0}_params'.format(use_params)
+        params = self.__getattribute__(param_name)
+
+        # perform the check
+        use_only = []
+        for col in columns:
+            # get the shortcut name
+            shortcol = self._marvinform._param_form_lookup.get_shortcut_name(col)
+            # if column or short name is already in list of params, add it
+            if col not in params and shortcol not in params:
+                # don't use the real column name for spaxelprop
+                key = shortcol if 'spaxelprop' in col else col
+                use_only.append(key)
+
+        return use_only
+
+
+    def _check_for(self, parameters, schema=None, tables=None, only=None):
+        ''' Check if a schema or test of tables names are in the provided parameters
+
+        Checks a list of parameters to see if any schema or table names are present
+
+        Parameters:
+            parameters (list)
+                List of string parameters names to use in check
+            schema (str):
+                Schema name to check for in parameter list
+            tables (list):
+                List of table names to check for in parameter list
+            only (bool):
+                If True, checks if all parameters match the schema/table name conditions
+
+        Returns:
+            True if any/all of the parameters match the schema or tables
+
+        '''
+
+        # function to check if all or any parameters meet conditions
+        fxn = all if only else any
 
         fparams = self._marvinform._param_form_lookup.mapToColumn(parameters)
         fparams = [fparams] if not isinstance(fparams, list) else fparams
-        if schema:
+        if schema and not tables:
             inschema = [schema in c.class_.__table__.schema for c in fparams]
-            return True if any(inschema) else False
+            return True if fxn(inschema) else False
         if tables:
+            schema_cond = schema if schema else ''
             tables = [tables] if not isinstance(tables, list) else tables
-            intables = sum([[t in c.class_.__table__.name for c in fparams] for t in tables], [])
-            return True if any(intables) else False
+            # convert to full names
+            tables = [self._marvinform._param_form_lookup._tableShortcuts.get(t, t) for t in tables]
+            # get the parameter table names
+            param_tables = [c.class_.__table__.name for c in fparams
+                            if schema_cond in c.class_.__table__.schema]
+            if only:
+                diff = set(param_tables) ^ set(tables)
+                return diff == set()
+            else:
+                intables = sum([[t in c for c in param_tables] for t in tables], [])
+                return True if fxn(intables) else False
 
     def _build_query(self):
         ''' Build the query '''
@@ -1018,8 +1088,20 @@ class Query(object):
         # check if the query filter is functional
         self._run_functional_queries()
 
-        # check if the query filter is against the DAP
-        if self._check_for(self.filter_params.keys(), schema='dapdb'):
+        # check if the query parameters are against the DAP
+        if self._check_for(self.params, schema='dapdb'):
+
+            # Checks if the only table queried from dapdb is dapall. In that
+            # case we allow the query.
+            # checking for dapall, bintype, template since we have default parameters now
+            all_dapall = self._check_for(self.params, schema='dapdb',
+                                         tables=['dapall', 'bintype', 'template'], only=True)
+
+            if not all_dapall and not config._allow_DAP_queries:
+                raise NotImplementedError(
+                    'DAP spaxel queries are disabled in this version. '
+                    'We plan to reintroduce this feature in the future.')
+
             self._check_dapall_query()
 
     def _set_query_parameters(self):
@@ -1035,7 +1117,10 @@ class Query(object):
         # adjust the default parameters for any necessary DAP
         self._add_default_params(['obsinfo.expnum', 'obsinfo.mgdpos'], tables=['obsinfo'])
 
-        self.params = [item for item in self.params if item in set(self.params)]
+        # final check to remove duplicates
+        parset = set()
+        psadd = parset.add
+        self.params = [item for item in self.params if not (item in parset or psadd(item))]
 
         # create the list of parameter attributes
         queryparams = self._marvinform._param_form_lookup.mapToColumn(self.params)
@@ -1327,7 +1412,7 @@ class Query(object):
 
         # get all the available flags
         flags = sum([list(i.schema.label) for i in self.datamodel.bitmasks.values()
-            if 'QUAL' in i.name or 'MASK' in i.name], [])
+                     if 'QUAL' in i.name or 'MASK' in i.name], [])
         assert set(quality).issubset(set(flags)), 'quality flag must be one of {0}'.format(flags)
 
         # get any individual label sets
@@ -1634,7 +1719,7 @@ class Query(object):
                 The function condition used in the query filter
 
         Example:
-            >>> fxn = 'npergood(junk.emline_gflux_ha_6564 > 25) >= 20'
+            >>> fxn = 'npergood(spaxelprop.emline_gflux_ha_6564 > 25) >= 20'
             >>> Syntax: npergood() - function name
             >>>         npergood(expression) operator value
             >>>

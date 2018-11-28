@@ -6,7 +6,7 @@
 # @Author: Brian Cherinka
 # @Date:   2017-01-27 14:26:40
 # @Last modified by:   Brian Cherinka
-# @Last Modified time: 2017-07-06 10:36:16
+# @Last Modified time: 2018-11-12 14:14:41
 
 from __future__ import print_function, division, absolute_import
 from flask import request, current_app as app
@@ -63,7 +63,7 @@ def page_not_found(error):
     if _is_api(request):
         return make_error_json(error, name, 404)
     else:
-        return make_error_page(app, name, 404, sentry=sentry)
+        return make_error_page(app, name, 404, sentry=sentry, exception=error)
 
 
 @errors.app_errorhandler(500)
@@ -72,7 +72,7 @@ def internal_server_error(error):
     if _is_api(request):
         return make_error_json(error, name, 500)
     else:
-        return make_error_page(app, name, 500, sentry=sentry)
+        return make_error_page(app, name, 500, sentry=sentry, exception=error)
 
 
 @errors.app_errorhandler(400)
@@ -81,7 +81,7 @@ def bad_request(error):
     if _is_api(request):
         return make_error_json(error, name, 400)
     else:
-        return make_error_page(app, name, 400, sentry=sentry)
+        return make_error_page(app, name, 400, sentry=sentry, exception=error)
 
 
 @errors.app_errorhandler(405)
@@ -90,7 +90,7 @@ def method_not_allowed(error):
     if _is_api(request):
         return make_error_json(error, name, 405)
     else:
-        return make_error_page(app, name, 405, sentry=sentry)
+        return make_error_page(app, name, 405, sentry=sentry, exception=error)
 
 
 @errors.app_errorhandler(422)
@@ -106,7 +106,7 @@ def handle_unprocessable_entity(error):
     if _is_api(request):
         return make_error_json(error, name, 422, data=messages)
     else:
-        return make_error_page(app, name, 422, sentry=sentry, data=messages)
+        return make_error_page(app, name, 422, sentry=sentry, data=messages, exception=error)
 
 
 @errors.app_errorhandler(429)
@@ -117,3 +117,11 @@ def rate_limit_exceeded(error):
     else:
         return make_error_page(app, name, 429, sentry=sentry, exception=error)
 
+
+@errors.app_errorhandler(504)
+def gateway_timeout(error):
+    name = 'Gateway Timeout'
+    if _is_api(request):
+        return make_error_json(error, name, 504)
+    else:
+        return make_error_page(app, name, 504, sentry=sentry, exception=error)

@@ -6,6 +6,8 @@ and a REST-like API, under tools/, web/, and api/, respectively.  Core functiona
 of Marvin stems from Marvin's Brain.
 """
 
+# isort:skip_file
+
 import os
 import re
 import warnings
@@ -98,6 +100,9 @@ class MarvinConfig(object):
         self.use_sentry = True
         self.add_github_message = True
         self._allowed_releases = {}
+
+        # Allow DAP queries
+        self._allow_DAP_queries = False
 
         # perform some checks
         self._load_defaults()
@@ -566,13 +571,15 @@ class MarvinConfig(object):
         ''' Force the database to be turned off '''
         config.db = None
         from marvin import marvindb
-        marvindb.forceDbOff()
+        if marvindb:
+            marvindb.forceDbOff()
 
     def forceDbOn(self):
         ''' Force the database to be reconnected '''
         self._setDbConfig()
         from marvin import marvindb
-        marvindb.forceDbOn(dbtype=self.db)
+        if marvindb:
+            marvindb.forceDbOn(dbtype=self.db)
 
     def _addExternal(self, name):
         ''' Adds an external product into the path '''

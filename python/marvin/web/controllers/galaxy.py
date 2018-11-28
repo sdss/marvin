@@ -312,6 +312,7 @@ class Galaxy(BaseWebView):
                 self.galaxy['error'] = errmsg
                 return render_template("galaxy.html", **self.galaxy)
             else:
+                dm = datamodel[self._dapver]
                 self.galaxy['cube'] = cube
                 self.galaxy['daplink'] = getDapRedux(release=self._release)
                 # get SAS url links to cube, rss, maps, image
@@ -322,8 +323,10 @@ class Galaxy(BaseWebView):
                     self.galaxy['image'] = sdss_path.url('mangaimage', drpver=cube._drpver, plate=cube.plate, ifu=cube.ifu, dir3d=cube.dir3d)
                     cubelink = sdss_path.url('mangacube', drpver=cube._drpver, plate=cube.plate, ifu=cube.ifu)
                     rsslink = sdss_path.url('mangarss', drpver=cube._drpver, plate=cube.plate, ifu=cube.ifu)
-                    maplink = getDefaultMapPath(release=self._release, plate=cube.plate, ifu=cube.ifu, daptype='SPX-GAU-MILESHC', mode='MAPS')
-                    self.galaxy['links'] = {'cube': cubelink, 'rss': rsslink, 'map': maplink}
+                    daptype = "{0}-{1}".format(dm.default_bintype, dm.default_template)
+                    maplink = getDefaultMapPath(release=self._release, plate=cube.plate, ifu=cube.ifu, daptype=daptype, mode='MAPS')
+                    mclink = getDefaultMapPath(release=self._release, plate=cube.plate, ifu=cube.ifu, daptype=daptype, mode='LOGCUBE')
+                    self.galaxy['links'] = {'cube': cubelink, 'rss': rsslink, 'map': maplink, 'mc': mclink}
                 else:
                     self.galaxy['image'] = cube.data.image
 
