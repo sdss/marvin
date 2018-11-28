@@ -5,7 +5,7 @@
 #
 # @Author: Brian Cherinka
 # @Date:   2018-08-04 20:09:38
-# @Last modified by:   andrews
+# @Last modified by:   Brian Cherinka
 # @Last modified time: 2018-11-22 13:11:86
 
 from __future__ import print_function, division, absolute_import, unicode_literals
@@ -271,8 +271,9 @@ class Query(object):
         defaults = ','.join(self.default_params) if self.default_params else None
         targets = ','.join(self.targets) if self.targets else None
         quality = ','.join(self.quality) if self.quality else None
+        search = self.search_filter if self.search_filter else ''
 
-        self._remote_params = {'searchfilter': self.search_filter,
+        self._remote_params = {'searchfilter': search,
                                'returnparams': returns,
                                'returntype': self.return_type,
                                'defaults': defaults,
