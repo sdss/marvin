@@ -72,7 +72,7 @@ extensions = [
     'sphinxcontrib.autohttp.flaskqref',
     'sphinx.ext.inheritance_diagram',
     'sphinx.ext.intersphinx', 'docudatamodel',
-    'sphinx_issues']
+    'sphinx_issues', 'nbsphinx']
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
@@ -124,7 +124,7 @@ todo_include_todos = True
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
 # This patterns also effect to html_static_path and html_extra_path
-exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
+exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store', '**.ipynb_checkpoints']
 
 # The reST default role (used for this markup: `text`) to use for all
 # documents.
@@ -357,6 +357,10 @@ texinfo_documents = [
 
 # If true, do not generate a @detailmenu in the "Top" node's menu.
 # texinfo_no_detailmenu = False
+
+# -- Options for nbsphinx -----------------------------------------
+
+nbsphinx_prolog = """:download:`Download this as a Jupyter notebook! </{{ env.doc2path(env.docname, base=None) }}>`"""
 
 # -- Extensions to the  Napoleon GoogleDocstring class ---------------------
 

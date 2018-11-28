@@ -5,5 +5,5 @@ sphinx_bootstrap_theme>=0.4.12
 sphinxcontrib-httpdomain>=1.5.0
 sphinx_issues>=1.0.0
 sphinx-rtd-theme>=0.4.2
-
+nbsphinx>=0.3.5
 photutils>=0.4
