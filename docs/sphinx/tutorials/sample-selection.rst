@@ -23,11 +23,11 @@ The Main Sample consists of the Primary, Secondary, and Color-Enhanced Samples, 
 .. code-block:: python
 
     import numpy as np
-    primary        = data['mngtarg1'] & 2**10                                 # 1278 galaxies
-    secondary      = data['mngtarg1'] & 2**11                                 #  947 galaxies
-    color_enhanced = data['mngtarg1'] & 2**12                                 #  447 galaxies
+    primary        = data['mngtarg1'] & 2**10
+    secondary      = data['mngtarg1'] & 2**11
+    color_enhanced = data['mngtarg1'] & 2**12
 
-    main_sample = np.logical_or.reduce((primary, secondary, color_enhanced))  # 2672 galaxies
+    main_sample = np.logical_or.reduce((primary, secondary, color_enhanced))
 
     plateifus = data['plateifu'][main_sample]
 
