@@ -7,3 +7,4 @@ sphinx_issues>=1.0.0
 sphinx-rtd-theme>=0.4.2
 
 photutils>=0.4
+mpl-scatter-density>=0.4
