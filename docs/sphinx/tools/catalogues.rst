@@ -58,6 +58,10 @@ The `DAPall file <https://www.sdss.org/dr15/manga/manga-data/catalogs/#DAPALLFil
      'ifudec': 48.6902,
      ...}
 
+
+.. include:: vacs.rst
+
+
 Reference
 ---------
 
@@ -68,3 +72,9 @@ Classes
 
     marvin.tools.mixins.nsa.NSAMixIn
     marvin.tools.mixins.dapall.DAPallMixIn
+
+
+Available VACS
+^^^^^^^^^^^^^^
+
+.. include:: ../contributing/available_vacs.rst
