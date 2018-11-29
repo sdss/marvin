@@ -4,6 +4,13 @@
 Spaxel
 ======
 
+Getting and working with spaxels
+--------------------------------
+
+Working with Bin
+----------------
+
+
 .. _marvin-spaxel-api:
 
 Reference/API
@@ -26,4 +33,3 @@ Reference/API
     marvin.tools.spaxel.Spaxel.getModelCube
     marvin.tools.spaxel.Spaxel.save
     marvin.tools.spaxel.Spaxel.restore
-

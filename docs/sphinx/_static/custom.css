@@ -19,7 +19,20 @@
     color: purple;
 }
 
-.rubric > .rubric-h1 {font-size: 175%;}
+.rubric-h1 {
+    font-size: 175%;
+    font-weight: 700;
+}
+
+.rubric-h2 {
+    font-size: 150%;
+    font-weight: 700;
+}
+
+.rubric-h3 {
+    font-size: 125%;
+    font-weight: 700;
+}
 
 div.highlight {
     background-color: white;

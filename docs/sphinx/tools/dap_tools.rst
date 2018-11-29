@@ -1,7 +1,7 @@
 .. _marvin-maps:
 
-Using the Maps class
-====================
+Maps
+====
 
 Bintypes and templates
 ----------------------
@@ -17,8 +17,17 @@ The Map quantity
 BPT Diagrams
 ------------
 
-Using the ModelCube class
-=========================
+Reference/API
+-------------
+
+
+.. _marvin-maps:
+
+ModelCube
+=========
 
 The HYB10 bintype
 -----------------
+
+Reference/API
+-------------

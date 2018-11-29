@@ -5,13 +5,7 @@
 Row-Stacked Spectra (RSS)
 =========================
 
-Introduction
-------------
-
 `Row-stacked spectra <https://www.sdss.org/dr15/manga/manga-data/data-model/#RSSFiles>`__ files (RSS) compile the fully-reduced spectra from all the fibres and exposures for a given galaxy or target. They are especially useful for projects that require access to the pre-cube data, such as stacking. The data is organised as a 2D array in which different rows correspond to different spectra, with the columns being the wavelength direction.
-
-The RSS class
--------------
 
 The `RSS` class provides access to row-stacked spectra data, either from a file, DB, or remotely via the Marvin API. While most of its functionality is shared with the other Tools that subclass from `~marvin.tools.core.MarvinToolsClass` (see the :ref:`introduction <gal-tools-getting-started>` to the Galaxy Tools), `RSS` has a number of specific features that we will discuss here.
 
@@ -69,7 +63,7 @@ We can use `RSS.getCube` to retrieve the corresponding `~marvin.tools.cube.Cube`
 
 
 The `RSS.obsinfo` table
-^^^^^^^^^^^^^^^^^^^^^^^
+-----------------------
 
 `RSS.obsinfo` provides access to an Astropy `~astropy.table.Table` with the observing information for this galaxy ::
 
@@ -92,7 +86,7 @@ In this case the file includes the spectra from nine observations. Since this is
 
 
 Accessing individual fibres
-^^^^^^^^^^^^^^^^^^^^^^^^^^^
+---------------------------
 
 In addition to being a subclass of `~marvin.tools.core.MarvinToolsClass`, `RSS` is also a *list* of `RSSFiber` instances. Each `RSSFiber` contains the data and metadata associated with a single observation and fibre ::
 
@@ -158,7 +152,7 @@ Frequently we want to select all the fibres that were part of an exposure or a s
 
 
 Lazy loading and ``autoload``
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+-----------------------------
 
 By default, the multiple `RSSFiber` instance that are part of an `RSS` object are *lazily* loaded. That means that while the object exists (you can, for example, do ``len(rss)`` and get the correct number of `RSSFiber` instances), the data inside each `RSSFiber` is only loaded when the object is accessed. This enables quick initialisation of the `RSS` objects at the expense of a certain overhead every time a fibre is accessed. Sometimes you may want to load all the fibres at once and then access them quickly you can do that by calling the `RSS.load_all` method or by instantiating the `RSS` object with ``autoload=True`` ::
 
