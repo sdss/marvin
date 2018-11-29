@@ -7,7 +7,7 @@ Query
 .. _marvin-query_getstart:
 
 Getting Started
-^^^^^^^^^^^^^^^
+---------------
 
 The basic usage of searching the MaNGA dataset with Marvin Queries is shown below.  Queries allow you to perform searches filtering the sample on specific parameter conditions, as well as return additional desired parameters.  Queries accept two basic keywords, **search_filter** and **return_params**.
 
@@ -65,7 +65,7 @@ Queries will always return a set of default parameters: the galaxy **mangaid**, 
 .. _marvin_query_using
 
 Using Query
-^^^^^^^^^^^
+-----------
 .. toctree::
    :maxdepth: 2
 
@@ -89,7 +89,7 @@ Using Query
 .. _marvin_query_api
 
 Reference/API
-^^^^^^^^^^^^^
+-------------
 
 .. rubric:: Class Inheritance Diagram
 

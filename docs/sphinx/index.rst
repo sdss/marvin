@@ -43,8 +43,8 @@ If you are new to Marvin check the following links before diving into the full d
 * For quick reference, check out the :ref:`Cheatsheet <marvin-cheatsheet>`.
 * For more detailed examples, see the :ref:`Tutorials <marvin-tutorials>`.
 * Here is an :ref:`Introduction <marvin-quantities>` to the `Astropy quantity <http://docs.astropy.org/en/stable/units/quantity.html>`_ class that Marvin uses to represent data (spectra, data cubes, etc).
-* We welcome :ref:`Contributions <marvin-contributing>` to Marvin!
-* If you find Marvin useful for your research, please :ref:`Cite Marvin <marvin-citation>` to help others find it, too.
+* We welcome :ref:`contributions <marvin-contributing>` to Marvin!
+* If you use Marvin in any way, please :ref:`cite and acknowledge Marvin <marvin-citation>`.
 
 
 .. toctree::
