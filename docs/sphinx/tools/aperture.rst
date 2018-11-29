@@ -6,8 +6,8 @@
 
 .. _marvin-get-aperture:
 
-Using |getAperture|
-===================
+Using getAperture
+=================
 
 .. note:: This feature requires `photutils <http://photutils.readthedocs.io/en/stable/>`_ to be availabe. You can install it by typing ``pip install photutils``.
 

@@ -51,12 +51,10 @@ var HeatMap = function () {
     }, {
         key: 'parseTitle',
         value: function parseTitle() {
-            var _title$split = this.title.split(':');
-
-            var _title$split2 = _slicedToArray(_title$split, 2);
-
-            var plateifu = _title$split2[0];
-            var newtitle = _title$split2[1];
+            var _title$split = this.title.split(':'),
+                _title$split2 = _slicedToArray(_title$split, 2),
+                plateifu = _title$split2[0],
+                newtitle = _title$split2[1];
 
             var _newtitle$split = newtitle.split('_');
 
@@ -375,6 +373,7 @@ var HeatMap = function () {
                             d: 'M 0 0 L 3 3 M 0 3 L 3 0',
                             stroke: 'white', // '#A8A8A8',
                             strokeWidth: 0.3
+                            // fill: 'rgba(255, 255, 255, 1)'  // 'rgba(168, 168, 168, 0.3)'
                         }
                     }]
                 },

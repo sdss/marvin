@@ -6,7 +6,7 @@
 # @Author: Brian Cherinka
 # @Date:   2018-03-08 18:08:34
 # @Last modified by:   Brian Cherinka
-# @Last Modified time: 2018-10-07 23:41:13
+# @Last Modified time: 2018-11-20 18:12:02
 
 from __future__ import print_function, division, absolute_import
 import pytest
@@ -22,6 +22,12 @@ from marvin import config
 from marvin.core.exceptions import MarvinError, MarvinUserWarning
 from brain import bconfig
 from brain.core.exceptions import BrainError, BrainUserWarning
+
+
+@pytest.fixture()
+def setapi(monkeypatch):
+    monkeypatch.setitem(bconfig._custom_config, 'use_test', False)
+    bconfig._set_api_urls()
 
 
 @pytest.fixture()
@@ -167,7 +173,7 @@ class TestNetrc(object):
     @pytest.mark.parametrize('host, msg',
                              [('data.sdss.org', 'api.sdss.org not found in netrc. You will not have remote access to SDSS data'),
                               ('api.sdss.org', 'data.sdss.org not found in netrc. You will not be able to download SDSS data')],
-                              ids=['noapi', 'nodata'])
+                             ids=['noapi', 'nodata'])
     def test_only_one_host(self, goodnet, host, msg):
         goodnet.write(write(host))
         with pytest.warns(BrainUserWarning) as cm:
@@ -203,24 +209,25 @@ class TestConfig(object):
         assert config.release == exprel
 
 
+@pytest.mark.usefixtures('setapi')
 class TestSasUrl(object):
 
     def test_sasurl_nonetrc(self, initconfig, netrc):
         assert 'DR' in config.release
-        assert 'dr15.sdss.org/api/' in config.sasurl
+        assert 'dr15.sdss.org/' in config.sasurl
 
     @pytest.mark.parametrize('release',
                              [('MPL-6'), ('DR15')],
                              ids=['collab', 'public'])
     def test_sasurl(self, bestnet, release):
-        assert 'api.sdss.org' in config.sasurl
+        assert 'sas.sdss.org' in config.sasurl
         config.setRelease(release)
-        sasurl = 'dr15.sdss.org/api' if 'DR' in release else 'api.sdss.org'
+        sasurl = 'dr15.sdss.org' if 'DR' in release else 'sas.sdss.org'
         assert sasurl in config.sasurl
 
     @pytest.mark.parametrize('sas, exp',
-                             [('utah', 'api.sdss.org'),
-                              ('public', 'dr15.sdss.org/api'),
+                             [('utah', 'sas.sdss.org'),
+                              ('public', 'dr15.sdss.org'),
                               ('test', 'lore.sdss.utah.edu'),
                               ('testpub', 'lore.sdss.utah.edu/public'),
                               ('local', 'localhost')],
@@ -235,14 +242,14 @@ class TestSasUrl(object):
         assert exp in config.sasurl
 
     @pytest.mark.parametrize('sas, exp',
-                             [('utah', 'https://api.sdss.org/marvin/api/cubes/8485-1901/'),
-                              ('public', 'https://dr15.sdss.org/api/marvin/api/cubes/8485-1901/'),
+                             [('utah', 'https://sas.sdss.org/marvin/api/cubes/8485-1901/'),
+                              ('public', 'https://dr15.sdss.org/marvin/api/cubes/8485-1901/'),
                               ('test', 'https://lore.sdss.utah.edu/marvin/api/cubes/8485-1901/'),
                               ('testpub', 'https://lore.sdss.utah.edu/public/marvin/api/cubes/8485-1901/'),
                               ('local', 'http://localhost:5000/marvin/api/cubes/8485-1901/')],
                              )
     def test_sasurl_join(self, sas, exp):
-        url = config.urlmap['api']['getCube']['url'].format(name='8485-1901')
+        url = '/marvin/api/cubes/8485-1901/'
         public = sas == 'public'
         test = sas == 'test'
         if sas == 'testpub':
@@ -271,4 +278,22 @@ def strjoin(str1, str2):
     else:
         f = str2
     return f
+
+
+@pytest.mark.usefixtures('saslocal')
+class TestLogin(object):
+
+    def test_login_fail(self, monkeypatch):
+        assert config.token is None
+        monkeypatch.setattr(config, 'access', 'public')
+        with pytest.raises(AssertionError) as cm:
+            config.login()
+        assert 'You must have collaboration access to login.' in str(cm.value)
+
+    def test_login(self):
+        assert config.token is None
+        config.login()
+        assert config.token is not None
+
+
 

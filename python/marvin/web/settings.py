@@ -6,7 +6,7 @@
 # @Author: Brian Cherinka
 # @Date:   2017-06-28 15:32:49
 # @Last modified by:   Brian Cherinka
-# @Last Modified time: 2018-07-10 15:31:48
+# @Last Modified time: 2018-11-17 13:15:31
 
 from __future__ import print_function, division, absolute_import
 import os
@@ -75,6 +75,7 @@ class ProdConfig(Config):
     SENTRY_DSN = os.environ.get('SENTRY_DSN', None)
     PERMANENT_SESSION_LIFETIME = datetime.timedelta(1)
     JWT_ACCESS_TOKEN_EXPIRES = datetime.timedelta(300)
+    REMEMBER_COOKIE_DOMAIN = '.sdss.org'
 
 
 class DevConfig(Config):

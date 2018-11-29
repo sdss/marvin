@@ -1,8 +1,8 @@
 .. _marvin-maskbit:
 
-=====================================================
-Maskbit (:mod:`marvin.utils.general.maskbit.Maskbit`)
-=====================================================
+
+Maskbits
+========
 
 .. _marvin-utils-maskbit-intro:
 

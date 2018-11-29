@@ -174,7 +174,7 @@ class ParamFormLookupDict(dict):
         else:
             # Multiple results. Raises a custom error.
             raise KeyError(
-                '{0} matches multiple parameters in the lookup table: {1}'
+                '{0} matches multiple parameters in the lookup table. Try one of: {1}'
                 .format(key, ', '.join(matches)))
 
     def mapToColumn(self, keys):
@@ -241,27 +241,32 @@ class ParamFormLookupDict(dict):
         self._init_table_shortcuts()
         self._init_name_shortcuts()
 
-    def _apply_shortcuts(self, key):
+    def _apply_shortcuts(self, key, reverse=None):
         ''' Apply the shortcuts to the key '''
 
+        full = self._reverse_shorts(self._fullShortcuts) if reverse else self._fullShortcuts
+        schema = self._reverse_shorts(self._schemaShortcuts) if reverse else self._schemaShortcuts
+        table = self._reverse_shorts(self._tableShortcuts) if reverse else self._tableShortcuts
+        name = self._reverse_shorts(self._nameShortcuts) if reverse else self._nameShortcuts
+
         # Apply any full name shortcuts
-        if key in self._fullShortcuts:
-            return self._fullShortcuts[key].split('.')
+        if key in full:
+            return full[key].split('.')
 
         # Gets the paths that match the key
         keySplits = key.split('.')
 
         # Apply schema shortcuts
-        if len(keySplits) >= 3 and keySplits[-3] in self._schemaShortcuts:
-            keySplits[-3] = self._schemaShortcuts[keySplits[-3]]
+        if len(keySplits) >= 3 and keySplits[-3] in schema:
+            keySplits[-3] = schema[keySplits[-3]]
 
         # Applies table shortcuts
-        if len(keySplits) >= 2 and keySplits[-2] in self._tableShortcuts:
-            keySplits[-2] = self._tableShortcuts[keySplits[-2]]
+        if len(keySplits) >= 2 and keySplits[-2] in table:
+            keySplits[-2] = table[keySplits[-2]]
 
         # Applies name shortcuts
-        if len(keySplits) >= 1 and keySplits[-1] in self._nameShortcuts:
-            keySplits[-1] = self._nameShortcuts[keySplits[-1]]
+        if len(keySplits) >= 1 and keySplits[-1] in name:
+            keySplits[-1] = name[keySplits[-1]]
 
         return keySplits
 
@@ -272,7 +277,13 @@ class ParamFormLookupDict(dict):
 
     def get_shortcut_name(self, key):
         ''' Returns the shortcutted full name given a real key '''
-        pass
+
+        keySplits = self._apply_shortcuts(key, reverse=True)
+        return '.'.join(keySplits)
+
+    def _reverse_shorts(self, data):
+        ''' Reverse a shorts dictionary '''
+        return {v: re.sub(r"spaxelprop[1-9]", "spaxelprop", k) for k, v in data.items()}
 
     def _set_junk_shortcuts(self):
         ''' Sets the DAP spaxelprop shortcuts based on MPL '''
@@ -290,9 +301,10 @@ class ParamFormLookupDict(dict):
                     cut = {name.lower(): current.lower().replace('spaxelprop', spaxname)}
                     dapcut.update(cut)
 
-        # add junk shortcuts
-        junkcuts = {k.replace('spaxelprop', 'junk'): v for k, v in dapcut.items()}
-        dapcut.update(junkcuts)
+            # since for DRs spaxelprop may not be in the dictionary a la MPL4: SpaxelProp
+            # we need to add it in so the shortcut "spaxelprop" can correctly point to the right db param
+            if 'spaxelprop' not in dapcut and current:
+                dapcut.update({'spaxelprop': current.lower().replace('spaxelprop', spaxname)})
 
         # update the main dictionary
         self._tableShortcuts.update(dapcut)
@@ -359,10 +371,10 @@ class ValidOperand(object):
 class SearchForm(Form):
     ''' Main Search Level WTForm for Marvin '''
 
-    searchbox = StringField("<a target='_blank' href='https://sdss-marvin.readthedocs.io/en/stable/query.html'>Input Search Filter</a>",
-        [validators.Length(min=3, message='Input must have at least 3 characters'),
-                            validators.DataRequired(message='Input filter string required'),
-                            ValidOperand('[<>=between]', message='Input must contain a valid operand.')])
+    searchbox = StringField("<a target='_blank' href='https://sdss-marvin.readthedocs.io/en/stable/tools/query/query_using.html'>Input Search Filter</a>",
+                            [validators.Length(min=3, message='Input must have at least 3 characters'),
+                             validators.DataRequired(message='Input filter string required'),
+                             ValidOperand('[<>=betweenradial]', message='Input must contain a valid operand.')])
     returnparams = SelectMultipleField("<a target='_blank' href='https://api.sdss.org/doc/manga/marvin/query_params.html'>Return Parameters</a>")
     submitsearch = SubmitField('Search')
 

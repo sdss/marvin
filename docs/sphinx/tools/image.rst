@@ -1,7 +1,7 @@
 .. _marvin-image:
 
-Image
-=====
+Image utilities
+===============
 
 :ref:`marvin-tools-image` is a class to interact with MaNGA optical images for each galaxy.
 

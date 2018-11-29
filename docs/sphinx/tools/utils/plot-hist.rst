@@ -16,7 +16,10 @@ Getting Started
 
 The Marvin hist function makes creating 1-d histograms an easy one-liner.
 
-::
+.. plot::
+    :align: center
+    :include-source: true
+    :context: reset
 
     # create some random data x and, say, an associated property y
     import numpy as np
@@ -29,13 +32,15 @@ The Marvin hist function makes creating 1-d histograms an easy one-liner.
 
 The default binsize is set to use `scott <http://docs.astropy.org/en/stable/visualization/histogram.html>`_ binning scheme.  Make a new histogram with a binsize of 20.
 
-::
+.. plot::
+    :align: center
+    :include-source: true
+    :context: close-figs
 
     # create and plot a 1-d histogram from scratch
     from marvin.utils.plot.scatter import hist
     output = hist(x, bins=20)
 
-.. image:: ../_static/hist_example.png
 
 .. _marvin-utils-plot-hist-using:
 

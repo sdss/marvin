@@ -5,9 +5,6 @@
 
 .. title:: Marvin documentation
 
-.. warning:: Marvin documentation is in the process of being restructured and improved. Some content can be missing while this task continue. In the meantime, please use the `stable version <http://sdss-marvin.readthedocs.io/en/stable/>`__ of the documentation. If you have suggestions to improve Marvin documentation, please `open an issue <https://github.com/sdss/marvin/issues/new/choose>`__.
-
-|
 
 .. image:: _static/logo5_lores.jpg
     :width: 600px
@@ -64,9 +61,10 @@ If you are new to Marvin check the following links before diving into the full d
    citation
 
 .. toctree::
-   :maxdepth: 3
+   :maxdepth: 2
    :caption: User Docs
 
+   getting-started
    tools/index
    query/index
    web

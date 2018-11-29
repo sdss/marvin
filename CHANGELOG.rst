@@ -17,6 +17,7 @@ Breaking changes
 ^^^^^^^^^^^^^^^^
 - Removed ``Bin`` class. Bin information is now available on a per-quantity basis (:issue:`109`). See :ref:`What's new? <whats-new>` and documentation for details.
 - Syntax on the inputs to the ``Query`` and ``Results`` tools has been changed.
+- DAP spaxel queries have been disabled due to performance issues. We expect to bring them back soon. Metadata queries (those querying the NSA or DAPall tables) are still available.
 - ``getSpaxel`` now only loads the quantities from the parent object (that means that, for example, ``Maps.getSpaxel`` only loads ``Maps`` properties by default). Additional quantities can be loaded using `~marvin.tools.spaxel.Spaxel.load`.
 - ``getSpaxel`` accepted arguments have been changed to ``cube``, ``maps``, and ``modelcube``. The formerly accepted arguments (``drp``, ``properties``, ``model(s)``) now raise a deprecation error.
 
@@ -84,7 +85,17 @@ Fixed
 - Fixed `#510 <https://github.com/sdss/marvin/issues/510>`_ - fixes incorrect conversion to sky coordinates in map plotting.
 - Fixed `#563 <https://github.com/sdss/marvin/issues/563>`_ - fail retrieving Query datamodels in Python 3.6+.
 - Fixes bug with sasurl not properly being set to api.sdss.org on initial import
+- Incorrect setting of the default bintype to download from web (:issue:`531`).
+- Fixed :issue:`536`, :issue:`537`, :issue:`538`.  Added modelcube to downloadList.
 - Incorrect mismatch warning between MPL-7 and DR15 (:issue:`495`).
+- Incorrect handling of maskbits when the mask does not contain any of the bits in the list (:issue:`507`).
+- Fixed :issue:`534` - flipped axes in NSA scatterplot when plotting absmag colors
+- Fixed :issue:`559` - bug in check_marvin when marvindb is None
+- Fixed :issue:`579` - bug in MMA with marvindb preventing files from opening
+- Fixed :issue:`543`, :issue:`552`, :issue:`553` - bugs with various Query handlings
+- Fixed :issue:`575` - cannot access maps due to bug in login and authentication in Interaction class
+- Fixed :issue:`539` - print downloadList target directory
+- Fixed :issue:`566` - made error message for web query with non-unique parameters name more specific
 
 Refactored
 ^^^^^^^^^^

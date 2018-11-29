@@ -5,8 +5,8 @@
 #
 # @Author: Brian Cherinka
 # @Date:   2018-07-28 17:26:41
-# @Last modified by: José Sánchez-Gallego (gallegoj@uw.edu)
-# @Last Modified time: 2018-08-27 13:57:09
+# @Last modified by:   Brian Cherinka
+# @Last Modified time: 2018-11-19 22:56:31
 
 from __future__ import absolute_import, division, print_function
 
@@ -272,9 +272,10 @@ class MMAMixIn(object, six.with_metaclass(abc.ABCMeta)):
         elif self.plateifu:
 
             from marvin import marvindb
-            testDbConnection(marvindb.session)
+            if marvindb:
+                testDbConnection(marvindb.session)
 
-            if marvindb.db and not self._ignore_db:
+            if marvindb and marvindb.db and not self._ignore_db:
                 self.mode = 'local'
                 self.data_origin = 'db'
             else:

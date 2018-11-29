@@ -30,7 +30,13 @@ Get the ``linearlab`` colormap that is the default for many MaNGA maps:
     import marvin.utils.plot.colorbar as colorbar
     linearlab, linearlab_r = colorbar.linearlab()
 
-..
+.. plot::
+    :align: center
+    :include-source: False
+
+    import marvin.utils.plot.colorbar as colorbar
+    linearlab, linearlab_r = colorbar.linearlab()
+
     import matplotlib.pyplot as plt
     fig, axes = plt.subplots(nrows=2, figsize=(6, 1))
     fig.subplots_adjust(top=0.95, bottom=0.01, left=0.25, right=0.99)
@@ -42,8 +48,6 @@ Get the ``linearlab`` colormap that is the default for many MaNGA maps:
         y_text = pos[1] + pos[3] / 2.
         fig.text(0.02, y_text, cmap.name, va='center', ha='left', fontsize=16)
         ax.set_axis_off()
-
-.. image:: ../_static/linearlab.png
 
 
 Reference/API
