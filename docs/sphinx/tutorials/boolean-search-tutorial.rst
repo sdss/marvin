@@ -52,6 +52,21 @@ In addition to the standard operands, there are special operands as well.
 
 Marvin provides two special function syntax strings to provide specific queries, the **radial** function, and the **npergood** function.
 
+The **radial** function allows for cone searches to be performed around a given RA, Dec.  The syntax is ``radial(RA, Dec, radius)``. RA and Dec are given in decimal degrees and radius is in units of degrees.  The **radial** function can be combined with other conditions::
+
+    # create filter to perform a radial cone search around a given RA, Dec point
+    my_filter = 'radial(232.5447, 48.6902, 0.5)'
+
+    # combine it with another selection on redshift
+    my_filter = 'nsa.z < 0.1 and radial(232.5447, 48.6902, 0.5)'
+
+The **npergood** function takes the form ``npergood(condition) operand value``, where condition can be a standard single condition of ``parameter operand value``.  The **npergood** condition equates to "galaxies where the number of spaxels that meet a given condition is above some percentage threshold." For example::
+
+    # create an npergood filter.
+    my_filter = 'npergood(emline_gflux_ha_6564 > 25) > 20'
+
+selects galaxies that have H-alpha flux values > 25 in more than 20% of their spaxels.  The **npergood** condition cannot be combined with other conditions.
+
 
 Parameter Names
 ---------------
