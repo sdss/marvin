@@ -19,7 +19,7 @@ The Marvin hist function makes creating 1-d histograms an easy one-liner.
 .. plot::
     :align: center
     :include-source: true
-    :context:
+    :context: reset
 
     # create some random data x and, say, an associated property y
     import numpy as np

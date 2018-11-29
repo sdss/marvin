@@ -18,8 +18,9 @@ Getting Started
 :mod:`~marvin.utils.plot.map.plot` makes plotting a publication-quality MaNGA map easy with its carefully chosen default parameters.
 
 .. plot::
+    :nofig: true
     :include-source: false
-    :context:
+    :context: reset
 
     from marvin.tools.maps import Maps
     import marvin.utils.plot.map as mapplot
