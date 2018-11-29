@@ -21,7 +21,7 @@ Reference/API
 -------------
 
 
-.. _marvin-maps:
+.. _marvin-modelcube:
 
 ModelCube
 =========
