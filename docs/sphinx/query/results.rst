@@ -69,27 +69,27 @@ Using Results
 .. toctree::
    :maxdepth: 2
 
-   The ResultSet <tools/results/results_set>
+   The ResultSet <results/results_set>
 
 .. toctree::
    :maxdepth: 2
 
-   Retrieving Results <tools/results/results_retrieve>
+   Retrieving Results <results/results_retrieve>
 
 .. toctree::
    :maxdepth: 2
 
-   Manipulating Results <tools/results/results_manipulate>
+   Manipulating Results <results/results_manipulate>
 
 .. toctree::
    :maxdepth: 2
 
-   Plotting Results <tools/results/results_plot>
+   Plotting Results <results/results_plot>
 
 .. toctree::
    :maxdepth: 2
 
-   Converting your Results <tools/results/results_convert>
+   Converting your Results <results/results_convert>
 
 .. _marvin_results_api
 

@@ -69,7 +69,7 @@ Using Query
 .. toctree::
    :maxdepth: 2
 
-   Using the Query <tools/query/query_using>
+   Using the Query <query/query_using>
 
 .. toctree::
    :maxdepth: 2
@@ -79,12 +79,12 @@ Using Query
 .. toctree::
    :maxdepth: 2
 
-   Returning Marvin objects <tools/query/query_returntype>
+   Returning Marvin objects <query/query_returntype>
 
 .. toctree::
    :maxdepth: 2
 
-   Saving Queries <tools/query/query_saving>
+   Saving Queries <query/query_saving>
 
 .. _marvin_query_api
 
