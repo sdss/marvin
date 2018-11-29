@@ -17,7 +17,9 @@ Getting Started
 
 The Marvin plot function makes creating quick 2d scatter plots an easy process.
 
-::
+.. plot::
+    :align: center
+    :include-source: True
 
     # create some random data x and y
     import numpy as np
@@ -27,9 +29,6 @@ The Marvin plot function makes creating quick 2d scatter plots an easy process.
     # create and plot a 2-d scatter plot from scratch
     from marvin.utils.plot.scatter import plot
     output = plot(x, y)
-
-
-.. image:: ../_static/scatplot_example.png
 
 
 .. _marvin-utils-plot-scatter-using:

@@ -1,5 +1,3 @@
-.. danger:: This section needs to be restructured to fit the new tools documentation.
-
 .. _marvin-utils-plot-map:
 
 Map (:mod:`marvin.utils.plot.map`)
@@ -19,15 +17,24 @@ Getting Started
 
 :mod:`~marvin.utils.plot.map.plot` makes plotting a publication-quality MaNGA map easy with its carefully chosen default parameters.
 
-.. code-block:: python
+.. plot::
+    :include-source: false
+    :context:
+
+    from marvin.tools.maps import Maps
+    import marvin.utils.plot.map as mapplot
+
+
+.. plot::
+    :align: center
+    :include-source: True
+    :context: close-figs
 
     from marvin.tools.maps import Maps
     import marvin.utils.plot.map as mapplot
     maps = Maps(plateifu='8485-1901')
     ha = maps['emline_gflux_ha_6564']
     fig, ax = mapplot.plot(dapmap=ha)  # == ha.plot()
-
-.. image:: ../_static/quick_map_plot.png
 
 
 However, you may want to do further processing of the map, so you can override the default DAP :attr:`~marvin.utils.plot.map.plot.value`, :attr:`~marvin.utils.plot.map.plot.ivar`, and/or :attr:`~marvin.utils.plot.map.plot.mask` with your own arrays.
@@ -47,7 +54,10 @@ A :attr:`~marvin.utils.plot.map.plot.dapmap` object is not even necessary for :m
 
 This flexibilty is especially useful for passing in a custom mask, such as one created with the :meth:`~marvin.tools.maps.Maps.get_bpt` method. For more explanation of the mask manipulation in this specific example, see the :ref:`plotting tutorial <marvin-plotting-map-starforming>`.
 
-.. code-block:: python
+.. plot::
+    :align: center
+    :include-source: True
+    :context: close-figs
 
     from marvin.tools.maps import Maps
     masks, __, __ = maps.get_bpt(show_plot=False)
@@ -61,31 +71,29 @@ This flexibilty is especially useful for passing in a custom mask, such as one c
     mask = ha.mask | mask_non_sf
     fig, ax = mapplot.plot(dapmap=ha, mask=mask)  # == ha.plot(mask=mask)
 
-.. image:: ../_static/map_bpt_mask.png
-
 
 :mod:`~marvin.utils.plot.map.plot` lets you build multi-panel plots because it accepts pre-defined `matplotlib.figure <http://matplotlib.org/api/figure_api.html>`_ and `matplotlib.axes <http://matplotlib.org/api/axes_api.html>`_ objects.
 
-.. code-block:: python
+.. plot::
+    :align: center
+    :include-source: True
+    :context: close-figs
 
     import matplotlib.pyplot as plt
     plt.style.use('seaborn-darkgrid')  # set matplotlib style sheet
 
-    plateifus = ['8485-1901', '8485-1902', '8485-12701']
+    plateifus = ['8485-1901', '7443-12701']
     mapnames = ['stellar_vel', 'stellar_sigma']
 
     rows = len(plateifus)
     cols = len(mapnames)
-    fig, axes = plt.subplots(rows, cols, figsize=(8, 12))
+    fig, axes = plt.subplots(rows, cols, figsize=(8, 8))
     for row, plateifu in zip(axes, plateifus):
         maps = Maps(plateifu=plateifu)
         for ax, mapname in zip(row, mapnames):
             mapplot.plot(dapmap=maps[mapname], fig=fig, ax=ax, title=' '.join((plateifu, mapname)))
 
     fig.tight_layout()
-
-.. image:: ../_static/multipanel_kinematics.png
-
 
 
 .. _marvin-utils-plot-map-using:
