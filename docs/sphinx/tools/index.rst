@@ -88,6 +88,7 @@ All **object-** and **search-based** tools in Marvin are linked together. To bet
    marvin.tools.rss.RSS
    marvin.tools.maps.Maps
    marvin.tools.modelcube.ModelCube
+   marvin.tools.image.Image
 
 :rubric-h3:`Quantities`
 
