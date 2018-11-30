@@ -3,7 +3,7 @@
 Cube
 ====
 
-`~marvin.tools.cube.Cube` is a class to interact with a fully reduced DRP data cube for a galaxy. For a general introduction to Marvin Tools, check the :ref:`galaxy-tools` section. Here we will revisit those features and will expand on some specifics of the `~marvin.tools.cube.Cube` class.
+`~marvin.tools.cube.Cube` is a class to interact with a fully reduced DRP data cube for a galaxy. For a general introduction to Marvin Tools, check out the :ref:`galaxy-tools` section. Here we will revisit those features and will expand on some specifics of the `~marvin.tools.cube.Cube` class.
 
 
 Initializing a Cube

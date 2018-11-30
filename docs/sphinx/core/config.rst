@@ -52,7 +52,7 @@ Data Access Modes
 * **Remote mode** - Use this mode to deal with data remotely.  The data is retrieved from Utah using the API.  Depending on your use,
   it may be returned as a JSON object or used to complete the Tool function you are using.
 * **Auto mode** - Use this mode to have Marvin attempt to automatically handle the modes.  Marvin starts in this mode. It is recommended to leave Marvin in this mode, and let him handle your data access.
-* See :ref:`marvin-dma` for more detailed information.
+* See :ref:`marvin-dam` for more detailed information.
 
 .. _marvin-set-versions:
 

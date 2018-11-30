@@ -14,21 +14,21 @@
 Galaxy Tools
 ============
 
-Marvin Tools provide the core functionality accessing MaNGA data with Marvin. At their lowest level they are class wrappers around data products or elements (DRP datacubes, DAP maps, spaxels). Their goals is to provide a more natural way to interact with the data, unconstrained by specific data storage architectures such as files or databases. The tools are built on top of the :ref:`data access modes <marvin-dma>` which abstracts the data access regardless of their actual origin. Marvin Tools provide:
+Marvin Tools provide the core functionality for accessing MaNGA data with Marvin.  At the lowest level they are class wrappers around data products or elements (DRP datacubes, DAP maps, and spaxels). Their purpose is to provide a more natural way to interact with the data, unconstrained by specific data storage architectures such as files or databases. The tools are built on top of the :ref:`data access modes <marvin-dam>`, which abstracts the data access regardless of their actual origin.  Marvin Tools provide:
 
-- Access DRP :ref:`Cubes <marvin-cube>` and their spectra.
-- Access :ref:`Row-stacked Spectra <marvin-rss>` files.
-- Access DAP :ref:`Maps <marvin-maps>` and :ref:`ModelCubes <marvin-modelcube>`.
+- Access to DRP :ref:`Cubes <marvin-cube>` and their spectra.
+- Access to :ref:`Row-stacked Spectra <marvin-rss>` files.
+- Access to DAP :ref:`Maps <marvin-maps>` and :ref:`ModelCubes <marvin-modelcube>`.
 - Convenient access to all the DRP and DAP properties for a given :ref:`Spaxel or Bin <marvin-spaxel>`.
-- The data is delivered as :ref:`quantities <marvin-quantities>` with attached variance and mask, as well as associated properties.
+- The data delivered as :ref:`Astropy quantities <marvin-quantities>` with the inverse variance and mask, as well as associated properties.
 - Easy handling of maskbits and labels.
 - DAP :ref:`Map arithmetic <marvin-enhanced-map>`.
 - Autocompletion of properties and channels (powered by a datamodel).
-- Extract all spaxels within a region.
+- The ability to extract all spaxels within a region.
 - Access to NSA and DRPall data.
 - Easy data download.
 
-The following sections explain how to use the tools in detail. They assume that you have read our :ref:`marvin-getting_started` and are familiar with Astropy :ref:`quantities <marvin-quantities>`.
+The following sections explain how to use the tools in detail. They assume that you have read our :ref:`marvin-getting_started` and are familiar with :ref:`Astropy quantities <marvin-quantities>`.
 
 
 :rubric-h2:`Using the tools`
@@ -90,6 +90,7 @@ All **object-** and **search-based** tools in Marvin are linked together. To bet
    marvin.tools.rss.RSS
    marvin.tools.maps.Maps
    marvin.tools.modelcube.ModelCube
+   marvin.tools.image.Image
 
 :rubric-h3:`Quantities`
 

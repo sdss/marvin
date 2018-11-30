@@ -9,7 +9,7 @@ Row-Stacked Spectra (RSS)
 
 The `RSS` class provides access to row-stacked spectra data, either from a file, DB, or remotely via the Marvin API. While most of its functionality is shared with the other Tools that subclass from `~marvin.tools.core.MarvinToolsClass` (see the :ref:`introduction <gal-tools-getting-started>` to the Galaxy Tools), `RSS` has a number of specific features that we will discuss here.
 
-As always, we can instantiate an `RSS` object using a plate-ifu or mangaid, or from a file. The :ref:`multi-modal <marvin-dma>` access system will retrieve the necessary data locally or remotely ::
+As always, we can instantiate an `RSS` object using a plate-ifu or mangaid, or from a file. The :ref:`multi-modal <marvin-dam>` access system will retrieve the necessary data locally or remotely ::
 
     >>> rss = marvin.tools.RSS('8485-1901')
     >>> rss
