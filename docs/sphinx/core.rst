@@ -6,7 +6,7 @@ Marvin internals (marvin.core)
 
 This section describes how Marvin works internally. Most users do not need to understand all of these details. However, they are important if you plan to write contributed code or if you are forking Marvin.
 
-Regardless of how you use Marvin, it is always a good idea to have a general understanding of the :ref:`configuration <marvin-config-info>` system and the :ref:`data access modes <marvin-dma>`.
+Regardless of how you use Marvin, it is always a good idea to have a general understanding of the :ref:`configuration <marvin-config-info>` system and the :ref:`data access modes <marvin-dam>`.
 
 MarvinToolsClass
 ----------------
@@ -57,5 +57,5 @@ Further reading
 ===============
 
 * The configuration class (:ref:`marvin.config <marvin-config-info>`)
-* :ref:`marvin-dma`
+* :ref:`marvin-dam`
 * :ref:`marvin-download-objects`

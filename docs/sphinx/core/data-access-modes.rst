@@ -1,4 +1,4 @@
-.. _marvin-dma:
+.. _marvin-dam:
 
 Data Access Modes
 =================

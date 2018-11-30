@@ -14,7 +14,7 @@
 Galaxy Tools
 ============
 
-Marvin Tools provide the core functionality accessing MaNGA data with Marvin. At their lowest level they are class wrappers around data products or elements (DRP datacubes, DAP maps, spaxels). Their goals is to provide a more natural way to interact with the data, unconstrained by specific data storage architectures such as files or databases. The tools are built on top of the :ref:`data access modes <marvin-dma>` which abstracts the data access regardless of their actual origin. Marvin Tools provide:
+Marvin Tools provide the core functionality for accessing MaNGA data with Marvin.  At the lowest level they are class wrappers around data products or elements (DRP datacubes, DAP maps, and spaxels). Their purpose is to provide a more natural way to interact with the data, unconstrained by specific data storage architectures such as files or databases. The tools are built on top of the :ref:`data access modes <marvin-dam>`, which abstracts the data access regardless of their actual origin.  Marvin Tools provide:
 
 - Access to DRP :ref:`Cubes <marvin-cube>` and their spectra.
 - Access to :ref:`Row-stacked Spectra <marvin-rss>` files.
