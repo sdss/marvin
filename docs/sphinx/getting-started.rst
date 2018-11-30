@@ -18,6 +18,7 @@ Depending on whether you have the file on disk or not, the access mode will be `
 
     >>> print(my_cube.filename, my_cube.plateifu, my_cube.mangaid, my_cube.release)
     /Users/albireo/Documents/MaNGA/mangawork/manga/spectro/redux/v2_3_1/8485/stack/manga-8485-1901-LOGCUBE.fits.gz 8485-1901 1-209232 DR15
+
     >>> print(my_cube.ra, my_cube.dec)
     232.544703894 48.6902009334
 
