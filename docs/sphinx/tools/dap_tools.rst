@@ -7,8 +7,8 @@ Maps
 
 .. _marvin-maps-initializing:
 
-Initializing a `Maps`
----------------------
+Initializing a Maps
+-------------------
 
 A `Maps` can be initialized by filename, plateifu, or mangaid.
 
@@ -17,6 +17,7 @@ A `Maps` can be initialized by filename, plateifu, or mangaid.
 .. code-block:: python
 
     >>> maps = Maps(filename='/Users/username/manga/spectro/analysis/v2_4_3/2.2.1/HYB10-GAU-MILESHC/8485/1901/manga-8485-1901-MAPS-HYB10-GAU-MILESHC.fits.gz')
+    >>> maps
     <Marvin Maps (plateifu='8485-1901', mode='local', data_origin='file', bintype='HYB10', template='GAU-MILESHC')>
 
 Either the full path or the path relative to the current working directory is required.  A `Maps` initialized from a file will always be in `local` mode.
@@ -26,20 +27,23 @@ Either the full path or the path relative to the current working directory is re
 .. code-block:: python
 
     >>> maps = Maps(plateifu='8485-1901')
+    >>> maps
     <Marvin Maps (plateifu='8485-1901', mode='local', data_origin='db', bintype='HYB10', template='GAU-MILESHC')>
 
     >>> maps = Maps(mangaid='1-209232')
+    >>> maps
     <Marvin Maps (plateifu='8485-1901', mode='local', data_origin='db', bintype='HYB10', template='GAU-MILESHC')>
 
 Marvin first attempts to find the data in a local database, otherwise will retrieve the data in `remote` mode.
 
 **Smart Galaxy Lookup**
 
-You can also initialize a `Maps` without the `filename` or galaxy identifier (`plateifu`/`mangaid`) keyword argument, and Marvin will attempt to parse the input and find the desired galaxy:
+You can also initialize a `Maps` without the `filename` or a galaxy identifier (`plateifu`/`mangaid`) keyword argument, and Marvin will attempt to parse the input and find the desired galaxy:
 
 .. code-block:: python
 
     >>> maps = Maps('8485-1901')
+    >>> maps
     <Marvin Maps (plateifu='8485-1901', mode='local', data_origin='db', bintype='HYB10', template='GAU-MILESHC')>
 
 **Bintype**
@@ -49,6 +53,7 @@ The default `Maps` bintype is `HYB10`, where the stellar continuum analysis of s
 .. code-block:: python
 
     >>> maps = Maps('8485-1901', bintype='HYB10')
+    >>> maps
     <Marvin Maps (plateifu='8485-1901', mode='local', data_origin='db', bintype='HYB10', template='GAU-MILESHC')>
 
 **Template**
@@ -79,13 +84,13 @@ Like `Cubes`, `Maps` come with some basic attributes attached (e.g., the full he
     >>> maps.dapall['sfr_tot']
     0.132697
 
-`Maps` also has the DAP data quality, targeting, and pixel masks available as the `quality_flag`, `target_flags`, and `pixmask` attributes, respectively.  These are represented as a :ref:`Maskbit <marvin-utils-maskbit>` objects.
+`Maps` also has the DAP data quality, targeting, and pixel masks available as the `quality_flag`, `target_flags`, and `pixmask` attributes, respectively.  These are represented as :ref:`Maskbit <marvin-utils-maskbit>` objects.
 
 
 .. _marvin-maps-datamodel:
 
 The DataModel
-^^^^^^^^^^^^^
+-------------
 
 The :ref:`DAP datamodel <marvin-datamodels>` is attached to `Maps` as the `datamodel` attribute.  The datamodel describes the contents of the MaNGA DAP Maps, for a given release, and contains a list of `Properties` associated with a `Maps`.  This is a subset of the full DAP datamodel only pertaining to Maps.
 
@@ -124,7 +129,7 @@ Each `Property` in the datamodel describes an available `Map` inside the `Maps` 
 Accessing an Individual Map
 ---------------------------
 
-The `Properties` provide an interface to extract and create an individual `Map`.  You can use fuzzy indexing to retrieve a `Map`.  All properties are also available as class attributes.  Or you can use the old-fashioned `getMap` method.  All three are equivalent.
+The `Property`s provide an interface to extract and create an individual `Map`.  You can use fuzzy indexing to retrieve a `Map`.  All properties are also available as class attributes.  Or you can use the old-fashioned `getMap` method.  All three are equivalent.
 
 .. code-block:: python
 
@@ -154,6 +159,7 @@ Accessing an Individual Spaxel
 ------------------------------
 
 Slicing a `Maps` returns a `Spaxel` object with all of its properties:
+
 .. code-block:: python
 
     >>> sp = maps[9, 10]
@@ -161,6 +167,66 @@ Slicing a `Maps` returns a `Spaxel` object with all of its properties:
     <Marvin Spaxel (plateifu=8485-1901, x=10, y=9; x_cen=-7, y_cen=-8, loaded=maps)>
 
 
+.. _marvin-maps-binids:
+
+Getting Bin IDs
+---------------
+
+For binned `Maps`, you can retrieve a `Map` of the binids directly from the `binid_*` attributes.  For MPL-5, there is only a single `binid`.  As of MPL-6, there are five types of binids, designated as `binid_[name]`.  You can list them from the datamodel:
+
+.. code-block:: python
+
+    >>> maps.datamodel.parent['binid']
+    <MultiChannelProperty 'binid', release='2.1.3', channels=['binned_spectra', 'stellar_continua', 'em_line_moments', 'em_line_models', 'spectral_indices']>
+
+They are available as attributes.
+
+.. code-block:: python
+
+    # get a Map of the binned_spectra binids
+    >>> maps.binid_binned_spectra
+    <Marvin Map (property='binid_binned_spectra')>
+    [[-1. -1. -1. ..., -1. -1. -1.]
+     [-1. -1. -1. ..., -1. -1. -1.]
+     [-1. -1. -1. ..., -1. -1. -1.]
+     ...,
+     [-1. -1. -1. ..., -1. -1. -1.]
+     [-1. -1. -1. ..., -1. -1. -1.]
+     [-1. -1. -1. ..., -1. -1. -1.]]
+
+You can also retrieve a 2-d array of the binids using the `get_binid` method.  For MPL-5, `get_binid` returns the binids from the **BINID** extension in the DAP files, while for MPL-6, by default, `get_binid` will return the binids for the `binned_spectra` channel of **BINID**.
+
+.. code-block:: python
+
+    # get the default binids
+    >>> maps.get_binid()
+    array([[-1, -1, -1, ..., -1, -1, -1],
+           [-1, -1, -1, ..., -1, -1, -1],
+           [-1, -1, -1, ..., -1, -1, -1],
+           ...,
+           [-1, -1, -1, ..., -1, -1, -1],
+           [-1, -1, -1, ..., -1, -1, -1],
+           [-1, -1, -1, ..., -1, -1, -1]])
+
+MPL-6 has new cubes using hybrid binning, **HYB10**, with alternate binning schemes.  `get_binid` can retrieve those with the `binid` keyword.
+
+.. code-block:: python
+
+    # grab the binids for the emline_fit model
+    >>> emline_binids = maps.get_binid(binid=maps.datamodel.binid_binned_spectra)
+    >>> emline_binids
+    array([[-1, -1, -1, ..., -1, -1, -1],
+       [-1, -1, -1, ..., -1, -1, -1],
+       [-1, -1, -1, ..., -1, -1, -1],
+       ...,
+       [-1, -1, -1, ..., -1, -1, -1],
+       [-1, -1, -1, ..., -1, -1, -1],
+       [-1, -1, -1, ..., -1, -1, -1]])
+
+
+BPT Diagrams
+------------
+See :ref:`marvin-bpt`.
 
 .. _marvin-map:
 
@@ -186,9 +252,6 @@ Slicing a `Map` returns a single property
     >>> ha[17, 17]
     <Marvin Map (property='emline_gflux_ha_6564')>
     30.7445 1e-17 erg / (cm2 s spaxel)
-
-BPT Diagrams
-------------
 
 Reference/API
 -------------
