@@ -19,7 +19,7 @@ Marvin Tools provide the core functionality for accessing MaNGA data with Marvin
 - Access to DRP :ref:`Cubes <marvin-cube>` and their spectra.
 - Access to :ref:`Row-stacked Spectra <marvin-rss>` files.
 - Access to DAP :ref:`Maps <marvin-maps>` and :ref:`ModelCubes <marvin-modelcube>`.
-- Convenient access to all the DRP and DAP properties for a given :ref:`Spaxel or Bin <marvin-subregion-tools>`.
+- Convenient access to all the DRP and DAP properties for a given :ref:`Spaxel or Bin <marvin-spaxel>`.
 - The data delivered as :ref:`Astropy quantities <marvin-quantities>` with the inverse variance and mask, as well as associated properties.
 - Easy handling of maskbits and labels.
 - DAP :ref:`Map arithmetic <marvin-enhanced-map>`.
@@ -42,6 +42,8 @@ The following sections explain how to use the tools in detail. They assume that 
     plate
 
     spaxel
+
+    image
 
     ../core/data-access-modes
 
