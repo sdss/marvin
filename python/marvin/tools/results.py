@@ -707,8 +707,9 @@ class Results(object):
             3  1-22942   7992  12705  8.470360e+10  0.104958
             4  1-22948   7992   9102  1.023530e+11  0.119399
         '''
+        res = self.results.to_list() if self.results else []
         try:
-            dfres = pd.DataFrame(self.results.to_list())
+            dfres = pd.DataFrame(res)
         except (ValueError, NameError) as e:
             raise MarvinError('Could not make pandas dataframe from results: {0}'.format(e))
         return dfres
