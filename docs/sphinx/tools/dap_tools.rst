@@ -172,12 +172,12 @@ Slicing a `Maps` returns a `Spaxel` object with all of its properties:
 Getting Bin IDs
 ---------------
 
-For binned `Maps`, you can retrieve a `Map` of the binids directly from the `binid_*` attributes.  For MPL-5, there is only a single `binid`.  As of MPL-6, there are five types of binids, designated as `binid_[name]`.  You can list them from the datamodel:
+For binned `Maps`, you can retrieve a `Map` of the bin IDs directly from the `binid_*` attributes.  There are five types of bin IDs, designated as `binid_[name]`.  You can list them from the datamodel:
 
 .. code-block:: python
 
     >>> maps.datamodel.parent['binid']
-    <MultiChannelProperty 'binid', release='2.1.3', channels=['binned_spectra', 'stellar_continua', 'em_line_moments', 'em_line_models', 'spectral_indices']>
+    <MultiChannelProperty 'binid', release='2.2.1', channels=['binned_spectra', 'stellar_continua', 'em_line_moments', 'em_line_models', 'spectral_indices']>
 
 They are available as attributes.
 
@@ -194,34 +194,24 @@ They are available as attributes.
      [-1. -1. -1. ..., -1. -1. -1.]
      [-1. -1. -1. ..., -1. -1. -1.]]
 
-You can also retrieve a 2-d array of the binids using the `get_binid` method.  For MPL-5, `get_binid` returns the binids from the **BINID** extension in the DAP files, while for MPL-6, by default, `get_binid` will return the binids for the `binned_spectra` channel of **BINID**.
+You can also retrieve a 2-d array of the bin IDs using the `get_binid` method.  By default, `get_binid` will return the bin IDs for the `binned_spectra` channel of **BINID**.
 
 .. code-block:: python
 
     # get the default binids
     >>> maps.get_binid()
-    array([[-1, -1, -1, ..., -1, -1, -1],
-           [-1, -1, -1, ..., -1, -1, -1],
-           [-1, -1, -1, ..., -1, -1, -1],
-           ...,
-           [-1, -1, -1, ..., -1, -1, -1],
-           [-1, -1, -1, ..., -1, -1, -1],
-           [-1, -1, -1, ..., -1, -1, -1]])
+    <Marvin Map (property='binid_binned_spectra')>
+    [[-1. -1. -1. ... -1. -1. -1.]
+     [-1. -1. -1. ... -1. -1. -1.]
+     [-1. -1. -1. ... -1. -1. -1.]
+     ...
+     [-1. -1. -1. ... -1. -1. -1.]
+     [-1. -1. -1. ... -1. -1. -1.]
+     [-1. -1. -1. ... -1. -1. -1.]]
 
-MPL-6 has new cubes using hybrid binning, **HYB10**, with alternate binning schemes.  `get_binid` can retrieve those with the `binid` keyword.
+    # equivalent
+    >>> emline_binids = maps.get_binid(property=maps.datamodel.binid_binned_spectra)
 
-.. code-block:: python
-
-    # grab the binids for the emline_fit model
-    >>> emline_binids = maps.get_binid(binid=maps.datamodel.binid_binned_spectra)
-    >>> emline_binids
-    array([[-1, -1, -1, ..., -1, -1, -1],
-       [-1, -1, -1, ..., -1, -1, -1],
-       [-1, -1, -1, ..., -1, -1, -1],
-       ...,
-       [-1, -1, -1, ..., -1, -1, -1],
-       [-1, -1, -1, ..., -1, -1, -1],
-       [-1, -1, -1, ..., -1, -1, -1]])
 
 
 BPT Diagrams
