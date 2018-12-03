@@ -14,14 +14,14 @@ There are four types of DAP Tools:
 .. _marvin-maps:
 
 Maps
-====
+----
 
 `~marvin.tools.maps.Maps` is a class to interact with the set of DAP maps for a galaxy. For a general introduction to Marvin Tools, check out the :ref:`galaxy-tools` section.  Here we will revisit those features and will expand on some specifics of the `~marvin.tools.maps.Maps` class.
 
 .. _marvin-maps-initializing:
 
 Initializing a Maps
--------------------
+^^^^^^^^^^^^^^^^^^^
 
 A `Maps` can be initialized by filename, plateifu, or mangaid.
 
@@ -77,7 +77,7 @@ Currently, the only template available is `GAU-MILESHC`, which is selected by de
 .. _marvin-maps-basic:
 
 Basic Attributes
-----------------
+^^^^^^^^^^^^^^^^
 
 Like `Cubes`, `Maps` come with some basic attributes attached (e.g., the full header, the WCS info, the bintype and template) plus the NSA and DAPall catalog parameters.
 
@@ -102,8 +102,8 @@ Like `Cubes`, `Maps` come with some basic attributes attached (e.g., the full he
 
 .. _marvin-maps-datamodel:
 
-The DataModel
--------------
+Maps DataModel
+^^^^^^^^^^^^^^
 
 The :ref:`DAP datamodel <marvin-datamodels>` is attached to `Maps` as the `datamodel` attribute.  The datamodel describes the contents of the MaNGA DAP Maps, for a given release, and contains a list of `Properties` associated with a `Maps`.  This is a subset of the full DAP datamodel only pertaining to Maps.
 
@@ -137,10 +137,10 @@ Each `Property` in the datamodel describes an available `Map` inside the `Maps` 
     <Property 'emline_gflux', channel='ha_6564', release='2.1.3', unit=u'1e-17 erg / (cm2 s spaxel)'>
 
 
-.. _marvin-map-access:
+.. _marvin-maps-access-map:
 
 Accessing an Individual Map
----------------------------
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 The `Property`s provide an interface to extract and create an individual `Map`.  You can use fuzzy indexing to retrieve a `Map`.  All properties are also available as class attributes.  Or you can use the old-fashioned `getMap` method.  All three are equivalent.
 
@@ -166,10 +166,10 @@ The `Property`s provide an interface to extract and create an individual `Map`. 
      [ 0.  0.  0. ...,  0.  0.  0.]] 1e-17 erg / (cm2 s spaxel)
 
 
-.. _marvin-spaxel-access:
+.. _marvin-maps-access-spaxel:
 
 Accessing an Individual Spaxel
-------------------------------
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Slicing a `Maps` returns a `Spaxel` object with all of its properties:
 
@@ -183,7 +183,7 @@ Slicing a `Maps` returns a `Spaxel` object with all of its properties:
 .. _marvin-maps-binids:
 
 Getting Bin IDs
----------------
+^^^^^^^^^^^^^^^
 
 For binned `Maps`, you can retrieve a `Map` of the bin IDs directly from the `binid_*` attributes.  There are five types of bin IDs, designated as `binid_[name]`.  You can list them from the datamodel:
 
@@ -227,14 +227,11 @@ You can also retrieve a 2-d array of the bin IDs using the `get_binid` method.  
 
 
 
-BPT Diagrams
-------------
-See :ref:`marvin-bpt`.
 
 .. _marvin-map:
 
-The Map quantity
-----------------
+Map
+---
 
 You can plot a map.  See :ref:`marvin-map` for how to use the `Map` object, and the :ref:`marvin-plotting-tutorial` for a guide into plotting.  Details on plotting parameters and defaults can be found :ref:`here<marvin-utils-plot-map>`.
 
@@ -245,10 +242,14 @@ You can plot a map.  See :ref:`marvin-map` for how to use the `Map` object, and 
 
 .. image:: ../../_static/quick_map_plot.png
 
+
+.. _marvin-map-access-spaxel:
+
 Accessing an Individual Spaxel
-------------------------------
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Slicing a `Map` returns a single property
+
 .. code-block:: python
 
     # the ha-value in the central bin
@@ -256,24 +257,25 @@ Slicing a `Map` returns a single property
     <Marvin Map (property='emline_gflux_ha_6564')>
     30.7445 1e-17 erg / (cm2 s spaxel)
 
-Reference/API
--------------
-
-.. _marvin-enhanced-map:
-
-The Enhanced Map quantity
--------------------------
 
 Reference/API
--------------
+^^^^^^^^^^^^^
+
+.. _marvin-enhancedmap:
+
+EnhancedMap
+-----------
+
+Reference/API
+^^^^^^^^^^^^^
 
 .. _marvin-modelcube:
 
 ModelCube
-=========
+---------
 
 The HYB10 bintype
------------------
+^^^^^^^^^^^^^^^^^
 
 Reference/API
--------------
+^^^^^^^^^^^^^
