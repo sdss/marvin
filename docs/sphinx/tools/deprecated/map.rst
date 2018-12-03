@@ -1,4 +1,4 @@
-.. _marvin-map:
+.. _marvin-map-dep:
 
 =================================
 Map (`marvin.tools.quantities.map.Map`)
