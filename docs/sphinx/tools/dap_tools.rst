@@ -308,14 +308,34 @@ Reference/API
 Map
 ---
 
-You can plot a map.  See :ref:`marvin-map` for how to use the `Map` object, and the :ref:`marvin-plotting-tutorial` for a guide into plotting.  Details on plotting parameters and defaults can be found :ref:`here<marvin-utils-plot-map>`.
+:mod:`~marvin.tools.quantities.Map` is a single map for a single galaxy. The main data that it contains are the :attr:`~marvin.tools.quantities.Map.value`, :attr:`~marvin.tools.quantities.Map.ivar`, and :attr:`~marvin.tools.quantities.Map.mask` arrays of the map.
+
+Initializing
+^^^^^^^^^^^^
+
+To get a `Map`, we first create a :mod:`marvin.tools.maps.Maps` object, which contains all of the maps for a galaxy.  Then we select an individual `Map` in one of four ways:
+
+* exact key slicing,
+* fuzzy key slicing (input is unambiguously associated with a particular key),
+* dot syntax, or
+* `getMap` method.
 
 .. code-block:: python
 
-    # plot the H-alpha flux map.
-    >>> ha.plot()
+    >>> from marvin.tools import Maps
+    >>> maps = Maps(plateifu='8485-1901')
 
-.. image:: ../../_static/quick_map_plot.png
+    # exact key slicing
+    >>> ha = maps['emline_gflux_ha_6564']
+
+    # fuzzy key slicing
+    >>> ha = maps['gflux ha']
+
+    # dot syntax
+    >>> ha = maps.emline_gflux_ha_6564
+
+    # getMap()
+    >>> ha = maps.getMap('emline_gflux_ha_6564')
 
 
 .. _marvin-map-access-spaxel:
@@ -331,6 +351,18 @@ Slicing a `Map` returns a single property
     >>> ha[17, 17]
     <Marvin Map (property='emline_gflux_ha_6564')>
     30.7445 1e-17 erg / (cm2 s spaxel)
+
+
+Plotting a Map
+^^^^^^^^^^^^^^
+You can plot a map.  See :ref:`marvin-map` for how to use the `Map` object, and the :ref:`marvin-plotting-tutorial` for a guide into plotting.  Details on plotting parameters and defaults can be found :ref:`here<marvin-utils-plot-map>`.
+
+.. code-block:: python
+
+    # plot the H-alpha flux map.
+    >>> ha.plot()
+
+.. image:: ../../_static/quick_map_plot.png
 
 
 Reference/API
