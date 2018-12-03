@@ -210,7 +210,7 @@ You can also retrieve a 2-d array of the bin IDs using the `get_binid` method.  
      [-1. -1. -1. ... -1. -1. -1.]]
 
     # equivalent
-    >>> emline_binids = maps.get_binid(property=maps.datamodel.binid_binned_spectra)
+    >>> stvel_binids = maps.get_binid(property=maps.datamodel.stellar_vel)
 
 
 
