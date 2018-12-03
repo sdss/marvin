@@ -246,6 +246,24 @@ or the `Modelcube` object using the `getModelCube` method:
     <Marvin ModelCube (plateifu='8485-1901', mode='remote', data_origin='api', bintype='HYB10', template='GAU-MILESHC')>
 
 
+.. _marvin-maps-save:
+
+Saving and Restoring
+^^^^^^^^^^^^^^^^^^^^
+
+You can save a `Maps` locally as a Python pickle object, using the `save` method:
+
+.. code-block:: python
+
+    >>> maps.save('mymaps.mpf')
+
+Your saved `Maps` can be restored as a `Maps` object using the `restore` class method:
+
+.. code-block:: python
+
+    >>> from marvin.tools import Maps
+    >>> maps = Maps.restore('mymaps.mpf')
+
 
 
 .. _marvin-map:
