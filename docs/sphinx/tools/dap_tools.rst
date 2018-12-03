@@ -265,6 +265,16 @@ Your saved `Maps` can be restored as a `Maps` object using the `restore` class m
     >>> maps = Maps.restore('mymaps.mpf')
 
 
+.. _marvin-maps-bpt:
+
+BPT Diagram
+^^^^^^^^^^^
+You can create a :ref:`BPT<marvin-bpt>` diagram:
+
+.. code-block:: python
+
+    >>> masks, fig, axes = maps.get_bpt()
+
 
 .. _marvin-map:
 
