@@ -144,7 +144,7 @@ class Marvin(BaseWebView):
             return jsonify(result=result)
 
         # validate the user with htpassfile or trac username
-        is_valid, user, result = validate_user(username, password, request=request, session=current_session)
+        is_valid, user, result = validate_user(username, password, request=request)
 
         # get User only if valid
         if is_valid:

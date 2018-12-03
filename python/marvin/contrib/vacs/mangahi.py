@@ -6,7 +6,7 @@
 # @Author: Brian Cherinka
 # @Date:   2018-10-11 17:51:43
 # @Last modified by:   Brian Cherinka
-# @Last Modified time: 2018-10-20 11:04:01
+# @Last Modified time: 2018-11-29 17:23:15
 
 from __future__ import print_function, division, absolute_import
 
@@ -29,6 +29,8 @@ class HIVAC(VACMixIn):
     URL: link
 
     Description: Returns HI summary data and spectra
+
+    Authors: David Stark and Karen Masters
 
     """
 
