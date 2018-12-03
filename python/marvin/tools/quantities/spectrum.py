@@ -6,8 +6,8 @@
 # @Filename: spectrum.py
 # @License: BSD 3-clause (http://www.opensource.org/licenses/BSD-3-Clause)
 #
-# @Last modified by:   Brian Cherinka
-# @Last modified time: 2018-10-19 20:10:13
+# @Last modified by: José Sánchez-Gallego (gallegoj@uw.edu)
+# @Last modified time: 2018-11-29 17:48:19
 
 
 from __future__ import absolute_import, division, print_function
@@ -199,10 +199,8 @@ class Spectrum(Quantity, QuantityMixIn):
         if self.mask is None:
             use_mask = False
 
-        if use_mask:
+        if use_mask and 'DONOTUSE' in self.pixmask.schema.label.tolist():
             donotuse_mask = self.pixmask.get_mask('DONOTUSE') > 0
-
-        if use_mask:
             value = self.masked
             wave = np.ma.array(self.wavelength.value, mask=donotuse_mask)
             std = self.std.value if self.std else None
