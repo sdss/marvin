@@ -316,9 +316,9 @@ Initializing
 To get a `Map`, we first create a :mod:`marvin.tools.maps.Maps` object, which contains all of the maps for a galaxy.  Then we select an individual `Map` in one of four ways:
 
 * exact key slicing,
-* fuzzy key slicing (input is unambiguously associated with a particular key),
-* dot syntax, or
-* `getMap` method.
+* dot syntax,
+* `getMap` method, or
+* fuzzy key slicing.
 
 .. code-block:: python
 
@@ -328,14 +328,35 @@ To get a `Map`, we first create a :mod:`marvin.tools.maps.Maps` object, which co
     # exact key slicing
     >>> ha = maps['emline_gflux_ha_6564']
 
-    # fuzzy key slicing
-    >>> ha = maps['gflux ha']
+
 
     # dot syntax
     >>> ha = maps.emline_gflux_ha_6564
 
     # getMap()
     >>> ha = maps.getMap('emline_gflux_ha_6564')
+    # equivalently
+    >>> ha = maps.getMap('emline_gflux', channel='ha_6564')
+
+    # fuzzy key slicing
+    >>> ha = maps['gflux ha']
+
+
+Fuzzy key slicing works if the input is unambiguously associated with a particular key:
+
+.. code-block:: python
+
+    # Unambiguous inputs
+    >>> maps['gflux ha']        # == maps['emline_gflux_ha_6564']
+    >>> maps['gvel oiii 5008']  # == maps[emline_gvel_oiii_5008]
+    >>> maps['stellar sig']     # == maps['stellar_sigma']
+
+    # Ambiguous inputs
+    # There are several velocity properties (stellar and emission lines).
+    >>> maps['vel']  # ValueError
+
+    # There are two [O III] lines.
+    >>> maps['gflux oiii']  # ValueError
 
 
 .. _marvin-map-access-spaxel:
