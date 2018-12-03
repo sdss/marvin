@@ -24,10 +24,9 @@ then setup with ``python setup.py install``:
 
     git clone https://github.com/sdss/marvin
     cd marvin
+    git submodule update --init --recursive
     pip install -r requirements_dev.txt
-    git submodule init
-    git submodule update
-    python setup.py install
+    python setup.py develop
 
 What is Marvin?
 ---------------
