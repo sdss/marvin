@@ -275,6 +275,33 @@ You can create a :ref:`BPT<marvin-bpt>` diagram:
 
     >>> masks, fig, axes = maps.get_bpt()
 
+Reference/API
+^^^^^^^^^^^^^
+
+.. rubric:: Class Inheritance Diagram
+
+.. inheritance-diagram:: marvin.tools.maps.Maps
+
+.. rubric:: Class
+
+.. autosummary:: marvin.tools.maps.Maps
+
+.. rubric:: Methods
+
+.. autosummary::
+
+    marvin.tools.maps.Maps.get_binid
+    marvin.tools.maps.Maps.get_unbinned
+    marvin.tools.maps.Maps.get_bpt
+    marvin.tools.maps.Maps.getCube
+    marvin.tools.maps.Maps.getModelCube
+    marvin.tools.maps.Maps.getSpaxel
+    marvin.tools.maps.Maps.getMap
+    marvin.tools.maps.Maps.getMapRatio
+    marvin.tools.maps.Maps.download
+    marvin.tools.maps.Maps.save
+    marvin.tools.maps.Maps.restore
+
 
 .. _marvin-map:
 
