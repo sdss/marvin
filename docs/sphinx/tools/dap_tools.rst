@@ -226,6 +226,26 @@ You can also retrieve a 2-d array of the bin IDs using the `get_binid` method.  
     >>> stvel_binids = maps.get_binid(property=maps.datamodel.stellar_vel)
 
 
+.. _marvin-maps-access-objects:
+
+Accessing Other Marvin Objects for the Same Galaxy
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+You can grab the associated DRP `Cube` with `getCube`:
+
+.. code-block:: python
+
+    >>> maps.getCube()
+    <Marvin Cube (plateifu='8485-1901', mode='remote', data_origin='api')>
+
+or the `Modelcube` object using the `getModelCube` method:
+
+.. code-block:: python
+
+    >>> maps.getModelCube()
+    <Marvin ModelCube (plateifu='8485-1901', mode='remote', data_origin='api', bintype='HYB10', template='GAU-MILESHC')>
+
+
 
 
 .. _marvin-map:
