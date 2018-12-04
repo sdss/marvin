@@ -142,28 +142,48 @@ Each `Property` in the datamodel describes an available `Map` inside the `Maps` 
 Accessing an Individual Map
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-The `Property`s provide an interface to extract and create an individual `Map`.  You can use fuzzy indexing to retrieve a `Map`.  All properties are also available as class attributes.  Or you can use the old-fashioned `getMap` method.  All three are equivalent.
+The `Property`s provide an interface to extract and create an individual `Map`. You can select an individual `Map` in one of four ways:
+
+* exact key slicing,
+* dot syntax,
+* `getMap` method, or
+* fuzzy key slicing.
 
 .. code-block:: python
 
-    # get the H-alpha Gaussian flux Map
-    >>> ha = maps['gflux_ha']
+    >>> from marvin.tools import Maps
+    >>> maps = Maps(plateifu='8485-1901')
 
-    # or
+    # exact key slicing
+    >>> ha = maps['emline_gflux_ha_6564']
+
+    # dot syntax
     >>> ha = maps.emline_gflux_ha_6564
 
-    # or
+    # getMap()
     >>> ha = maps.getMap('emline_gflux_ha_6564')
+    # equivalently
+    >>> ha = maps.getMap('emline_gflux', channel='ha_6564')
 
-    >>> print(ha)
-    <Marvin Map (property='emline_gflux_ha_6564')>
-    [[ 0.  0.  0. ...,  0.  0.  0.]
-     [ 0.  0.  0. ...,  0.  0.  0.]
-     [ 0.  0.  0. ...,  0.  0.  0.]
-     ...,
-     [ 0.  0.  0. ...,  0.  0.  0.]
-     [ 0.  0.  0. ...,  0.  0.  0.]
-     [ 0.  0.  0. ...,  0.  0.  0.]] 1e-17 erg / (cm2 s spaxel)
+    # fuzzy key slicing
+    >>> ha = maps['gflux ha']
+
+
+Fuzzy key slicing works if the input is unambiguously associated with a particular key:
+
+.. code-block:: python
+
+    # Unambiguous inputs
+    >>> maps['gflux ha']        # == maps['emline_gflux_ha_6564']
+    >>> maps['gvel oiii 5008']  # == maps[emline_gvel_oiii_5008]
+    >>> maps['stellar sig']     # == maps['stellar_sigma']
+
+    # Ambiguous inputs
+    # There are several velocity properties (stellar and emission lines).
+    >>> maps['vel']  # ValueError
+
+    # There are two [O III] lines.
+    >>> maps['gflux oiii']  # ValueError
 
 
 .. _marvin-maps-access-spaxel:
@@ -327,8 +347,6 @@ To get a `Map`, we first create a :mod:`marvin.tools.maps.Maps` object, which co
 
     # exact key slicing
     >>> ha = maps['emline_gflux_ha_6564']
-
-
 
     # dot syntax
     >>> ha = maps.emline_gflux_ha_6564
