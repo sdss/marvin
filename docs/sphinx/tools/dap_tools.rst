@@ -377,6 +377,12 @@ Fuzzy key slicing works if the input is unambiguously associated with a particul
     >>> maps['gflux oiii']  # ValueError
 
 
+.. _marvin-map-basic:
+
+Basic Attributes
+^^^^^^^^^^^^^^^^
+
+
 .. _marvin-map-access-spaxel:
 
 Accessing an Individual Spaxel
@@ -392,6 +398,25 @@ Slicing a `Map` returns a single property
     30.7445 1e-17 erg / (cm2 s spaxel)
 
 
+.. _marvin-map-access-maps:
+
+Accessing the Parent Maps Object
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+
+.. _marvin-map-arithmetic:
+
+Map Arithmetic
+^^^^^^^^^^^^^^
+
+.. _marvin-map-masking:
+
+Masking
+^^^^^^^
+
+
+.. _marvin-map-plot:
+
 Plotting a Map
 ^^^^^^^^^^^^^^
 You can plot a map.  See :ref:`marvin-map` for how to use the `Map` object, and the :ref:`marvin-plotting-tutorial` for a guide into plotting.  Details on plotting parameters and defaults can be found :ref:`here<marvin-utils-plot-map>`.
@@ -402,6 +427,12 @@ You can plot a map.  See :ref:`marvin-map` for how to use the `Map` object, and 
     >>> ha.plot()
 
 .. image:: ../../_static/quick_map_plot.png
+
+
+.. _marvin-map-save:
+
+Saving and Restoring
+^^^^^^^^^^^^^^^^^^^^
 
 
 Reference/API
