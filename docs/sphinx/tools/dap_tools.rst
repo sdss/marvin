@@ -380,6 +380,22 @@ Fuzzy key slicing works if the input is unambiguously associated with a particul
 Basic Attributes
 ^^^^^^^^^^^^^^^^
 
+The values, inverse variances, and `bitmasks <http://www.sdss.org/dr13/algorithms/bitmasks/>`_ of the map can be accessed via the :attr:`~marvin.tools.quantities.Map.value`, :attr:`~marvin.tools.quantities.Map.ivar`, and :attr:`~marvin.tools.quantities.Map.mask` attributes, respectively.
+
+.. code-block:: python
+
+    >>> ha.value  # (34, 34) array
+    >>> ha.ivar   # (34, 34) array
+    >>> ha.mask   # (34, 34) array --- same as ha.pixmask.mask
+
+    >>> ha.value[17]  # get the middle row (i.e., "y")
+    array([ 0.       ,  0.       ,  0.       ,  0.       ,  0.       ,
+        0.       ,  0.       ,  0.0360246,  0.0694705,  0.135435 ,
+        0.564578 ,  1.44708  ,  3.12398  ,  7.72712  , 14.2869   ,
+       22.2461   , 29.1134   , 32.1308   , 28.9591   , 21.4879   ,
+       13.9937   ,  7.14412  ,  3.84099  ,  1.64863  ,  0.574292 ,
+        0.349627 ,  0.196499 ,  0.144375 ,  0.118376 ,  0.       ,
+        0.       ,  0.       ,  0.       ,  0.       ])
 
 .. _marvin-map-access-spaxel:
 
