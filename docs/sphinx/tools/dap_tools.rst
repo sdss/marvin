@@ -431,6 +431,16 @@ You can plot a map.  See :ref:`marvin-map` for how to use the `Map` object, and 
 Saving and Restoring
 ^^^^^^^^^^^^^^^^^^^^
 
+Finally, we can :meth:`~marvin.tools.quantities.Map.save` our :mod:`~marvin.tools.quantities.Map` object as a MaNGA pickle file (``*.mpf``) and then :meth:`~marvin.tools.quantities.Map.restore` it.
+
+.. code-block:: python
+
+    >>> from marvin.tools.quantities import Map
+    >>> ha.save(path='/path/to/save/directory/ha_8485-1901.mpf')
+    >>> zombie_ha = Map.restore(path='/path/to/save/directory/ha_8485-1901.mpf')
+
+
+.. _marvin-map-reference:
 
 Reference/API
 -------------
