@@ -399,6 +399,11 @@ Slicing a `Map` returns a single property
 
 Accessing the Parent Maps Object
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+From a :mod:`~marvin.tools.quantities.Map` object we can access its parent :mod:`~marvin.tools.maps.Maps` object via the :attr:`~marvin.tools.quantities.Map.maps` attribute.
+
+.. code-block:: python
+
+    >>> ha.getMaps() == maps  # True
 
 
 .. _marvin-map-arithmetic:
