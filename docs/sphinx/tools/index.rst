@@ -38,7 +38,8 @@ The following sections explain how to use the tools in detail. They assume that 
 
     cube
     rss
-    dap_tools
+    modelcube
+    maps-map
     plate
 
     spaxel
