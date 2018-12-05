@@ -433,7 +433,30 @@ Saving and Restoring
 
 
 Reference/API
-^^^^^^^^^^^^^
+-------------
+
+.. rubric:: Class Inheritance Diagram
+
+.. inheritance-diagram:: marvin.tools.quantities.Map
+
+.. rubric:: Class
+
+.. autosummary:: marvin.tools.quantities.Map
+
+.. rubric:: Methods
+
+.. autosummary::
+
+    marvin.tools.quantities.Map.error
+    marvin.tools.quantities.Map.inst_sigma_correction
+    marvin.tools.quantities.Map.masked
+    marvin.tools.quantities.Map.pixmask
+    marvin.tools.quantities.Map.plot
+    marvin.tools.quantities.Map.restore
+    marvin.tools.quantities.Map.save
+    marvin.tools.quantities.Map.snr
+
+
 
 .. _marvin-enhancedmap:
 
