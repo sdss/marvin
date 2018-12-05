@@ -408,8 +408,72 @@ Map Arithmetic
 
 .. _marvin-map-masking:
 
-Masking
-^^^^^^^
+Masks
+^^^^^
+
+The :attr:`~marvin.tools.quantities.Map.masked` attribute is a `numpy masked array <https://docs.scipy.org/doc/numpy/reference/maskedarray.generic.html>`_. The ``data`` attribute is the :attr:`~marvin.tools.quantities.Map.value` array and the ``mask`` attribute is a boolean array.  ``mask`` is ``True`` for a given spaxel if any of the recommended bad data flags (NOCOV, UNRELIABLE, and DONOTUSE) are set.
+
+.. code-block:: python
+
+    >>> ha.masked[17]
+    masked_array(data=[--, --, --, --, --, --, --, 0.0360246, 0.0694705,
+                   0.135435, 0.564578, 1.44708, 3.12398, 7.72712, 14.2869,
+                   22.2461, 29.1134, 32.1308, 28.9591, 21.4879, 13.9937,
+                   7.14412, 3.84099, 1.64863, 0.574292, 0.349627,
+                   0.196499, 0.144375, 0.118376, --, --, --, --, --],
+             mask=[ True,  True,  True,  True,  True,  True,  True, False,
+                   False, False, False, False, False, False, False, False,
+                   False, False, False, False, False, False, False, False,
+                   False, False, False, False, False,  True,  True,  True,
+                    True,  True],
+       fill_value=1e+20)
+
+For more fine-grained data quality control, you can select spaxels using :attr:`~marvin.tools.quantities.Map.pixmask`, which contains the :attr:`~marvin.tools.quantities.Map.mask` values, knows the ``MANGA_DAPPIXMASK`` schema, and has convenience methods for converting between mask values, bit values, and labels.
+
+See :ref:`marvin-utils-maskbit` for details.
+
+.. code-block:: python
+
+    >>> ha.pixmask
+    <Maskbit 'MANGA_DAPPIXMASK' shape=(34, 34)>
+
+    >>> ha.pixmask.schema
+        bit         label                                        description
+    0     0         NOCOV                         No coverage in this spaxel
+    1     1        LOWCOV                        Low coverage in this spaxel
+    2     2     DEADFIBER                   Major contributing fiber is dead
+    3     3      FORESTAR                                    Foreground star
+    4     4       NOVALUE  Spaxel was not fit because it did not meet sel...
+    5     5    UNRELIABLE  Value is deemed unreliable; see TRM for defini...
+    6     6     MATHERROR              Mathematical error in computing value
+    7     7     FITFAILED                  Attempted fit for property failed
+    8     8     NEARBOUND  Fitted value is too near an imposed boundary; ...
+    9     9  NOCORRECTION               Appropriate correction not available
+    10   10     MULTICOMP          Multi-component velocity features present
+    11   30      DONOTUSE                 Do not use this spaxel for science
+
+    >>> ha.pixmask.mask    # == ha.mask
+    >>> ha.pixmask.bits    # bits corresponding to mask array
+    >>> ha.pixmask.labels  # labels corresponding to mask array
+
+**Note**: For ``MANGA_DAPPIXMASK``, DONOTUSE is a consolidation of the flags NOCOV, LOWCOV, DEADFIBER, FORESTAR, NOVALUE, MATHERROR, FITFAILED, and NEARBOUND.
+
+Common Masking Operations
+`````````````````````````
+
+.. code-block:: python
+
+    >>> # Spaxels not covered by the IFU
+    >>> nocov = ha.pixmask.get_mask('NOCOV')
+
+    >>> # Spaxels flagged as bad data
+    >>> bad_data = ha.pixmask.get_mask(['UNRELIABLE', 'DONOTUSE'])
+
+    >>> # Custom mask (flag data as DONOTUSE to hide in plotting)
+    >>> custom_mask = (ha.value < 1e-17) * ha.pixmask.labels_to_value('DONOTUSE')
+
+    >>> # Combine masks
+    >>> my_mask = nocov | custom_mask
 
 
 .. _marvin-map-plot:
