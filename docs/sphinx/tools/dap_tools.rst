@@ -406,6 +406,23 @@ Accessing the Parent Maps Object
 Map Arithmetic
 ^^^^^^^^^^^^^^
 
+:mod:`~marvin.tools.quantities.Map` objects can be added, subtracted, multiplied, divided, or raised to a power.  You can also take the logarithm of them.
+
+.. code-block:: python
+
+    >>> ha = maps['emline_gflux_ha_6564']
+    >>> nii = maps['emline_gflux_nii_6585']
+
+    >>> sum_ = nii + ha
+    >>> diff = nii - ha
+    >>> prod = nii * ha
+    >>> quot = nii / ha
+    >>> pow_ = ha**0.5
+    >>> n2ha = np.log10(nii / ha)
+
+In addition to performing the arithmetic operation on the ``value``, the resulting :mod:`~marvin.tools.quantities.map.EnhancedMap` has correctly propagated ``ivar``, ``mask``, ``pixmask``, ``unit``, and ``scale``.
+
+
 .. _marvin-map-masking:
 
 Masks
