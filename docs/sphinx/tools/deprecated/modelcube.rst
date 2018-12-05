@@ -1,4 +1,4 @@
-.. _marvin-modelcube:
+.. _marvin-modelcube-deprecated:
 
 ModelCube
 =========
