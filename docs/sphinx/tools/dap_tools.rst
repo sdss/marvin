@@ -480,14 +480,17 @@ Common Masking Operations
 
 Plotting a Map
 ^^^^^^^^^^^^^^
-You can plot a map.  See :ref:`marvin-map` for how to use the `Map` object, and the :ref:`marvin-plotting-tutorial` for a guide into plotting.  Details on plotting parameters and defaults can be found :ref:`here<marvin-utils-plot-map>`.
 
-.. code-block:: python
+`Map` can be easily plotted using the ``plot`` method.  Details on plotting parameters and defaults can be found :ref:`here<marvin-utils-plot-map>`.  For a guide about making different types of plots see the :ref:`marvin-plotting-tutorial`.
 
-    # plot the H-alpha flux map.
-    >>> ha.plot()
+.. plot::
+    :align: center
+    :include-source: True
 
-.. image:: ../../_static/quick_map_plot.png
+    >>> from marvin.tools import Maps
+    >>> maps = Maps('8485-1901')
+    >>> ha = maps.emline_gflux_ha_6564
+    >>> ha.plot()  # plot the H-alpha flux map.
 
 
 .. _marvin-map-save:
