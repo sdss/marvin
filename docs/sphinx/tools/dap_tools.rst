@@ -20,8 +20,8 @@ Maps
 
 .. _marvin-maps-initializing:
 
-Initializing a Maps
-^^^^^^^^^^^^^^^^^^^
+Initializing
+^^^^^^^^^^^^
 
 A `Maps` can be initialized by filename, plateifu, or mangaid.
 
