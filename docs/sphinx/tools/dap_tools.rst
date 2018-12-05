@@ -402,7 +402,7 @@ The values, inverse variances, and `bitmasks <http://www.sdss.org/dr13/algorithm
 Accessing an Individual Spaxel
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Slicing a `Map` returns a single property
+Slicing a `Map` returns the property for a single spaxel:
 
 .. code-block:: python
 
@@ -578,8 +578,33 @@ Reference/API
 EnhancedMap
 -----------
 
+An :mod:`~marvin.tools.quantities.EnhancedMap` is a :mod:`~marvin.tools.quantities.Map` that has been modified by a map arithmetic operation (``+``, ``-``, ``*``, ``/``, ``**``, or ``np.log10()``). It inherits most of the attributes of a :mod:`~marvin.tools.quantities.Map`.
+
+.. _marvin-enhanced-map-reference:
+
 Reference/API
 ^^^^^^^^^^^^^
+
+.. rubric:: Class Inheritance Diagram
+
+.. inheritance-diagram:: marvin.tools.quantities.EnhancedMap
+
+.. rubric:: Class
+
+.. autosummary:: marvin.tools.quantities.EnhancedMap
+
+.. rubric:: Methods
+
+.. autosummary::
+
+    marvin.tools.quantities.EnhancedMap.save
+    marvin.tools.quantities.EnhancedMap.restore
+    marvin.tools.quantities.EnhancedMap.masked
+    marvin.tools.quantities.EnhancedMap.error
+    marvin.tools.quantities.EnhancedMap.snr
+    marvin.tools.quantities.EnhancedMap.plot
+
+
 
 .. _marvin-modelcube:
 
