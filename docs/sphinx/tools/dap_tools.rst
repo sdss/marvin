@@ -1,14 +1,13 @@
-.. _marvin-dap-tools:
+.. _marvin-maps-map:
 
-DAP Tools
-=========
+Maps/Map
+========
 
-There are four types of DAP Tools:
+`Maps` and `Map` objects form a hierarchy:
 
-* :ref:`marvin-maps`
-* :ref:`marvin-map`
-* :ref:`marvin-enhancedmap`
-* :ref:`marvin-modelcube`
+* :ref:`marvin-maps`: set of DAP maps for a galaxy (analogous to a DAP MAPS FITS file),
+* :ref:`marvin-map`: an individual map, and
+* :ref:`marvin-enhancedmap`: an individual map modified by map arithmetic.
 
 
 .. _marvin-maps:
@@ -603,16 +602,3 @@ Reference/API
     marvin.tools.quantities.EnhancedMap.error
     marvin.tools.quantities.EnhancedMap.snr
     marvin.tools.quantities.EnhancedMap.plot
-
-
-
-.. _marvin-modelcube:
-
-ModelCube
----------
-
-The HYB10 bintype
-^^^^^^^^^^^^^^^^^
-
-Reference/API
-^^^^^^^^^^^^^
