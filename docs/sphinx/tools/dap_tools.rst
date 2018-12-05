@@ -345,18 +345,18 @@ To get a `Map`, we first create a :mod:`marvin.tools.maps.Maps` object, which co
     >>> from marvin.tools import Maps
     >>> maps = Maps(plateifu='8485-1901')
 
-    # exact key slicing
+    >>> # exact key slicing
     >>> ha = maps['emline_gflux_ha_6564']
 
-    # dot syntax
+    >>> # dot syntax
     >>> ha = maps.emline_gflux_ha_6564
 
-    # getMap()
+    >>> # getMap()
     >>> ha = maps.getMap('emline_gflux_ha_6564')
-    # equivalently
+    >>> # equivalently
     >>> ha = maps.getMap('emline_gflux', channel='ha_6564')
 
-    # fuzzy key slicing
+    >>> # fuzzy key slicing
     >>> ha = maps['gflux ha']
 
 
@@ -364,16 +364,14 @@ Fuzzy key slicing works if the input is unambiguously associated with a particul
 
 .. code-block:: python
 
-    # Unambiguous inputs
     >>> maps['gflux ha']        # == maps['emline_gflux_ha_6564']
     >>> maps['gvel oiii 5008']  # == maps[emline_gvel_oiii_5008]
     >>> maps['stellar sig']     # == maps['stellar_sigma']
 
-    # Ambiguous inputs
-    # There are several velocity properties (stellar and emission lines).
+    >>> # Ambiguous: there are several velocity properties (stellar and emission lines).
     >>> maps['vel']  # ValueError
 
-    # There are two [O III] lines.
+    >>> # Ambiguous: there are two [O III] lines.
     >>> maps['gflux oiii']  # ValueError
 
 
@@ -392,8 +390,7 @@ Slicing a `Map` returns a single property
 
 .. code-block:: python
 
-    # the ha-value in the central bin
-    >>> ha[17, 17]
+    >>> ha[17, 17]  # the Halpha flux value in the central spaxel
     <Marvin Map (property='emline_gflux_ha_6564')>
     30.7445 1e-17 erg / (cm2 s spaxel)
 
