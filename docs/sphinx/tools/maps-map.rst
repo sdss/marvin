@@ -19,8 +19,8 @@ Maps
 
 .. _marvin-maps-initializing:
 
-Initializing
-^^^^^^^^^^^^
+Initializing a Maps
+^^^^^^^^^^^^^^^^^^^
 
 A `Maps` can be initialized by filename, plateifu, or mangaid.
 
@@ -329,8 +329,8 @@ Map
 
 :mod:`~marvin.tools.quantities.Map` is a single map for a single galaxy. The main data that it contains are the :attr:`~marvin.tools.quantities.Map.value`, :attr:`~marvin.tools.quantities.Map.ivar`, and :attr:`~marvin.tools.quantities.Map.mask` arrays of the map.
 
-Initializing
-^^^^^^^^^^^^
+Initializing a Map
+^^^^^^^^^^^^^^^^^^
 
 To get a `Map`, we first create a :mod:`marvin.tools.maps.Maps` object, which contains all of the maps for a galaxy.  Then we select an individual `Map` in one of four ways:
 
@@ -547,7 +547,7 @@ Finally, we can :meth:`~marvin.tools.quantities.Map.save` our :mod:`~marvin.tool
 .. _marvin-map-reference:
 
 Reference/API
--------------
+^^^^^^^^^^^^^
 
 .. rubric:: Class Inheritance Diagram
 

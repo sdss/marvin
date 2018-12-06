@@ -7,8 +7,8 @@ ModelCube
 
 .. _marvin-modelcube-initializing:
 
-Initializing
-^^^^^^^^^^^^
+Initializing a ModelCube
+^^^^^^^^^^^^^^^^^^^^^^^^
 
 `ModelCube` behaves in much the same way as a `Cube`.  To initialize a `ModelCube`, you can specify either a **mangaid**, **plateifu**, or **filename** as input.  Marvin will attempt to open the file locally from a file, a database, or remotely over the API.
 

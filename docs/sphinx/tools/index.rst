@@ -41,10 +41,12 @@ The following sections explain how to use the tools in detail. They assume that 
     modelcube
     maps-map
     plate
-
     spaxel
-
     image
+
+
+.. toctree::
+    :maxdepth: 2
 
     ../core/data-access-modes
 
