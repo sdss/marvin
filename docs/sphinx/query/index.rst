@@ -1,6 +1,6 @@
 
-Marvin Query Tools
-==================
+Query Tools
+===========
 
 .. toctree::
     :maxdepth: 2
