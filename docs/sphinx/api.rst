@@ -1,8 +1,8 @@
 
 .. _marvin-api:
 
-API (marvin.api)
-================
+API
+===
 
 .. note:: Redo to describe the 3 ways of using the API
 
@@ -201,5 +201,3 @@ Status Codes:
 * **400**: Bad Request
 * **502**: Bad Gateway
 * **504**: Gateway Timeout
-
-

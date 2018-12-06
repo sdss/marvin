@@ -1,8 +1,8 @@
 
 .. _marvin-web:
 
-Web (marvin.web)
-================
+Web
+===
 
 Here we describe the general content and functionality of all pages in
 Marvin-Web.  Most of the functionality that you will find on the Web exists in
