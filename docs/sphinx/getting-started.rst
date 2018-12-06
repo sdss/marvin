@@ -439,7 +439,7 @@ We can still use all the tools we discussed above. For example, let's plot the s
     ha_snr = maps_obj.emline_gflux_ha_6564.snr
     plt.imshow(ha_snr, origin='lower')
 
-Map objects are a bit especial, though, and we will discuss them in detail in :ref:`their own section <marvin-map>`. Here, let's see how we can do "Map arithmetic" by calculating the :math:`{\rm H\alpha/H\beta}` ratio ::
+`Map` objects are a bit special, though, and we will discuss them in detail in :ref:`their own section <marvin-map>`. Here, let's see how we can do "Map arithmetic" by calculating the :math:`{\rm H\alpha/H\beta}` ratio ::
 
     >>> hb = maps_obj.emline_gew_hb_4862
     >>> ha_hb = ha / hb
