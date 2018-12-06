@@ -21,12 +21,12 @@ Marvin Tools provide the core functionality for accessing MaNGA data with Marvin
 - Access to DAP :ref:`Maps <marvin-maps>` and :ref:`ModelCubes <marvin-modelcube>`.
 - Convenient access to all the DRP and DAP properties for a given :ref:`Spaxel or Bin <marvin-spaxel>`.
 - The data delivered as :ref:`Astropy quantities <marvin-quantities>` with the inverse variance and mask, as well as associated properties.
-- Easy handling of maskbits and labels.
+- Easy handling of :ref:`maskbits <marvin-maskbit>` and labels.
 - DAP :ref:`Map arithmetic <marvin-enhanced-map>`.
 - Autocompletion of properties and channels (powered by a datamodel).
 - The ability to extract all spaxels within a region.
 - Access to NSA and DRPall data.
-- Easy data download.
+- Easy :ref:`data download <marvin-download-objects>`.
 
 The following sections explain how to use the tools in detail. They assume that you have read our :ref:`marvin-getting_started` and are familiar with :ref:`Astropy quantities <marvin-quantities>`.
 
