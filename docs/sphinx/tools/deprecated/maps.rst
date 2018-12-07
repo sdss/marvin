@@ -1,4 +1,4 @@
-.. _marvin-maps:
+.. _marvin-maps-deprecated:
 
 Maps
 ====
@@ -134,7 +134,7 @@ However you can also initialize a `Maps` without the keyword argument and Marvin
     maps = Maps('8485-1901', bintype='HYB10')
     <Marvin Maps (plateifu='8485-1901', mode='local', data_origin='db', bintype='HYB10', template='GAU-MILESHC')>
 
-.. _marvin-maps-basic:
+.. _marvin-maps-basic-deprecated:
 
 Basic Attributes
 ^^^^^^^^^^^^^^^^
@@ -158,7 +158,7 @@ Like 'Cubes', `Maps` come with some basic attributes attached, e.g. the full hea
 
 `Maps` also has the DAP data quality, targeting, and pixel masks available as the `quality_flag`, `target_flags`, and `pixmask` attributes, respectively.  These are represented as a :ref:`Maskbit <marvin-utils-maskbit>` objects.
 
-.. _marvin-maps-datamodel:
+.. _marvin-maps-datamodel-deprecated:
 
 The DataModel
 ^^^^^^^^^^^^^
@@ -328,7 +328,7 @@ You can create a :ref:`BPT<marvin-bpt>` diagram.
     maps.get_bpt()
 
 
-.. _marvin-maps-save:
+.. _marvin-maps-save-deprecated:
 
 Saving and Restoring
 ^^^^^^^^^^^^^^^^^^^^
