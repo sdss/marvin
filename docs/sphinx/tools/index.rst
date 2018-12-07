@@ -44,6 +44,7 @@ The following sections explain how to use the tools in detail. They assume that 
     spaxel
     image
 
+:rubric-h2:`Common Tools Features`
 
 .. toctree::
     :maxdepth: 2
