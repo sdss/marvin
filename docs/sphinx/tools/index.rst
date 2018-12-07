@@ -65,8 +65,6 @@ The following sections explain how to use the tools in detail. They assume that 
     utils/plotting
     bpt
 
-    image
-
 
 .. _visual-guide:
 
