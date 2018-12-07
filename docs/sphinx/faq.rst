@@ -4,8 +4,8 @@
 Frequently Asked Questions
 ==========================
 
-Public
-------
+General Access
+--------------
 
 How do I update marvin?
 ^^^^^^^^^^^^^^^^^^^^^^^
@@ -29,8 +29,8 @@ Some galaxies in MaNGA are special targets from one of our `ancillary science pr
 using the `Image Cutout Service <http://skyserver.sdss.org/public/en/help/docs/api.aspx#imgcutout>`_ will return a blank black field.
 
 
-SDSS Collaboration Members
---------------------------
+SDSS Collaboration Access
+-------------------------
 
 How come I cannot access collaboration data via the API?
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
