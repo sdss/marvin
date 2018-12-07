@@ -24,7 +24,7 @@ Marvin Tools provide the core functionality for accessing MaNGA data with Marvin
 - Easy handling of :ref:`maskbits <marvin-maskbit>` and labels.
 - DAP :ref:`Map arithmetic <marvin-enhanced-map>`.
 - Autocompletion of properties and channels (powered by a datamodel).
-- The ability to extract all spaxels within a region.
+- The ability to :ref:`extract all spaxels within a region <marvin-get-aperture>`.
 - Access to NSA and DRPall data.
 - Easy :ref:`data download <marvin-download-objects>`.
 
@@ -63,7 +63,7 @@ The following sections explain how to use the tools in detail. They assume that 
     datamodel
 
     utils/plotting
-    bpt
+    analysis_tools
 
 
 .. _visual-guide:
