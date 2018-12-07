@@ -1,8 +1,8 @@
 
 .. _marvin-exercises:
 
-Exercises
-=========
+Science Exercises
+=================
 
 Here are exercises and activities designed to stimulate your usage of Marvin in your science workflows.  Each exercise takes you through a particular science case, asking you to explore the science question using Marvin.  The focus in these exercises is how best to utilize Marvin. Do you have an exercise showcasing Marvin's usage in your workflow that you wish to share?  Add it to this page.
 
