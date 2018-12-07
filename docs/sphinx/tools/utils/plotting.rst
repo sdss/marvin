@@ -1,7 +1,7 @@
 
 
-Plotting tutorial
-~~~~~~~~~~~~~~~~~
+Plotting Methods
+~~~~~~~~~~~~~~~~
 
 .. toctree::
     :maxdepth: 2
