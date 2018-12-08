@@ -1,11 +1,14 @@
 
 .. _datamodel-mpl5:
 
-MPL-5 DataModel
----------------
+MPL-5
+=====
 
 This datamodel corresponds to the MPL-5 (v2_0_1, 1.1.1) release of MaNGA data.
 
+
+DataModel
+---------
 
 .. datamodel:: marvin.utils.datamodel.drp.MPL:MPL5
    :prog: DRP DataModel
@@ -27,8 +30,8 @@ This datamodel corresponds to the MPL-5 (v2_0_1, 1.1.1) release of MaNGA data.
    :parameters:
 
 
-MPL-5 Maskbits
---------------
+Maskbits
+--------
 
 .. datamodel:: marvin.utils.datamodel.dap:MPL5
    :prog: DRP Maskbits

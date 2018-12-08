@@ -5,15 +5,6 @@
 DataModels
 ==========
 
-.. toctree::
-    :hidden:
-
-    mpl4
-    mpl5
-    mpl6
-    query_dm
-
-
 Marvin contains datamodels for each of the releases of MaNGA dataset.  The links below contain full descriptions of what is available for each release.  Each release contains a variety of datamodels.
 
 * **DRP** datamodel: describes the output of the MaNGA Data Reduction Pipeline.

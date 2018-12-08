@@ -1,11 +1,14 @@
 
 .. _datamodel-dr15:
 
-DR15 DataModel
----------------
+DR15
+====
 
 This datamodel corresponds to the DR15 release of MaNGA data.
 
+
+DataModel
+---------
 
 .. datamodel:: marvin.utils.datamodel.drp.MPL:MPL7
    :prog: DRP DataModel
@@ -27,8 +30,8 @@ This datamodel corresponds to the DR15 release of MaNGA data.
    :parameters:
 
 
-DR15 Maskbits
---------------
+Maskbits
+--------
 
 .. datamodel:: marvin.utils.datamodel.dap:MPL7
    :prog: DRP Maskbits
@@ -46,8 +49,8 @@ DR15 Maskbits
    :bittype: Target
 
 
-DR15 VACs
-----------
+VACs
+----
 
 .. datamodel:: marvin.utils.datamodel.vacs:datamodel
    :prog: Available VACs
