@@ -1,11 +1,14 @@
 
 .. _datamodel-mpl6:
 
-MPL-6 DataModel
----------------
+MPL-6
+======
 
 This datamodel corresponds to the MPL-6 (v2_2_1, 2.1.3) release of MaNGA data.
 
+
+DataModel
+---------
 
 .. datamodel:: marvin.utils.datamodel.drp.MPL:MPL6
    :prog: DRP DataModel
@@ -27,8 +30,8 @@ This datamodel corresponds to the MPL-6 (v2_2_1, 2.1.3) release of MaNGA data.
    :parameters:
 
 
-MPL-6 Maskbits
---------------
+Maskbits
+--------
 
 .. datamodel:: marvin.utils.datamodel.dap:MPL6
    :prog: DRP Maskbits

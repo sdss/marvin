@@ -1,11 +1,14 @@
 
 .. _datamodel-mpl7:
 
-MPL-7 DataModel
----------------
+MPL-7
+=====
 
 This datamodel corresponds to the MPL-7 (v2_4_3, 2.2.1) release of MaNGA data.
 
+
+DataModel
+---------
 
 .. datamodel:: marvin.utils.datamodel.drp.MPL:MPL7
    :prog: DRP DataModel
@@ -27,8 +30,8 @@ This datamodel corresponds to the MPL-7 (v2_4_3, 2.2.1) release of MaNGA data.
    :parameters:
 
 
-MPL-7 Maskbits
---------------
+Maskbits
+--------
 
 .. datamodel:: marvin.utils.datamodel.dap:MPL7
    :prog: DRP Maskbits
@@ -46,8 +49,8 @@ MPL-7 Maskbits
    :bittype: Target
 
 
-MPL-7 VACs
-----------
+VACs
+----
 
 .. datamodel:: marvin.utils.datamodel.vacs:datamodel
    :prog: Available VACs
