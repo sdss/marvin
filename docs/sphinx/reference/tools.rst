@@ -64,20 +64,22 @@ Spaxel
 -------
 
 .. automodule:: marvin.tools.spaxel
-   :members: SpaxelBase, Spaxel
+   :members: Spaxel
    :undoc-members:
    :show-inheritance:
 
 
 .. _marvin-tools-bin:
 
-Bin
----
+BinInfo
+-------
 
-.. automodule:: marvin.tools.spaxel
-   :members: Bin
+.. automodule:: marvin.tools.quantities.base_quantity.BinInfo
+   :members: BinInfo
    :undoc-members:
    :show-inheritance:
+
+.. autoclass:: marvin.tools.quantities.base_quantity.BinInfo
 
 .. _marvin-tools-image:
 

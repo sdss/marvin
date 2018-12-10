@@ -5,7 +5,7 @@
 Quantity Classes
 ================
 
-.. _marvin-tools-datacube:
+.. _marvin-tools-base:
 
 Base classes
 ------------
@@ -15,6 +15,7 @@ Base classes
    :undoc-members:
    :show-inheritance:
 
+.. _marvin-tools-datacube:
 
 Datacube
 --------
