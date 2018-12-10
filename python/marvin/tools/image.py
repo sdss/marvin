@@ -522,3 +522,4 @@ class Image(MMAMixIn):
 
         maps = marvin.tools.maps.Maps(**kwargs)
         return maps
+

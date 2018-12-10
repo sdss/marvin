@@ -24,7 +24,7 @@ from marvin.tools.cube import Cube
 from marvin.tools.maps import Maps
 from marvin.tools.modelcube import ModelCube
 from marvin.tools.quantities import Spectrum
-from marvin.tools.spaxel import Bin, Spaxel
+from marvin.tools.spaxel import Spaxel
 
 
 spaxel_modes = [True, False, 'object']
@@ -286,21 +286,6 @@ class TestBinInfo(object):
 
             sp_bin = maps[sp.y, sp.x]
             assert sp_bin.stellar_vel.bin.binid == spaxel.stellar_vel.bin.binid
-
-    def test_correct_binid(self):
-        """Checks if the binid of the bin spaxels is the correct one (#457)"""
-
-        maps = Maps(plateifu='8485-1901', release='MPL-6', bintype='HYB10')
-        bb = maps[22, 14]
-
-        assert isinstance(bb, Bin)
-        assert bb.x == 14, bb.y == 22
-
-        spaxels = bb.spaxels
-
-        for sp in spaxels:
-            sp_bin = maps[sp.y, sp.x]
-            assert sp_bin.binid == bb.binid
 
 
 class TestPickling(object):

@@ -897,11 +897,11 @@ class QueryParameter(object):
 
     def _in_form(self):
         ''' Check in parameters is in the Marvin Form '''
-
         if not hasattr(self.parent, '_marvinform'):
             return False
 
         return self.full in self.parent._marvinform._param_form_lookup
+
 
 # # Get the Common Parameters from the filelist
 

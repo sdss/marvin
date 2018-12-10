@@ -30,7 +30,7 @@ from marvin.tools.modelcube import ModelCube
 from marvin.tools.rss import RSS
 from marvin.utils.datamodel.query import datamodel
 from marvin.utils.datamodel.query.base import ParameterGroup
-from marvin.utils.general import (downloadList, map_bins_to_column, temp_setattr,
+from marvin.utils.general import (downloadList, get_images_by_list, map_bins_to_column, temp_setattr,
                                   turn_off_ion)
 
 try:

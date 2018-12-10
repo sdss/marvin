@@ -12,18 +12,16 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 
 import os
 import sys
-import warnings
-
 import numpy as np
-import PIL
 import requests
+import warnings
+import PIL
+
 from astropy import table
 from astropy.io import ascii
 from astropy.wcs import WCS
-
 from marvin.core.exceptions import MarvinError, MarvinUserWarning
 from marvin.extern import yanny
-
 
 if sys.version_info.major == 2:
     from cStringIO import StringIO as stringio
@@ -576,3 +574,6 @@ class Cutout(object):
         ''' Show the image cutout '''
         if self.image:
             self.image.show()
+
+
+

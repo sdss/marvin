@@ -108,7 +108,6 @@ class MarvinAperture(photutils.Aperture if photutils else object):
 
 
 class GetApertureMixIn(object):
-    """A mixin that allows to define geometrical apertures."""
 
     def getAperture(self, coords, aperture_params, aperture_type='circular',
                     coord_type='pixel'):
@@ -192,11 +191,10 @@ class GetApertureMixIn(object):
         30 degrees we do ::
 
             >>> ap_ell = cube.getAperture([(232.546173, 48.6892288), (232.544069, 48.6906177)],
-                                          (3, 1, 30), aperture_type='elliptical', coord_type='sky')
+                                          (3, 1, 30), aperture_type='elliptical')
             >>> ap_ell
-            <MarvinAperture(<SkyCoord (ICRS): (ra, dec) in deg
-                [(232.546173, 48.6892288), (232.544069, 48.6906177)]>,
-                a=3.0 arcsec, b=1.0 arcsec, theta=30.0 deg)>
+            <MarvinAperture([[232.546173 ,  48.6892288],
+                 [232.544069 ,  48.6906177]], a=3.0, b=1.0, theta=30.0)>
 
         """
 

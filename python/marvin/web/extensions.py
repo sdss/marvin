@@ -5,23 +5,20 @@
 #
 # @Author: Brian Cherinka
 # @Date:   2017-06-28 15:31:51
-# @Last modified by: Brian Cherinka
+# @Last modified by:   Brian Cherinka
 # @Last Modified time: 2018-06-05 11:39:50
 
-from __future__ import absolute_import, division, print_function
-
-import logging
-
-import flask_jsglue as jsg
-from flask_caching import Cache
+from __future__ import print_function, division, absolute_import
 from flask_featureflags import FeatureFlag
-from flask_jwt_extended import JWTManager
+from raven.contrib.flask import Sentry
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
-from flask_login import LoginManager
 from flask_profiler import Profiler
-from raven.contrib.flask import Sentry
-
+from flask_caching import Cache
+from flask_login import LoginManager
+from flask_jwt_extended import JWTManager
+import flask_jsglue as jsg
+import logging
 
 # JS Glue (allows use of Flask.url_for inside javascript)
 jsglue = jsg.JSGlue()

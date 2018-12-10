@@ -5,26 +5,25 @@
 #
 # @Author: Brian Cherinka
 # @Date:   2017-08-21 17:11:22
-# @Last modified by: José Sánchez-Gallego (gallegoj@uw.edu)
+# @Last modified by:   Brian Cherinka
 # @Last Modified time: 2018-11-08 16:21:30
 
-from __future__ import absolute_import, division, print_function
-
-import warnings
-from collections import defaultdict
-
+from __future__ import print_function, division, absolute_import
+from marvin import config
+from marvin.utils.datamodel.dap import datamodel
+from marvin.core.exceptions import MarvinUserWarning
+from marvin.utils.general import invalidArgs, isCallableWithArgs
+from matplotlib.gridspec import GridSpec
+from collections import defaultdict, OrderedDict
+from astropy.visualization import hist as ahist
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 import numpy as np
-import pandas as pd
 import scipy.stats as stats
 import six
-from astropy.visualization import hist as ahist
-from matplotlib.gridspec import GridSpec
-
-from marvin.core.exceptions import MarvinUserWarning
-from marvin.utils.general import invalidArgs, isCallableWithArgs
-
+import pandas as pd
+import itertools
+import warnings
 
 try:
     import mpl_scatter_density as msd
@@ -322,7 +321,7 @@ def plot(x, y, **kwargs):
     Example:
         >>> # create a scatter plot
         >>> import numpy as np
-        >>> from marvin.utils.plot.scatter import plot
+        >>> from marvin.utils.scatter import plot
         >>> x = np.random.random(100)
         >>> y = np.random.random(100)
         >>> plot(x, y)
@@ -560,3 +559,7 @@ def hist(arr, mask=None, fig=None, ax=None, bins=None, **kwargs):
 
     output = (hist_data, fig, ax) if return_figure else hist_data
     return output
+
+
+
+

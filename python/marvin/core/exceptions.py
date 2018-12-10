@@ -6,8 +6,8 @@
 # @Filename: exceptions.py
 # @License: BSD 3-clause (http://www.opensource.org/licenses/BSD-3-Clause)
 #
-# @Last modified by:   andrews
-# @Last modified time: 2018-10-16 10:10:20
+# @Last modified by: José Sánchez-Gallego (gallegoj@uw.edu)
+# @Last modified time: 2018-08-12 14:23:09
 
 
 from __future__ import division, print_function
