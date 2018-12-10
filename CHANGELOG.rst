@@ -4,6 +4,9 @@ Marvin's Change Log
 [2.3.1] - unreleased
 --------------------
 
+Refactored
+^^^^^^^^^^
+- The entire Sphinx documentation
 
 
 [2.3.0] - 2018/12/03
