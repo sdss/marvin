@@ -5,7 +5,7 @@ Tutorials
 =========
 
 * :ref:`Lean Tutorial: An end-to-end process using Marvin <marvin-lean-tutorial>`
-* :ref:`Basics of Plotting in Marvin <marvin-plotting-tutorial>`
+* :ref:`Plotting Tutorial: The Basics of Plotting in Marvin <marvin-plotting-tutorial>`
 * :ref:`Marvin Boolean SQL Syntax <marvin-sqlboolean>`
 * `Marvin Queries <notebooks/marvin_queries.ipynb>`_  (:download:`Jupyter notebook <notebooks/marvin_queries.ipynb>`)
 * :ref:`Sample Selection in Marvin <marvin-sample-selection-tutorial>`
@@ -23,4 +23,3 @@ Tutorials
    Marvin Queries <notebooks/marvin_queries.ipynb>
    Sample Selection in Marvin <sample-selection>
    Science Examples using Marvin <exercises>
-

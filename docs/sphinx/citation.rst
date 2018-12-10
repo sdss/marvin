@@ -28,7 +28,7 @@ Marvin's Bibtex entry to use::
       url          = {https://doi.org/10.5281/zenodo.596700}
     }
 
-If you wish, you can also include a link to https://api.sdss.org/doc/manga/marvin in addition to the above text.
+If you wish, you can also include a link to http://sdss-marvin.readthedocs.io/en/stable/ in addition to the above text.
 
 In Presentations
 ^^^^^^^^^^^^^^^^
@@ -38,4 +38,3 @@ In Presentations
 
 
 .. If you are using Marvin as part of a code project (e.g., affiliated packages), a useful way to acknowledge your use of Marvin is with a badge in your README. We suggest this badge:
-

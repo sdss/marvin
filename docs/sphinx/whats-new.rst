@@ -1,9 +1,6 @@
 .. _whats-new:
 
 
-.. error:: Many of the links in this page have changed and need to be redirected.
-
-
 What's New
 ==========
 
@@ -107,7 +104,7 @@ The `~marvin.tools.quantities.datacube.DataCube` quantity includes a `~marvin.to
 MPL-7 now available
 *******************
 
-Starting with this release, Marvin provides access to MPL-7, the latest MaNGA Product Launch. Please read the `release notes <https://trac.sdss.org/wiki/MANGA/TRM/TRM_MPL-7/whatsnew>`__ for this version to understand what has changed. MPL-7 is now the default release when Marvin is imported.
+Starting with this release, Marvin provides access to MPL-7, the latest MaNGA Product Launch. Please read the `release notes (SDSS collaboration access required) <https://trac.sdss.org/wiki/MANGA/TRM/TRM_MPL-7/whatsnew>`__ for this version to understand what has changed. MPL-7 is now the default release when Marvin is imported.
 
 In MPL-7 we have made ``HYB10`` the default bintype. Hybrid-binned ``Maps`` and ``ModelCubes`` use different binning schemes depending on the property measured. Before using ``HYB10`` make sure you read `the documentation <https://trac.sdss.org/wiki/MANGA/TRM/TRM_MPL-7/dap/GettingStarted#HYB10-GAU-MILESHC>`__ and understand how to use the data. For ``HYB10`` the `~marvin.tools.spaxel.Bin` class is somehow limited, since it does not allow for different binning schemes depending on the measured quantity. We are planning a major reimplementation of how bins are handled, which we will release with Marvin 2.3.0. In the meantime, please be aware of these limitations when using ``HYB10``.
 
@@ -139,9 +136,9 @@ For MPL-6, we now raise an explicit error when attempting to apply the correctio
 2.2 (January 2018)
 ------------------
 
-Marvin 2.2.0 brings significant improvements in the way you interact with MaNGA data.  Try the :ref:`Jupyter Notebook<marvin-jupyter-new22>` for a small sample.
+Marvin 2.2.0 brings significant improvements in the way you interact with MaNGA data.  Try the :ref:`Jupyter Notebook<marvin-exercises>` for a small sample.
 
-* `MPL-6 <https://trac.sdss.org/wiki/MANGA/TRM/TRM_MPL-6>`_ compatible
+* `MPL-6 <https://trac.sdss.org/wiki/MANGA/TRM/TRM_MPL-6>`_ compatible (SDSS collaboration access required)
 * New DRP, DAP, and Query :ref:`Datamodels <marvin-datamodels>`
 * :ref:`Cubes<marvin-cube>`, :ref:`Maps<marvin-maps>`, and :ref:`ModelCubes<marvin-modelcube>` now use Astropy Quantities, i.e. encapsulating a measurement with its associated parameters (e.g., unit, mask, or inverse variance)
 * Improved Bin class
@@ -149,7 +146,7 @@ Marvin 2.2.0 brings significant improvements in the way you interact with MaNGA 
 * New access to DAPall data on `Maps` and `ModelCubes`
 * :ref:`Scatter <marvin-utils-plot-scatter>` and :ref:`Histogram <marvin-utils-plot-hist>` Plotting
 * Improved Query :ref:`Results <marvin-results>` Handling and Integrated :ref:`Plotting <marvin-results_plot>`
-* New :ref:`MaskBit <marvin-utils-maskbit>` class
+* New :ref:`MaskBit <marvin-maskbit>` class
 
 |
 
@@ -215,7 +212,7 @@ Marvin 2.2.0 brings significant improvements in the way you interact with MaNGA 
 
 * Marvin :ref:`marvin-web` now has a new :ref:`galaxy_properties` tab with interactive scatter, and box-and-whisker plots.
 
-* Marvin :ref:`marvin-web` has more python tips for working with Marvin :ref:`marvin-tools` objects.
+* Marvin :ref:`marvin-web` has more python tips for working with Marvin :ref:`marvin-query-tools` objects.
 
 * Marvin now uses Sentry to catch and send errors.
 
@@ -256,7 +253,7 @@ Marvin 2.2.0 brings significant improvements in the way you interact with MaNGA 
 
 * Versions simplified from mpl, drp, dap down to release
 
-* API :ref:`marvin-authentication`
+* :ref:`marvin-authentication`
 
 |
 
@@ -273,7 +270,7 @@ The major improvements and additions in this release:
 
 * :doc:`core/data-access-modes`: a new mode based navigation system that allows you to seamlessly interact with MaNGA data no matter where it is.
 
-* :doc:`../tools`: a python package for accessing and interacting with MaNGA
+* :doc:`../tools/index`: a python package for accessing and interacting with MaNGA
   data, whether the files are in your computer or they need to be retrieved remotely via the
   API.
 

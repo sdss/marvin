@@ -1,3 +1,4 @@
+.. _marvin-query-tools:
 
 Query Tools
 ===========

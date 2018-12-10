@@ -39,7 +39,8 @@ The following sections explain how to use the tools in detail. They assume that 
     cube
     rss
     modelcube
-    maps-map
+    maps
+    map
     plate
     spaxel
     image

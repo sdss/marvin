@@ -91,7 +91,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = u'Marvin'
-copyright = u'2016-2017, Brian Cherinka, Brett Andrews, and José Sánchez-Gallego'
+copyright = u'2016-2019, Brian Cherinka, Brett Andrews, and José Sánchez-Gallego'
 author = u'Brian Cherinka, Brett Andrews, and José Sánchez-Gallego'
 
 # The version info for the project you're documenting, acts as replacement for
