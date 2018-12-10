@@ -1,7 +1,6 @@
 Marvin's Change Log
 ===================
 
-
 [2.3.1] - unreleased
 --------------------
 
@@ -30,9 +29,6 @@ Added
 - Adds User table into the history schema of mangadb.  Tracks user logins.
 - ``Map`` has a new method ``getSpaxel`` to retrieve an ``Spaxel`` using the parent ``Maps``.
 - New configuration option in ``marvin.yml``, ``default_release``, to set the release to be used when Marvin gets imported (:issue:`463`).
-- New ``Marvin Image`` Tool to load optical images using the MMA (:issue:`22`)
-- New ``Bundle`` and ``Cutout`` utility classes
-- New ``MMAMixIn`` for providing multi-modal data access
 - Applying a NumPy ufunc (except ``np.log10()``) raises ``NotImplementedError`` because ivar propagation is not implemented yet.
 - New ``Marvin Image`` Tool to load optical images using the MMA (:issue:`22`)
 - New ``Bundle`` and ``Cutout`` utility classes
@@ -101,26 +97,6 @@ Refactored
 - Reimplemented `~marvin.tools.rss.RSS` as a list of `~marvin.tools.rss.RSSFiber` objects (:issue:`27,504`).
 - Moved pieces of MarvinToolsClass into `marvin.tools.mixins`.
 - Reimplemented `~marvin.tools.query.Query` to remove local query dependencies from remote mode usage.
-
-[2.2.6] - 2018/08/13
------------------------
-
-Added
-^^^^^
-- Support for MPL-7
-
-Changed
-^^^^^^^
-- A simpler namespace for more convenient Tools access.  Tools are now available straightaway after importing marvin directly.
-- Spectrum.plot now accepts any Matplotlib plotting keyword arguments
-
-Fixed
-^^^^^
-- Python 3 bug fix for exception error.message no longer valid in galaxy web page
-- Added ignore_git to MarvinError to conditionally rather than globally turn off git issues
-- Replaced web function getWebMap with correct version from master (a lost cherry-pick)
-- A critical bug fix for Spaxels belonging to a Bin where the (x, y) spaxel coordinates in the Bin were inverted from their correct values, causing incorrect Spaxels to be associated with a given Bin.
-- A fix handling the incorrect DAP stellar_sigma corrections in MPL-6.  Marvin now prohibits you from using that correction in MPL-6.
 
 
 [2.2.5] - 2018/04/26
