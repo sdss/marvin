@@ -1,12 +1,9 @@
 Marvin's Change Log
 ===================
 
-[2.3.1] - 2018-12-10
+[2.3.1] - unreleased
 --------------------
 
-Changed
-^^^^^^^
-- Added a Brain hack for DR15 to disable SSL certs
 
 
 [2.3.0] - 2018/12/03
