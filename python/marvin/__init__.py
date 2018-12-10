@@ -19,7 +19,7 @@ from collections import OrderedDict
 from astropy.wcs import FITSFixedWarning
 
 # Set the Marvin version
-__version__ = '2.3.1'
+__version__ = '2.3.2dev'
 
 # Does this so that the implicit module definitions in extern can happen.
 # time - 483 ms
