@@ -15,7 +15,7 @@ Project Description
 Sample Selection
 ----------------
 
-Marvin uses a simplified query syntax (in both `Web <https://sas.sdss.org/marvin2/search/>`_ and local queries) that understands the MaNGA database schema, so you don't have to write complicated SQL queries.
+Marvin uses a simplified query syntax (in both `Web <https://dr15.sdss.org/marvin/search/>`_ and local queries) that understands the MaNGA database schema, so you don't have to write complicated SQL queries.
 
 **Goal**: Find galaxies with stellar mass between :math:`10^{10}` and :math:`10^{11}`.
 
@@ -80,7 +80,7 @@ Plot H\ :math:`\alpha` map of the second galaxy:
 
 The dark blue region near the center of the galaxy looks suspicious, so let's take a look at the model fits of those spaxels.
 
-The easiest way is to navigate to the `Galaxy page for 7992-6101 <https://sas.sdss.org/marvin2/galaxy/7992-6101>`_ and click on the red "Map/SpecView Off" button.
+The easiest way is to navigate to the `Galaxy page for 7992-6101 <https://dr15.sdss.org/marvin/galaxy/7992-6101>`_ and click on the red "Map/SpecView Off" button.
 
 However, we can also plot the spectrum and model fits in Python. First, we can find the coordinates of a spaxel by moving our cursor around the interactive matplotlib plotting window. When the cursor is over the spaxel of interest, the coordinates will appear in the lower right.
 

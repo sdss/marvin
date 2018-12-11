@@ -5,18 +5,19 @@ Web
 ===
 
 Here we describe the general content and functionality of all pages in
-Marvin-Web.  Most of the functionality that you will find on the Web exists in
-Marvin Tools. Indeed, a lot of the functionality simply uses existing Marvin
-tools.
+`Marvin-Web <https://dr15.sdss.org/marvin>`_.  Most of the functionality
+that you will find on the Web exists in Marvin Tools. Indeed, a lot of the
+functionality simply uses existing Marvin tools.
 
 .. _web-main:
 
 Main Page
 ---------
 
-The main Marvin splash page for the MaNGA survey contains a navigation bar with links
-to other Marvin pages, a Log-In window, general information about Marvin
-and the development team, as well as quick contact information at the bottom.
+The main `Marvin splash page <https://dr15.sdss.org/marvin>`_ for the MaNGA
+survey contains a navigation bar with links to other Marvin pages, a Log-In
+window, general information about Marvin and the development team, as well as
+quick contact information at the bottom.
 
 **ID Search Box**:
 
@@ -43,7 +44,8 @@ access collaboration data.
 Image Roulette Page
 -------------------
 
-Displays a random set of 16 images of galaxies from the MaNGA survey.  Each
+The `Image Roulette page <https://dr15.sdss.org/marvin/random>`_ displays a
+random set of 16 images of galaxies from the MaNGA survey.  Each
 thumbnail on the left is displayed in larger form on the right.  Click the giant
 image to go the individual Galaxy Page.
 
@@ -52,7 +54,7 @@ image to go the individual Galaxy Page.
 Search Page
 -----------
 
-Search the MaNGA dataset using a simplified interface with pseudo-natural
+The `Search page <https://dr15.sdss.org/marvin/search>`_ enables querying the MaNGA dataset using a simplified interface with pseudo-natural
 language syntax.
 
 **Return Parameters**:
@@ -86,7 +88,7 @@ After a search, the **View Galaxies** button will display the postage stamp imag
 Plate Pages
 -----------
 
-A Plate page includes:
+A `Plate page <https://dr15.sdss.org/marvin/plate/8485/>`_ includes:
 
 * **meta-data**: some basic information about the Plate
 
@@ -100,7 +102,7 @@ A Plate page includes:
 Galaxy Pages
 ------------
 
-A Galaxy page includes:
+A `Galaxy page <https://dr15.sdss.org/marvin/galaxy/7977-12705/>`_ includes:
 
 * **meta-data**: basic observation details (such as coordinates and
   signal-to-noise\ :sup:`2`), quality flags, and targeting information,
