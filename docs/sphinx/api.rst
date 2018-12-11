@@ -4,7 +4,7 @@
 API
 ===
 
-.. note:: Redo to describe the 3 ways of using the API
+.. TODO Redo the description of the 3 ways of using the API
 
 API stands for Application Programming Interface.  It describes a set of rules designed to faciliate remote acquisition of data, without using a user interface.  It is typically designed as a set of HTTP Request methods (i.e. GET or POST), that you can interact with in a browser, or via code packages, e.g. the Python package `Requests <http://docs.python-requests.org/en/master/>`_.  These URL routes, along with all their parameters, can sometimes be tedious to deal with explicitly.
 
