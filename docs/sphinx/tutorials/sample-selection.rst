@@ -36,7 +36,7 @@ Now we can use the :func:`~marvin.utils.general.general.downloadList` function t
 
 .. code-block:: python
 
-    from marvin.utils.general import downloadList
+    from marvin.utils.general.general import downloadList
     downloadList(plateifus, dltype='map')
 
 
