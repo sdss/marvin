@@ -40,7 +40,7 @@ View the :class:`~marvin.tools.query.results.Results`.  You may see a different 
     1	1-109081	8077-12705	10.862523
     2	1-109112	8078-1901	10.128309
 
-Convert into :ref:`marvin-tools-maps` objects:
+Convert into :doc:`../tools/maps` objects:
 
 .. code-block:: python
 
