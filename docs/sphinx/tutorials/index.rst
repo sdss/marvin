@@ -4,7 +4,7 @@
 Tutorials
 =========
 
-* :doc:`Lean Tutorial: An end-to-end process using Marvin <lean-tutorial>`
+* :doc:`Lean Tutorial: An end-to-end science case using Marvin <lean-tutorial>` (:download:`Jupyter notebook <lean-tutorial.ipynb>`)
 * :doc:`Plotting Tutorial: The Basics of Plotting in Marvin <plotting-tutorial>`
 * :doc:`Marvin Boolean SQL Syntax <boolean-search-tutorial>`
 * `Marvin Queries <notebooks/marvin_queries.ipynb>`_  (:download:`Jupyter notebook <notebooks/marvin_queries.ipynb>`)
@@ -17,8 +17,8 @@ Tutorials
    :maxdepth: 1
    :hidden:
 
-   Lean Tutorial: An end-to-end process using Marvin <lean-tutorial>
-   Basics of Plotting in Marvin <plotting-tutorial>
+   Lean Tutorial <lean-tutorial>
+   Plotting Tutorial <plotting-tutorial>
    Marvin Boolean SQL Syntax <boolean-search-tutorial>
    Marvin Queries <notebooks/marvin_queries.ipynb>
    Sample Selection in Marvin <sample-selection>
