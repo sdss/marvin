@@ -29,7 +29,11 @@ If you use Marvin (including the `web interface <https://dr15.sdss.org/marvin>`_
       adsnote = {Provided by the SAO/NASA Astrophysics Data System}
     }
 
-For AAS publications, please see their `software citation guidelines <https://journals.aas.org/policy-statement-on-software/>`_.  If you wish, you can also include a link to the Marvin documentation http://sdss-marvin.readthedocs.io/en/stable/, the web interface https://dr15.sdss.org/marvin, or the Zenodo DOI https://zenodo.org/record/596700.
+For AAS publications, please see their `software citation guidelines <https://journals.aas.org/policy-statement-on-software/>`_.  If you wish, you can also links to any or all of the following sites:
+
+* Marvin documentation http://sdss-marvin.readthedocs.io/en/stable/,
+* Marvin web interface https://dr15.sdss.org/marvin, or
+* Marvin Zenodo https://zenodo.org/record/596700.
 
 
 In Presentations
