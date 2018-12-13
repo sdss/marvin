@@ -9,12 +9,7 @@ Acknowledging and Citing Marvin
 In Publications
 ^^^^^^^^^^^^^^^
 
-If you use Marvin (including the `web interface <https://dr15.sdss.org/marvin>`_) for work/research presented in a publication (whether directly, or as a dependency to another package), we ask that you cite the `Marvin Software <https://zenodo.org/record/596700>`_. We provide the following as a standard acknowledgment you can use if there is not a specific place to cite the DOI:
-
-    *This research made use of Marvin, a core Python package and web framework for MaNGA data, developed by Brian Cherinka,
-    José Sánchez-Gallego, Brett Andrews, and Joel Brownstein. (MaNGA Collaboration, 2018).*
-
-Marvin's Bibtex entry to use::
+If you use Marvin (including the `web interface <https://dr15.sdss.org/marvin>`_) for work/research presented in a publication (whether directly, or as a dependency to another package), we ask that you cite the `Marvin paper <http://adsabs.harvard.edu/abs/2018arXiv181203833C>`_ with the following bibtex entry::
 
     @ARTICLE{2018arXiv181203833C,
        author = {{Cherinka}, B. and {Andrews}, B.~H. and {S{\'a}nchez-Gallego}, J. and
@@ -34,7 +29,8 @@ Marvin's Bibtex entry to use::
       adsnote = {Provided by the SAO/NASA Astrophysics Data System}
     }
 
-If you wish, you can also include a link to http://sdss-marvin.readthedocs.io/en/stable/ in addition to the above text.
+For AAS publications, please see their `software citation guidelines <https://journals.aas.org/policy-statement-on-software/>`_.  If you wish, you can also include a link to the Marvin documentation http://sdss-marvin.readthedocs.io/en/stable/, the web interface https://dr15.sdss.org/marvin, or the Zenodo DOI https://zenodo.org/record/596700.
+
 
 In Presentations
 ^^^^^^^^^^^^^^^^
