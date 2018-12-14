@@ -37,14 +37,14 @@ At a Glance
 
 If you are new to Marvin check the following links before diving into the full documentation:
 
-* :ref:`Installation <marvin-installation>`
-* :ref:`What's new in Marvin? <whats-new>`
-* The :ref:`Getting Started <marvin-getting_started>` is your quick start guide to Marvin.
-* For quick reference, check out the :ref:`Cheatsheet <marvin-cheatsheet>`.
-* For more detailed examples, see the :ref:`Tutorials <marvin-tutorials>`.
-* Here is an :ref:`Introduction <marvin-quantities>` to the `Astropy quantity <http://docs.astropy.org/en/stable/units/quantity.html>`_ class that Marvin uses to represent data (spectra, data cubes, etc).
-* We welcome :ref:`contributions <marvin-contributing>` to Marvin!
-* If you use Marvin in any way, please :ref:`cite and acknowledge Marvin <marvin-citation>`.
+* :doc:`installation`
+* :doc:`What's new in Marvin? <whats-new>`
+* The :doc:`Getting Started <getting-started>` is your quick start guide to Marvin.
+* For quick reference, check out the :doc:`cheatsheet`.
+* For more detailed examples, see the :doc:`tutorials/index`.
+* Here is an :ref:`introduction <marvin-quantities>` to the `Astropy quantity <http://docs.astropy.org/en/stable/units/quantity.html>`_ class that Marvin uses to represent data (spectra, data cubes, etc).
+* We welcome :doc:`contributions <contributing/contributing>` to Marvin!
+* If you use Marvin in any way, please :doc:`cite and acknowledge Marvin <citation>`.
 
 
 .. toctree::
