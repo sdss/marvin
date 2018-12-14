@@ -4,7 +4,7 @@
 Cheatsheet
 ==========
 
+Click on the image for a `PDF version <_static/marvin_cheatsheet.pdf>`_ with clickable links.
+
 .. image:: _static/marvin_cheatsheet.png
     :target: _static/marvin_cheatsheet.pdf
-
-Click on the image for a `printable version <_static/marvin_cheatsheet.pdf>`__.

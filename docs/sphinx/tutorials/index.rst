@@ -9,7 +9,7 @@ Tutorials
 * :doc:`Marvin Boolean SQL Syntax <boolean-search-tutorial>`
 * `Marvin Queries <notebooks/marvin_queries.ipynb>`_  (:download:`Jupyter notebook <notebooks/marvin_queries.ipynb>`)
 * :doc:`Sample Selection in Marvin <sample-selection>`
-* :doc:`Science Examples using Marvin <exercises>`
+* :doc:`Science Exercises using Marvin <exercises>`
 
 
 .. toctree::
@@ -22,4 +22,4 @@ Tutorials
    Marvin Boolean SQL Syntax <boolean-search-tutorial>
    Marvin Queries <notebooks/marvin_queries.ipynb>
    Sample Selection in Marvin <sample-selection>
-   Science Examples using Marvin <exercises>
+   Science Exercises using Marvin <exercises>
