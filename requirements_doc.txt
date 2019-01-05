@@ -8,3 +8,4 @@ sphinx-rtd-theme>=0.4.2
 nbsphinx>=0.3.5
 photutils>=0.4
 mpl-scatter-density>=0.4
+jupyter_client>=5.2.3
