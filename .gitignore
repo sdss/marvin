@@ -4,6 +4,7 @@ bin/__pycache__
 .pytest_cache
 flask_profiler.sql
 bin/flask_profiler.sql
+build
 docs/sphinx/_build
 docs/sphinx/flask_profiler.sql
 etc/node_modules
