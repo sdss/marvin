@@ -1,7 +1,7 @@
 .. _marvin-lean-tutorial:
 
 
-:download:`Download this as a Jupyter notebook! <lean-tutorial.ipynb>`
+:download:`Download this as a Jupyter notebook! <notebooks/lean-tutorial.ipynb>`
 
 Lean Tutorial
 =============
