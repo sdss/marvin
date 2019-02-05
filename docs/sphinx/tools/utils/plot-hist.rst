@@ -23,8 +23,8 @@ The Marvin hist function makes creating 1-d histograms an easy one-liner.
 
     # create some random data x and, say, an associated property y
     import numpy as np
-    x = np.random.random(100)*10
-    y = np.random.random(100)*10
+    x = np.random.random(100) * 10
+    y = np.random.random(100) * 10
 
     # create and plot a 1-d histogram from scratch with bin size of 50
     from marvin.utils.plot.scatter import hist
