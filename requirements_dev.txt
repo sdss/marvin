@@ -16,7 +16,6 @@ selenium>=3.3.1
 page_objects>=1.1.0
 decorator>=4.1.2
 pympler>=0.5
-photutils>=0.4
 mpl-scatter-density>=0.4
 
 
