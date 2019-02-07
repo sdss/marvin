@@ -47,7 +47,7 @@ create table mangadapdb.binid (pk integer primary key not null, id integer);
 
 create table mangadapdb.executionplan (pk serial primary key not null, id integer, comments text);
 
-create table mangadapdb.template (pk serial primary key not null, name text, id integer, type text);
+create table mangadapdb.template (pk serial primary key not null, name text, id integer);
 
 create table mangadapdb.binmode (pk serial primary key not null, name text);
 
