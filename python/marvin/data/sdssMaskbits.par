@@ -1152,6 +1152,7 @@ maskbits MANGA_TARGET2     24  STD_WD " "
 maskbits MANGA_TARGET2     25  STD_APASS_COM "Commissioning selection of stds using APASS photometry"
 maskbits MANGA_TARGET2     26  STD_PS1_COM "Commissioning selection of stds using PS1 photometry"
 maskbits MANGA_TARGET2     27  STD_BRIGHT "standards on bright star plates"
+maskbits MANGA_TARGET2     28  PSF "PSF calibration test objects"
 
 # MaNGA targeting bitmask for ancillary program targets
 masktype MANGA_TARGET3     64 "Mask bits identifying ancillary samples."
