@@ -13,7 +13,9 @@
 from __future__ import division, print_function
 
 import os
-import pwd
+import platform
+if platform.system() != 'Windows': import pwd
+else: pwd = None
 import sys
 import warnings
 
@@ -44,9 +46,13 @@ class MarvinSentry(object):
                     'raven.processors.SanitizePasswordsProcessor',
                 )
             )
-            try:
-                self.client.context.merge({'user': {'name': pwd.getpwuid(os.getuid())[0],
-                                                    'system': '_'.join(os.uname())}})
+            try:                                                    
+                if pwd:
+                    self.client.context.merge({'user': {'name': pwd.getpwuid(os.getuid())[0],
+                                                        'system': '_'.join(os.uname())}})
+                else:
+                    self.client.context.merge({'user': {'name': platform.node(),
+                                                        'system': '_'.join(platform.uname()[:-1])}})
             except (OSError, IOError) as ee:
                 warnings.warn('cannot initiate Sentry error reporting: {0}.'.format(str(ee)),
                               UserWarning)
