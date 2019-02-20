@@ -1,7 +1,15 @@
 Marvin's Change Log
 ===================
 
-[2.3.1] - unreleased
+[2.3.2] - unreleased
+--------------------
+
+Added
+^^^^^
+- Support for MPL-8
+
+
+[2.3.1] - 2018/12/10
 --------------------
 
 Refactored
