@@ -198,12 +198,11 @@ class Search(BaseWebView):
             output = jsonify({'errmsg': 'No searchvalue found', 'status': -1})
             return output
 
-        # this is to fix the brokeness with sorting on a table column using remote names
-        #print('rp', returnparams, args)
-
+        defaults = args.pop('defaults', None)
         # do query
         try:
-            q, res = doQuery(search_filter=searchvalue, release=self._release, return_params=returnparams, **args)
+            q, res = doQuery(search_filter=searchvalue, release=self._release, 
+                             return_params=returnparams, default_params=defaults, **args)
         except Exception as e:
             errmsg = 'Error generating webtable: {0}'.format(e)
             output = jsonify({'status': -1, 'errmsg': errmsg})
