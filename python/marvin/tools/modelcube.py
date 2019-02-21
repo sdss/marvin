@@ -16,6 +16,7 @@ import distutils
 import warnings
 
 import numpy as np
+from pkg_resources import parse_version
 from astropy.io import fits
 from astropy.wcs import WCS
 
@@ -212,7 +213,11 @@ class ModelCube(MarvinToolsClass, NSAMixIn, DAPallMixIn, GetApertureMixIn):
         # Updates datamodel, bintype, and template with the versions from the header.
         self.datamodel = datamodel[self._dapver].models
         self.bintype = self.datamodel.parent.get_bintype(self.header['BINKEY'].strip().upper())
-        self.template = self.datamodel.parent.get_template(self.header['SCKEY'].strip().upper())
+        if parse_version(self._dapver) >= parse_version(datamodel['MPL-8'].release):
+            tempkey = self.header['DAPTYPE'].split('-', 1)[-1]
+        else:
+            tempkey = self.header['SCKEY']
+        self.template = self.datamodel.parent.get_template(tempkey.strip().upper())
 
     def _load_modelcube_from_db(self):
         """Initialises a model cube from the DB."""

@@ -65,7 +65,7 @@ def inspection(monkeypatch):
 class Page(object):
     ''' Object representing a Web Page '''
     def __init__(self, client, blue, endpoint):
-        self.app = app()
+        self.app = app
         self.url = self.get_url(blue, endpoint)
         self.json = None
         self.data = None

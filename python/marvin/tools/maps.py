@@ -21,6 +21,7 @@ import astropy.wcs
 import numpy as np
 import pandas as pd
 import six
+from pkg_resources import parse_version
 
 import marvin
 import marvin.api.api
@@ -275,7 +276,7 @@ class Maps(MarvinToolsClass, NSAMixIn, DAPallMixIn, GetApertureMixIn):
         self._drpver, self._dapver = marvin.config.lookUpVersions(release=self._release)
         self.datamodel = datamodel[self._dapver].properties
 
-        # Checks the bintype and template from the header
+        # Checks the bintype from the header
         is_MPL4 = 'MPL-4' in self.datamodel.parent.aliases
         if not is_MPL4:
             header_bintype = self.data[0].header['BINKEY'].strip().upper()
@@ -283,8 +284,14 @@ class Maps(MarvinToolsClass, NSAMixIn, DAPallMixIn, GetApertureMixIn):
         else:
             header_bintype = self.data[0].header['BINTYPE'].strip().upper()
 
-        header_template_key = 'TPLKEY' if is_MPL4 else 'SCKEY'
-        header_template = self.data[0].header[header_template_key].strip().upper()
+        # Checks the template from the header
+        is_MPL8 = parse_version(self._dapver) >= parse_version(datamodel['MPL-8'].release)
+        header_template_key = 'TPLKEY' if is_MPL4 else 'DAPTYPE' if is_MPL8 else 'SCKEY'
+        if is_MPL8:
+            template_val = self.data[0].header[header_template_key].split('-', 1)[-1]
+        else:
+            template_val = self.data[0].header[header_template_key]
+        header_template = template_val.strip().upper()
 
         if self.bintype.name != header_bintype:
             self.bintype = self.datamodel.parent.get_bintype(header_bintype)

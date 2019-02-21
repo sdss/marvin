@@ -121,8 +121,10 @@ origins = ['file', 'db', 'api']         # to loop over data origins (see data_or
 
 
 # Galaxy and Query data is stored in a YAML file
-galaxy_data = yaml.load(open(os.path.join(os.path.dirname(__file__), 'data/galaxy_test_data.dat')))
-query_data = yaml.load(open(os.path.join(os.path.dirname(__file__), 'data/query_test_data.dat')))
+with open(os.path.join(os.path.dirname(__file__), 'data/galaxy_test_data.dat')) as f:
+    galaxy_data = yaml.load(f)
+with open(os.path.join(os.path.dirname(__file__), 'data/query_test_data.dat')) as f:
+    query_data = yaml.load(f)
 
 
 @pytest.fixture(scope='session', params=releases)

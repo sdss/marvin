@@ -13,14 +13,14 @@ from __future__ import absolute_import, division, print_function
 import abc
 import os
 import time
-
-import sdss_access.path
-import sdss_access.sync
 import six
 
 import marvin
 import marvin.tools.plate
 from marvin.core.exceptions import MarvinError
+
+import sdss_access.path
+import sdss_access.sync
 
 
 __ALL__ = ['VACContainer', 'VACMixIn']

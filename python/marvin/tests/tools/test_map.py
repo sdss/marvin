@@ -213,7 +213,7 @@ class TestMap(object):
 
         ss = maps.stellar_sigma
         sc = maps.stellar_sigmacorr
-        compare = sum(ss == sc)
+        compare = sum(ss.value == sc.value)
         assert len(np.unique(compare)) > 1
         x = galaxy.dap['x']
         y = galaxy.dap['y']
