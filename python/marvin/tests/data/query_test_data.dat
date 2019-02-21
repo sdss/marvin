@@ -100,3 +100,21 @@ MPL-6:
             count: 27
         nsa.z < 0.1 and emline_gflux_ha_6564 > 25:
             count: 27
+MPL-7:
+    params:
+        all:
+            count: 1676
+            subset: ['binmode.name', 'nsa.tile', 'cube.ra', 'wcs.crpix1', 'spaxelprop.spx_snr', 'spaxelprop.x', 'spaxelprop.emline_sew_ha_6564']
+        best:
+            count: 41
+            subset: ['nsa.z', 'cube.ra', 'cube.dec', 'spaxelprop.emline_gflux_ha_6564', 'spaxelprop.x']
+    defaults: ['cube.mangaid', 'cube.plateifu']
+MPL-8:
+    params:
+        all:
+            count: 1874
+            subset: ['binmode.name', 'nsa.tile', 'cube.ra', 'wcs.crpix1', 'spaxelprop.spx_snr', 'spaxelprop.x', 'spaxelprop.emline_sew_ha_6564']
+        best:
+            count: 41
+            subset: ['nsa.z', 'cube.ra', 'cube.dec', 'spaxelprop.emline_gflux_ha_6564', 'spaxelprop.x']
+    defaults: ['cube.mangaid', 'cube.plateifu']
