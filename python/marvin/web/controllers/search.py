@@ -107,6 +107,7 @@ class Search(BaseWebView):
         self.search['guideparams'] = [{'id': p.full, 'optgroup': group.name, 'type': 'double' if p.dtype == 'float' else p.dtype, 'validation': {'step': 'any'}} for group in query_params for p in group]
         self.search['searchform'] = searchform
         self.search['placeholder'] = getRandomQuery()
+        self.search['returnurl'] = 'https://sdss-marvin.readthedocs.io/en/stable/datamodel/{0}.html'.format(current_session['release'].lower().replace('-',''))
 
         # If form parameters then try to do a search
         if form:
