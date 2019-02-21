@@ -27,7 +27,7 @@ from marvin.tools.cube import Cube
 def skipbins(galaxy):
     if galaxy.bintype.name not in ['SPX', 'NONE']:
         pytest.skip('Skipping all bins for Cube tests')
-    if galaxy.template.name not in ['MILES-THIN', 'GAU-MILESHC']:
+    if galaxy.template.name not in ['MILES-THIN', 'GAU-MILESHC', 'MILESHC-MILESHC']:
         pytest.skip('Skipping all templates for Cube tests')
 
 
@@ -164,11 +164,12 @@ class TestCube(object):
         assert 'filename {0} cannot be found'.format(cube.filename) in str(ee.value)
 
     def test_load_cube_from_file_filever_ne_release(self, galaxy):
-        release_wrong = 'MPL-4' if galaxy.release == 'MPL-5' else 'MPL-5'
+        release_wrong = 'MPL-4' if galaxy.release != 'MPL-4' else galaxy.release
         with pytest.warns(MarvinUserWarning) as record:
             cube = Cube(filename=galaxy.cubepath, release=release_wrong)
         assert len(record) >= 1
-        assert record[-1].message.args[0] == (
+        subrec = [r for r in record if 'mismatch' in r.message.args[0]]
+        assert subrec[-1].message.args[0] == (
             'mismatch between file release={0} '.format(galaxy.release) +
             'and object release={0}. '.format(release_wrong) +
             'Setting object release to {0}'.format(galaxy.release))
