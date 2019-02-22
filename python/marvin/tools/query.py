@@ -476,9 +476,6 @@ class Query(object):
         endtime = datetime.datetime.now()
         self._run_time = (endtime - starttime)
 
-        # clear the session
-        self.session.close()
-
         # convert to Marvin Results
         final = Results(results=results, query=query, count=self._count, mode=self.mode,
                         returntype=self.return_type, queryobj=self, totalcount=totalcount,
