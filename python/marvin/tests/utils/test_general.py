@@ -233,8 +233,8 @@ class TestSortDir(object):
                              [(Map, ['error', 'inst_sigma_correction', 'ivar',
                                      'getMaps', 'mask', 'masked', 'plot', 'getSpaxel',
                                      'restore', 'save', 'snr', 'value', 'from_maps',
-                                     'binid', 'descale', 'datamodel', 'pixmask',
-                                     'quality_flag', 'target_flags', 'manga_target1',
+                                     'binid', 'descale', 'datamodel', 'pixmask_flag',
+                                     'pixmask', 'target_flags', 'manga_target1',
                                      'manga_target2', 'manga_target3', 'specindex_correction'])])
     def test_sort_dir_map(self, galaxy, class_, expected):
         maps = Maps(plateifu=galaxy.plateifu)
@@ -246,7 +246,8 @@ class TestSortDir(object):
 
     @pytest.mark.parametrize('class_, expected',
                              [(Spectrum, ['error', 'masked', 'plot', 'snr', 'ivar', 'mask',
-                                          'wavelength', 'value', 'descale'])])
+                                          'wavelength', 'value', 'descale', 'pixmask', 
+                                          'pixmask_flag'])])
     def test_sort_dir_spectrum(self, galaxy, class_, expected):
         cube = Cube(plateifu=galaxy.plateifu)
         spax = cube[0, 0]
@@ -319,7 +320,7 @@ class TestDownloadList(object):
 
     def test_dap(self):
         res = downloadList(self.dl, dltype='dap', test=True)
-        good = all([re.search('(common|GAU).*(MAPS|LOGCUBE|SNRG)', s) for s in res])
+        good = all([re.search('(common|MILESHC).*(MAPS|LOGCUBE|SNRG)', s) for s in res])
         assert good is True
 
 

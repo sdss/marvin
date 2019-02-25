@@ -473,7 +473,7 @@ class Image(MMAMixIn):
     def get_random(cls, num=5, minis=None, release=None):
         ''' Generate a set of random Marvin Images
 
-        Class method to generate a randome list of Marvin Images
+        Class method to generate a random list of Marvin Images
 
         Parameters:
             num (int):

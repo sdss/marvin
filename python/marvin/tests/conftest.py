@@ -28,7 +28,7 @@ from marvin.tools.maps import Maps
 from marvin.tools.modelcube import ModelCube
 from marvin.tools.query import Query
 from marvin.utils.datamodel.dap import datamodel
-
+from marvin.utils.general import check_versions
 
 warnings.simplefilter('always')
 
@@ -522,7 +522,10 @@ class Galaxy(object):
     def set_filepaths(self, pathtype='full'):
         """Set the paths for cube, maps, etc."""
         self.path = Path()
-        self.imgpath = self.path.__getattribute__(pathtype)('mangaimage', **self.access_kwargs)
+        if check_versions(self.drpver, 'v2_5_3'):
+            self.imgpath = self.path.__getattribute__(pathtype)('mangaimagenew', **self.access_kwargs)
+        else:
+            self.imgpath = self.path.__getattribute__(pathtype)('mangaimage', **self.access_kwargs)
         self.cubepath = self.path.__getattribute__(pathtype)('mangacube', **self.access_kwargs)
         self.rsspath = self.path.__getattribute__(pathtype)('mangarss', **self.access_kwargs)
 

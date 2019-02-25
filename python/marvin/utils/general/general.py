@@ -845,7 +845,10 @@ def downloadList(inputlist, dltype='cube', **kwargs):
     elif dltype == 'mastar':
         name = 'mangamastar'
     elif dltype == 'image':
-        name = 'mangaimage'
+        if check_versions(drpver, 'v2_5_3'):
+            name = 'mangaimagenew'
+        else:
+            name = 'mangaimage'
 
     # check for public release
     is_public = 'DR' in release
@@ -860,7 +863,7 @@ def downloadList(inputlist, dltype='cube', **kwargs):
         if idtype == 'mangaid':
             try:
                 plateifu = mangaid2plateifu(item)
-            except MarvinError as e:
+            except MarvinError:
                 plateifu = None
             else:
                 plateid, ifu = plateifu.split('-')
@@ -941,13 +944,17 @@ def get_drpall_row(plateifu, drpver=None, drpall=None):
     """Returns a dictionary from drpall matching the plateifu."""
 
     # get the drpall table
-    drpall_table = get_drpall_table(drpver=drpver, drpall=drpall)
+    drpall_table = get_drpall_table(drpver=drpver, drpall=drpall, hdu='MANGA')
+    in_table = plateifu in drpall_table['plateifu']
+    # check the mastar extension
+    if not in_table:
+        drpall_table = get_drpall_table(drpver=drpver, drpall=drpall, hdu='MASTAR')
+        in_table = plateifu in drpall_table['plateifu']
+        if not in_table:
+            raise ValueError('No results found for {0} in drpall table'.format(plateifu))
 
     row = drpall_table[drpall_table['plateifu'] == plateifu]
-
-    if len(row) != 1:
-        raise ValueError('{0} results found for {1} in drpall table'.format(len(row), plateifu))
-
+        
     return row[0]
 
 
@@ -1660,22 +1667,29 @@ def target_is_mastar(plateifu, drpver=None, drpall=None):
     return row['srvymode'] == 'APOGEE lead'
 
 
-def get_drpall_table(drpver=None, drpall=None):
+def get_drpall_table(drpver=None, drpall=None, hdu='MANGA'):
     ''' Gets the drpall table
 
-    Gets the drpall table either from cache or loads it
+    Gets the drpall table either from cache or loads it. For releases
+    of MPL-8 and up, galaxies are in the MANGA extension, and mastar
+    targets are in the MASTAR extension, specified with the hdu keyword. For
+    MPLs 1-7, there is only one data extension, which is read.
 
     Parameters:
         drpver (str):
             The DRP release version to load.  Defaults to current marvin release
         drpall (str):
             The full path to the drpall table. Defaults to current marvin release.
+        hdu (str):
+            The name of the HDU to read in.  Default is 'MANGA'
 
     Returns:
         An Astropy Table
     '''
 
     from marvin import config
+    assert hdu.lower() in ['manga', 'mastar'], 'hdu can either be MANGA or MASTAR'
+    hdu = hdu.upper()
 
     # get the drpall file
     get_drpall_file(drpall=drpall, drpver=drpver)
@@ -1684,11 +1698,18 @@ def get_drpall_table(drpver=None, drpall=None):
     config_drpver, __ = config.lookUpVersions()
     drpver = drpver if drpver else config_drpver
 
+    # check for drpver
     if drpver not in drpTable:
-        drpall = drpall if drpall else config._getDrpAllPath(drpver=drpver)
-        drpTable[drpver] = table.Table.read(drpall)
+        drpTable[drpver] = {}
 
-    drpall_table = drpTable[drpver]
+    # check for hdu
+    hduext = hdu if check_versions(drpver, 'v2_5_3') else 'MANGA'
+    if hdu not in drpTable[drpver]:
+        drpall = drpall if drpall else config._getDrpAllPath(drpver=drpver)
+        data = {hduext: table.Table.read(drpall, hdu=hduext)}
+        drpTable[drpver].update(data)
+
+    drpall_table = drpTable[drpver][hduext]
 
     return drpall_table
 
