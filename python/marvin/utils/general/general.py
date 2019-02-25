@@ -22,6 +22,7 @@ import warnings
 from builtins import range
 from collections import OrderedDict
 from functools import wraps
+from pkg_resources import parse_version
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -65,7 +66,7 @@ __all__ = ('convertCoords', 'parseIdentifier', 'mangaid2plateifu', 'findClosestV
            'isCallableWithArgs', 'map_bins_to_column', '_sort_dir',
            'get_dapall_file', 'temp_setattr', 'map_dapall', 'turn_off_ion', 'memory_usage',
            'validate_jwt', 'target_status', 'target_is_observed', 'get_drpall_file',
-           'target_is_mastar', 'get_plates')
+           'target_is_mastar', 'get_plates', 'get_manga_image', 'check_versions')
 
 drpTable = {}
 
@@ -1715,3 +1716,64 @@ def get_plates(drpver=None, drpall=None, release=None):
     drpall_table = get_drpall_table(drpver=drpver, drpall=drpall)
     plates = list(set(drpall_table['plate']))
     return plates
+
+
+def check_versions(version1, version2):
+    ''' Compate two version ids against each other
+    
+    Checks if version1 is greater than or equal to version2.
+
+    Parameters:
+        version1 (str):
+            The version to check
+        version2 (str):
+            The version to check against
+    
+    Returns:
+        A boolean indicating if version1 is >= version2
+    '''
+
+    return parse_version(version1) >= parse_version(version2)
+
+
+def get_manga_image(cube=None, drpver=None, plate=None, ifu=None, dir3d=None):
+    ''' Get a MaNGA IFU optical PNG image
+
+    Parameters:
+        cube (Cube):
+            A Marvin Cube instance
+        drpver (str):
+            The drpver version
+        plate (str|int):
+            The plate id
+        ifu (str|int):
+            An IFU designation
+        dir3d (str):
+            The directory for 3d data, either 'stack' or 'mastar'
+    Returns:
+        A url to an IFU MaNGA image
+    '''
+
+    # check inputs
+    drpver = cube._drpver if cube else drpver
+    plate = cube.plate if cube else plate
+    ifu = cube.ifu if cube else ifu
+    dir3d = cube.dir3d if cube else dir3d
+    assert all([drpver, plate, ifu]), 'drpver, plate, and ifu must be specified'
+
+    # create the sdss Path
+    release = marvin.config.lookUpRelease(drpver)
+    is_public = 'DR' in release
+    path_release = release.lower() if is_public else None
+    path = Path(public=is_public, release=path_release)
+
+    # check if MPL-8 or not
+    is_MPL8 = check_versions(drpver, 'v2_5_3')
+    if is_MPL8:
+        img = path.url('mangaimagenew', drpver=drpver, plate=plate, ifu=ifu)
+    else:
+        assert dir3d is not None, 'dir3d must also be specified'
+        assert dir3d in ['stack', 'mastar'], 'dir3d can only be stack or mastar'
+        img = path.url('mangaimage', drpver=drpver, plate=plate, ifu=ifu, dir3d=dir3d)
+    return img
+

@@ -27,7 +27,8 @@ from astropy.io import fits
 import marvin
 from marvin.tools.mixins import MMAMixIn
 from marvin.core.exceptions import MarvinError, MarvinUserWarning
-from marvin.utils.general import getWCSFromPng, Bundle, Cutout, target_is_mastar, get_plates
+from marvin.utils.general import (getWCSFromPng, Bundle, Cutout, target_is_mastar,
+                                  get_plates, check_versions)
 try:
     from sdss_access import HttpAccess
 except ImportError:
@@ -95,7 +96,7 @@ class Image(MMAMixIn):
         # try to create a header
         try:
             self.header = fits.header.Header(self.data.info)
-        except Exception as e:
+        except Exception:
             warnings.warn('No proper header found image', MarvinUserWarning)
             self.header = None
 
@@ -107,7 +108,7 @@ class Image(MMAMixIn):
         # try to set the WCS
         try:
             self.wcs = getWCSFromPng(image=self.data)
-        except MarvinError as e:
+        except MarvinError:
             self.wcs = None
             warnings.warn('No proper WCS info for this image')
 
@@ -123,13 +124,6 @@ class Image(MMAMixIn):
         image_dir = 'mastar' if is_mastar else 'stack'
         return image_dir
 
-    def _old_version(self):
-        ''' Checks if the version if less than MPL-8 '''
-        from distutils.version import StrictVersion
-        drpstrict = StrictVersion(self._drpver.strip('v').replace('_', '.'))
-        mpl8strict = StrictVersion('2.5.0')
-        return drpstrict < mpl8strict
-
     def _getFullPath(self):
         """Returns the full path of the file in the tree."""
 
@@ -140,7 +134,8 @@ class Image(MMAMixIn):
         dir3d = self._get_image_dir()
 
         # use version to toggle old/new images path
-        name = 'mangaimage' if self._old_version() else 'newmangaimage'
+        isMPL8 = check_versions(self._drpver, 'v2_5_3')
+        name = 'mangaimagenew' if isMPL8 else 'mangaimage'
 
         return super(Image, self)._getFullPath(name, ifu=ifu, dir3d=dir3d,
                                                drpver=self._drpver, plate=plate)
@@ -155,7 +150,8 @@ class Image(MMAMixIn):
         dir3d = self._get_image_dir()
 
         # use version to toggle old/new images path
-        name = 'mangaimage' if self._old_version() else 'newmangaimage'
+        isMPL8 = check_versions(self._drpver, 'v2_5_3')
+        name = 'mangaimagenew' if isMPL8 else 'mangaimage'
 
         return super(Image, self).download(name, ifu=ifu, dir3d=dir3d,
                                            drpver=self._drpver, plate=plate)

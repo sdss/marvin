@@ -230,7 +230,8 @@ class Bundle(object):
         """
         sky_fibers = data[data['targettype'] == 'SKY']
         sky_block = sky_fibers['block'] == int(ifu)
-        skies = np.array(zip(sky_fibers[sky_block]['target_ra'], sky_fibers[sky_block]['target_dec']))
+        zip_data = list(zip(sky_fibers[sky_block]['target_ra'], sky_fibers[sky_block]['target_dec']))
+        skies = np.array(zip_data)
         return skies
 
     def get_sky_coordinates(self, plateifu=None):

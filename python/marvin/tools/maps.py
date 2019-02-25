@@ -34,7 +34,7 @@ import marvin.utils.dap.bpt
 import marvin.utils.general.general
 from marvin.utils.datamodel.dap import datamodel
 from marvin.utils.datamodel.dap.base import Channel, Property
-from marvin.utils.general import FuzzyDict, turn_off_ion
+from marvin.utils.general import FuzzyDict, turn_off_ion, check_versions
 
 from .core import MarvinToolsClass
 from .mixins import DAPallMixIn, GetApertureMixIn, NSAMixIn
@@ -285,7 +285,8 @@ class Maps(MarvinToolsClass, NSAMixIn, DAPallMixIn, GetApertureMixIn):
             header_bintype = self.data[0].header['BINTYPE'].strip().upper()
 
         # Checks the template from the header
-        is_MPL8 = parse_version(self._dapver) >= parse_version(datamodel['MPL-8'].release)
+        #is_MPL8 = parse_version(self._dapver) >= parse_version(datamodel['MPL-8'].release)
+        is_MPL8 = check_versions(self._dapver, datamodel['MPL-8'].release)
         header_template_key = 'TPLKEY' if is_MPL4 else 'DAPTYPE' if is_MPL8 else 'SCKEY'
         if is_MPL8:
             template_val = self.data[0].header[header_template_key].split('-', 1)[-1]

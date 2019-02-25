@@ -28,7 +28,7 @@ import marvin.utils.general.general
 from marvin.core.exceptions import MarvinError
 from marvin.tools.quantities import DataCube, Map, Spectrum
 from marvin.utils.datamodel.dap import Model, datamodel
-from marvin.utils.general import FuzzyDict, gunzip
+from marvin.utils.general import FuzzyDict, gunzip, check_versions
 
 from .core import MarvinToolsClass
 from .mixins import DAPallMixIn, GetApertureMixIn, NSAMixIn
@@ -213,7 +213,8 @@ class ModelCube(MarvinToolsClass, NSAMixIn, DAPallMixIn, GetApertureMixIn):
         # Updates datamodel, bintype, and template with the versions from the header.
         self.datamodel = datamodel[self._dapver].models
         self.bintype = self.datamodel.parent.get_bintype(self.header['BINKEY'].strip().upper())
-        if parse_version(self._dapver) >= parse_version(datamodel['MPL-8'].release):
+        if check_versions(self._dapver, datamodel['MPL-8'].release):
+        #if parse_version(self._dapver) >= parse_version(datamodel['MPL-8'].release):
             tempkey = self.header['DAPTYPE'].split('-', 1)[-1]
         else:
             tempkey = self.header['SCKEY']
