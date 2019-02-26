@@ -123,8 +123,8 @@ class TestBPT(object):
         with pytest.raises(MarvinError) as error2:
             bpt_kewley06(maps, snr=5, return_figure=False, extra_keyword='hola')
 
-        assert str(error.value) == 'unknown keyword extra_keyword'
-        assert str(error2.value) == 'unknown keyword extra_keyword'
+        assert 'unknown keyword extra_keyword' in str(error.value)
+        assert 'unknown keyword extra_keyword' in str(error2.value)
 
 
 class TestGetSNR(object):

@@ -10,6 +10,7 @@
 
 from __future__ import print_function, division, absolute_import
 from marvin.utils.general.images import getImagesByList, getImagesByPlate, getRandomImages, getDir3d, showImage
+from marvin.utils.general import check_versions
 from marvin.tests.conftest import Galaxy, tempafile
 from marvin.tests import marvin_test_if
 from marvin.core.exceptions import MarvinError, MarvinUserWarning
@@ -96,11 +97,12 @@ def make_paths(request, rsync, mode, asurl, release):
         gal = Galaxy(plateifu)
         gal.set_params(release=release)
         gal.set_filepaths()
+        name = 'mangaimagenew' if check_versions(gal.drpver, 'v2_5_3') else 'mangaimage'
         if mode == 'local':
-            path = rsync.__getattribute__(rmode)('mangaimage', **gal.access_kwargs)
+            path = rsync.__getattribute__(rmode)(name, **gal.access_kwargs)
             fullpaths.append(path)
         else:
-            rsync.add('mangaimage', **gal.access_kwargs)
+            rsync.add(name, **gal.access_kwargs)
             rsync.set_stream()
             path = rsync.get_urls() if asurl else rsync.get_paths()
             fullpaths.extend(path)
@@ -198,6 +200,7 @@ class TestImagesByPlate(object):
     #     self.assertIn(errmsg, str(cm[-1].message))
 
 
+@pytest.mark.xfail()
 class TestRandomImages(object):
 
     @pytest.mark.parametrize('mode, errmsg',

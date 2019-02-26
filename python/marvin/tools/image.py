@@ -170,17 +170,22 @@ class Image(MMAMixIn):
         ''' Load an image from a remote location '''
 
         filepath = self._getFullPath()
-        if not HttpAccess:
-            raise MarvinError('sdss_access not installed')
-
-        http = HttpAccess(verbose=False)
-        url = http.url("", full=filepath)
-        response = requests.get(url)
+        response = requests.get(self.url)
         if not response.ok:
             raise MarvinError('Error: remote filepath {0} does not exist'.format(filepath))
         else:
             fileobj = stringio(response.content)
-            self.data = self._open_image(fileobj, filepath=url)
+            self.data = self._open_image(fileobj, filepath=self.url)
+
+    @property
+    def url(self):
+        if not HttpAccess:
+            raise MarvinError('sdss_access not installed')
+
+        filepath = self._getFullPath()
+        http = HttpAccess(verbose=False)
+        url = http.url("", full=filepath)
+        return url
 
     @staticmethod
     def _open_image(fileobj, filepath=None):

@@ -17,6 +17,7 @@ from marvin.web.extensions import limiter
 from flask import template_rendered, templating
 from contextlib import contextmanager
 import numpy as np
+#from pytest_flask.fixtures import config as app_config
 
 try:
     from urllib.parse import urlparse, urljoin
@@ -24,12 +25,17 @@ except ImportError:
     from urlparse import urlparse, urljoin
 
 
-@pytest.fixture(scope='session')
+@pytest.fixture(scope='session', name="app")
 def app():
     object_config = type('Config', (TestConfig, CustomConfig), dict())
     app = create_app(debug=True, local=True, object_config=object_config)
     limiter.enabled = False
     return app
+
+
+# @pytest.fixture(scope='session')
+# def app_config(app):
+#     yield app.config
 
 
 def test_db_stuff():
@@ -57,15 +63,15 @@ def inspection(monkeypatch):
     from brain.core.inspection import Inspection
     try:
         monkeypatch.setattr('inspection.marvin.Inspection', Inspection)
-    except Exception as e:
+    except Exception:
         pass
 
 
 @pytest.mark.usefixtures('app, get_templates')
 class Page(object):
     ''' Object representing a Web Page '''
-    def __init__(self, client, blue, endpoint):
-        self.app = app
+    def __init__(self, app, client, blue, endpoint):
+        self.config = app.config
         self.url = self.get_url(blue, endpoint)
         self.json = None
         self.data = None
@@ -87,7 +93,7 @@ class Page(object):
     def load_data(self):
         try:
             self.json = self.response.json
-        except ValueError as e:
+        except ValueError:
             self.json = None
         self.data = self.json['data'] if self.json and 'data' in self.json else ''
 
@@ -181,7 +187,7 @@ class Page(object):
         if parts.netloc:
             expected_location = location
         else:
-            server_name = self.app.config.get('SERVER_NAME') or 'localhost'
+            server_name = self.config.get('SERVER_NAME') or 'localhost'
             expected_location = urljoin('http://{0}'.format(server_name), location)
 
         valid_status_codes = (301, 302, 303, 305, 307)
@@ -202,10 +208,10 @@ def _split_request(data):
 
 
 @pytest.fixture()
-def page(user, client, request, init_web):
+def page(user, client, request, init_web, app):
     ''' general page fixture to use for all web tests '''
     blue, endpoint, dologin = _split_request(request.param)
-    page = Page(client, blue, endpoint)
+    page = Page(app, client, blue, endpoint)
     print('login config', config.sasurl, dologin)
     if dologin:
         login(page)

@@ -21,9 +21,10 @@ from .base import QueryDataModel
 # all, no spaxelprop, no daptables
 # MPL-4 - 571 (309) (309)
 # MPL-5 - 703 (322) (301)
-# MPL-6 - 1676 (1008) (987)
-# MPL-7 - 1676 (1008) (987)
-# DR15 - 1676 (1008) (987)
+# MPL-6 - 1676 (1008) (1031)
+# MPL-7 - 1676 (1008) (1031)
+# DR15 - 1676 (1008) (1031)
+# MPL-8 - xx (xx) (1031)
 
 def groups():
     return copy.deepcopy(query_params)
