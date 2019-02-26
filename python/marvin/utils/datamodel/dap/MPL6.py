@@ -10,6 +10,7 @@
 
 from __future__ import absolute_import, division, print_function
 
+import copy
 from astropy import units as u
 
 from marvin.utils.datamodel.maskbit import get_maskbits
@@ -363,6 +364,6 @@ MPL6 = DAPDataModel('2.1.3', aliases=['MPL-6', 'MPL6'],
                     default_bintype='SPX',
                     default_template='GAU-MILESHC',
                     property_table='SpaxelProp6',
-                    default_binid=binid_properties[0],
+                    default_binid=copy.deepcopy(binid_properties[0]),
                     default_mapmask=['NOCOV', 'UNRELIABLE', 'DONOTUSE'],
                     qual_flag='DAPQUAL')

@@ -121,8 +121,14 @@ MPL-7:
                 'last': ['1-209232', '8485-1901', 0.0407447]
             row: ['1-209232', '8485-1901', 0.0407447]
 
+        npergood(emline_gflux_ha_6564 > 5) > 20:
+            count: 3
         absmag_g_r > -1:
             count: 2
+        emline_gflux_ha_6564 > 25:
+            count: 27
+        nsa.z < 0.1 and emline_gflux_ha_6564 > 25:
+            count: 27
 MPL-8:
     params:
         all:
@@ -144,5 +150,11 @@ MPL-8:
                 'last': ['1-209232', '8485-1901', 0.0407447]
             row: ['1-209232', '8485-1901', 0.0407447]
 
+        npergood(emline_gflux_ha_6564 > 5) > 20:
+            count: 3
         absmag_g_r > -1:
             count: 2
+        emline_gflux_ha_6564 > 25:
+            count: 27
+        nsa.z < 0.1 and emline_gflux_ha_6564 > 25:
+            count: 27

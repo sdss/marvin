@@ -251,6 +251,11 @@
                 model_flux: 0
                 model_ivar: 0
                 model_mask: 1
+            rss:
+                mjd: 57132
+                nexp: 9   
+                expnum: 198573
+                nfiber: 19   
             dap:
                 x: 17
                 y: 17
@@ -290,7 +295,7 @@
         MPL-7:
             GAU-MILEHSC: 0.000598979648202658
         MPL-8:
-            MILESHC-MILESHC: 0.000598979648202658
+            MILESHC-MILESHC: 0.000138863280881196
 
 7443-12701:
     mangaid: 12-98126
@@ -509,9 +514,14 @@
                 flux: 0.0308674
                 ivar: 1921.87
                 mask: 0
-                model_flux: 0.0
-                model_ivar: 0.0
-                model_mask: 1        
+                model_flux: 0.030867405
+                model_ivar: 1921.8691
+                model_mask: 0
+            rss:
+                mjd: 56745
+                nexp: 6   
+                expnum: 177684 
+                nfiber: 127     
             dap:
                 x: 17
                 y: 17

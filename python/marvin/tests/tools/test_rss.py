@@ -46,7 +46,7 @@ def rss_session(galaxy, mode):
         rss = marvin.tools.RSS(filename=galaxy.rsspath, release=galaxy.release, mode='local')
     else:
         rss = marvin.tools.RSS(plateifu=galaxy.plateifu, release=galaxy.release, mode='remote')
-
+    rss.expdata = galaxy.rss
     yield rss
 
 
@@ -152,16 +152,16 @@ class TestRSS(object):
         if rss.data_origin == 'api':
             pytest.skip()
 
-        fibers_expnum = rss.select_fibers(exposure_no=198575)
-        assert len(fibers_expnum) == 19
-        assert fibers_expnum[0].obsinfo['EXPNUM'][0] == 198575
+        fibers_expnum = rss.select_fibers(exposure_no=rss.expdata['expnum'])
+        assert len(fibers_expnum) == rss.expdata['nfiber']
+        assert fibers_expnum[0].obsinfo['EXPNUM'][0] == rss.expdata['expnum']
 
         fibers_mjd = rss.select_fibers(mjd=1234)
         assert len(fibers_mjd) == 0
 
-        fibers_mjd = rss.select_fibers(mjd=57132)
-        assert len(fibers_mjd) == (9 * 19)
-        assert fibers_mjd[0].obsinfo['MJD'][0] == 57132
+        fibers_mjd = rss.select_fibers(mjd=rss.expdata['mjd'])
+        assert len(fibers_mjd) == (rss.expdata['nexp'] * rss.expdata['nfiber'])
+        assert fibers_mjd[0].obsinfo['MJD'][0] == rss.expdata['mjd']
 
 
 

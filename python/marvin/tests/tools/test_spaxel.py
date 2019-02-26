@@ -25,7 +25,7 @@ from marvin.tools.maps import Maps
 from marvin.tools.modelcube import ModelCube
 from marvin.tools.quantities import Spectrum
 from marvin.tools.spaxel import Spaxel
-
+from marvin.utils.datamodel.dap import Property
 
 spaxel_modes = [True, False, 'object']
 
@@ -287,6 +287,21 @@ class TestBinInfo(object):
             sp_bin = maps[sp.y, sp.x]
             assert sp_bin.stellar_vel.bin.binid == spaxel.stellar_vel.bin.binid
 
+    def test_hasbin(self):
+        maps = Maps(plateifu='8485-1901', release='MPL-6', bintype='HYB10')
+        spaxel = maps[22, 14]
+        sv = spaxel.stellar_vel
+        assert sv.bin is not None
+
+    def test_hasmap(self):
+        maps = Maps(plateifu='8485-1901', release='MPL-6', bintype='HYB10')
+        spaxel = maps[22, 14]
+        b = spaxel.stellar_vel.bin
+        assert isinstance(b._parent, Maps)
+        assert isinstance(b._datamodel, Property)
+        assert b._datamodel.name == 'stellar_vel'
+        assert b.binid_map is not None
+
 
 class TestPickling(object):
 
@@ -460,7 +475,8 @@ class TestCubeGetSpaxel(object):
 
         spaxel = cube.getSpaxel(**params)
         flux = spaxel.flux.value
-        assert flux[galaxy.spaxel['specidx']] == pytest.approx(galaxy.spaxel['flux'])
+        abs = 1.e-7
+        assert flux[galaxy.spaxel['specidx']] == pytest.approx(galaxy.spaxel['flux'], abs=abs)
 
     @pytest.mark.xfail  # This test fails in some cases
     @pytest.mark.parametrize('monkeyconfig',
@@ -510,10 +526,11 @@ class TestCubeGetSpaxel(object):
         spaxel_slice_file = cube_file[yy, xx]
         spaxel_slice_db = cube_db[yy, xx]
         spaxel_slice_api = cube_api[yy, xx]
+        abs = 1.e-7
 
-        assert spaxel_slice_file.flux.value[spec_idx] == pytest.approx(flux)
-        assert spaxel_slice_db.flux.value[spec_idx] == pytest.approx(flux)
-        assert spaxel_slice_api.flux.value[spec_idx] == pytest.approx(flux)
+        assert spaxel_slice_file.flux.value[spec_idx] == pytest.approx(flux, abs=abs)
+        assert spaxel_slice_db.flux.value[spec_idx] == pytest.approx(flux, abs=abs)
+        assert spaxel_slice_api.flux.value[spec_idx] == pytest.approx(flux, abs=abs)
 
         assert spaxel_slice_file.flux.ivar[spec_idx] == pytest.approx(ivar)
         assert spaxel_slice_db.flux.ivar[spec_idx] == pytest.approx(ivar)
@@ -639,7 +656,7 @@ class TestMapsGetSpaxel(object):
 
         maps = Maps(**self._get_maps_kwargs(galaxy, exporigin))
 
-        for old_arg in ['drp', 'properties', 'model', 'models']:
+        for old_arg in ['drp', 'model', 'models']:
 
             with pytest.raises(MarvinDeprecationError) as ee:
                 kwargs = {old_arg: True}

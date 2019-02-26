@@ -214,7 +214,6 @@ class ModelCube(MarvinToolsClass, NSAMixIn, DAPallMixIn, GetApertureMixIn):
         self.datamodel = datamodel[self._dapver].models
         self.bintype = self.datamodel.parent.get_bintype(self.header['BINKEY'].strip().upper())
         if check_versions(self._dapver, datamodel['MPL-8'].release):
-        #if parse_version(self._dapver) >= parse_version(datamodel['MPL-8'].release):
             tempkey = self.header['DAPTYPE'].split('-', 1)[-1]
         else:
             tempkey = self.header['SCKEY']
@@ -608,7 +607,10 @@ class ModelCube(MarvinToolsClass, NSAMixIn, DAPallMixIn, GetApertureMixIn):
         model = self.datamodel['emline_fit']
 
         emline_array = self._get_extension_data('emline_fit')
-        emline_mask = self._get_extension_data('emline_fit', 'mask')
+        if model.has_mask():
+            emline_mask = self._get_extension_data('emline_fit', 'mask')
+        else:
+            emline_mask = None
 
         return DataCube(emline_array,
                         np.array(self._wavelength),
@@ -623,18 +625,23 @@ class ModelCube(MarvinToolsClass, NSAMixIn, DAPallMixIn, GetApertureMixIn):
     def stellarcont_fit(self):
         """Returns the stellar continuum fit."""
 
-        array = (self._get_extension_data('full_fit') -
-                 self._get_extension_data('emline_fit') -
-                 self._get_extension_data('emline_base_fit'))
+        isMPL8 = check_versions(self._dapver, datamodel['MPL-8'].release)
 
-        model = self.datamodel['full_fit']
-
-        stellarcont_mask = self._get_extension_data('flux', 'mask')
+        if isMPL8:
+            array = self._get_extension_data('stellar_fit')
+            model = self.datamodel['stellar_fit']
+            mask = self._get_extension_data('stellar_fit', 'mask')
+        else:
+            array = (self._get_extension_data('full_fit') -
+                     self._get_extension_data('emline_fit') -
+                     self._get_extension_data('emline_base_fit'))
+            model = self.datamodel['full_fit']
+            mask = self._get_extension_data('flux', 'mask')
 
         return DataCube(array,
                         np.array(self._wavelength),
                         ivar=None,
-                        mask=stellarcont_mask,
+                        mask=mask,
                         redcorr=self._redcorr,
                         binid=self.get_binid(model),
                         unit=model.unit,
