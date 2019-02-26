@@ -11,7 +11,12 @@ What's New
 
 This section summarises the most important new features a bugfixes in Marvin. For the complete list of changes check the :ref:`marvin-changelog`.
 
-2.3.0 (unreleased)
+2.3.2 (February 2019)
+---------------------
+
+Marvin now includes MaNGA data from MPL-8 
+
+2.3.0 (December 2018)
 ------------------
 
 .. todo:: Fix link to authentication.
