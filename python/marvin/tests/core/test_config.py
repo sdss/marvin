@@ -284,13 +284,15 @@ def strjoin(str1, str2):
 class TestLogin(object):
 
     def test_login_fail(self, monkeypatch):
+        monkeypatch.setattr(config, 'token', None)
         assert config.token is None
         monkeypatch.setattr(config, 'access', 'public')
         with pytest.raises(AssertionError) as cm:
             config.login()
         assert 'You must have collaboration access to login.' in str(cm.value)
 
-    def test_login(self):
+    def test_login(self, monkeypatch):
+        monkeypatch.setattr(config, 'token', None)
         assert config.token is None
         config.login()
         assert config.token is not None

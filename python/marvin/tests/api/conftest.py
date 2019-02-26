@@ -27,13 +27,6 @@ def app():
     return app
 
 
-# @pytest.fixture(scope='session')
-# def init_api(urlmap):
-#     config.urlmap = urlmap
-#     config.forceDbOn()
-#     config.login()
-#
-
 @pytest.fixture()
 def urlmap(app):
     ''' fixture for building a new urlmap without nonsense '''
@@ -49,8 +42,8 @@ def init_api(monkeyauth, set_config, urlmap):
 
 class ApiPage(Page):
 
-    def __init__(self, client, blue, endpoint):
-        super(ApiPage, self).__init__(client, blue, endpoint)
+    def __init__(self, app, client, blue, endpoint):
+        super(ApiPage, self).__init__(app, client, blue, endpoint)
         self.api_base_success = dict(status=1, error=None, traceback=None)
 
     def assert_success(self, expdata=None, keys=None, issubset=None):
@@ -86,10 +79,12 @@ class ApiPage(Page):
 
 
 @pytest.fixture()
-def page(client, request, init_api):
+def page(app, client, request, init_api):
     blue, endpoint = request.param
-    page = ApiPage(client, 'api', endpoint)
+    page = ApiPage(app, client, 'api', endpoint)
     yield page
+    url = page.get_url('index_page', 'Marvin:clear_session')
+    page.load_page('get', url)
 
 
 @pytest.fixture()

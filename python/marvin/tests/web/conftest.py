@@ -25,17 +25,12 @@ except ImportError:
     from urlparse import urlparse, urljoin
 
 
-@pytest.fixture(scope='session', name="app")
+@pytest.fixture(scope='session')
 def app():
     object_config = type('Config', (TestConfig, CustomConfig), dict())
     app = create_app(debug=True, local=True, object_config=object_config)
     limiter.enabled = False
     return app
-
-
-# @pytest.fixture(scope='session')
-# def app_config(app):
-#     yield app.config
 
 
 def test_db_stuff():

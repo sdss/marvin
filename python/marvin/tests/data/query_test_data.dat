@@ -109,6 +109,20 @@ MPL-7:
             count: 41
             subset: ['nsa.z', 'cube.ra', 'cube.dec', 'spaxelprop.emline_gflux_ha_6564', 'spaxelprop.x']
     defaults: ['cube.mangaid', 'cube.plateifu']
+    queries:
+        nsa.z < 0.1:
+            count: 2
+            top5:
+                [['1-209232', '8485-1901', 0.0407447],
+                 ['12-98126', '7443-12701', 0.020478]]
+            sorted:
+                '1': ['12-98126', '7443-12701', 0.020478]
+                '2': ['1-209232', '8485-1901', 0.0407447]
+                'last': ['1-209232', '8485-1901', 0.0407447]
+            row: ['1-209232', '8485-1901', 0.0407447]
+
+        absmag_g_r > -1:
+            count: 2
 MPL-8:
     params:
         all:
@@ -118,3 +132,17 @@ MPL-8:
             count: 41
             subset: ['nsa.z', 'cube.ra', 'cube.dec', 'spaxelprop.emline_gflux_ha_6564', 'spaxelprop.x']
     defaults: ['cube.mangaid', 'cube.plateifu']
+    queries:
+        nsa.z < 0.1:
+            count: 2
+            top5:
+                [['1-209232', '8485-1901', 0.0407447],
+                 ['12-98126', '7443-12701', 0.020478]]
+            sorted:
+                '1': ['12-98126', '7443-12701', 0.020478]
+                '2': ['1-209232', '8485-1901', 0.0407447]
+                'last': ['1-209232', '8485-1901', 0.0407447]
+            row: ['1-209232', '8485-1901', 0.0407447]
+
+        absmag_g_r > -1:
+            count: 2

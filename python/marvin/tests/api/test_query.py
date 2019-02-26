@@ -56,6 +56,7 @@ class TestQueryView(object):
 @pytest.mark.parametrize('page', [('api', 'querycubes')], ids=['querycubes'], indirect=True)
 class TestQueryCubes(object):
 
+    @pytest.mark.xfail(reason='something wrong with the teardown of this test')
     @pytest.mark.parametrize('reqtype', [('get'), ('post')])
     @pytest.mark.parametrize('searchfilter', [('nsa.z < 0.1')])
     def test_query_success(self, page, params, reqtype, searchfilter, data):
