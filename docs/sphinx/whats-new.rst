@@ -14,7 +14,28 @@ This section summarises the most important new features a bugfixes in Marvin. Fo
 2.3.2 (February 2019)
 ---------------------
 
-Marvin now includes MaNGA data from MPL-8 
+Support for MPL-8.  MPL-8 includes several changes to the DAP Datamodel.  
+Please see the :ref:`MPL-8 DataModel<datamodel-mpl8>` and the `MPL-8 TRM <https://trac.sdss.org/wiki/MANGA/TRM/TRM_MPL-8/DAPDataModel>`_ page (SDSS collaboration access required).  In summary, the changes include:
+
+- The stellar template is now `MILESHC-MILESHC`, indicating the template used for the stellar kinematics fitting and the emission-lines, respectively.
+- Changes to ModelCubes
+
+    - Removed `emline_base_fit` Model
+    - New `stellar_fit` Model
+
+- Changes to Maps
+
+    - The `stellar_sigmacorr` now has two channels.
+    - New `stellar_fom` multi-channel property.  This property contains figure-of-merit metrics for the stellar kinematics.
+    - Moved `stellar_cont_fresid` and `stellar_cont_rchi2` into the stellar_fom property.
+    - Three new emission-lines: `HeI 3889`, `NI 5199`, `NI 5201`
+    - New `emline_ga` multi-channel property; the amplitude of the fitted Gaussian  
+    - New `emline_ganr` multi-channel property; the amplitude/noise of the fitted Gaussian  
+    - New `emline_fom` multi-channel property; full spectrum figure-of-merits for the emission lines 
+    - New `emline_lfom` multi-channel property; reduced chi-square figure-of-merits for the emission lines 
+
+- The DRPall file now has two data extensions, **MANGA**, and **MASTAR**.  The MANGA extension contains all MaNGA-lead galaxy observations.  The MASTAR extension contains all mini-bundles and MaStar (APOGEE-lead) targets of observation.  Marvin currently does not support MaStar observations.
+
 
 2.3.0 (December 2018)
 ------------------
