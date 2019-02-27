@@ -85,13 +85,6 @@ The old image utility functions documented :ref:`here <marvin-images>` remain bu
 2.2.6 (August 2018)
 -------------------
 
-=======
-What's new in Marvin
-====================
-
-2.2.6 (August 2018)
--------------------
-
 .. attention:: This is a critical bugfix release that corrects a problem that could affect your science results. Please update as soon as possible and check whether your analysis has been impacted by this bug.
 
 This version fixes a critical bug when retrieving the spaxels associated with a bin, as well as a problem with the calculation of the inverse variance for deredden datacubes. It also simplifies the library namespace allowing for easier access to the most used Tools.
