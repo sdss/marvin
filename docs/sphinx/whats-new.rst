@@ -23,7 +23,6 @@ Please see the :ref:`MPL-8 DataModel<datamodel-mpl8>` and the `MPL-8 TRM <https:
 
     - Removed `emline_base_fit` Model
     - New `stellar_fit` Model
-
 - Changes to Maps
 
     - The `stellar_sigmacorr` now has two channels.
