@@ -12,7 +12,8 @@ Fixed
 ^^^^^
 - Issue :issue:`629` - web table of search results broken
 - Issue :issue:`627` - web query displaying error message
-- Isseu :issue:`630` - broken web links on query page
+- Issue :issue:`630` - broken web links on query page
+- Issue :issue:`591` - broken query streaming return all results 
 
 [2.3.1] - 2018/12/10
 --------------------
