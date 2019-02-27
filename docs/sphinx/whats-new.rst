@@ -18,6 +18,7 @@ Support for MPL-8.  MPL-8 includes several changes to the DAP Datamodel.
 Please see the :ref:`MPL-8 DataModel<datamodel-mpl8>` and the `MPL-8 TRM <https://trac.sdss.org/wiki/MANGA/TRM/TRM_MPL-8/DAPDataModel>`_ page (SDSS collaboration access required).  In summary, the changes include:
 
 - The stellar template is now `MILESHC-MILESHC`, indicating the template used for the stellar kinematics fitting and the emission-lines, respectively.
+- The binning types now include `SPX`, in addition to `HYB10` and `VOR10`.  `HYB10` is still the default bintype.
 - Changes to ModelCubes
 
     - Removed `emline_base_fit` Model
