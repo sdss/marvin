@@ -549,24 +549,13 @@ class MarvinConfig(object):
                 else:
                     domain = re.sub(r'(dr[0-9]{1,2})', self._release.lower(), domain)
             else:
-                domain = test_domain if test else bconfig.collab_api_url
+                domain = test_domain + 'test/' if test else bconfig.collab_api_url
 
             url = os.path.join(domain)
             self.sasurl = url
 
             # get a new urlmap (need to do for vetting)
             self._urlmap = None
-            #__ = self.urlmap
-
-            # marvin_base = 'test/{0}/'.format(base) if test else '{0}/'.format(base)
-            # if public:
-            #     base_url = re.sub(r'(dr[0-9]{1,2})', self._release.lower(), bconfig.public_api_url)
-            #     public_api = os.path.join(base_url, marvin_base)
-            #     self.sasurl = public_api
-            #     self._authtype = None
-            # else:
-            #     self.sasurl = os.path.join(bconfig.collab_api_url, marvin_base)
-            #     self._authtype = 'token'
 
     def forceDbOff(self):
         ''' Force the database to be turned off '''
