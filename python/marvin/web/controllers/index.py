@@ -1,3 +1,5 @@
+import time
+import numpy as np
 from flask import current_app, Blueprint, render_template, jsonify
 from flask import session as current_session, request, redirect, url_for
 from flask_classful import route
@@ -40,6 +42,7 @@ class Marvin(BaseWebView):
 
     @route('/test/')
     def test(self):
+        time.sleep(np.random.randint(0, 80))
         return 'new test'
 
     @route('/versions/')

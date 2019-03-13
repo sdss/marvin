@@ -225,6 +225,16 @@ class QueryView(BaseView):
 
         return Response(stream_with_context(gen(q.query, compression=compression, params=q.params)), mimetype='application/{0}'.format(mimetype))
 
+    @route('/test/', methods=['GET', 'POST'], endpoint='querytest')
+    @av.check_args(use_params='query')
+    def test(self, args):
+        import time
+        t = args.pop('start', 10)
+        time.sleep(t)
+        self.results['status'] = 1
+        self.results['data'] = ['this is a test']
+        return jsonify(self.results)
+
     @route('/cubes/', methods=['GET', 'POST'], endpoint='querycubes')
     @av.check_args(use_params='query', required='searchfilter')
     def cube_query(self, args):
