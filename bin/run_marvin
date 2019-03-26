@@ -49,4 +49,4 @@ if __name__ == "__main__":
         # Ref: http://support.apple.com/kb/TS4639
         app.run(debug=args.debug, port=args.port)
     else:
-        app.run()
+        app.run(port=args.port)
