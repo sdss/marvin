@@ -319,7 +319,7 @@ class MMAMixIn(object, six.with_metaclass(abc.ABCMeta)):
             access.add(pathType, **pathParams)
             access.set_stream()
             access.commit()
-            paths = rsync_access.get_paths()
+            paths = access.get_paths()
             # adding a millisecond pause for download to finish and file existence to register
             time.sleep(0.001)
 
