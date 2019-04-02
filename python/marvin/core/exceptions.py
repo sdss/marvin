@@ -14,8 +14,11 @@ from __future__ import division, print_function
 
 import os
 import platform
-if platform.system() != 'Windows': import pwd
-else: pwd = None
+from sdss_access import is_posix
+if is_posix:
+    import pwd
+else:
+    pwd = None
 import sys
 import warnings
 
@@ -47,7 +50,7 @@ class MarvinSentry(object):
                 )
             )
             try:                                                    
-                if pwd:
+                if is_posix:
                     self.client.context.merge({'user': {'name': pwd.getpwuid(os.getuid())[0],
                                                         'system': '_'.join(os.uname())}})
                 else:

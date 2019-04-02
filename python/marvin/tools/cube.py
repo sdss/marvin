@@ -27,6 +27,7 @@ from marvin.core.exceptions import MarvinError, MarvinUserWarning
 from marvin.tools.quantities import DataCube, Spectrum
 from marvin.utils.datamodel.drp import datamodel
 from marvin.utils.general import FuzzyDict, get_nsa_data, gunzip
+import platform
 
 from .core import MarvinToolsClass
 from .mixins import GetApertureMixIn, NSAMixIn
@@ -177,8 +178,7 @@ class Cube(MarvinToolsClass, NSAMixIn, GetApertureMixIn):
             assert isinstance(data, fits.HDUList), 'data is not an HDUList object'
         else:
             try:
-                with gunzip(self.filename) as gg:
-                    self.data = fits.open(gg.name)
+                self.data = fits.open(self.filename)
             except (IOError, OSError) as err:
                 raise OSError('filename {0} cannot be found: {1}'.format(self.filename, err))
 
