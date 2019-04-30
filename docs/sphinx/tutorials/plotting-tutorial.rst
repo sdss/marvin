@@ -137,11 +137,12 @@ This code produces the right panel of Figure 1 from the `Marvin paper
     stsig = maps.stellar_sigma
     stsig_corr = stsig.inst_sigma_correction()
 
-    fig, axes = plt.subplots(nrows=2, ncols=2, figsize=(12, 11))
-    halpha.plot(fig=fig, ax=axes[0, 0])
-    nii_ha.plot(fig=fig, ax=axes[0, 1], title="log([NII]6585 / H-alpha)", snr_min=None)
-    stvel.plot(fig=fig, ax=axes[1, 0])
-    stsig_corr.plot(fig=fig, ax=axes[1, 1])
+    with plt.style.context('seaborn-darkgrid'):
+        fig, axes = plt.subplots(nrows=2, ncols=2, figsize=(12, 11))
+        halpha.plot(fig=fig, ax=axes[0, 0])
+        nii_ha.plot(fig=fig, ax=axes[0, 1], title="log([NII]6585 / H-alpha)", snr_min=None)
+        stvel.plot(fig=fig, ax=axes[1, 0])
+        stsig_corr.plot(fig=fig, ax=axes[1, 1])
 
 
 .. _marvin-plotting-multipanel-multiple:
