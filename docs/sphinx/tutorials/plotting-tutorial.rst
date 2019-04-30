@@ -129,7 +129,7 @@ This code produces the right panel of Figure 1 from the `Marvin paper
     import numpy as np
     from marvin.tools import Maps
 
-    maps = Maps("7977-12705")
+    maps = Maps('7977-12705')
 
     halpha = maps.emline_gflux_ha_6564
     nii_ha = np.log10(maps.emline_gflux_nii_6585 / halpha)
