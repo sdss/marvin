@@ -144,8 +144,6 @@ This code produces the right panel of Figure 1 from the `Marvin paper
         stvel.plot(fig=fig, ax=axes[1, 0])
         stsig_corr.plot(fig=fig, ax=axes[1, 1])
 
-        fig.tight_layout()
-
 
 .. _marvin-plotting-multipanel-multiple:
 
