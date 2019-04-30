@@ -144,6 +144,8 @@ This code produces the right panel of Figure 1 from the `Marvin paper
         stvel.plot(fig=fig, ax=axes[1, 0])
         stsig_corr.plot(fig=fig, ax=axes[1, 1])
 
+        fig.tight_layout()
+
 
 .. _marvin-plotting-multipanel-multiple:
 
@@ -161,15 +163,16 @@ Multi-panel Map Plot (Multiple Galaxies)
     plateifus = ['8485-1901', '7443-12701']
     mapnames = ['stellar_vel', 'stellar_sigma']
 
-    rows = len(plateifus)
-    cols = len(mapnames)
-    fig, axes = plt.subplots(rows, cols, figsize=(8, 6))
-    for row, plateifu in zip(axes, plateifus):
-        maps = Maps(plateifu=plateifu)
-        for ax, mapname in zip(row, mapnames):
-            mapplot.plot(dapmap=maps[mapname], fig=fig, ax=ax, title=' '.join((plateifu, mapname)))
+    with plt.style.context('seaborn-darkgrid'):
+        rows = len(plateifus)
+        cols = len(mapnames)
+        fig, axes = plt.subplots(rows, cols, figsize=(8, 6))
+        for row, plateifu in zip(axes, plateifus):
+            maps = Maps(plateifu=plateifu)
+            for ax, mapname in zip(row, mapnames):
+                mapplot.plot(dapmap=maps[mapname], fig=fig, ax=ax, title=' '.join((plateifu, mapname)))
 
-    fig.tight_layout()
+        fig.tight_layout()
 
 
 .. _marvin-plotting-zoom-in:
