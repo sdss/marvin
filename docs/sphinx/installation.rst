@@ -239,6 +239,23 @@ If the above test crashes, or you attempt to use a Marvin Tool remotely, and you
 This is an issue with the Urllib and Requests python package.  See `this Issue <https://github.com/sdss/marvin/issues/102>`_ for an
 ongoing discussion if this problem has been solved.
 
+Lots of Warnings Upon import
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+If you see lots of warnings upon import of marvin, from `/_bootstrap.py` and referencing `numpy.ufunc size changed, 
+may indicate binary incompatibility`, such as 
+::
+
+    import marvin
+    /anaconda3/envs/marvin_public/lib/python3.6/importlib/_bootstrap.py:219: RuntimeWarning: numpy.ufunc size changed, may indicate binary incompatibility. Expected 192 from C header, got 216 from PyObject
+      return f(*args, **kwds)
+    /anaconda3/envs/marvin_public/lib/python3.6/importlib/_bootstrap.py:219: RuntimeWarning: numpy.ufunc size changed, may indicate binary incompatibility. Expected 192 from C header, got 216 from PyObject
+      return f(*args, **kwds)
+
+this arises when a Python package that uses Cython is compiled against a different version of numpy than is 
+actually installed.  See 
+`this article <https://stackoverflow.com/questions/40845304/runtimewarning-numpy-dtype-size-changed-may-indicate-binary-incompatibility>`_ 
+for more information.  The consensus is that these warnings are fairly harmless and benign.   
 
 Matplotlib backend problems
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
