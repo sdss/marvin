@@ -16,6 +16,7 @@ import os
 
 import pytest
 import six
+import astropy.units as u
 from astropy.io import fits
 from astropy.wcs import WCS
 
@@ -107,6 +108,20 @@ class TestModelCube(object):
     def test_get_cube_file(self, galaxy):
         model_cube = ModelCube(filename=galaxy.modelpath)
         assert isinstance(model_cube.getCube(), Cube)
+
+    def test_get_cube_units(self, galaxy):
+        model_cube = ModelCube(filename=galaxy.modelpath)
+        unit = '1E-17 erg/s/cm^2/ang/spaxel'
+        fileunit = model_cube.data['EMLINE'].header['BUNIT']
+        assert unit == fileunit
+
+        unit = fileunit.replace('ang', 'angstrom').split('/spaxel')[0]
+        spaxel = u.Unit('spaxel', represents=u.pixel,
+                        doc='A spectral pixel', parse_strict='silent')
+        newunit = (u.Unit(unit) / spaxel)
+        #unit = '1e-17 erg / (Angstrom cm2 s spaxel)'
+        dmunit = model_cube.emline_fit.unit
+        assert newunit == dmunit
 
     def test_get_maps_api(self, galaxy):
         model_cube = ModelCube(plateifu=galaxy.plateifu, mode='remote')

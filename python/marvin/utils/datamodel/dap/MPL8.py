@@ -7,7 +7,7 @@
 # Created: Friday, 8th February 2019 2:10:30 pm
 # License: BSD 3-clause "New" or "Revised" License
 # Copyright (c) 2019 Brian Cherinka
-# Last Modified: Monday, 11th February 2019 1:23:52 pm
+# Last Modified: Thursday, 2nd May 2019 12:34:58 pm
 # Modified By: Brian Cherinka
 
 
@@ -185,25 +185,25 @@ MPL8_maps += emline_props + new_properties
 # Update Model Properties
 MPL8_models = [
     Model('binned_flux', 'FLUX', 'WAVE', extension_ivar='IVAR',
-          extension_mask='MASK', unit=u.erg / u.s / (u.cm ** 2) / spaxel_unit,
+          extension_mask='MASK', unit=u.erg / u.s / (u.cm ** 2) / u.Angstrom / spaxel_unit,
           scale=1e-17, formats={'string': 'Binned flux'},
           description='Flux of the binned spectra',
           binid=binid_properties[0]),
     Model('full_fit', 'MODEL', 'WAVE', extension_ivar=None,
-          extension_mask='MODEL_MASK', unit=u.erg / u.s / (u.cm ** 2) / spaxel_unit,
+          extension_mask='MODEL_MASK', unit=u.erg / u.s / (u.cm ** 2) / u.Angstrom / spaxel_unit,
           scale=1e-17, formats={'string': 'Best fitting model'},
           description='The best fitting model spectra (sum of the fitted '
                       'continuum and emission-line models)',
           binid=binid_properties[0]),
     Model('emline_fit', 'EMLINE', 'WAVE', extension_ivar=None,
           extension_mask=None,
-          unit=u.erg / u.s / (u.cm ** 2) / spaxel_unit,
+          unit=u.erg / u.s / (u.cm ** 2) / u.Angstrom / spaxel_unit,
           scale=1e-17, formats={'string': 'Emission line model spectrum'},
           description='The model spectrum with only the emission lines.',
           binid=binid_properties[3]),
     Model('stellar_fit', 'STELLAR', 'WAVE', extension_ivar=None,
           extension_mask='STELLAR_MASK',
-          unit=u.erg / u.s / (u.cm ** 2) / spaxel_unit,
+          unit=u.erg / u.s / (u.cm ** 2) / u.Angstrom / spaxel_unit,
           scale=1e-17, formats={'string': 'Stellar continuum model spectrum'},
           description='The model spectrum with only the stellar continuum',
           binid=binid_properties[1])

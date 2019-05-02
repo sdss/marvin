@@ -4,6 +4,11 @@ Marvin's Change Log
 [2.3.3] - unreleased
 --------------------
 
+Fixed
+^^^^^
+- Issue :issue:`658` - modelcube datamodel units missing angstrom
+
+
 [2.3.2] - 2019/02/27
 --------------------
 
