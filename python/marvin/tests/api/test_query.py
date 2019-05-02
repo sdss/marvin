@@ -12,6 +12,7 @@ from __future__ import print_function, division, absolute_import
 from marvin.tests.api.conftest import ApiPage
 from marvin.tools.query import Query
 from marvin.utils.datamodel.query.base import bestparams
+from brain.utils.general import get_yaml_loader
 import pytest
 import yaml
 import os
@@ -22,7 +23,7 @@ import os
 #     page = ApiPage(client, 'api', endpoint)
 #     yield page
 
-query_data = yaml.load(open(os.path.abspath(os.path.join(os.path.dirname(__file__), '../data/query_test_data.dat'))))
+query_data = yaml.load(open(os.path.abspath(os.path.join(os.path.dirname(__file__), '../data/query_test_data.dat'))), Loader=get_yaml_loader())
 
 
 @pytest.fixture()

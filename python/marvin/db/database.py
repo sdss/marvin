@@ -11,6 +11,7 @@ import os
 import yaml
 from marvin import config
 from marvin.db.DatabaseConnection import DatabaseConnection
+from brain.utils.general import get_yaml_loader
 from pgpasslib import getpass
 
 
@@ -24,7 +25,7 @@ try:
 
 except IOError as e:
     raise RuntimeError('IOError: Could not open dbconfigfile {0}:{1}'.format(dbconfigfile, e))
-dbdict = yaml.load(rawfile)
+dbdict = yaml.load(rawfile, Loader=get_yaml_loader())
 
 # select the appropriate configuration from config
 if config.db:

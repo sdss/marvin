@@ -4,9 +4,14 @@ Marvin's Change Log
 [2.3.3] - unreleased
 --------------------
 
+Changed
+^^^^^^^
+- all yaml.load uses new Loader to accommodate old and new yaml spec;
+
 Fixed
 ^^^^^
 - Issue :issue:`658` - modelcube datamodel units missing angstrom
+- Issue :issue:`655` - added yaml loader to remove yaml warnings for 5.1 spec
 
 
 [2.3.2] - 2019/02/27

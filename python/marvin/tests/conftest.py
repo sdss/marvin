@@ -29,6 +29,7 @@ from marvin.tools.modelcube import ModelCube
 from marvin.tools.query import Query
 from marvin.utils.datamodel.dap import datamodel
 from marvin.utils.general import check_versions
+from brain.utils.general import get_yaml_loader
 
 warnings.simplefilter('always')
 
@@ -122,9 +123,9 @@ origins = ['file', 'db', 'api']         # to loop over data origins (see data_or
 
 # Galaxy and Query data is stored in a YAML file
 with open(os.path.join(os.path.dirname(__file__), 'data/galaxy_test_data.dat')) as f:
-    galaxy_data = yaml.load(f)
+    galaxy_data = yaml.load(f, Loader=get_yaml_loader())
 with open(os.path.join(os.path.dirname(__file__), 'data/query_test_data.dat')) as f:
-    query_data = yaml.load(f)
+    query_data = yaml.load(f, Loader=get_yaml_loader())
 
 
 @pytest.fixture(scope='session', params=releases)
