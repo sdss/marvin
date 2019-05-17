@@ -7,7 +7,7 @@
 # Created: Friday, 8th February 2019 2:10:30 pm
 # License: BSD 3-clause "New" or "Revised" License
 # Copyright (c) 2019 Brian Cherinka
-# Last Modified: Thursday, 2nd May 2019 12:34:58 pm
+# Last Modified: Friday, 17th May 2019 2:42:07 pm
 # Modified By: Brian Cherinka
 
 
@@ -68,11 +68,11 @@ fom_channels = [
 # new emission line channels
 new_channels = [
     Channel('hei_3889', formats={'string': 'HeI 3889',
-                                 'latex': r'$\forb{He\,I\]\;\lambda 3889$'}, idx=22),
+                                 'latex': r'$\forb{He\,I}\;\lambda 3889$'}, idx=22),
     Channel('ni_5199', formats={'string': 'NI 5199',
-                                'latex': r'$\forb{N\,I\]\;\lambda 5199$'}, idx=23),
+                                'latex': r'$\forb{N\,I}\;\lambda 5199$'}, idx=23),
     Channel('ni_5201', formats={'string': 'NI 5201',
-                                'latex': r'$\forb{N\,I\]\;\lambda 5201$'}, idx=24),
+                                'latex': r'$\forb{N\,I}\;\lambda 5201$'}, idx=24),
 ]
 
 MPL8_emline_channels = copy.deepcopy(MPL6_emline_channels) + new_channels

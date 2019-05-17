@@ -75,7 +75,7 @@ MPL6_emline_channels = [
     Channel('sii_6718', formats={'string': 'SII 6718',
                                  'latex': r'$\forb{S\,II}\;\lambda 6718$'}, idx=20),
     Channel('sii_6732', formats={'string': 'SII 6732',
-                                 'latex': r'$\forb{S\,II\]\;\lambda 6732$'}, idx=21)
+                                 'latex': r'$\forb{S\,II}\;\lambda 6732$'}, idx=21)
 ]
 
 
