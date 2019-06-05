@@ -13,6 +13,7 @@ Fixed
 ^^^^^
 - Issue :issue:`658` - modelcube datamodel units missing angstrom
 - Issue :issue:`655` - added yaml loader to remove yaml warnings for 5.1 spec
+- Fixed bug when server tries to access NSA on cube when none exists and triggers remote authentication issue
 
 
 [2.3.2] - 2019/02/27
