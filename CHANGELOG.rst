@@ -8,6 +8,7 @@ Changed
 ^^^^^^^
 - all yaml.load uses new Loader to accommodate old and new yaml spec;
 - updated Runtime Issues documentation to include section on numpy.ufunc binary warnings
+- added to reprs for some db ModelClasses 
 
 Fixed
 ^^^^^
