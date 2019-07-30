@@ -54,16 +54,54 @@ class GEMAVAC(VACMixIn):
         path_params = {'ver': self.version[release]}
 
         # get_path returns False if the files do not exist locally
-        allfile = self.get_path('mangagematab', path_params=path_params)
+        allfile = self.get_path('mangagema', path_params=path_params)
 
         # download the vac from the SAS if it does not already exist locally
         if not allfile:
-            allfile = self.download_vac('mangagematab', path_params=path_params)
+            allfile = self.download_vac('mangagema', path_params=path_params)
 
         # create container for more complex return data
         gemadata = GEMAData(allfile=allfile)
 
         return gemadata
+
+class HIData(object):
+    ''' A customized class to handle more complex data
+
+    This class handles data from both the HI summary file and the
+    individual HI spectral files.  Row data from the summary file
+    is returned via the `data` property.  Spectral data can be plotted via
+    the `plot_spectrum` method.
+
+    '''
+
+    def __init__(self, plateifu, allfile=None, specfile=None):
+        self._allfile = allfile
+        self._specfile = specfile
+        self._plateifu = plateifu
+        self._hi_data = self._open_file(allfile)
+        self._indata = plateifu in self._hi_data['plateifu']
+        self._specdata = None
+
+    def __repr__(self):
+        return 'HI({0})'.format(self._plateifu)
+
+    @staticmethod
+    def _open_file(hifile):
+        return astropy.io.fits.getdata(hifile, 1)
+
+    @property
+    def data(self):
+        ''' Returns the FITS row data from the mangaHIall summary file '''
+
+        if not self._indata:
+            return "No HI data exists for {0}".format(self._plateifu)
+
+        idx = self._hi_data['plateifu'] == self._plateifu
+        return self._hi_data[idx]
+
+
+
 
 
 
