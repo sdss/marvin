@@ -51,7 +51,7 @@ class GEMAVAC(VACMixIn):
         mangaid = parent_object.mangaid
 
         # define the variables to build a unique path to your VAC file
-        path_params = {'ver': self.version[release], 'table': 'all'}
+        path_params = {'ver': self.version[release]}
 
         # get_path returns False if the files do not exist locally
         allfile = self.get_path('mangagematab', path_params=path_params)
