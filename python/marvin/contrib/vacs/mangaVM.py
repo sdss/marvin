@@ -84,7 +84,7 @@ class VMORPHOVAC(VACMixIn):
         def show_mosaic(self):
             ''' Show the mosaic '''
 
-            img = mpimg.imread(sdss_img)
+            img = mpimg.imread(desi_img)
             plt.imshow(img)
 
 
