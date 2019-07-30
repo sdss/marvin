@@ -44,8 +44,8 @@ class VMORPHOVAC(VACMixIn):
                'DR15': '1.0.1'}
 
     # optional Marvin Tools to attach your vac to
-    include = (marvin.tools.cube.Cube)
-    #           marvin.tools.maps.Maps,
+    include = (marvin.tools.cube.Cube,
+               marvin.tools.maps.Maps)
     #           marvin.tools.modelcube.ModelCube)
 
     # Required method
@@ -61,66 +61,31 @@ class VMORPHOVAC(VACMixIn):
 
         # get_path returns False if the files do not exist locally
         allfile = self.get_path('mangaVmorpho', path_params=path_params)
-        mosaicfile = self.get_path('mangaVmorphoImgs', path_params=path_params)
-        
-        #sdss_img = self.get_path('mangaVmorphoImgs', path_params=path_params.update({’survey’:’sdss'}))
-        #desi_img = self.get_path('mangaVmorphoImgs', path_params=path_params.update({’survey’:’desi'}))
+        sdss_img = self.get_path('mangaVmorphoImgs', path_params=path_params.update({'survey':'sdss'}))
+        desi_img = self.get_path('mangaVmorphoImgs', path_params=path_params.update({'survey':'desi'}))
 
         # download the vac from the SAS if it does not already exist locally
         if not allfile:
             allfile = self.download_vac('mangaVmorpho', path_params=path_params)
 
-        # create container for more complex return data
-        hidata = HIData(plateifu, allfile=allfile, mosaicfile=mosaicfile)
+        # download the vac from the SAS if it does not already exist locally
+        if not sdss_img or not desi_img:
+            sdss_img = self.download_vac('mangaVmorpho', path_params=path_params.update({'survey':'sdss'}))
+            desi_img = self.download_vac('mangaVmorpho', path_params=path_params.update({'survey':'desi'}))
+                                                                                
+        alldata = astropy.io.fits.getdata(allfile,1)
+                                                                                        
+        def data(self):
+            idx = alldata['plateifu']
+            return alldata[idx]
 
-        # get the mosaic data for that row if it exists
-        if hidata._indata and not mosaicfile:
-            hidata._mosaicfile = self.download_vac('mangaVmorphoImgs', path_params=path_params)
 
-        return hidata
+        def show_mosaic(self):
+        ''' Show the mosaic '''
+
+            img = mpimg.imread(sdss_img)
+            plt.imshow(img)
 
 
-class HIData(object):
-    ''' A customized class to handle more complex data
 
-    This class handles data from both the HI summary file and the
-    individual HI spectral files.  Row data from the summary file
-    is returned via the `data` property.  Spectral data can be plotted via
-    the `plot_spectrum` method.
 
-    '''
-
-    def __init__(self, plateifu, allfile=None, mosaicfile=None):
-        self._allfile = allfile
-        self._mosaicfile = mosaicfile
-        self._plateifu = plateifu
-        self._hi_data = self._open_file(allfile)
-        self._indata = plateifu in self._hi_data['plateifu']
-    #        self._specdata = None
-
-    def __repr__(self):
-        return 'HI({0})'.format(self._plateifu)
-
-#    @staticmethod
-#    def _open_file(hifile):
-#        return astropy.io.fits.getdata(hifile, 1)
-
-#    @property
-#    def data(self):
-#        ''' Returns the FITS row data from the mangaHIall summary file '''
-#
-#        if not self._indata:
-#            return "No HI data exists for {0}".format(self._plateifu)
-#
-#        idx = self._hi_data['plateifu'] == self._plateifu
-#        return self._hi_data[idx]
-
-    def plot_mosaic(self):
-        ''' Plot the mosaic '''
-
-        if self._mosaicfile:
-
-            img = mpimg.imread(self._mosaicfile)
-            ax = plt.imshow(img)
-            return ax
-        return None
