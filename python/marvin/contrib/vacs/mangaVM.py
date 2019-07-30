@@ -43,8 +43,8 @@ class VMORPHOVAC(VACMixIn):
     version = {'MPL-7': '1.0.1',
                'DR15': '1.0.1'}
 
-    ## optional Marvin Tools to attach your vac to
-    #    include = (marvin.tools.cube.Cube,
+    # optional Marvin Tools to attach your vac to
+    include = (marvin.tools.image.Image)
     #           marvin.tools.maps.Maps,
     #           marvin.tools.modelcube.ModelCube)
 
@@ -57,11 +57,14 @@ class VMORPHOVAC(VACMixIn):
 
         # define the variables to build a unique path to your VAC file
         path_params = {'vmver': self.version[release],
-                       'plateifu': plateifu, 'survey': sdss}
+                       'plateifu': plateifu, 'survey': '*'}
 
         # get_path returns False if the files do not exist locally
         allfile = self.get_path('mangaVmorpho', path_params=path_params)
         mosaicfile = self.get_path('mangaVmorphoImgs', path_params=path_params)
+        
+        #sdss_img = self.get_path('mangaVmorphoImgs', path_params=path_params.update({’survey’:’sdss'}))
+        #desi_img = self.get_path('mangaVmorphoImgs', path_params=path_params.update({’survey’:’desi'}))
 
         # download the vac from the SAS if it does not already exist locally
         if not allfile:
