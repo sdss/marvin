@@ -44,7 +44,7 @@ class VMORPHOVAC(VACMixIn):
                'DR15': '1.0.1'}
 
     # optional Marvin Tools to attach your vac to
-    include = (marvin.tools.image.Image)
+    include = (marvin.tools.cube.Cube)
     #           marvin.tools.maps.Maps,
     #           marvin.tools.modelcube.ModelCube)
 
