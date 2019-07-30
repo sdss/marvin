@@ -47,9 +47,6 @@ class GEMAVAC(VACMixIn):
     # Required method
     def get_data(self, parent_object):
 
-        # get any parameters you need from the parent object
-        mangaid = parent_object.mangaid
-
         # define the variables to build a unique path to your VAC file
         path_params = {'ver': self.version[release]}
 
@@ -60,45 +57,9 @@ class GEMAVAC(VACMixIn):
         if not allfile:
             allfile = self.download_vac('mangagema', path_params=path_params)
 
-        # create container for more complex return data
-        gemadata = GEMAData(allfile=allfile)
+        return allfile
 
-        return gemadata
 
-class HIData(object):
-    ''' A customized class to handle more complex data
-
-    This class handles data from both the HI summary file and the
-    individual HI spectral files.  Row data from the summary file
-    is returned via the `data` property.  Spectral data can be plotted via
-    the `plot_spectrum` method.
-
-    '''
-
-    def __init__(self, plateifu, allfile=None, specfile=None):
-        self._allfile = allfile
-        self._specfile = specfile
-        self._plateifu = plateifu
-        self._hi_data = self._open_file(allfile)
-        self._indata = plateifu in self._hi_data['plateifu']
-        self._specdata = None
-
-    def __repr__(self):
-        return 'HI({0})'.format(self._plateifu)
-
-    @staticmethod
-    def _open_file(hifile):
-        return astropy.io.fits.getdata(hifile, 1)
-
-    @property
-    def data(self):
-        ''' Returns the FITS row data from the mangaHIall summary file '''
-
-        if not self._indata:
-            return "No HI data exists for {0}".format(self._plateifu)
-
-        idx = self._hi_data['plateifu'] == self._plateifu
-        return self._hi_data[idx]
 
 
 
