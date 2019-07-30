@@ -76,12 +76,13 @@ class VMORPHOVAC(VACMixIn):
         alldata = astropy.io.fits.getdata(allfile,1)
                                                                                         
         def data(self):
-            idx = alldata['plateifu']
+            ''' Returns the FITS row data from the manga_visual_morpho-1.0.1.fits file '''
+            idx = alldata['plateifu'] == plateifu
             return alldata[idx]
 
 
         def show_mosaic(self):
-        ''' Show the mosaic '''
+            ''' Show the mosaic '''
 
             img = mpimg.imread(sdss_img)
             plt.imshow(img)
