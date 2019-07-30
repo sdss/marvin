@@ -70,7 +70,7 @@ class VMORPHOVAC(VACMixIn):
         # create container for more complex return data
         hidata = HIData(plateifu, allfile=allfile, mosaicfile=mosaicfile)
 
-        # get the spectral data for that row if it exists
+        # get the mosaic data for that row if it exists
         if hidata._indata and not mosaicfile:
             hidata._mosaicfile = self.download_vac('mangaVmorphoImgs', path_params=path_params)
 
