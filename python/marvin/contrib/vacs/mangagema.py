@@ -39,8 +39,16 @@ class GEMAVAC(VACMixIn):
     version = {'MPL-7': '1_0_1',
                'DR15': '1_0_1'}
 
+    # optional Marvin Tools to attach your vac to
+    include = (marvin.tools.cube.Cube,
+               marvin.tools.maps.Maps,
+               marvin.tools.modelcube.ModelCube)
+
     # Required method
     def get_data(self, parent_object):
+
+        # get any parameters you need from the parent object
+        mangaid = parent_object.mangaid
 
         # define the variables to build a unique path to your VAC file
         path_params = {'ver': self.version[release], 'table': 'all'}
