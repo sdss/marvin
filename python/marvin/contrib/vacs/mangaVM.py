@@ -61,8 +61,10 @@ class VMORPHOVAC(VACMixIn):
 
         # get_path returns False if the files do not exist locally
         allfile = self.get_path('mangaVmorpho', path_params=path_params)
-        sdss_img = self.get_path('mangaVmorphoImgs', path_params=path_params.update({'survey':'sdss'}))
-        desi_img = self.get_path('mangaVmorphoImgs', path_params=path_params.update({'survey':'desi'}))
+        path_params.update({'survey':'sdss'})
+        sdss_img = self.get_path('mangaVmorphoImgs', path_params=path_params)
+        path_params.update({'survey':'desi'})
+        desi_img = self.get_path('mangaVmorphoImgs', path_params=path_params)
 
         # download the vac from the SAS if it does not already exist locally
         if not allfile:
