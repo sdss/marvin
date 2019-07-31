@@ -12,14 +12,8 @@ from __future__ import print_function, division, absolute_import
 
 import numpy as np
 import astropy
-import astropy.units as u
 import marvin.tools
-from marvin.tools.quantities.spectrum import Spectrum
-from marvin.utils.general.general import get_drpall_table
-from marvin.utils.plot.scatter import plot as scatplot
 
-import matplotlib.image as mpimg
-import matplotlib.pyplot as plt
 
 from .base import VACMixIn
 
@@ -61,35 +55,22 @@ class VMORPHOVAC(VACMixIn):
 
         # get_path returns False if the files do not exist locally
         allfile = self.get_path('mangaVmorpho', path_params=path_params)
-        path_params.update({'survey':'sdss'})
-        sdss_img = self.get_path('mangaVmorphoImgs', path_params=path_params)
-        path_params.update({'survey':'desi'})
-        desi_img = self.get_path('mangaVmorphoImgs', path_params=path_params)
+        mosaic = self.get_path('mangaVmorphoImgs', path_params=path_params)
 
         # download the vac from the SAS if it does not already exist locally
         if not allfile:
             allfile = self.download_vac('mangaVmorpho', path_params=path_params)
 
         # download the vac from the SAS if it does not already exist locally
-        if not sdss_img or not desi_img:
-            path_params.update({'survey':'sdss'})
-            sdss_img = self.download_vac('mangaVmorpho', path_params=path_params)
-            path_params.update({'survey':'desi'})
-            desi_img = self.download_vac('mangaVmorpho', path_params=path_params)
-                                                                                
+        if not mosaic:
+            mosaic = self.download_vac('mangaVmorphoImgs', path_params=path_params)
+
+        # Returns the FITS row data from the manga_visual_morpho-1.0.1.fits file
+
         alldata = astropy.io.fits.getdata(allfile,1)
-                                                                                        
-        def data(self):
-            ''' Returns the FITS row data from the manga_visual_morpho-1.0.1.fits file '''
-            idx = alldata['plateifu'] == plateifu
-            return alldata[idx]
+        idx = alldata['plateifu'] == plateifu
+        return alldata[idx]
 
-
-        def show_mosaic(self):
-            ''' Show the mosaic '''
-
-            img = mpimg.imread(desi_img)
-            plt.imshow(img)
 
 
 
