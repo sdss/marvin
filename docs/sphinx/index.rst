@@ -26,7 +26,7 @@ Marvin is a tool specifically designed to visualise and analyse `MaNGA <https://
 
 .. To install marvin simply run ``pip install sdss-marvin``. More details and known problem with installation can be found :ref:`here <marvin-installation>`.
 
-.. note:: This documentation assumes that you are familiar with MaNGA data and its acronyms. If that is not your case, consider reading `this <https://www.sdss.org/manga/getting-started/>`_.
+.. note:: This documentation assumes that you are familiar with MaNGA data and its acronyms. If that is not your case, consider reading `this <https://www.sdss.org/dr15/manga/getting-started/>`_.
 
 .. warning:: Marvin 2.x is the last version that will support Python 2.
   Marvin 3 and following will require Python 3.6+.
