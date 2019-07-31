@@ -72,8 +72,10 @@ class VMORPHOVAC(VACMixIn):
 
         # download the vac from the SAS if it does not already exist locally
         if not sdss_img or not desi_img:
-            sdss_img = self.download_vac('mangaVmorpho', path_params=path_params.update({'survey':'sdss'}))
-            desi_img = self.download_vac('mangaVmorpho', path_params=path_params.update({'survey':'desi'}))
+            path_params.update({'survey':'sdss'})
+            sdss_img = self.download_vac('mangaVmorpho', path_params=path_params)
+            path_params.update({'survey':'desi'})
+            desi_img = self.download_vac('mangaVmorpho', path_params=path_params)
                                                                                 
         alldata = astropy.io.fits.getdata(allfile,1)
                                                                                         
