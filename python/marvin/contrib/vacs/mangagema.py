@@ -10,12 +10,7 @@
 
 from __future__ import print_function, division, absolute_import
 
-import numpy as np
-import astropy
-import astropy.units as u
 import marvin.tools
-from marvin.utils.general.general import get_drpall_table
-from marvin.utils.plot.scatter import plot as scatplot
 
 from .base import VACMixIn
 
@@ -44,9 +39,12 @@ class GEMAVAC(VACMixIn):
                marvin.tools.maps.Maps,
                marvin.tools.modelcube.ModelCube)
 
-    # Required method
+    # Required method,
     def get_data(self, parent_object):
 
+        # get any parameters you need from the parent object
+        release = parent_object.release
+        
         # define the variables to build a unique path to your VAC file
         path_params = {'ver': self.version[release]}
 
@@ -58,7 +56,6 @@ class GEMAVAC(VACMixIn):
             allfile = self.download_vac('mangagema', path_params=path_params)
 
         return allfile
-
 
 
 
