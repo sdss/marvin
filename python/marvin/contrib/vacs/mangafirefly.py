@@ -38,8 +38,8 @@ class FIREFLYVAC(VACMixIn):
     name = 'mangaffly'
     description = 'Returns stellar population parameters fitted by FIREFLY'
     version = 'v1_1_2'
-               
     drpver = 'v2_4_3'
+    datatype = ['','','']
 
     # optional Marvin Tools to attach your vac to
     include = (marvin.tools.cube.Cube,
@@ -47,22 +47,37 @@ class FIREFLYVAC(VACMixIn):
                marvin.tools.modelcube.ModelCube)
 
     # Required method
-    def get_data(self):
+    def get_data(self,alldata=True,datatype=None):
 
-        # define the variables to build a unique path to your VAC file
-        path_params = {'ver': self.version,'drpver': self.drpver 
-                       }
+        if alldata==1:
+          # define the variables to build a unique path to your VAC file
+          path_params = {'ver': self.version,'drpver': self.drpver}
+          # get_path returns False if the files do not exist locally
+          allfile = self.get_path('mangaffly', path_params=path_params)
 
-        # get_path returns False if the files do not exist locally
-        allfile = self.get_path('mangaffly', path_params=path_params)
-
-        # download the vac from the SAS if it does not already exist locally
-        if not allfile:
+          # download the vac from the SAS if it does not already exist locally
+          if not allfile:
             allfile = self.download_vac('mangaffly', path_params=path_params)
 
-        #Returns the FITS data from the mangafirefly summary file 
-        ffly = astropy.io.fits.getdata(allfile)
+          #Returns the FITS data from the mangafirefly summary file 
+          ffly = astropy.io.fits.getdata(allfile)
+    
+          return ffly
+        
+        if alldata==0:
+         # define the variables to build a unique path to your VAC file
+          path_params = {'ver': self.version,'drpver': self.drpver,'datatype':datatype}
 
-        return ffly
+         # get_path returns False if the files do not exist locally
+          datafile = self.get_path('mangafflydata',path_params=path_params)
+
+         # download the vac from the SAS if it does not already exist locally
+         if not datafile:
+            datafile = self.download_vac('mangaffly', path_params=path_params)
+
+        #Returns the FITS data from the mangafirefly summary file 
+         fflydata = astropy.io.fits.getdata(allfile)
+
+         return fflydata
 
 
