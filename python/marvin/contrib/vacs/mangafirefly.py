@@ -37,9 +37,7 @@ class FIREFLYVAC(VACMixIn):
     # Required parameters
     name = 'mangaffly'
     description = 'Returns stellar population parameters fitted by FIREFLY'
-    version = 'v1_1_2'
-    drpver = 'v2_4_3'
-    datatype = ['','','']
+    version = {'DR15': 'v1_1_2'}
 
     # optional Marvin Tools to attach your vac to
     include = (marvin.tools.cube.Cube,
@@ -47,11 +45,14 @@ class FIREFLYVAC(VACMixIn):
                marvin.tools.modelcube.ModelCube)
 
     # Required method
-    def get_data(self,alldata=True,datatype=None):
+    def get_data(self,parent_object,alldata=True,datatype=None):
+
+        release = parent_object.release
+        drpver = parent_object._drpver
 
         if alldata==1:
           # define the variables to build a unique path to your VAC file
-          path_params = {'ver': self.version,'drpver': self.drpver}
+          path_params = {'ver': self.version[release],'drpver': self.drpver}
           # get_path returns False if the files do not exist locally
           allfile = self.get_path('mangaffly', path_params=path_params)
 
@@ -66,7 +67,7 @@ class FIREFLYVAC(VACMixIn):
         
         if alldata==0:
          # define the variables to build a unique path to your VAC file
-          path_params = {'ver': self.version,'drpver': self.drpver,'datatype':datatype}
+          path_params = {'ver': self.version[release],'drpver': self.drpver,'datatype':datatype}
 
          # get_path returns False if the files do not exist locally
           datafile = self.get_path('mangafflydata',path_params=path_params)
