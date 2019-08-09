@@ -4,6 +4,20 @@ Marvin's Change Log
 [2.3.3] - unreleased
 --------------------
 
+Changed
+^^^^^^^
+- all yaml.load uses new Loader to accommodate old and new yaml spec;
+- updated Runtime Issues documentation to include section on numpy.ufunc binary warnings
+- added to reprs for some db ModelClasses
+
+Fixed
+^^^^^
+- Issue :issue:`658` - modelcube datamodel units missing angstrom
+- Issue :issue:`655` - added yaml loader to remove yaml warnings for 5.1 spec
+- Fixed bug when server tries to access NSA on cube when none exists and triggers remote authentication issue
+- Issue :issue:`664` - Fixed link to MaNGA's Getting Started in docs.
+
+
 [2.3.2] - 2019/02/27
 --------------------
 
@@ -16,7 +30,7 @@ Fixed
 - Issue :issue:`629` - web table of search results broken
 - Issue :issue:`627` - web query displaying error message
 - Issue :issue:`630` - broken web links on query page
-- Issue :issue:`591` - broken query streaming return all results 
+- Issue :issue:`591` - broken query streaming return all results
 
 [2.3.1] - 2018/12/10
 --------------------

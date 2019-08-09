@@ -75,7 +75,7 @@ MPL6_emline_channels = [
     Channel('sii_6718', formats={'string': 'SII 6718',
                                  'latex': r'$\forb{S\,II}\;\lambda 6718$'}, idx=20),
     Channel('sii_6732', formats={'string': 'SII 6732',
-                                 'latex': r'$\forb{S\,II\]\;\lambda 6732$'}, idx=21)
+                                 'latex': r'$\forb{S\,II}\;\lambda 6732$'}, idx=21)
 ]
 
 
@@ -327,25 +327,25 @@ MPL6_maps = [
 
 MPL6_models = [
     Model('binned_flux', 'FLUX', 'WAVE', extension_ivar='IVAR',
-          extension_mask='MASK', unit=u.erg / u.s / (u.cm ** 2) / spaxel_unit,
+          extension_mask='MASK', unit=u.erg / u.s / (u.cm ** 2) / u.Angstrom / spaxel_unit,
           scale=1e-17, formats={'string': 'Binned flux'},
           description='Flux of the binned spectra',
           binid=binid_properties[0]),
     Model('full_fit', 'MODEL', 'WAVE', extension_ivar=None,
-          extension_mask='MASK', unit=u.erg / u.s / (u.cm ** 2) / spaxel_unit,
+          extension_mask='MASK', unit=u.erg / u.s / (u.cm ** 2) / u.Angstrom / spaxel_unit,
           scale=1e-17, formats={'string': 'Best fitting model'},
           description='The best fitting model spectra (sum of the fitted '
                       'continuum and emission-line models)',
           binid=binid_properties[0]),
     Model('emline_fit', 'EMLINE', 'WAVE', extension_ivar=None,
           extension_mask='EMLINE_MASK',
-          unit=u.erg / u.s / (u.cm ** 2) / spaxel_unit,
+          unit=u.erg / u.s / (u.cm ** 2) / u.Angstrom / spaxel_unit,
           scale=1e-17, formats={'string': 'Emission line model spectrum'},
           description='The model spectrum with only the emission lines.',
           binid=binid_properties[3]),
     Model('emline_base_fit', 'EMLINE_BASE', 'WAVE', extension_ivar=None,
           extension_mask='EMLINE_MASK',
-          unit=u.erg / u.s / (u.cm ** 2) / spaxel_unit,
+          unit=u.erg / u.s / (u.cm ** 2) / u.Angstrom / spaxel_unit,
           scale=1e-17, formats={'string': 'Emission line baseline fit'},
           description='The model of the constant baseline fitted beneath the '
                       'emission lines.',

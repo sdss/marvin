@@ -1797,4 +1797,4 @@ def get_manga_image(cube=None, drpver=None, plate=None, ifu=None, dir3d=None):
         assert dir3d in ['stack', 'mastar'], 'dir3d can only be stack or mastar'
         img = path.url('mangaimage', drpver=drpver, plate=plate, ifu=ifu, dir3d=dir3d)
     return img
-
+    

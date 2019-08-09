@@ -25,7 +25,7 @@ __version__ = '2.3.3dev'
 # time - 483 ms
 from marvin import extern
 from marvin.core.exceptions import MarvinUserWarning, MarvinError
-from brain.utils.general.general import getDbMachine, merge
+from brain.utils.general.general import getDbMachine, merge, get_yaml_loader
 from brain import bconfig
 from brain.core.core import URLMapDict
 from brain.core.exceptions import BrainError
@@ -125,11 +125,11 @@ class MarvinConfig(object):
 
         '''
         with open(os.path.join(os.path.dirname(__file__), 'data/marvin.yml'), 'r') as f:
-            config = yaml.load(f)
+            config = yaml.load(f, Loader=get_yaml_loader())
         user_config_path = os.path.expanduser('~/.marvin/marvin.yml')
         if os.path.exists(user_config_path):
             with open(user_config_path, 'r') as f:
-                config = merge(yaml.load(f), config)
+                config = merge(yaml.load(f, Loader=get_yaml_loader()), config)
 
         # update any matching Config values
         for key, value in config.items():

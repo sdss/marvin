@@ -103,7 +103,10 @@ class Interaction(BrainInteraction):
 
         release = self.params['release'] if self.params and 'release' in self.params else config.release
 
-        if (config.access == 'collab' and 'DR' in release) or config.access == 'public':
+        # disable authentication for specific cases (collab use of a DR, public access, or o)
+        usingdr = (config.access == 'collab' and 'DR' in release)
+        onserver = (config.access == 'collab' and config.db == 'lore')
+        if usingdr or config.access == 'public' or onserver:
             authtype = None
         else:
             assert authtype is not None, 'Must have an authorization type set for collab access to MPLs!'
