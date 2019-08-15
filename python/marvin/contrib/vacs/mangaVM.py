@@ -23,9 +23,9 @@ class VMORPHOVAC(VACMixIn):
 
     VAC name: manga_visual_morpho
 
-    URL: link
+    URL: https://data.sdss.org/datamodel/files/MANGA_MORPHOLOGY/visual_morpho/manga_Vmorpho.html
 
-    Description: Returns visual morphology data
+    Description: A new morphology catalogue is presented in this VAC, based on a pure visual morphological classification. This catalogue contains the T-Type morphology, visual attributes (barred, edge-on, tidal debris) and the CAS parameters (Concentration, Asymmetry and Clumpiness; from the DESI images.
 
     Authors: J. Antonio Vazquez-Mata and Hector Hernandez-Toledo
 
@@ -64,6 +64,8 @@ class VMORPHOVAC(VACMixIn):
         # download the vac from the SAS if it does not already exist locally
         if not mosaic:
             mosaic = self.download_vac('mangaVmorphoImgs', path_params=path_params)
+
+        print("Mosaics are available",mosaic)
 
         # Returns the FITS row data from the manga_visual_morpho-1.0.1.fits file
 
