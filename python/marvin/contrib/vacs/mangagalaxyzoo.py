@@ -59,7 +59,20 @@ class GZVAC(VACMixIn):
         # download the vac from the SAS if it does not already exist locally
         if not gzfile:
             gzfile = self.download_vac('mangagalaxyzoo', path_params=path_params)
+            
+        # Open the file    
+        astropy.io.fits.getdata(gzfile, 1)
+        
+        # Return selected line(s)
+        def gzdata(self):
+        ''' Returns the FITS row data from the Galaxy Zoo file '''
 
+        if not self._indata:
+            return "No Galaxy Zoo data exists for {0}".format(self._plateifu)
+
+        idx = self._gzdata['plateifu'] == self._plateifu
+        return self._gzdata[idx]
+        
         return gzdata
 
 
