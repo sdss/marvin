@@ -17,13 +17,18 @@ from .base import VACMixIn
 class GZVAC(VACMixIn):
     """Provides access to the MaNGA Galaxy Zoo Morphology VAC.
 
-    VAC name: GZ
+    VAC name: MaNGA Morphologies from Galaxy Zoo
 
-    URL: link
+    URL: https://www.sdss.org/dr15/data_access/value-added-catalogs/?vac_id=manga-morphologies-from-galaxy-zoo
 
-    Description: Returns Galaxy Zoo morphology for MaNGA galaxies
+    Description: Returns Galaxy Zoo morphology for MaNGA galaxies. 
+    The Galaxy Zoo (GZ) data for SDSS galaxies has been split over several iterations of www.galaxyzoo.org, 
+    with the MaNGA target galaxies being spread over five different GZ data sets. In this value added catalog 
+    we bring all of these galaxies into one single catalog and re-run the debiasing code (Hart et al. 2016) in 
+    a consistent manner across the all the galaxies. This catalog includes data from Galaxy Zoo 2 (previously 
+    published in Willett et al. 2013) and newer data from Galaxy Zoo 4 (currently unpublished).
 
-    Authors: Coleman Krawczyk, Karen Masters and the Galaxy Zoo Team.
+    Authors: Coleman Krawczyk, Karen Masters and the rest of the Galaxy Zoo Team.
 
     """
 
