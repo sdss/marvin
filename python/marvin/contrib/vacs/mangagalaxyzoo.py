@@ -52,7 +52,7 @@ class GZVAC(VACMixIn):
         gzfile = self.get_path('mangagalaxyzoo', path_params=path_params)
 
         # download the vac from the SAS if it does not already exist locally
-        if not allfile:
+        if not gzfile:
             gzfile = self.download_vac('mangagalaxyzoo', path_params=path_params)
 
         return gzdata
