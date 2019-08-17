@@ -10,8 +10,6 @@ import astropy
 import astropy.units as u
 import marvin.tools
 from marvin.tools.quantities.spectrum import Spectrum
-from marvin.utils.general.general import get_drpall_table
-from marvin.utils.plot.scatter import plot as scatplot
 
 from .base import VACMixIn
 
