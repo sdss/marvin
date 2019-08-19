@@ -35,10 +35,11 @@ class HIVAC(VACMixIn):
     """
 
     # Required parameters
-    name = 'mangahi'
+    name = 'hidata'
     description = 'Returns HI summary data and spectra'
     version = {'MPL-7': 'v1_0_1',
-               'DR15': 'v1_0_1'}
+               'DR15': 'v1_0_1', 
+               'DR16': 'v1_0_2'}
 
     # optional Marvin Tools to attach your vac to
     include = (marvin.tools.cube.Cube,
