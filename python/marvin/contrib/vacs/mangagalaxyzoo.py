@@ -5,11 +5,8 @@
 
 from __future__ import print_function, division, absolute_import
 
-import numpy as np
 import astropy
-import astropy.units as u
 import marvin.tools
-from marvin.tools.quantities.spectrum import Spectrum
 
 from .base import VACMixIn
 
