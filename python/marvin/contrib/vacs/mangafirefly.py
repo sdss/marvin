@@ -14,7 +14,7 @@ import numpy as np
 import astropy
 import marvin.tools
 import matplotlib.pyplot as plt
-
+from marvin import log
 from .base import VACMixIn
 
 
@@ -54,6 +54,7 @@ class FIREFLYVAC(VACMixIn):
 
         # download the vac from the SAS if it does not already exist locally
         if not allfile:
+            log.info('Warning: This file is ~6 GB.  It may take awhile to download')
             allfile = self.download_vac('mangaffly', path_params=path_params)
 
         # create container for more complex return data.
