@@ -78,6 +78,7 @@ class FFLY(object):
     def _open_file(fflyfile):
         return astropy.io.fits.open(fflyfile)
 
+    @property
     def global(self):
         ''' Returns the global stellar population properties from the mangafirefly summary file '''
         if not self._indata:
