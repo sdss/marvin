@@ -10,7 +10,6 @@
 
 from __future__ import print_function, division, absolute_import
 
-import numpy as np
 import astropy
 import marvin.tools
 import matplotlib.pyplot as plt
@@ -26,7 +25,10 @@ class VMORPHOVAC(VACMixIn):
 
     URL: https://data.sdss.org/datamodel/files/MANGA_MORPHOLOGY/visual_morpho/manga_Vmorpho.html
 
-    Description: A new morphology catalogue is presented in this VAC, based on a pure visual morphological classification. This catalogue contains the T-Type morphology, visual attributes (barred, edge-on, tidal debris) and the CAS parameters (Concentration, Asymmetry and Clumpiness; from the DESI images.
+    Description: A new morphology catalogue is presented in this VAC, based on a pure visual
+    morphological classification. This catalogue contains the T-Type morphology, visual
+    attributes (barred, edge-on, tidal debris) and the CAS parameters (Concentration, Asymmetry
+    and Clumpiness; from the DESI images.
 
     Authors: J. Antonio Vazquez-Mata and Hector Hernandez-Toledo
 
@@ -38,8 +40,7 @@ class VMORPHOVAC(VACMixIn):
     version = {'DR16': '1.0.1'}
 
     # optional Marvin Tools to attach your vac to
-    include = (marvin.tools.cube.Cube,
-               marvin.tools.maps.Maps)
+    include = (marvin.tools.cube.Cube, marvin.tools.maps.Maps)
 
     # Required method
     def get_data(self, parent_object):
@@ -49,8 +50,7 @@ class VMORPHOVAC(VACMixIn):
         release = parent_object.release
 
         # define the variables to build a unique path to your VAC file
-        path_params = {'vmver': self.version[release],
-                       'plateifu': plateifu, 'survey': '*'}
+        path_params = {'vmver': self.version[release], 'plateifu': plateifu, 'survey': '*'}
 
         # get_path returns False if the files do not exist locally
         vmfile = self.get_path('mangaVmorpho', path_params=path_params)
@@ -158,7 +158,7 @@ class VizMorpho(object):
         Returns:
             A matplotlib axis object
         '''
-        
+
         assert survey in ['sdss', 'desi'], 'Must specify either survey: sdss or desi'
 
         impath = self._sdss_img if survey == 'sdss' else self._desi_img
@@ -168,4 +168,3 @@ class VizMorpho(object):
         title = '{0} Mosaic'.format(survey.upper())
         fig.suptitle(title)
         return ax
-
