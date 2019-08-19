@@ -13,7 +13,8 @@ from __future__ import print_function, division, absolute_import
 import numpy as np
 import astropy
 import marvin.tools
-
+import matplotlib.pyplot as plt
+import matplotlib.image as mpimg
 
 from .base import VACMixIn
 
@@ -32,15 +33,13 @@ class VMORPHOVAC(VACMixIn):
     """
 
     # Required parameters
-    name = 'mangaVM'
+    name = 'visual_morphology'
     description = 'Returns visual morphology data'
-    version = {'MPL-7': '1.0.1',
-               'DR15': '1.0.1'}
+    version = {'DR16': '1.0.1'}
 
     # optional Marvin Tools to attach your vac to
     include = (marvin.tools.cube.Cube,
                marvin.tools.maps.Maps)
-    #           marvin.tools.modelcube.ModelCube)
 
     # Required method
     def get_data(self, parent_object):
@@ -54,26 +53,119 @@ class VMORPHOVAC(VACMixIn):
                        'plateifu': plateifu, 'survey': '*'}
 
         # get_path returns False if the files do not exist locally
-        allfile = self.get_path('mangaVmorpho', path_params=path_params)
+        vmfile = self.get_path('mangaVmorpho', path_params=path_params)
+
+        # download the vac from the SAS if it does not already exist locally
+        if not vmfile:
+            vmfile = self.download_vac('mangaVmorpho', path_params=path_params)
+
+        # get the mosaic images
+        sdss_mos, desi_mos = self._get_mosaics(path_params)
+
+        # create container for more complex return data
+        vmdata = VizMorpho(plateifu, vmfile=vmfile, sdss=sdss_mos, desi=desi_mos)
+
+        return vmdata
+
+    def _get_mosaics(self, path_params):
+        ''' Get the mosaic images for SDSS and DESI surveys
+        
+        Parameters:
+            path_params (dict):
+                The sdss_access keyword parameters to define a file path
+        
+        Returns:
+            The SDSS and DESI local image filepaths
+        '''
+        sdss_mosaic = self._check_mosaic('sdss', path_params)
+        desi_mosaic = self._check_mosaic('desi', path_params)
+        return sdss_mosaic, desi_mosaic
+
+    def _check_mosaic(self, survey, path_params):
+        ''' Get a mosaic image file for a survey path
+        
+        Checks for local existence of the mosaic image filepath.
+        If it does not exists, it downloads it. 
+
+        Parameters:
+            survey (str):
+                The survey to download.  Either sdss or desi
+            path_params (dict):
+                The sdss_access keyword parameters to define a file path
+        
+        Returns:
+            The mosaic image file path
+        '''
+        # get the path for the given survey
+        path_params['survey'] = survey
         mosaic = self.get_path('mangaVmorphoImgs', path_params=path_params)
-
-        # download the vac from the SAS if it does not already exist locally
-        if not allfile:
-            allfile = self.download_vac('mangaVmorpho', path_params=path_params)
-
-        # download the vac from the SAS if it does not already exist locally
+        # download the mosaic file (downloads both surveys at once)
         if not mosaic:
-            mosaic = self.download_vac('mangaVmorphoImgs', path_params=path_params)
-
-        print("Mosaics are available",mosaic)
-
-        # Returns the FITS row data from the manga_visual_morpho-1.0.1.fits file
-
-        alldata = astropy.io.fits.getdata(allfile,1)
-        idx = alldata['plateifu'] == plateifu
-        return alldata[idx]
+            pp = path_params.copy()
+            pp['survey'] = '*'
+            mosaics = self.download_vac('mangaVmorphoImgs', path_params=pp)
+        # get the path again for the single survey
+        mosaic = self.get_path('mangaVmorphoImgs', path_params=path_params)
+        return mosaic
 
 
+class VizMorpho(object):
+    ''' A customized class to handle more complex data
 
+    This class handles data from both the Visual Morphology summary file and the
+    individual image files.  Row data from the summary file
+    is returned via the `data` property.  Images can be displayed via
+    the `show_mosaic` method.
 
+    '''
+
+    def __init__(self, plateifu, vmfile=None, sdss=None, desi=None):
+        self._vmfile = vmfile
+        self._plateifu = plateifu
+        self._sdss_img = sdss
+        self._desi_img = desi
+        self._vm_data = self._open_file(vmfile)
+        self._indata = plateifu in self._vm_data['plateifu']
+        self._specdata = None
+
+    def __repr__(self):
+        return 'VisualMorpho({0})'.format(self._plateifu)
+
+    @staticmethod
+    def _open_file(vmfile):
+        return astropy.io.fits.getdata(vmfile, 1)
+
+    @property
+    def data(self):
+        ''' Returns the FITS row data from the visual morphology summary file '''
+
+        if not self._indata:
+            return "No morphology data exists for {0}".format(self._plateifu)
+
+        idx = self._vm_data['plateifu'] == self._plateifu
+        return self._vm_data[idx]
+
+    def show_mosaic(self, survey=None):
+        ''' Show the mosaic image for the given survey
+
+        Displays the mosaic image of visual morphology classification
+        for the given survey as a Matplotlib Figure/Axis object.
+
+        Parameters:
+            survey (str):
+                The survey name.  Can be either "sdss" or "desi".
+        
+        Returns:
+            A matplotlib axis object
+        '''
+        
+        assert survey in ['sdss', 'desi'], 'Must specify either survey: sdss or desi'
+
+        impath = self._sdss_img if survey == 'sdss' else self._desi_img
+        imdata = mpimg.imread(impath)
+        fig, ax = plt.subplots()
+        ax.imshow(imdata)
+        title = '{0} Mosaic'.format(survey.upper())
+        fig.suptitle(title)
+        return ax
 
