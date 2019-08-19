@@ -1,7 +1,7 @@
 # !usr/bin/env python
 # -*- coding: utf-8 -*-
 #
-# Modified from mangahi.py by Karen Masters. 
+# Modified from mangahi.py by Karen Masters.
 
 from __future__ import print_function, division, absolute_import
 
@@ -30,15 +30,12 @@ class GZVAC(VACMixIn):
     """
 
     # Required parameters
-    name = 'galaxyzoo'
-    description = 'Returns Galaxy Zoo morphology'
-    version = {'MPL-7': 'v1_0_1', 'MPL-8': 'v1_0_1',
-               'DR15': 'v1_0_1', 'DR16': 'v1_0_1'}
+    name = "galaxyzoo"
+    description = "Returns Galaxy Zoo morphology"
+    version = {"MPL-7": "v1_0_1", "MPL-8": "v1_0_1", "DR15": "v1_0_1", "DR16": "v1_0_1"}
 
     # optional Marvin Tools to attach your vac to
-    include = (marvin.tools.cube.Cube,
-               marvin.tools.maps.Maps,
-               marvin.tools.modelcube.ModelCube)
+    include = (marvin.tools.cube.Cube, marvin.tools.maps.Maps, marvin.tools.modelcube.ModelCube)
 
     # Required method
     def get_data(self, parent_object):
@@ -48,30 +45,30 @@ class GZVAC(VACMixIn):
         release = parent_object.release
 
         # define the variables to build a unique path to your VAC file
-        path_params = {'ver': self.version[release]}
+        path_params = {"ver": self.version[release]}
 
         # get_path returns False if the files do not exist locally
-        gzfile = self.get_path('mangagalaxyzoo', path_params=path_params)
+        gzfile = self.get_path("mangagalaxyzoo", path_params=path_params)
 
         # download the vac from the SAS if it does not already exist locally
         if not gzfile:
-            gzfile = self.download_vac('mangagalaxyzoo', path_params=path_params)
-            
-        # Open the file    
+            gzfile = self.download_vac("mangagalaxyzoo", path_params=path_params)
+
+        # Open the file
         data = astropy.io.fits.getdata(gzfile, 1)
-        
+
         # Return selected line(s)
-        indata = mangaid in data['mangaid']
+        indata = mangaid in data["mangaid"]
         if not indata:
             return "No Galaxy Zoo data exists for {0}".format(mangaid)
 
-        idx = data['mangaid'] == mangaid
+        idx = data["mangaid"] == mangaid
         return data[idx]
 
 
 # class GZData(object):
 #     ''' Row data from the summary file
-#     is returned via the `data` property.  
+#     is returned via the `data` property.
 
 #     '''
 
@@ -80,7 +77,7 @@ class GZVAC(VACMixIn):
 #         self._plateifu = plateifu
 #         self._gzdata = self._open_file(gzfile)
 #         self._indata = plateifu in self._gzdata['plateifu']
- 
+
 #     @staticmethod
 #     def _open_file(gzfile):
 #         return astropy.io.fits.getdata(gzfile, 1)
@@ -94,6 +91,3 @@ class GZVAC(VACMixIn):
 
 #         idx = self._gzdata['plateifu'] == self._plateifu
 #         return self._gzdata[idx]
-
-
-
