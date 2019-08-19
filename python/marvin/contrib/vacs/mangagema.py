@@ -100,10 +100,10 @@ class GEMAVAC(VACMixIn):
         
         # creating an index to select the data for a mangaid galaxy
         indexLSS = completeness['mangaid'] == mangaid
-        indexpairs = pairs['mangaid'] == mangaid)
-        indexgroups = groups['mangaid'] == mangaid)
-        indexover = overdensity['mangaid'] == mangaid)
-        indextensor = LSS_tensor['mangaid'] == mangaid)
+        indexpairs = pairs['mangaid'] == mangaid
+        indexgroups = groups['mangaid'] == mangaid
+        indexover = overdensity['mangaid'] == mangaid
+        indextensor = LSS_tensor['mangaid'] == mangaid
         
         gema_data = (completeness[indexLSS], LSS_1_all[indexLSS], LSS_1_002[indexLSS], LSS_1_006[indexLSS], LSS_1_010[indexLSS], LSS_1_015[indexLSS], LSS_5_all[indexLSS], LSS_5_002[indexLSS], LSS_5_006[indexLSS], LSS_5_010[indexLSS], LSS_5_015[indexLSS], pairs[indexpairs], groups[indexgroups], overdensity[indexover], LSS_tensor[indextensor])
         
