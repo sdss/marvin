@@ -12,11 +12,8 @@ from __future__ import print_function, division, absolute_import
 
 import numpy as np
 import astropy
-import astropy.units as u
 import marvin.tools
-from marvin.tools.quantities.spectrum import Spectrum
-from marvin.utils.general.general import get_drpall_table
-from marvin.utils.plot.scatter import plot as scatplot
+import matplotlib.pyplot as plt
 
 from .base import VACMixIn
 
@@ -35,93 +32,180 @@ class FIREFLYVAC(VACMixIn):
     """
 
     # Required parameters
-    name = 'mangaffly'
+    name = 'firefly'
     description = 'Returns stellar population parameters fitted by FIREFLY'
     version = {'DR15': 'v1_1_2'}
 
     # optional Marvin Tools to attach your vac to
-    include = (marvin.tools.cube.Cube,
-               marvin.tools.maps.Maps,
-               marvin.tools.modelcube.ModelCube)
+    include = (marvin.tools.cube.Cube, marvin.tools.maps.Maps, marvin.tools.modelcube.ModelCube)
 
     # Required method
-    def get_data(self,parent_object):
+    def get_data(self, parent_object):
 
         release = parent_object.release
         drpver = parent_object._drpver
         plateifu = parent_object.plateifu
+        imagesz = int(parent_object.header['NAXIS1'])
 
         # define the variables to build a unique path to your VAC file
-        path_params = {'ver': self.version[release],'drpver': self.drpver}
+        path_params = {'ver': self.version[release], 'drpver': drpver}
         # get_path returns False if the files do not exist locally
         allfile = self.get_path('mangaffly', path_params=path_params)
 
         # download the vac from the SAS if it does not already exist locally
         if not allfile:
-          allfile = self.download_vac('mangaffly', path_params=path_params)
+            allfile = self.download_vac('mangaffly', path_params=path_params)
 
-        # create container for more complex return data. Parameters could be 'lw_age', 'mw_age', 'lw_z', 'mw_z'.
-        ffly = FFLY(plateifu,allfile=allfile,parameter)
+        # create container for more complex return data.
+        ffly = FFLY(plateifu, allfile=allfile, imagesz=imagesz)
 
         return ffly
 
 
 class FFLY(object):
-
-    def __init__(self, plateifu, allfile=None,parameter=None):
+    def __init__(self, plateifu, allfile=None, imagesz=None):
         self._allfile = allfile
         self._plateifu = plateifu
+        self._image_sz = imagesz
         self._ffly_data = self._open_file(allfile)
         self._indata = plateifu in self._ffly_data[1].data['plateifu']
-        self._parameter = parameter
+        self._idx = self._ffly_data['GALAXY_INFO'].data['plateifu'] == self._plateifu
+        self._parameters = ['lw_age', 'mw_age', 'lw_z', 'mw_z']
 
+    @staticmethod
     def _open_file(fflyfile):
         return astropy.io.fits.open(fflyfile)
 
-    def global(self):
-        ''' Returns the global stellar population properties from the mangafirefly summary file '''
+    def stellar_pops(self, parameter=None):
+        ''' Returns the global stellar population properties
+
+        Returns the global stellar population property within 1 Re for a given
+        stellar population parameter.  If no parameter specified, returns the entire row.
+
+        Parameters:
+            parameter (str):
+                The stellar population parameter to retrieve.  Can be one of ['lw_age', 'mw_age', 'lw_z', 'mw_z'].
+        
+        Returns:
+            The data from the FIREFLY summary file for the target galaxy
+        '''
+
+        if parameter:
+            assert parameter in self._parameters, 'parameter must be one of {0}'.format(
+                self._parameters
+            )
+
         if not self._indata:
             return "No FIREFLY result exists for {0}".format(self._plateifu)
 
-        idx = self._ffly_data[1].data['plateifu'] == self._plateifu
+        if parameter:
+            return self._ffly_data['GLOBAL_PARAMETERS'].data[parameter + '_1re'][self._idx]
+        else:
+            return self._ffly_data['GLOBAL_PARAMETERS'].data[self._idx]
 
-        return self._ffly_data[2].data[self._parameter+'_1re'][idx]
+    def stellar_gradients(self, parameter=None):
+        ''' Returns the gradient of stellar population properties
 
-    def gradient(self):
-        ''' Returns the gradient of stellar population properties from the mangafirefly summary file '''
+        Returns the gradient of the stellar population property for a given
+        stellar population parameter.  If no parameter specified, returns the entire row.
+
+        Parameters:
+            parameter (str):
+                The stellar population parameter to retrieve.  Can be one of ['lw_age', 'mw_age', 'lw_z', 'mw_z'].
+        
+        Returns:
+            The data from the FIREFLY summary file for the target galaxy
+        '''
+
+        if parameter:
+            assert parameter in self._parameters, 'parameter must be one of {0}'.format(
+                self._parameters
+            )
+
         if not self._indata:
             return "No FIREFLY result exists for {0}".format(self._plateifu)
 
-        idx = self._ffly_data[1].data['plateifu'] == self._plateifu
-         
-        return self._ffly_data[3].data[self._parameter+'_gradient'][idx]
+        if parameter:
+            return self._ffly_data['GRADIENT_PARAMETERS'].data[parameter + '_gradient'][self._idx]
+        else:
+            return self._ffly_data['GRADIENT_PARAMETERS'].data[self._idx]
 
-    def plot_map(self):
+    def _make_map(self, parameter=None):
+        ''' Extract and create a 2d map '''
 
-        ''' plot map of stellar population properties'''
+        params = self._parameters + [
+            'e(b-v)',
+            'stellar_mass',
+            'surface_mass_density',
+            'signal_noise',
+        ]
+        assert parameter in params, 'Parameter must be one of {0}'.format(params)
+
+        # get the required arrays
+        binid = self._ffly_data['SPATIAL_BINID'].data[self._idx].reshape(76, 76)
+        bin1d = self._ffly_data['SPATIAL_INFO'].data[self._idx, :, 0][0]
+        prop = self._ffly_data[parameter + '_voronoi'].data[self._idx, :, 0][0]
+        image_sz = self._image_sz
+
+        # make a base map and reshape to a 1d array
+        maps = (np.zeros((image_sz, image_sz)) - 99).reshape(image_sz * image_sz)
+        # find relevant elements in bin1d (anything not -9999)
+        propinds = np.where(bin1d >= -1)
+        # find relevant elements in binid (anything not -9999)
+        inds = np.where(binid >= -1)
+        # select the relevant elements from binid
+        tmp = binid[inds]
+        # find non-zero elements from the relevant elements
+        newinds = np.where(tmp > -1)[0]
+        # map the bin1d indices back to the original binid
+        ai = bin1d[propinds].argsort()
+        p = ai[np.searchsorted(bin1d[propinds], tmp[newinds], sorter=ai)]
+        # replace map elements with the relevant prop parameter
+        maps[newinds] = prop[p]
+        # reshape the map array from 1d back to 2d
+        maps = maps.reshape(image_sz, image_sz)
+
+        return maps
+
+    def plot_map(self, parameter=None, mask=None):
+        ''' Plot map of stellar population properties
+        
+        Plots a 2d map of the specified FIREFLY stellar
+        population parameter using Matplotlib.  Optionally mask
+        the data when plotting using Numpy's Masked Array.  Default
+        is to mask map values < -10. 
+
+        Parameters:
+            parameter (str):
+                The named of the VORONOI stellar pop. parameter
+            mask (nd-array):
+                A Numpy array of masked values to apply to the map
+
+        Returns:
+            The matplotlib axis image object
+
+        '''
+
         if not self._indata:
             return "No FIREFLY result exists for {0}".format(self._plateifu)
 
-        idx = self._ffly_data[1].data['plateifu'] == self._plateifu
-        binid = self._ffly_data[5].data
-        bin1d = self._ffly_data[4].data[idx,:,0][0]
-        prop = self._ffly_data[self._parameter+'_voronoi'].data[idx,:,0][0]
-        image_sz = 76
+        # create the 2d map
+        maps = self._make_map(parameter=parameter)
 
-        maps = np.zeros((image_sz,image_sz))-99
-        for i in range(image_sz):
-         for j in range(image_sz):
-          idbin = (bin1d==binid[idx,i,j])
-          if len(bin1d[idbin])==1:
-          maps[i,j] = prop[idbin]
+        # only show the spaxels with non-empty values
+        mask = (maps < -10) if not mask else mask
+        masked_array = np.ma.array(maps, mask=mask)
 
-        #only show the spaxels with non-empty values
-        masked_array = np.ma.array(maps,mask=(maps<-10))
+        # plot the masked map
+        fig, ax = plt.subplots()
+        axim = ax.imshow(masked_array, interpolation='nearest', cmap='RdYlBu_r', origin='lower')
+        ax.set_xlabel('spaxel')
+        ax.set_ylabel('spaxel')
+        ax.set_title('Firefly {0}'.format(parameter.title()))
 
-        #plot the map 
-        f = plt.imshow(masked_array,interpolation='nearest',cmap='RdYlBu_r',origin='lower')
+        # plot the colour bar
+        cbar = fig.colorbar(axim, ax=ax, shrink=0.9)
+        cbar.set_label(parameter.title(), fontsize=18, labelpad=20)
+        cbar.ax.tick_params(labelsize=22)
 
-        return f
-    
-
-
+        return axim
