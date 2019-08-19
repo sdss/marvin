@@ -33,10 +33,10 @@ class GZVAC(VACMixIn):
     """
 
     # Required parameters
-    name = 'mangagalaxyzoo'
+    name = 'galaxyzoo'
     description = 'Returns Galaxy Zoo morphology'
-    version = {'MPL-7': 'v1_0_1','MPL-8': 'v1_0_1',
-               'DR15': 'v1_0_1','DR16': 'v1_0_1'}
+    version = {'MPL-7': 'v1_0_1', 'MPL-8': 'v1_0_1',
+               'DR15': 'v1_0_1', 'DR16': 'v1_0_1'}
 
     # optional Marvin Tools to attach your vac to
     include = (marvin.tools.cube.Cube,
@@ -47,7 +47,7 @@ class GZVAC(VACMixIn):
     def get_data(self, parent_object):
 
         # get any parameters you need from the parent object
-        plateifu = parent_object.plateifu
+        mangaid = parent_object.mangaid
         release = parent_object.release
 
         # define the variables to build a unique path to your VAC file
@@ -61,46 +61,42 @@ class GZVAC(VACMixIn):
             gzfile = self.download_vac('mangagalaxyzoo', path_params=path_params)
             
         # Open the file    
-        astropy.io.fits.getdata(gzfile, 1)
+        data = astropy.io.fits.getdata(gzfile, 1)
         
         # Return selected line(s)
-        def gzdata(self):
-        ''' Returns the FITS row data from the Galaxy Zoo file '''
+        indata = mangaid in data['mangaid']
+        if not indata:
+            return "No Galaxy Zoo data exists for {0}".format(mangaid)
 
-        if not self._indata:
-            return "No Galaxy Zoo data exists for {0}".format(self._plateifu)
-
-        idx = self._gzdata['plateifu'] == self._plateifu
-        return self._gzdata[idx]
-        
-        return gzdata
+        idx = data['mangaid'] == mangaid
+        return data[idx]
 
 
-class GZData(object):
-    ''' Row data from the summary file
-    is returned via the `data` property.  
+# class GZData(object):
+#     ''' Row data from the summary file
+#     is returned via the `data` property.  
 
-    '''
+#     '''
 
-    def __init__(self, plateifu, allfile=None, specfile=None):
-        self._gzfile = gzfile
-        self._plateifu = plateifu
-        self._gzdata = self._open_file(gzfile)
-        self._indata = plateifu in self._gzdata['plateifu']
+#     def __init__(self, plateifu, allfile=None, specfile=None):
+#         self._gzfile = gzfile
+#         self._plateifu = plateifu
+#         self._gzdata = self._open_file(gzfile)
+#         self._indata = plateifu in self._gzdata['plateifu']
  
-    @staticmethod
-    def _open_file(gzfile):
-        return astropy.io.fits.getdata(gzfile, 1)
+#     @staticmethod
+#     def _open_file(gzfile):
+#         return astropy.io.fits.getdata(gzfile, 1)
 
-    @property
-    def data(self):
-        ''' Returns the FITS row data from the Galaxy Zoo file '''
+#     @property
+#     def data(self):
+#         ''' Returns the FITS row data from the Galaxy Zoo file '''
 
-        if not self._indata:
-            return "No Galaxy Zoo data exists for {0}".format(self._plateifu)
+#         if not self._indata:
+#             return "No Galaxy Zoo data exists for {0}".format(self._plateifu)
 
-        idx = self._gzdata['plateifu'] == self._plateifu
-        return self._gzdata[idx]
+#         idx = self._gzdata['plateifu'] == self._plateifu
+#         return self._gzdata[idx]
 
 
 
