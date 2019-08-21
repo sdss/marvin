@@ -46,6 +46,23 @@ class GEMAVAC(VACMixIn):
     # Required method
     def get_data(self, parent_object):
         
+        # Create a dictionary for GEMA VAC data
+        gemadata = {"completeness": "",
+                    "LSS_1_all": "",
+                    "LSS_1_002": "",
+                    "LSS_1_006": "",
+                    "LSS_1_010": "",
+                    "LSS_1_015": "",
+                    "LSS_5_all": "",
+                    "LSS_5_002": "",
+                    "LSS_5_006": "",
+                    "LSS_5_010": "",
+                    "LSS_5_015": "",
+                    "pairs": "",
+                    "groups": "",
+                    "overdensity": "",
+                    "LSS_tensor": ""}
+        
         # get any parameters you need from the parent object
         mangaid = parent_object.mangaid
         release = parent_object.release
@@ -54,57 +71,71 @@ class GEMAVAC(VACMixIn):
         path_params = {'ver': self.version[release]}
 
         # get_path returns False if the files do not exist locally
-        gemafile = self.get_path('mangagema', path_params=path_params)
+        gemapath = self.get_path('mangagema', path_params=path_params)
 
         # download the vac from the SAS if it does not already exist locally
-        if not gemafile:
-            gemafile = self.download_vac('mangagema', path_params=path_params)
+        if not gemapath:
+            gemapath = self.download_vac('mangagema', path_params=path_params)
         
         # opening tables in VAC file
-        completeness = fits.getdata(gemafile, 1)
-        LSS_1_all = fits.getdata(gemafile, 2)
-        LSS_1_002 = fits.getdata(gemafile, 3)
-        LSS_1_006 = fits.getdata(gemafile, 4)
-        LSS_1_010 = fits.getdata(gemafile, 5)
-        LSS_1_015 = fits.getdata(gemafile, 6)
-        LSS_5_all = fits.getdata(gemafile, 7)
-        LSS_5_002 = fits.getdata(gemafile, 8)
-        LSS_5_006 = fits.getdata(gemafile, 9)
-        LSS_5_010 = fits.getdata(gemafile, 10)
-        LSS_5_015 = fits.getdata(gemafile, 11)
-        pairs = fits.getdata(gemafile, 12)
-        groups = fits.getdata(gemafile, 13)
-        overdensity = fits.getdata(gemafile, 14)
-        LSS_tensor = fits.getdata(gemafile, 15)
+        gemafile = fits.open(gemapath)
         
-        # Return selected line(s)
-        indata = mangaid in completeness['mangaid']
+        # Return selected line(s) for a mangaid galaxy
+        # LSS parameters
+        indata = mangaid in gemafile[1].data['mangaid']
         if not indata:
-            return "No LSS data exists for {0}".format(mangaid)
+            print("No LSS data exists for {0}".format(mangaid))
+        else:
+            print("LSS data exists for {0}".format(mangaid))
+            indexLSS = gemafile[1].data['mangaid'] == mangaid
+            gemadata["completeness"] = gemafile[1].data[indexLSS]
+            gemadata["LSS_1_all"] = gemafile[2].data[indexLSS]
+            gemadata["LSS_1_002"] = gemafile[3].data[indexLSS]
+            gemadata["LSS_1_006"] = gemafile[4].data[indexLSS]
+            gemadata["LSS_1_010"] = gemafile[5].data[indexLSS]
+            gemadata["LSS_1_015"] = gemafile[6].data[indexLSS]
+            gemadata["LSS_5_all"] = gemafile[7].data[indexLSS]
+            gemadata["LSS_5_002"] = gemafile[8].data[indexLSS]
+            gemadata["LSS_5_006"] = gemafile[9].data[indexLSS]
+            gemadata["LSS_5_010"] = gemafile[10].data[indexLSS]
+            gemadata["LSS_5_015"] = gemafile[11].data[indexLSS]
         
-        indata = mangaid in pairs['mangaid']
+        # Local environment: close pair galaxies
+        indata = mangaid in gemafile[12].data['mangaid']
         if not indata:
-            return "No pair data exists for {0}".format(mangaid)
+            print("No pair data exists for {0}".format(mangaid))
+        else:
+            print("Pair data exists for {0}".format(mangaid))
+            indexpair = gemafile[12].data['mangaid'] == mangaid
+            gemadata["pairs"] = gemafile[12].data[indexpair]
         
-        indata = mangaid in groups['mangaid']
+        # Local environment: group galaxies
+        indata = mangaid in gemafile[13].data['mangaid']
         if not indata:
-            return "No group data exists for {0}".format(mangaid)
+            print("No group data exists for {0}".format(mangaid))
+        else:
+            print("Group data exists for {0}".format(mangaid))
+            indexgroup = gemafile[13].data['mangaid'] == mangaid
+            gemadata["groups"] = gemafile[13].data[indexgroup]
         
-        indata = mangaid in overdensity['mangaid']
+        # LSS overdensity-corrected local density
+        indata = mangaid in gemafile[14].data['mangaid']
         if not indata:
-            return "No overdensity data exists for {0}".format(mangaid)
+            print("No overdensity data exists for {0}".format(mangaid))
+        else:
+            print("Overdensity data exists for {0}".format(mangaid))
+            indexover = gemafile[14].data['mangaid'] == mangaid
+            gemadata["overdensity"] = gemafile[14].data[indexover]
         
-        indata = mangaid in LSS_tensor['mangaid']
+        # LSS structure 
+        indata = mangaid in gemafile[15].data['mangaid']
         if not indata:
-            return "No structure data exists for {0}".format(mangaid)
+            print("No structure data exists for {0}".format(mangaid))
+        else:
+            print("Structure data exists for {0}".format(mangaid))
+            indextensor = gemafile[15].data['mangaid'] == mangaid
+            gemadata["LSS_tensor"] = gemafile[15].data[indextensor]
         
-        # creating an index to select the data for a mangaid galaxy
-        indexLSS = completeness['mangaid'] == mangaid
-        indexpairs = pairs['mangaid'] == mangaid
-        indexgroups = groups['mangaid'] == mangaid
-        indexover = overdensity['mangaid'] == mangaid
-        indextensor = LSS_tensor['mangaid'] == mangaid
-        
-        gema_data = (completeness[indexLSS], LSS_1_all[indexLSS], LSS_1_002[indexLSS], LSS_1_006[indexLSS], LSS_1_010[indexLSS], LSS_1_015[indexLSS], LSS_5_all[indexLSS], LSS_5_002[indexLSS], LSS_5_006[indexLSS], LSS_5_010[indexLSS], LSS_5_015[indexLSS], pairs[indexpairs], groups[indexgroups], overdensity[indexover], LSS_tensor[indextensor])
+        gema_data = gemadata
         
         return gema_data
