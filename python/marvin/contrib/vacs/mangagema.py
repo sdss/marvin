@@ -11,7 +11,6 @@
 from __future__ import print_function, division, absolute_import
 
 from astropy.io import fits
-from astropy.table import Table
 import numpy as np
 import marvin.tools
 
@@ -87,6 +86,7 @@ class GEMAVAC(VACMixIn):
             print("No LSS data exists for {0}".format(mangaid))
         else:
             print("LSS data exists for {0}".format(mangaid))
+            print("Warning: Do not use LSS parameters defined in volume with z < z_manga_galaxy")
             indexLSS = gemafile[1].data['mangaid'] == mangaid
             gemadata["completeness"] = gemafile[1].data[indexLSS]
             gemadata["LSS_1_all"] = gemafile[2].data[indexLSS]
