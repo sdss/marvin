@@ -109,7 +109,8 @@ datamodel_rss = datamodel.copy()
 
 for release in datamodel_rss:
     datamodel_rss[release] = datamodel_rss[release].to_rss()
-
+    datamodel_rss[release].rss += RSS_extensions
+    
     flux = datamodel_rss[release].rss.flux
     flux.description = 'Row-stacked spectra from all exposures for the target'
     flux.unit = flux.unit * spaxel_unit / fiber_unit

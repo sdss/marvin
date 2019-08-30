@@ -7,15 +7,16 @@ Licensed under a 3-clause BSD license.
 from __future__ import print_function, division
 import os
 # Flask imports
-from flask import Flask, Blueprint, send_from_directory, request
+from flask import Flask, Blueprint, send_from_directory
 import flask_jsglue as jsg
 # Marvin imports
 from brain.utils.general.general import getDbMachine
 from marvin import config, log
-from marvin.web.web_utils import updateGlobalSession, check_access, configFeatures
+from marvin.web.web_utils import configFeatures
 from marvin.web.jinja_filters import jinjablue
 from marvin.web.error_handlers import errors
-from marvin.web.extensions import jsglue, flags, sentry, limiter, profiler, cache, login_manager, jwt
+from marvin.web.extensions import jsglue, flags, sentry, limiter, profiler, cache
+from marvin.web.extensions import login_manager, jwt, celery
 from marvin.web.settings import ProdConfig, DevConfig, CustomConfig
 # Web Views
 from marvin.web.controllers.index import index
@@ -52,6 +53,16 @@ def create_app(debug=False, local=False, object_config=None):
     app.debug = debug
 
     # Add Marvin Logger
+    # example loguru handler to get working in Flask 
+    # import logging
+    # class InterceptHandler(logging.Handler):
+    #     def emit(self, record):
+    #         # Retrieve context where the logging call occurred, this happens to be in the 6th frame upward
+    #         logger_opt = log.opt(depth=6, exception=record.exc_info)
+    #         logger_opt.log(record.levelno, record.getMessage())
+    # handler = InterceptHandler()
+    # handler.setLevel(0)
+    # app.logger.addHandler(handler)
     app.logger.addHandler(log)
 
     # Turn on debug stuff in config
@@ -158,7 +169,10 @@ def register_extensions(app, app_base=None):
     login_manager.session_protection = "strong"
     jwt.init_app(app)
 
+    # Celery
+    celery.conf.update(app.config)
 
+    
 def register_blueprints(app, url_prefix=None):
     ''' Register the Flask Blueprints used '''
 

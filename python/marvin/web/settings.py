@@ -62,6 +62,9 @@ class Config(object):
     # RATELIMIT_DEFAULT = '10/hour;100/day;2000 per year'
     RATELIMIT_STRATEGY = 'fixed-window-elastic-expiry'
     RATELIMIT_ENABLED = True
+    # Celery task manager
+    CELERY_BROKER_URL = 'redis://localhost:6379/0'
+    CELERY_RESULT_BACKEND = 'redis://localhost:6379/0'
 
 
 class ProdConfig(Config):

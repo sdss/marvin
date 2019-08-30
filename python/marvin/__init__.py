@@ -31,6 +31,41 @@ from brain.core.core import URLMapDict
 from brain.core.exceptions import BrainError
 from brain.core.logger import initLog
 
+# test example loguru 
+# def initLog(logpath):
+#     ''' test loguru '''
+#     from loguru import logger
+#     import sys
+#     import logging
+
+#     logger.add(sys.stderr, format="{level} | {message} ",
+#                level="INFO", colorize=True, enqueue=True, backtrace=True)
+
+#     fmt = "{time:YYYY-MM-DD at HH:mm:ss} | {level} | {message} [{function} @ {file}]"
+#     logger.add("logtest.log", rotation='10 seconds', format=fmt,
+#                colorize=True, backtrace=True, enqueue=True)
+
+#     new_level = logger.level("IMPORTANT", no=25, color="<magenta>")
+
+#     # capture warnings
+#     showwarning_ = warnings.showwarning
+
+#     def showwarning(message, *args, **kwargs):
+#         logger.warning(message)
+#         showwarning_(message, *args, **kwargs)
+
+#     warnings.showwarning = showwarning
+
+#     # propagate to standard logger
+#     class PropagateHandler(logging.Handler):
+#         def emit(self, record):
+#             logging.getLogger(record.name).handle(record)
+
+#     logger.add(PropagateHandler(), format="{message}")
+
+#     return logger
+
+
 # Defines log dir.
 if 'MARVIN_LOGS_DIR' in os.environ:
     logFilePath = os.path.join(os.path.realpath(os.environ['MARVIN_LOGS_DIR']), 'marvin.log')

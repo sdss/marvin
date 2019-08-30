@@ -17,8 +17,10 @@ from flask_profiler import Profiler
 from flask_caching import Cache
 from flask_login import LoginManager
 from flask_jwt_extended import JWTManager
+from celery import Celery
+from marvin.web.settings import Config
 import flask_jsglue as jsg
-import logging
+
 
 # JS Glue (allows use of Flask.url_for inside javascript)
 jsglue = jsg.JSGlue()
@@ -43,3 +45,6 @@ login_manager = LoginManager()
 
 # Flask-JWT (JSON Web Token)
 jwt = JWTManager()
+
+# Celery Task Manager
+celery = Celery(__name__, broker=Config.CELERY_BROKER_URL)

@@ -21,7 +21,15 @@ from marvin.core.exceptions import MarvinError
 from marvin.tools.query import Query, doQuery
 from marvin.utils.datamodel.query.base import bestparams
 from marvin.utils.db import get_traceback
-from marvin.web.extensions import limiter
+from marvin.web.extensions import limiter, celery
+
+
+@celery.task
+def test_sleep(t):
+    import time
+    print('celery2', celery)
+    time.sleep(t)
+    return {'result': 'I have slept', 'status': 'Task Completed', 'current': 10}
 
 
 def _recombine_args(args):
@@ -228,12 +236,13 @@ class QueryView(BaseView):
     @route('/test/', methods=['GET', 'POST'], endpoint='querytest')
     @av.check_args(use_params='query')
     def test(self, args):
-        import time
         t = args.pop('start', 10)
-        time.sleep(t)
+        print('celery1', celery)
+        task = test_sleep.delay(t)
         self.results['status'] = 1
         self.results['data'] = ['this is a test']
-        return jsonify(self.results)
+        #return jsonify(self.results)
+        return jsonify(self.results)#, 202, {'Location': url_for('test.taskstatus', task_id=task.id)}
 
     @route('/cubes/', methods=['GET', 'POST'], endpoint='querycubes')
     @av.check_args(use_params='query', required='searchfilter')
@@ -622,3 +631,35 @@ class QueryView(BaseView):
         self.update_results(res)
         output = jsonify(self.results)
         return output
+
+
+    # @route('/status/<task_id>')
+    # def taskstatus(self, task_id):
+    #     task = add_test.AsyncResult(task_id)
+    #     if task.state == 'PENDING':
+    #         print('pending task', task.state)
+    #         # job did not start yet
+    #         response = {
+    #             'state': task.state,
+    #             'current': 0,
+    #             'total': 1,
+    #             'status': 'Pending...'
+    #         }
+    #     elif task.state != 'FAILURE':
+    #         print('success task', task.state, task.info)
+    #         response = {
+    #             'state': task.state,
+    #             'current': task.info.get('current', 0),
+    #             'status': task.info.get('status', '')
+    #         }
+    #         if 'result' in task.info:
+    #             response['result'] = task.info['result']
+    #     else:
+    #         print('other task', task.state)
+    #         # something went wrong in the background job
+    #         response = {
+    #             'state': task.state,
+    #             'current': 1,
+    #             'status': str(task.info),  # this is the exception raised
+    #         }
+    #     return jsonify(response)
