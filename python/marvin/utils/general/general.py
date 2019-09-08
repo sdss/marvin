@@ -6,8 +6,8 @@
 # @Filename: general.py
 # @License: BSD 3-clause (http://www.opensource.org/licenses/BSD-3-Clause)
 #
-# @Last modified by:   Brian Cherinka
-# @Last modified time: 2018-08-11 23:34:07
+# @Last modified by: José Sánchez-Gallego (gallegoj@uw.edu)
+# @Last modified time: 2019-08-29 15:58:00
 
 
 from __future__ import absolute_import, division, print_function
@@ -66,7 +66,8 @@ __all__ = ('convertCoords', 'parseIdentifier', 'mangaid2plateifu', 'findClosestV
            'isCallableWithArgs', 'map_bins_to_column', '_sort_dir',
            'get_dapall_file', 'temp_setattr', 'map_dapall', 'turn_off_ion', 'memory_usage',
            'validate_jwt', 'target_status', 'target_is_observed', 'get_drpall_file',
-           'target_is_mastar', 'get_plates', 'get_manga_image', 'check_versions')
+           'target_is_mastar', 'get_plates', 'get_manga_image', 'check_versions',
+           'get_drpall_table')
 
 drpTable = {}
 
@@ -954,7 +955,7 @@ def get_drpall_row(plateifu, drpver=None, drpall=None):
             raise ValueError('No results found for {0} in drpall table'.format(plateifu))
 
     row = drpall_table[drpall_table['plateifu'] == plateifu]
-        
+
     return row[0]
 
 
@@ -1741,7 +1742,7 @@ def get_plates(drpver=None, drpall=None, release=None):
 
 def check_versions(version1, version2):
     ''' Compate two version ids against each other
-    
+
     Checks if version1 is greater than or equal to version2.
 
     Parameters:
@@ -1749,7 +1750,7 @@ def check_versions(version1, version2):
             The version to check
         version2 (str):
             The version to check against
-    
+
     Returns:
         A boolean indicating if version1 is >= version2
     '''
@@ -1797,4 +1798,3 @@ def get_manga_image(cube=None, drpver=None, plate=None, ifu=None, dir3d=None):
         assert dir3d in ['stack', 'mastar'], 'dir3d can only be stack or mastar'
         img = path.url('mangaimage', drpver=drpver, plate=plate, ifu=ifu, dir3d=dir3d)
     return img
-    
