@@ -17,6 +17,7 @@ Generally all datamodels provide a `parameter/property name`, `description`, `un
 By Release
 ----------
 
+* :ref:`datamodel-dr16`
 * :ref:`datamodel-mpl8`
 * :ref:`datamodel-dr15`
 * :ref:`datamodel-mpl7`

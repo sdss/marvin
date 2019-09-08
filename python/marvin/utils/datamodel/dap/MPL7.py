@@ -19,7 +19,7 @@ from .MPL6 import GAU_MILESHC, HYB10, VOR10, MPL6_maps, MPL6_models, binid_prope
 
 
 # MPL-7 DapDataModel goes here
-MPL7 = DAPDataModel('2.2.1', aliases=['MPL-7', 'MPL7', 'DR15'],
+MPL7 = DAPDataModel('2.2.1', aliases=['MPL-7', 'MPL7', 'DR15', 'DR16'],
                     bintypes=[HYB10, VOR10],
                     templates=[GAU_MILESHC],
                     properties=MPL6_maps,

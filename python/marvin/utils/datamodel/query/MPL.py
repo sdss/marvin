@@ -77,3 +77,7 @@ DR15 = QueryDataModel(release='DR15', groups=groups(), aliases=['DR15', 'v2_4_3'
 
 MPL8 = QueryDataModel(release='MPL-8', groups=groups(),
                       aliases=['MPL8', 'v2_5_3', '2.3.0'], exclude=EX6, dapdm=datamodel['MPL-8'])
+
+# DR16
+
+DR16 = QueryDataModel(release='DR16', groups=groups(), aliases=['DR15', 'v2_4_3', '2.2.0'], exclude=EX6, dapdm=datamodel['DR16'])
