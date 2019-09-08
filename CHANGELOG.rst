@@ -6,7 +6,7 @@ Marvin's Change Log
 
 Added
 ^^^^^
-- Support for DR16
+- Support for DR16.  Updated datamodels and docs. 
 
 Changed
 ^^^^^^^
