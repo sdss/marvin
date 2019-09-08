@@ -35,15 +35,12 @@ class HIVAC(VACMixIn):
     """
 
     # Required parameters
-    name = 'mangahi'
+    name = 'hidata'
     description = 'Returns HI summary data and spectra'
-    version = {'MPL-7': 'v1_0_1',
-               'DR15': 'v1_0_1'}
+    version = {'MPL-7': 'v1_0_1', 'DR15': 'v1_0_1', 'DR16': 'v1_0_2'}
 
     # optional Marvin Tools to attach your vac to
-    include = (marvin.tools.cube.Cube,
-               marvin.tools.maps.Maps,
-               marvin.tools.modelcube.ModelCube)
+    include = (marvin.tools.cube.Cube, marvin.tools.maps.Maps, marvin.tools.modelcube.ModelCube)
 
     # Required method
     def get_data(self, parent_object):
@@ -53,8 +50,12 @@ class HIVAC(VACMixIn):
         release = parent_object.release
 
         # define the variables to build a unique path to your VAC file
-        path_params = {'ver': self.version[release], 'type': 'all',
-                       'plateifu': plateifu, 'program': 'GBT16A_095'}
+        path_params = {
+            'ver': self.version[release],
+            'type': 'all',
+            'plateifu': plateifu,
+            'program': 'GBT16A_095',
+        }
 
         # get_path returns False if the files do not exist locally
         allfile = self.get_path('mangahisum', path_params=path_params)
@@ -118,8 +119,10 @@ class HIData(object):
 
             vel = self._specdata['VHI'][0]
             flux = self._specdata['FHI'][0]
-            spec = Spectrum(flux, unit=u.Jy, wavelength=vel, wavelength_unit=u.km/u.s)
-            ax = spec.plot(ylabel='HI\ Flux', xlabel='Velocity', title=self._plateifu, ytrim='minmax')
+            spec = Spectrum(flux, unit=u.Jy, wavelength=vel, wavelength_unit=u.km / u.s)
+            ax = spec.plot(
+                ylabel='HI\ Flux', xlabel='Velocity', title=self._plateifu, ytrim='minmax'
+            )
             return ax
         return None
 
@@ -131,8 +134,12 @@ class HIData(object):
         subset = drpall.loc[self._hi_data['plateifu']]
         log_stmass = np.log10(subset['nsa_elpetro_mass'])
         diff = self._hi_data['logMHI'] - log_stmass
-        fig, axes = scatplot(log_stmass, diff, with_hist=False, ylim=[-5, 5],
-                             xlabel=r'log $M_*$', ylabel=r'log $M_{HI}/M_*$')
+        fig, axes = scatplot(
+            log_stmass,
+            diff,
+            with_hist=False,
+            ylim=[-5, 5],
+            xlabel=r'log $M_*$',
+            ylabel=r'log $M_{HI}/M_*$',
+        )
         return axes[0]
-
-
