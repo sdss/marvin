@@ -382,7 +382,8 @@ class MarvinConfig(object):
                    'MPL-5': ('v2_0_1', '2.0.2'),
                    'MPL-4': ('v1_5_1', '1.1.1')}
 
-        drdict = {'DR15': ('v2_4_3', '2.2.1')}
+        drdict = {'DR15': ('v2_4_3', '2.2.1'),
+                  'DR16': ('v2_4_3', '2.2.1')}
 
         # set the allowed releases based on access
         self._allowed_releases = {}
