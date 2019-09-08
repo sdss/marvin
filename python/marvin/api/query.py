@@ -14,7 +14,7 @@ from brain.utils.general import compress_data
 from brain.utils.general.decorators import public
 from flask import Response, jsonify, redirect, stream_with_context, url_for
 from flask_classful import route
-from marvin import config
+from marvin import config, log
 from marvin.api.base import arg_validate as av
 from marvin.api.base import BaseView
 from marvin.core.exceptions import MarvinError
@@ -27,7 +27,7 @@ from marvin.web.extensions import limiter, celery
 @celery.task
 def test_sleep(t):
     import time
-    print('celery2', celery)
+    log.info('inside celery sleep task')
     time.sleep(t)
     return {'result': 'I have slept', 'status': 'Task Completed', 'current': 10}
 

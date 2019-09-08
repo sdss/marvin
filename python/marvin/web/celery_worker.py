@@ -7,7 +7,7 @@
 # Created: Friday, 16th August 2019 5:30:18 pm
 # License: BSD 3-clause "New" or "Revised" License
 # Copyright (c) 2019 Brian Cherinka
-# Last Modified: Friday, 16th August 2019 5:30:52 pm
+# Last Modified: Saturday, 7th September 2019 4:51:12 pm
 # Modified By: Brian Cherinka
 
 #!/usr/bin/env python
@@ -23,7 +23,7 @@
 # https://blog.miguelgrinberg.com/post/using-celery-with-flask
 #
 # To run the celery worker from the command line, type
-# >>> celery -A celery_worker.celery --loglevel info
+# >>> celery worker -A celery_worker.celery --loglevel info
 #
 # To run the celery worker as a daemon, see
 # https://docs.celeryproject.org/en/latest/userguide/daemonizing.html#daemonizing

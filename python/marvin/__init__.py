@@ -75,6 +75,7 @@ else:
 # Inits the log
 log = initLog(logFilePath)
 
+
 warnings.simplefilter('once')
 warnings.filterwarnings('ignore', 'Skipped unsupported reflection of expression-based index')
 # warnings.filterwarnings('ignore', '(.)+size changed, may indicate binary incompatibility(.)+')

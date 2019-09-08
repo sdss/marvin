@@ -18,8 +18,11 @@ from flask_caching import Cache
 from flask_login import LoginManager
 from flask_jwt_extended import JWTManager
 from celery import Celery
+from celery.signals import after_setup_logger, after_setup_task_logger
 from marvin.web.settings import Config
+from marvin import log
 import flask_jsglue as jsg
+import logging
 
 
 # JS Glue (allows use of Flask.url_for inside javascript)
@@ -48,3 +51,21 @@ jwt = JWTManager()
 
 # Celery Task Manager
 celery = Celery(__name__, broker=Config.CELERY_BROKER_URL)
+
+
+# logger = logging.getLogger(__name__)
+# @after_setup_logger.connect
+# def setup_loggers(logger, *args, **kwargs):
+#     for handler in log._handlers:
+#         logger.addHandler(handler)
+
+
+# @after_setup_task_logger.connect
+# def setup_loggers(logger, *args, **kwargs):
+#     formatter = logging.Formatter(
+#         '%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+#     print('after celery logger setup', log)
+#     # FileHandler
+#     fh = logging.FileHandler('celerylogs.log')
+#     fh.setFormatter(formatter)
+#     logger.addHandler(fh)
