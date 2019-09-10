@@ -35,12 +35,18 @@ class HIVAC(VACMixIn):
     """
 
     # Required parameters
-    name = 'hidata'
+    name = 'HI'
     description = 'Returns HI summary data and spectra'
     version = {'MPL-7': 'v1_0_1', 'DR15': 'v1_0_1', 'DR16': 'v1_0_2'}
 
     # optional Marvin Tools to attach your vac to
     include = (marvin.tools.cube.Cube, marvin.tools.maps.Maps, marvin.tools.modelcube.ModelCube)
+
+    # Required method
+    def set_summary_file(self, release):
+        path_params = {'ver': self.version[release], 'type': 'all', 'program': 'GBT16A_095'}
+        allfile = self.get_path("mangahisum", path_params=path_params)
+        self.summary_file = allfile
 
     # Required method
     def get_data(self, parent_object):

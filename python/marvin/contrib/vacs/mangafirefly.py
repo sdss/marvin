@@ -14,7 +14,7 @@ import numpy as np
 import astropy
 import marvin.tools
 import matplotlib.pyplot as plt
-from marvin import log
+from marvin import log, config
 from .base import VACMixIn
 
 
@@ -38,6 +38,13 @@ class FIREFLYVAC(VACMixIn):
 
     # optional Marvin Tools to attach your vac to
     include = (marvin.tools.cube.Cube, marvin.tools.maps.Maps, marvin.tools.modelcube.ModelCube)
+
+    # Required method
+    def set_summary_file(self, release):
+        drpver, dapver = config.lookUpVersions(release)
+        path_params = {'ver': self.version[release], 'drpver': drpver}
+        allfile = self.get_path('mangaffly', path_params=path_params)
+        self.summary_file = allfile
 
     # Required method
     def get_data(self, parent_object):

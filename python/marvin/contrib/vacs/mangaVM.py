@@ -43,6 +43,12 @@ class VMORPHOVAC(VACMixIn):
     include = (marvin.tools.cube.Cube, marvin.tools.maps.Maps)
 
     # Required method
+    def set_summary_file(self, release):
+        path_params = {"vmver": self.version[release]}
+        vmfile = self.get_path('mangaVmorpho', path_params=path_params)
+        self.summary_file = vmfile
+
+    # Required method
     def get_data(self, parent_object):
 
         # get any parameters you need from the parent object

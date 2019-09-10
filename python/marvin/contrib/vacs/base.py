@@ -18,6 +18,7 @@ import six
 import marvin
 import marvin.tools.plate
 from marvin.core.exceptions import MarvinError
+from astropy.table import Table
 
 import sdss_access.path
 import sdss_access.sync
@@ -83,6 +84,8 @@ class VACMixIn(object, six.with_metaclass(abc.ABCMeta)):
             is_public = 'DR' in self._release
             rsync_release = self._release.lower() if is_public else None
             self.rsync_access = sdss_access.sync.RsyncAccess(public=is_public, release=rsync_release)
+
+        self.set_summary_file(marvin.config.release)
 
     def __repr__(self):
         return '<VAC (name={0}, description={1})>'.format(self.name, self.description)
@@ -197,3 +200,7 @@ class VACMixIn(object, six.with_metaclass(abc.ABCMeta)):
             return True
 
         return False
+
+    @abc.abstractmethod
+    def set_summary_file(self, release):
+        pass

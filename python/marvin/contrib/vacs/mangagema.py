@@ -31,12 +31,18 @@ class GEMAVAC(VACMixIn):
     """
 
     # Required parameters
-    name = 'mangagema'
+    name = 'gema'
     description = 'Returns GEMA table data'
     version = {'MPL-7': '1.0.1', 'DR15': '1.0.1', 'DR16': '1.0.1'}
 
     # optional Marvin Tools to attach your vac to
     include = (marvin.tools.cube.Cube, marvin.tools.maps.Maps, marvin.tools.modelcube.ModelCube)
+
+    # Required method
+    def set_summary_file(self, release):
+        path_params = {"ver": self.version[release]}
+        gemapath = self.get_path('mangagema', path_params=path_params)
+        self.summary_file = gemapath
 
     # Required method
     def get_data(self, parent_object):

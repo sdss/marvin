@@ -38,6 +38,12 @@ class GZVAC(VACMixIn):
     include = (marvin.tools.cube.Cube, marvin.tools.maps.Maps, marvin.tools.modelcube.ModelCube)
 
     # Required method
+    def set_summary_file(self, release):
+        path_params = {"ver": self.version[release]}
+        gzfile = self.get_path("mangagalaxyzoo", path_params=path_params)
+        self.summary_file = gzfile
+
+    # Required method
     def get_data(self, parent_object):
 
         # get any parameters you need from the parent object
@@ -65,29 +71,3 @@ class GZVAC(VACMixIn):
         idx = data["mangaid"] == mangaid
         return data[idx]
 
-
-# class GZData(object):
-#     ''' Row data from the summary file
-#     is returned via the `data` property.
-
-#     '''
-
-#     def __init__(self, plateifu, allfile=None, specfile=None):
-#         self._gzfile = gzfile
-#         self._plateifu = plateifu
-#         self._gzdata = self._open_file(gzfile)
-#         self._indata = plateifu in self._gzdata['plateifu']
-
-#     @staticmethod
-#     def _open_file(gzfile):
-#         return astropy.io.fits.getdata(gzfile, 1)
-
-#     @property
-#     def data(self):
-#         ''' Returns the FITS row data from the Galaxy Zoo file '''
-
-#         if not self._indata:
-#             return "No Galaxy Zoo data exists for {0}".format(self._plateifu)
-
-#         idx = self._gzdata['plateifu'] == self._plateifu
-#         return self._gzdata[idx]
