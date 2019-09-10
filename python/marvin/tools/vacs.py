@@ -7,7 +7,7 @@
 # Created: Sunday, 8th September 2019 11:16:35 pm
 # License: BSD 3-clause "New" or "Revised" License
 # Copyright (c) 2019 Brian Cherinka
-# Last Modified: Monday, 9th September 2019 10:11:14 pm
+# Last Modified: Monday, 9th September 2019 10:12:58 pm
 # Modified By: Brian Cherinka
 
 
@@ -229,7 +229,7 @@ class VACDataClass(object):
             self.download_vac()
 
     def has_target(self, target):
-        ''' Checks if a target is contained within the VAC 
+        ''' Checks if a target is contained within the VAC
         
         Parameters:
             target (str):
