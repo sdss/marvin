@@ -11,11 +11,10 @@
 from __future__ import print_function, division, absolute_import
 
 import numpy as np
-import astropy
 import marvin.tools
 import matplotlib.pyplot as plt
 from marvin import log, config
-from .base import VACMixIn
+from .base import VACMixIn, VACTarget
 
 
 class FIREFLYVAC(VACMixIn):
@@ -65,37 +64,43 @@ class FIREFLYVAC(VACMixIn):
             self.summary_file = self.download_vac('mangaffly', path_params=self.path_params)
 
         # create container for more complex return data.
-        ffly = FFLY(plateifu, vacfile=self.summary_file, imagesz=imagesz)
+        ffly = FFlyTarget(plateifu, vacfile=self.summary_file, imagesz=imagesz)
 
         return ffly
 
 
-class FFLY(object):
-    ''' A customized class to handle more complex data
+class FFlyTarget(VACTarget):
+    ''' A customized target class to also display Firefly 2-d maps
 
-    This class handles data from both the Firefly summary file.  
-    Row data from the summary file is returned via the `data` property.  Images can be displayed via
-    the `show_mosaic` method.
+    This class handles data the Firefly summary file.  Row data from the summary
+    file for the given target is returned via the `data` property. Specific Firefly
+    parameters are available via the `stellar_pops` and `stellar_gradients` methods, respectively.
+    2-d maps from the Firefly data can be produced via the `plot_map` method.
 
     TODO: fix e(b-v) and signal_noise in plot_maps
 
+    Parameters:
+        targetid (str):
+            The plateifu or mangaid designation
+        vacfile (str):
+            The path of the VAC summary file
+        imagesz (int):
+            The original array shape of the target cube
+
+    Attributes:
+        data:
+            The target row data from the main VAC file
+        targetid (str):
+            The target identifier
     '''
 
-    def __init__(self, plateifu, vacfile=None, imagesz=None):
-        self._vacfile = vacfile
-        self._plateifu = plateifu
+    def __init__(self, targetid, vacfile=None, imagesz=None):
+        super(FFlyTarget, self).__init__(targetid, vacfile=vacfile)
         self._image_sz = imagesz
-        self._ffly_data = self._open_file(vacfile)
-        self._indata = plateifu in self._ffly_data[1].data['plateifu']
-        self._idx = self._ffly_data['GALAXY_INFO'].data['plateifu'] == self._plateifu
         self._parameters = ['lw_age', 'mw_age', 'lw_z', 'mw_z']
 
-    def __repr__(self):
-        return 'Firefly({0})'.format(self._plateifu)
-
-    @staticmethod
-    def _open_file(fflyfile):
-        return astropy.io.fits.open(fflyfile)
+        # select the index of the targetid from the main VAC extension
+        self._idx = self._data['GALAXY_INFO'].data['plateifu'] == targetid
 
     def stellar_pops(self, parameter=None):
         ''' Returns the global stellar population properties
@@ -117,12 +122,12 @@ class FFLY(object):
             )
 
         if not self._indata:
-            return "No FIREFLY result exists for {0}".format(self._plateifu)
+            return "No FIREFLY result exists for {0}".format(self.targetid)
 
         if parameter:
-            return self._ffly_data['GLOBAL_PARAMETERS'].data[parameter + '_1re'][self._idx]
+            return self._data['GLOBAL_PARAMETERS'].data[parameter + '_1re'][self._idx]
         else:
-            return self._ffly_data['GLOBAL_PARAMETERS'].data[self._idx]
+            return self._data['GLOBAL_PARAMETERS'].data[self._idx]
 
     def stellar_gradients(self, parameter=None):
         ''' Returns the gradient of stellar population properties
@@ -144,12 +149,12 @@ class FFLY(object):
             )
 
         if not self._indata:
-            return "No FIREFLY result exists for {0}".format(self._plateifu)
+            return "No FIREFLY result exists for {0}".format(self.targetid)
 
         if parameter:
-            return self._ffly_data['GRADIENT_PARAMETERS'].data[parameter + '_gradient'][self._idx]
+            return self._data['GRADIENT_PARAMETERS'].data[parameter + '_gradient'][self._idx]
         else:
-            return self._ffly_data['GRADIENT_PARAMETERS'].data[self._idx]
+            return self._data['GRADIENT_PARAMETERS'].data[self._idx]
 
     def _make_map(self, parameter=None):
         ''' Extract and create a 2d map '''
@@ -160,16 +165,19 @@ class FFLY(object):
             'surface_mass_density',
             'signal_noise',
         ]
-        assert parameter in params, 'Parameter must be one of {0}'.format(params)
+        assert parameter in params, 'Parameter must be one of {0}'.format(
+            params)
 
         # get the required arrays
-        binid = self._ffly_data['SPATIAL_BINID'].data[self._idx].reshape(76, 76)
-        bin1d = self._ffly_data['SPATIAL_INFO'].data[self._idx, :, 0][0]
-        prop = self._ffly_data[parameter + '_voronoi'].data[self._idx, :, 0][0]
+        binid = self._data['SPATIAL_BINID'].data[self._idx].reshape(
+            76, 76)
+        bin1d = self._data['SPATIAL_INFO'].data[self._idx, :, 0][0]
+        prop = self._data[parameter + '_voronoi'].data[self._idx, :, 0][0]
         image_sz = self._image_sz
 
         # make a base map and reshape to a 1d array
-        maps = (np.zeros((image_sz, image_sz)) - 99).reshape(image_sz * image_sz)
+        maps = (np.zeros((image_sz, image_sz)) -
+                99).reshape(image_sz * image_sz)
         # find relevant elements in bin1d (anything not -9999)
         propinds = np.where(bin1d >= -1)
         # find relevant elements in binid (anything not -9999)
@@ -194,7 +202,7 @@ class FFLY(object):
         Plots a 2d map of the specified FIREFLY stellar
         population parameter using Matplotlib.  Optionally mask
         the data when plotting using Numpy's Masked Array.  Default
-        is to mask map values < -10. 
+        is to mask map values < -10.
 
         Parameters:
             parameter (str):
@@ -208,7 +216,7 @@ class FFLY(object):
         '''
 
         if not self._indata:
-            return "No FIREFLY result exists for {0}".format(self._plateifu)
+            return "No FIREFLY result exists for {0}".format(self.targetid)
 
         # create the 2d map
         maps = self._make_map(parameter=parameter)
@@ -219,7 +227,8 @@ class FFLY(object):
 
         # plot the masked map
         fig, ax = plt.subplots()
-        axim = ax.imshow(masked_array, interpolation='nearest', cmap='RdYlBu_r', origin='lower')
+        axim = ax.imshow(masked_array, interpolation='nearest',
+                         cmap='RdYlBu_r', origin='lower')
         ax.set_xlabel('spaxel')
         ax.set_ylabel('spaxel')
         ax.set_title('Firefly {0}'.format(parameter.title()))
@@ -230,3 +239,15 @@ class FFLY(object):
         cbar.ax.tick_params(labelsize=22)
 
         return axim
+
+    def list_parameters(self):
+        ''' List the parameters available for plotting '''
+
+        params = self._parameters + [
+            'e(b-v)',
+            'stellar_mass',
+            'surface_mass_density',
+            'signal_noise',
+        ]
+        return params
+

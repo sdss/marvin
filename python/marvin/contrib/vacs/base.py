@@ -18,7 +18,9 @@ import six
 import marvin
 import marvin.tools.plate
 from marvin.core.exceptions import MarvinError
-from astropy.table import Table
+from marvin.utils.general import parseIdentifier
+from astropy.io import fits
+from functools import wraps
 
 import sdss_access.path
 import sdss_access.sync
@@ -27,7 +29,6 @@ import sdss_access.sync
 __ALL__ = ['VACContainer', 'VACMixIn']
 
 
-from functools import wraps
 def check_for_vac(f):
     ''' Decorator to check for and download VAC '''
     @wraps(f)
@@ -209,7 +210,7 @@ class VACMixIn(object, six.with_metaclass(abc.ABCMeta)):
             return False
 
     def file_exists(self, name=None, path_params={}):
-        """Check whether a file exists."""
+        """Check whether a file exists locally"""
 
         if name is None:
             name = self.name
@@ -245,5 +246,49 @@ class VACMixIn(object, six.with_metaclass(abc.ABCMeta)):
 
     def update_path_params(self, params):
         ''' Update the path_params dictionary with additional parameters '''
+
         assert isinstance(params, dict), 'input parameters must be a dictionary'
         self.path_params.update(params)
+
+    def get_ancillary_file(self, name, path_params={}):
+        ''' Get a path to an ancillary VAC file '''
+
+        path = self.get_path(name, path_params=path_params)
+        if not path:
+            path = self.download_vac(name, path_params=path_params)
+        return path
+
+
+class VACTarget(object):
+    ''' Customized class to handle more complex target data '''
+
+    def __init__(self, targetid, vacfile=None, **kwargs):
+        self.targetid = targetid
+        self._ttype = parseIdentifier(targetid)
+        assert self._ttype in ['plateifu', 'mangaid'], 'Input targetid must be a valid plateifu or mangaid'
+        self._vacfile = vacfile
+        self._data = self._open_file(self._vacfile)
+        self._indata = targetid in self._data[1].data[self._ttype]
+
+    def __repr__(self):
+        return 'Target({0})'.format(self.targetid)
+
+    @property
+    def data(self):
+        ''' The data row from a VAC for a specific targetid '''
+        if not self._indata:
+            return "No data exists for {0}".format(self.targetid)
+
+        idx = self._data[1].data[self._ttype] == self.targetid
+        return self._data[1].data[idx]
+
+    @staticmethod
+    def _open_file(vacfile):
+        ''' Opens the full FITS VAC file '''
+        return fits.open(vacfile)
+
+    @staticmethod
+    def _get_data(vacfile, ext=1):
+        ''' Get only the data from the VAC file from a given extension '''
+        return fits.getdata(vacfile, ext=ext)
+

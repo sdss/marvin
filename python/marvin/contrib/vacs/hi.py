@@ -18,7 +18,7 @@ from marvin.tools.quantities.spectrum import Spectrum
 from marvin.utils.general.general import get_drpall_table
 from marvin.utils.plot.scatter import plot as scatplot
 
-from .base import VACMixIn
+from .base import VACMixIn, VACTarget
 
 
 class HIVAC(VACMixIn):
@@ -62,16 +62,16 @@ class HIVAC(VACMixIn):
         # get any parameters you need from the parent object
         plateifu = parent_object.plateifu
 
-
-        self.update_path_params({'plateifu': plateifu})
-        specfile = self.get_path('mangahispectra', path_params=self.path_params)
-
         # download the vac from the SAS if it does not already exist locally
         if not self.summary_file:
             self.summary_file = self.download_vac('mangahisum', path_params=self.path_params)
 
+        # get path to ancillary VAC file for target HI spectra
+        self.update_path_params({'plateifu': plateifu})
+        specfile = self.get_path('mangahispectra', path_params=self.path_params)
+
         # create container for more complex return data
-        hidata = HIData(plateifu, vacfile=self.summary_file, specfile=specfile)
+        hidata = HITarget(plateifu, vacfile=self.summary_file, specfile=specfile)
 
         # get the spectral data for that row if it exists
         if hidata._indata and not specfile:
@@ -80,78 +80,127 @@ class HIVAC(VACMixIn):
         return hidata
 
 
-class HIData(object):
-    ''' A customized class to handle more complex data
+class HITarget(VACTarget):
+    ''' A customized target class to also display HI spectra
 
     This class handles data from both the HI summary file and the
-    individual HI spectral files.  Row data from the summary file
-    is returned via the `data` property.  Spectral data can be plotted via
-    the `plot_spectrum` method.
+    individual spectral files.  Row data from the summary file for the given target
+    is returned via the `data` property.  Spectral data can be displayed via
+    the the `plot_spectrum` method.
 
+    Parameters:
+        targetid (str):
+            The plateifu or mangaid designation
+        vacfile (str):
+            The path of the VAC summary file
+        specfile (str):
+            The path to the HI spectra
+
+    Attributes:
+        data:
+            The target row data from the main VAC file
+        targetid (str):
+            The target identifier
     '''
 
-    def __init__(self, plateifu, vacfile=None, specfile=None):
-        self._vacfile = vacfile
-        self._specfile = specfile
-        self._plateifu = plateifu
-        self._hi_data = self._open_file(vacfile)
-        self._indata = plateifu in self._hi_data['plateifu']
+    def __init__(self, targetid, vacfile=None, specfile=None):
+        super(HITarget, self).__init__(targetid, vacfile=vacfile)
+        self._specfile = None
         self._specdata = None
-
-    def __repr__(self):
-        return 'HI({0})'.format(self._plateifu)
-
-    @staticmethod
-    def _open_file(hifile):
-        return astropy.io.fits.getdata(hifile, 1)
-
-    @property
-    def data(self):
-        ''' Returns the FITS row data from the mangaHIall summary file '''
-
-        if not self._indata:
-            return "No HI data exists for {0}".format(self._plateifu)
-
-        idx = self._hi_data['plateifu'] == self._plateifu
-        return self._hi_data[idx]
 
     def plot_spectrum(self):
         ''' Plot the HI spectrum '''
 
         if self._specfile:
             if not self._specdata:
-                self._specdata = self._open_file(self._specfile)
+                self._specdata = self._get_data(self._specfile)
 
             vel = self._specdata['VHI'][0]
             flux = self._specdata['FHI'][0]
-            spec = Spectrum(flux, unit=u.Jy, wavelength=vel, wavelength_unit=u.km / u.s)
+            spec = Spectrum(flux, unit=u.Jy, wavelength=vel,
+                            wavelength_unit=u.km / u.s)
             ax = spec.plot(
-                ylabel='HI\ Flux', xlabel='Velocity', title=self._plateifu, ytrim='minmax'
+                ylabel='HI\ Flux', xlabel='Velocity', title=self.targetid, ytrim='minmax'
             )
             return ax
         return None
 
-    def plot_massfraction(self):
-        ''' Plot the HI mass fraction '''
 
-        drpall = get_drpall_table()
-        drpall.add_index('plateifu')
-        subset = drpall.loc[self._hi_data['plateifu']]
-        log_stmass = np.log10(subset['nsa_elpetro_mass'])
-        diff = self._hi_data['logMHI'] - log_stmass
-        fig, axes = scatplot(
-            log_stmass,
-            diff,
-            with_hist=False,
-            ylim=[-5, 5],
-            xlabel=r'log $M_*$',
-            ylabel=r'log $M_{HI}/M_*$',
-        )
-        return axes[0]
+# class HIData(object):
+#     ''' A customized class to handle more complex data
 
+#     This class handles data from both the HI summary file and the
+#     individual HI spectral files.  Row data from the summary file
+#     is returned via the `data` property.  Spectral data can be plotted via
+#     the `plot_spectrum` method.
 
-# def plot_test(self):
-#     print(self.data)
+#     '''
+
+#     def __init__(self, plateifu, vacfile=None, specfile=None):
+#         self._vacfile = vacfile
+#         self._specfile = specfile
+#         self._plateifu = plateifu
+#         self._hi_data = self._open_file(vacfile)
+#         self._indata = plateifu in self._hi_data['plateifu']
+#         self._specdata = None
+
+#     def __repr__(self):
+#         return 'HI({0})'.format(self._plateifu)
+
+#     @staticmethod
+#     def _open_file(hifile):
+#         return astropy.io.fits.getdata(hifile, 1)
+
+#     @property
+#     def data(self):
+#         ''' Returns the FITS row data from the mangaHIall summary file '''
+
+#         if not self._indata:
+#             return "No HI data exists for {0}".format(self._plateifu)
+
+#         idx = self._hi_data['plateifu'] == self._plateifu
+#         return self._hi_data[idx]
+
+#     def plot_spectrum(self):
+#         ''' Plot the HI spectrum '''
+
+#         if self._specfile:
+#             if not self._specdata:
+#                 self._specdata = self._open_file(self._specfile)
+
+#             vel = self._specdata['VHI'][0]
+#             flux = self._specdata['FHI'][0]
+#             spec = Spectrum(flux, unit=u.Jy, wavelength=vel, wavelength_unit=u.km / u.s)
+#             ax = spec.plot(
+#                 ylabel='HI\ Flux', xlabel='Velocity', title=self._plateifu, ytrim='minmax'
+#             )
+#             return ax
+#         return None
+
+#     def plot_massfraction(self):
+#         ''' Plot the HI mass fraction '''
+
+#         drpall = get_drpall_table()
+#         drpall.add_index('plateifu')
+#         subset = drpall.loc[self._hi_data['plateifu']]
+#         log_stmass = np.log10(subset['nsa_elpetro_mass'])
+#         diff = self._hi_data['logMHI'] - log_stmass
+#         fig, axes = scatplot(
+#             log_stmass,
+#             diff,
+#             with_hist=False,
+#             ylim=[-5, 5],
+#             xlabel=r'log $M_*$',
+#             ylabel=r'log $M_{HI}/M_*$',
+#         )
+#         return axes[0]
+
+#
+# Functions to become available on your VAC in marvin.tools.vacs.VACs
+#
+
+# def plot_mass_fraction(self):
+#     ''' Plot the HI mass fraction '''
 #     drpall = get_drpall_table()
 #     drpall.add_index('plateifu')
 #     data = self.data[1].data

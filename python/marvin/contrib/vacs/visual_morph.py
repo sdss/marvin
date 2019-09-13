@@ -10,12 +10,11 @@
 
 from __future__ import print_function, division, absolute_import
 
-import astropy
 import marvin.tools
 import matplotlib.pyplot as plt
 import matplotlib.image as mpimg
 
-from .base import VACMixIn
+from .base import VACMixIn, VACTarget
 
 
 class VMORPHOVAC(VACMixIn):
@@ -63,12 +62,12 @@ class VMORPHOVAC(VACMixIn):
         if not self.summary_file:
             self.summary_file = self.download_vac('mangaVmorpho', path_params=self.path_params)
 
-        # get the mosaic images
+        # get path to ancillary VAC files for SDSS/DESI mosaic images
         self.update_path_params({'plateifu': plateifu, 'survey': '*'})
         sdss_mos, desi_mos = self._get_mosaics(self.path_params)
 
         # create container for more complex return data
-        vmdata = VizMorpho(plateifu, vacfile=self.summary_file, sdss=sdss_mos, desi=desi_mos)
+        vmdata = VizMorphTarget(plateifu, vacfile=self.summary_file, sdss=sdss_mos, desi=desi_mos)
 
         return vmdata
 
@@ -90,7 +89,7 @@ class VMORPHOVAC(VACMixIn):
         ''' Get a mosaic image file for a survey path
         
         Checks for local existence of the mosaic image filepath.
-        If it does not exists, it downloads it. 
+        If it does not exists, it downloads it.
 
         Parameters:
             survey (str):
@@ -114,41 +113,35 @@ class VMORPHOVAC(VACMixIn):
         return mosaic
 
 
-class VizMorpho(object):
-    ''' A customized class to handle more complex data
+class VizMorphTarget(VACTarget):
+    ''' A customized target class to also display morphology mosaics
 
     This class handles data from both the Visual Morphology summary file and the
-    individual image files.  Row data from the summary file
+    individual image files.  Row data from the summary file for the given target
     is returned via the `data` property.  Images can be displayed via
-    the `show_mosaic` method.
+    the the `show_mosaic` method.
 
+    Parameters:
+        targetid (str):
+            The plateifu or mangaid designation
+        vacfile (str):
+            The path of the VAC summary file
+        sdss (str):
+            The path to the SDSS image mosaic
+        desi (str):
+            The path to the DESI image mosaic
+
+    Attributes:
+        data:
+            The target row data from the main VAC file
+        targetid (str):
+            The target identifier
     '''
 
-    def __init__(self, plateifu, vacfile=None, sdss=None, desi=None):
-        self._vacfile = vacfile
-        self._plateifu = plateifu
+    def __init__(self, targetid, vacfile=None, sdss=None, desi=None):
+        super(VizMorphTarget, self).__init__(targetid, vacfile=vacfile)
         self._sdss_img = sdss
         self._desi_img = desi
-        self._vm_data = self._open_file(vacfile)
-        self._indata = plateifu in self._vm_data['plateifu']
-        self._specdata = None
-
-    def __repr__(self):
-        return 'VisualMorpho({0})'.format(self._plateifu)
-
-    @staticmethod
-    def _open_file(vacfile):
-        return astropy.io.fits.getdata(vacfile, 1)
-
-    @property
-    def data(self):
-        ''' Returns the FITS row data from the visual morphology summary file '''
-
-        if not self._indata:
-            return "No morphology data exists for {0}".format(self._plateifu)
-
-        idx = self._vm_data['plateifu'] == self._plateifu
-        return self._vm_data[idx]
 
     def show_mosaic(self, survey=None):
         ''' Show the mosaic image for the given survey
@@ -159,7 +152,7 @@ class VizMorpho(object):
         Parameters:
             survey (str):
                 The survey name.  Can be either "sdss" or "desi".
-        
+
         Returns:
             A matplotlib axis object
         '''

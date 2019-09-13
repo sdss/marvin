@@ -97,6 +97,21 @@ to the user. Very little knowledge of how Marvin internally works is required! T
 `marvin/contrib/vacs <https://github.com/sdss/marvin/blob/master/python/marvin/contrib/vacs>`__ contains the 
 base code and a list of already implemented VACs that you can use as a template.
 
+
+The VACMixIn class has several methods available to aid the setup of your VAC.  
+* set_summary_file
+* get_target
+* set_ancillary_file
+
+Let's see an example of how to put it together.  
+
+Example: Galaxy Zoo Morphologies in MaNGA 
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+
+Each VAC 
+
+
 Example: HI Follow-up for MaNGA
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -118,14 +133,9 @@ URL with a description of its contents, and a short description of what the VAC 
 
 The global section of the `~marvin.contrib.vacs.hi.HIVAC` class defines :
 
-* The ``name`` of the VAC (this is the name that users will enter to access the VAC from Marvin). This is the only required 
-attribute that we need to override from the parent class.
-* A ``version`` dictionary that defines the relationship between Marvin releases (e.g., ``MPL-7``, ``DR15``) and internal MaNGA-HI 
-versions.
-* An ``include`` attribute that contains a list of Marvin Tools classes to which this VAC must be added. In this particular 
-case we only want the HI VAC to show in `~marvin.tools.cube.Cube`, `~marvin.tools.maps.Maps`, and 
-`~marvin.tools.modelcube.ModelCube`. If ``include`` is not defined the VAC will be added to all the Marvin Tools classes 
-with the exception of `~marvin.tools.plate.Plate`.
+* The ``name`` of the VAC (this is the name that users will enter to access the VAC from Marvin). This is the only required attribute that we need to override from the parent class.
+* A ``version`` dictionary that defines the relationship between Marvin releases (e.g., ``MPL-7``, ``DR15``) and internal MaNGA-HI versions.
+* An ``include`` attribute that contains a list of Marvin Tools classes to which this VAC must be added. In this particular case we only want the HI VAC to show in `~marvin.tools.cube.Cube`, `~marvin.tools.maps.Maps`, and `~marvin.tools.modelcube.ModelCube`. If ``include`` is not defined the VAC will be added to all the Marvin Tools classes with the exception of `~marvin.tools.plate.Plate`.
 
 `~.VACMixIn.get_target` is the only method that you need to override from `~.VACMixIn`. You will have noted that 
 `~.VACMixIn.get_target` receives a single, ``parent_object`` argument, which is the object 
@@ -176,20 +186,27 @@ Writing your own VAC
 If you are a VAC owner by now you will have hopefully decided that you want to provide access to it with Marvin. How do you do that?
 
 * First, make sure you read the :ref:`Coding standards` and :ref:`Development process` sections.
-* For the Marvin repository and clone your fork. From the ``python/marvin/contrib/vacs`` directory select an example that 
-looks similar to what you need. Within the ``vacs/`` directory. Duplicate that file and rename it to the name of your VAC.
-* Modify the name of the class that inherits from `.VACMixIn` (important!) and change the ``name`` attribute to the name 
-of your VAC. Update the docstring with information about your VAC. Most importantly, make sure the description clearly states 
-what your VAC is returning.
-* To be able to use `~marvin.contrib.vacs.VACMixIn.download_vac` the archetype of your VAC's file path must have been added to 
-`sdss_paths.ini <https://github.com/sdss/tree/blob/master/data/sdss_paths.ini>`__. Refer to the `tree`_ documentation to learn 
-how to do that.
+* For the Marvin repository and clone your fork. From the ``python/marvin/contrib/vacs`` directory select an example that looks similar to what you need. Within the ``vacs/`` directory. Duplicate that file and rename it to the name of your VAC.
+* Modify the name of the class that inherits from `.VACMixIn` (important!) and change the ``name`` attribute to the name of your VAC. Update the docstring with information about your VAC. Most importantly, make sure the description clearly states what your VAC is returning.
+* To be able to use `~marvin.contrib.vacs.VACMixIn.download_vac` the archetype of your VAC's file path must have been added to `sdss_paths.ini <https://github.com/sdss/tree/blob/master/data/sdss_paths.ini>`__. Refer to the `tree`_ documentation to learn how to do that.
 * Test you implementation by accessing your VAC as ``object.vacs.<your-vac-name>``.
-* As the VAC owner, you are responsible for making sure your class returns the correct information. We **strongly** suggest 
-you implement unittests to make sure that is the case. You can see some examples `here 
-<https://github.com/sdss/marvin/blob/master/python/marvin/tests/contrib/test_vacs.py>`__.
+* As the VAC owner, you are responsible for making sure your class returns the correct information. We **strongly** suggest you implement unittests to make sure that is the case. You can see some examples `here <https://github.com/sdss/marvin/blob/master/python/marvin/tests/contrib/test_vacs.py>`__.
 * Once you are happy with the result, open a new pull request to integrate your changes.
 * If you have any doubt, contact the Marvin team, we will be happy to help you throughout the process.
+
+Writing your own VAC
+^^^^^^^^^^^^^^^^^^^^
+Setup
+# Must have Github 
+# Fork Marvin repos 
+Requirements
+# You must have a version number associated with your VAC
+Contributing
+# First, make sure you read the :ref:`Coding standards` and :ref:`Development process` sections.
+# Add your path to the tree product
+# Write your VACMixin class
+# Test your VAC in marvin
+
 
 
 Classes
