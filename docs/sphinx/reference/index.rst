@@ -12,6 +12,7 @@ Reference
     quantities
     queries
     utils
+    vacs
     core
     web
     api

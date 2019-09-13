@@ -44,32 +44,31 @@ class VMORPHOVAC(VACMixIn):
 
     # Required method
     def set_summary_file(self, release):
-        path_params = {"vmver": self.version[release]}
-        vmfile = self.get_path('mangaVmorpho', path_params=path_params)
-        self.summary_file = vmfile
+        ''' Sets the path to the Visual Morphology summary file '''
+
+        # define the variables to build a unique path to your VAC file
+        self.path_params = {"vmver": self.version[release]}
+
+        # get_path returns False if the files do not exist locally
+        self.summary_file = self.get_path('mangaVmorpho', path_params=self.path_params)
 
     # Required method
-    def get_data(self, parent_object):
+    def get_target(self, parent_object):
+        ''' Accesses VAC data for a specific target from a Marvin Tool object '''
 
         # get any parameters you need from the parent object
         plateifu = parent_object.plateifu
-        release = parent_object.release
-
-        # define the variables to build a unique path to your VAC file
-        path_params = {'vmver': self.version[release], 'plateifu': plateifu, 'survey': '*'}
-
-        # get_path returns False if the files do not exist locally
-        vmfile = self.get_path('mangaVmorpho', path_params=path_params)
 
         # download the vac from the SAS if it does not already exist locally
-        if not vmfile:
-            vmfile = self.download_vac('mangaVmorpho', path_params=path_params)
+        if not self.summary_file:
+            self.summary_file = self.download_vac('mangaVmorpho', path_params=self.path_params)
 
         # get the mosaic images
-        sdss_mos, desi_mos = self._get_mosaics(path_params)
+        self.update_path_params({'plateifu': plateifu, 'survey': '*'})
+        sdss_mos, desi_mos = self._get_mosaics(self.path_params)
 
         # create container for more complex return data
-        vmdata = VizMorpho(plateifu, vmfile=vmfile, sdss=sdss_mos, desi=desi_mos)
+        vmdata = VizMorpho(plateifu, vacfile=self.summary_file, sdss=sdss_mos, desi=desi_mos)
 
         return vmdata
 
@@ -125,12 +124,12 @@ class VizMorpho(object):
 
     '''
 
-    def __init__(self, plateifu, vmfile=None, sdss=None, desi=None):
-        self._vmfile = vmfile
+    def __init__(self, plateifu, vacfile=None, sdss=None, desi=None):
+        self._vacfile = vacfile
         self._plateifu = plateifu
         self._sdss_img = sdss
         self._desi_img = desi
-        self._vm_data = self._open_file(vmfile)
+        self._vm_data = self._open_file(vacfile)
         self._indata = plateifu in self._vm_data['plateifu']
         self._specdata = None
 
@@ -138,8 +137,8 @@ class VizMorpho(object):
         return 'VisualMorpho({0})'.format(self._plateifu)
 
     @staticmethod
-    def _open_file(vmfile):
-        return astropy.io.fits.getdata(vmfile, 1)
+    def _open_file(vacfile):
+        return astropy.io.fits.getdata(vacfile, 1)
 
     @property
     def data(self):

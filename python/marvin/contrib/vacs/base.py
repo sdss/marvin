@@ -27,6 +27,22 @@ import sdss_access.sync
 __ALL__ = ['VACContainer', 'VACMixIn']
 
 
+from functools import wraps
+def check_for_vac(f):
+    ''' Decorator to check for and download VAC '''
+    @wraps(f)
+    def decorated_function(inst, *args, **kwargs):
+        if 'path' in kwargs and kwargs['path']:
+            for kw in kwargs['path'].split('/'):
+                if len(kw) == 0:
+                    continue
+                var, value = kw.split('=')
+                kwargs[var] = value
+        kwargs.pop('path')
+        return f(inst, *args, **kwargs)
+    return decorated_function
+
+
 class VACContainer(object):
 
     def __repr__(self):
@@ -85,13 +101,15 @@ class VACMixIn(object, six.with_metaclass(abc.ABCMeta)):
             rsync_release = self._release.lower() if is_public else None
             self.rsync_access = sdss_access.sync.RsyncAccess(public=is_public, release=rsync_release)
 
+        # file path for VAC summary file
+        self.summary_file = None
         self.set_summary_file(marvin.config.release)
 
     def __repr__(self):
         return '<VAC (name={0}, description={1})>'.format(self.name, self.description)
 
     @abc.abstractmethod
-    def get_data(self, parent_object):
+    def get_target(self, parent_object):
         """Returns VAC data that matches the `parent_object` target.
 
         This method must be overridden in each subclass of `VACMixIn`. Details
@@ -103,7 +121,7 @@ class VACMixIn(object, six.with_metaclass(abc.ABCMeta)):
         * Open the file using the appropriate library.
         * Retrieve the VAC data matching ``parent_object``. Usually one will
           use attributes in ``parent_object`` such as ``.mangaid`` or
-          ``.plate`` to perform the match.
+          ``.plateifu`` to perform the match.
         * Return the VAC data in whatever format is appropriate.
 
         """
@@ -123,7 +141,7 @@ class VACMixIn(object, six.with_metaclass(abc.ABCMeta)):
         ----------
         parent_object : object
             The object to which the VACs are being attached. It will be passed
-            to `~VACMixIn.get_data` when the subclass of `VACMixIn` is
+            to `~VACMixIn.get_target` when the subclass of `VACMixIn` is
             called.
 
         Returns
@@ -151,7 +169,7 @@ class VACMixIn(object, six.with_metaclass(abc.ABCMeta)):
             # a cell-var-from-loop issue.
             if parent_object._release in subvac.version:
                 setattr(VACContainer, subvac.name,
-                        property(lambda self, sv=subvac: sv().get_data(parent_object)))
+                        property(lambda self, sv=subvac: sv().get_target(parent_object)))
 
         return vac_container
 
@@ -201,6 +219,31 @@ class VACMixIn(object, six.with_metaclass(abc.ABCMeta)):
 
         return False
 
+    def check_vac(self, summary_file):
+        ''' Checks the summary file for existence '''
+        pass
+
     @abc.abstractmethod
     def set_summary_file(self, release):
+        """ Sets the VAC summary file
+
+        This method must be overridden in each subclass of `VACMixIn`. Details
+        will depend on the exact implementation and the type of VAC, but in
+        general each version of this method must:
+
+        * Access the version of your VAC matching the current ``release``
+        * Define a dictionary of keyword parameters that defines the `tree` path
+        * Use `~VACMixIn.get_path` to construct the VAC path
+        * Set that path to the `~VACMixIn.summary_file` attribute
+        
+        Setting a VAC summary file allows the `~marvin.tools.vacs.VACs` tool to load
+        the full VAC data.  If the VAC does not contain a summary file, this method
+        should `pass` or return `None`.
+
+        """
         pass
+
+    def update_path_params(self, params):
+        ''' Update the path_params dictionary with additional parameters '''
+        assert isinstance(params, dict), 'input parameters must be a dictionary'
+        self.path_params.update(params)

@@ -41,44 +41,57 @@ class FIREFLYVAC(VACMixIn):
 
     # Required method
     def set_summary_file(self, release):
+        ''' Sets the path to the Firefly summary file '''
+
+        # define the variables to build a unique path to your VAC file
+        # look up the MaNGA drpver from the release
         drpver, dapver = config.lookUpVersions(release)
-        path_params = {'ver': self.version[release], 'drpver': drpver}
-        allfile = self.get_path('mangaffly', path_params=path_params)
-        self.summary_file = allfile
+        self.path_params = {'ver': self.version[release], 'drpver': drpver}
+
+        # get_path returns False if the files do not exist locally
+        self.summary_file = self.get_path('mangaffly', path_params=self.path_params)
 
     # Required method
-    def get_data(self, parent_object):
+    def get_target(self, parent_object):
+        ''' Accesses VAC data for a specific target from a Marvin Tool object '''
 
-        release = parent_object.release
-        drpver = parent_object._drpver
+        # get any parameters you need from the parent object
         plateifu = parent_object.plateifu
         imagesz = int(parent_object.header['NAXIS1'])
 
-        # define the variables to build a unique path to your VAC file
-        path_params = {'ver': self.version[release], 'drpver': drpver}
-        # get_path returns False if the files do not exist locally
-        allfile = self.get_path('mangaffly', path_params=path_params)
-
         # download the vac from the SAS if it does not already exist locally
-        if not allfile:
+        if not self.summary_file:
             log.info('Warning: This file is ~6 GB.  It may take awhile to download')
-            allfile = self.download_vac('mangaffly', path_params=path_params)
+            self.summary_file = self.download_vac('mangaffly', path_params=self.path_params)
 
         # create container for more complex return data.
-        ffly = FFLY(plateifu, allfile=allfile, imagesz=imagesz)
+        ffly = FFLY(plateifu, vacfile=self.summary_file, imagesz=imagesz)
 
         return ffly
 
 
 class FFLY(object):
-    def __init__(self, plateifu, allfile=None, imagesz=None):
-        self._allfile = allfile
+    ''' A customized class to handle more complex data
+
+    This class handles data from both the Firefly summary file.  
+    Row data from the summary file is returned via the `data` property.  Images can be displayed via
+    the `show_mosaic` method.
+
+    TODO: fix e(b-v) and signal_noise in plot_maps
+
+    '''
+
+    def __init__(self, plateifu, vacfile=None, imagesz=None):
+        self._vacfile = vacfile
         self._plateifu = plateifu
         self._image_sz = imagesz
-        self._ffly_data = self._open_file(allfile)
+        self._ffly_data = self._open_file(vacfile)
         self._indata = plateifu in self._ffly_data[1].data['plateifu']
         self._idx = self._ffly_data['GALAXY_INFO'].data['plateifu'] == self._plateifu
         self._parameters = ['lw_age', 'mw_age', 'lw_z', 'mw_z']
+
+    def __repr__(self):
+        return 'Firefly({0})'.format(self._plateifu)
 
     @staticmethod
     def _open_file(fflyfile):

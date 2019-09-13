@@ -39,29 +39,27 @@ class GZVAC(VACMixIn):
 
     # Required method
     def set_summary_file(self, release):
-        path_params = {"ver": self.version[release]}
-        gzfile = self.get_path("mangagalaxyzoo", path_params=path_params)
-        self.summary_file = gzfile
+        ''' Sets the path to the GalaxyZoo summary file '''
+
+        # define the variables to build a unique path to your VAC file
+        self.path_params = {"ver": self.version[release]}
+
+        # get_path returns False if the files do not exist locally
+        self.summary_file = self.get_path("mangagalaxyzoo", path_params=self.path_params)
 
     # Required method
-    def get_data(self, parent_object):
+    def get_target(self, parent_object):
+        ''' Accesses VAC data for a specific target from a Marvin Tool object '''
 
         # get any parameters you need from the parent object
         mangaid = parent_object.mangaid
-        release = parent_object.release
-
-        # define the variables to build a unique path to your VAC file
-        path_params = {"ver": self.version[release]}
-
-        # get_path returns False if the files do not exist locally
-        gzfile = self.get_path("mangagalaxyzoo", path_params=path_params)
 
         # download the vac from the SAS if it does not already exist locally
-        if not gzfile:
-            gzfile = self.download_vac("mangagalaxyzoo", path_params=path_params)
+        if not self.summary_file:
+            self.summary_file = self.download_vac("mangagalaxyzoo", path_params=self.path_params)
 
         # Open the file
-        data = astropy.io.fits.getdata(gzfile, 1)
+        data = astropy.io.fits.getdata(self.summary_file, 1)
 
         # Return selected line(s)
         indata = mangaid in data["mangaid"]

@@ -7,13 +7,14 @@
 # Created: Sunday, 8th September 2019 11:16:35 pm
 # License: BSD 3-clause "New" or "Revised" License
 # Copyright (c) 2019 Brian Cherinka
-# Last Modified: Monday, 9th September 2019 10:12:58 pm
+# Last Modified: Friday, 13th September 2019 12:35:32 am
 # Modified By: Brian Cherinka
 
 
 from __future__ import print_function, division, absolute_import
 import inspect
 import six
+import os
 from marvin.contrib.vacs.base import VACContainer, VACMixIn
 from marvin import config
 from marvin.core.exceptions import MarvinError
@@ -99,11 +100,16 @@ class VACs(VACContainer):
             if config.release not in subvac.version:
                 continue
 
-            if subvac.name == 'galaxyzoo3d':
-                continue
+            # if subvac.name == 'galaxyzoo3d':
+            #     continue
 
+            sv = subvac()
+            if not sv.summary_file:
+                print('VAC {0} has no summary file to load.  Skipping.'.format(sv.name))
+                continue
+            
             cls._vacs.append(subvac.name)
-            setattr(cls, subvac.name, VACDataClass(subvac.name, subvac.description, subvac().summary_file))
+            setattr(cls, subvac.name, VACDataClass(subvac.name, subvac.description, sv.summary_file))
 
         return super(VACs, cls).__new__(cls, *args, **kwargs)
 
@@ -225,6 +231,12 @@ class VACDataClass(object):
 
     def _check_file(self):
         ''' check for a file locally, else downloads it '''
+
+        # ensure file is of FITS format
+        ext = os.path.splitext(self._path)[-1]
+        assert '.fits' in ext, 'VAC summary file must be of FITS format'
+
+        # download file
         if not self._rsync.exists('', full=self._path):
             self.download_vac()
 

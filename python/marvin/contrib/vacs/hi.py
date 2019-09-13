@@ -42,41 +42,40 @@ class HIVAC(VACMixIn):
     # optional Marvin Tools to attach your vac to
     include = (marvin.tools.cube.Cube, marvin.tools.maps.Maps, marvin.tools.modelcube.ModelCube)
 
-    # Required method
-    def set_summary_file(self, release):
-        path_params = {'ver': self.version[release], 'type': 'all', 'program': 'GBT16A_095'}
-        allfile = self.get_path("mangahisum", path_params=path_params)
-        self.summary_file = allfile
+    #
+    # add_plots = ['plot_test']
 
     # Required method
-    def get_data(self, parent_object):
+    def set_summary_file(self, release):
+        ''' Sets the path to the HI summary file '''
+
+        # define the variables to build a unique path to your VAC file
+        self.path_params = {'ver': self.version[release], 'type': 'all', 'program': 'GBT16A_095'}
+
+        # get_path returns False if the files do not exist locally
+        self.summary_file = self.get_path("mangahisum", path_params=self.path_params)
+
+    # Required method
+    def get_target(self, parent_object):
+        ''' Accesses VAC data for a specific target from a Marvin Tool object '''
 
         # get any parameters you need from the parent object
         plateifu = parent_object.plateifu
-        release = parent_object.release
 
-        # define the variables to build a unique path to your VAC file
-        path_params = {
-            'ver': self.version[release],
-            'type': 'all',
-            'plateifu': plateifu,
-            'program': 'GBT16A_095',
-        }
 
-        # get_path returns False if the files do not exist locally
-        allfile = self.get_path('mangahisum', path_params=path_params)
-        specfile = self.get_path('mangahispectra', path_params=path_params)
+        self.update_path_params({'plateifu': plateifu})
+        specfile = self.get_path('mangahispectra', path_params=self.path_params)
 
         # download the vac from the SAS if it does not already exist locally
-        if not allfile:
-            allfile = self.download_vac('mangahisum', path_params=path_params)
+        if not self.summary_file:
+            self.summary_file = self.download_vac('mangahisum', path_params=self.path_params)
 
         # create container for more complex return data
-        hidata = HIData(plateifu, allfile=allfile, specfile=specfile)
+        hidata = HIData(plateifu, vacfile=self.summary_file, specfile=specfile)
 
         # get the spectral data for that row if it exists
         if hidata._indata and not specfile:
-            hidata._specfile = self.download_vac('mangahispectra', path_params=path_params)
+            hidata._specfile = self.download_vac('mangahispectra', path_params=self.path_params)
 
         return hidata
 
@@ -91,11 +90,11 @@ class HIData(object):
 
     '''
 
-    def __init__(self, plateifu, allfile=None, specfile=None):
-        self._allfile = allfile
+    def __init__(self, plateifu, vacfile=None, specfile=None):
+        self._vacfile = vacfile
         self._specfile = specfile
         self._plateifu = plateifu
-        self._hi_data = self._open_file(allfile)
+        self._hi_data = self._open_file(vacfile)
         self._indata = plateifu in self._hi_data['plateifu']
         self._specdata = None
 
@@ -149,3 +148,22 @@ class HIData(object):
             ylabel=r'log $M_{HI}/M_*$',
         )
         return axes[0]
+
+
+# def plot_test(self):
+#     print(self.data)
+#     drpall = get_drpall_table()
+#     drpall.add_index('plateifu')
+#     data = self.data[1].data
+#     subset = drpall.loc[data['plateifu']]
+#     log_stmass = np.log10(subset['nsa_elpetro_mass'])
+#     diff = data['logMHI'] - log_stmass
+#     fig, axes = scatplot(
+#         log_stmass,
+#         diff,
+#         with_hist=False,
+#         ylim=[-5, 5],
+#         xlabel=r'log $M_*$',
+#         ylabel=r'log $M_{HI}/M_*$',
+#     )
+#     return axes[0]
