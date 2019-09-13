@@ -91,37 +91,67 @@ Contributing a VAC
 how SDSS and MaNGA data is analysed and distributed. Following SDSS policy, Marvin does not directly support VACs, but it 
 does supply a framework for VAC owners to implement access to their catalogues from Marvin.
 
-At this time, only file-based access is supported (i.e., no querying or remote access is available) but the `~.VACMixIn` class provides a convenient way of matching targets with their VAC information and returning it to the user. Very little knowledge of how Marvin internally works is required! The directory `marvin/contrib/vacs <https://github.com/sdss/marvin/blob/master/python/marvin/contrib/vacs>`__ contains the base code and a list of already implemented VACs that you can use as a template.
+At this time, only file-based access is supported (i.e., no querying or remote access is available) but 
+the `~.VACMixIn` class provides a convenient way of matching targets with their VAC information and returning it 
+to the user. Very little knowledge of how Marvin internally works is required! The directory 
+`marvin/contrib/vacs <https://github.com/sdss/marvin/blob/master/python/marvin/contrib/vacs>`__ contains the 
+base code and a list of already implemented VACs that you can use as a template.
 
 Example: HI Follow-up for MaNGA
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-The `MaNGA-HI` project is a program to perform follow-up observations of all MaNGA targets to look for HI 21cm using the Greenbank Radio Telescope.  This project provides HI spectral data and derived HI properties of MaNGA galaxies.  For each observed MaNGA galaxy, there is an HI spectrum FITS file, as well as a summary file of all HI observations. You can find all the files `here <https://data.sdss.org/sas/mangawork/manga/HI/>`__ with the format ``<version>/mangaHIall.fits`` for the summary file, and format ``<version>/spectra/<programid>/fits/mangaHI-<plateifu>.fits``. ``<version>`` is the version of the HI VAC release, ``<programid>`` is an internal identifier for the observing program, and ``<plateifu>`` is the plate-IFU of the galaxy. The source code for this VAC's implementation can be found at  `marvin/contrib/vacs/hi.py <https://github.com/sdss/marvin/blob/master/python/marvin/contrib/vacs/hi.py>`__:
+The `MaNGA-HI` project is a program to perform follow-up observations of all MaNGA targets to look for HI 21cm 
+using the Greenbank Radio Telescope.  This project provides HI spectral data and derived HI properties of MaNGA galaxies.  
+For each observed MaNGA galaxy, there is an HI spectrum FITS file, as well as a summary file of all HI observations. You can 
+find all the files `here <https://data.sdss.org/sas/mangawork/manga/HI/>`__ with the format ``<version>/mangaHIall.fits`` 
+for the summary file, and format ``<version>/spectra/<programid>/fits/mangaHI-<plateifu>.fits``. ``<version>`` is the version 
+of the HI VAC release, ``<programid>`` is an internal identifier for the observing program, and ``<plateifu>`` is the plate-IFU 
+of the galaxy. The source code for this VAC's implementation can be found at 
+`marvin/contrib/vacs/hi.py <https://github.com/sdss/marvin/blob/master/python/marvin/contrib/vacs/hi.py>`__:
 
 .. literalinclude:: ../../../python/marvin/contrib/vacs/hi.py
    :language: python
    :linenos:
 
-The file itself contains just a subclass of `~.VACMixIn`. In the docstring, we make sure to include the name of the VAC, a URL with a description of its contents, and a short description of what the VAC provides and what the class returns.
+The file itself contains just a subclass of `~.VACMixIn`. In the docstring, we make sure to include the name of the VAC, a 
+URL with a description of its contents, and a short description of what the VAC provides and what the class returns.
 
 The global section of the `~marvin.contrib.vacs.hi.HIVAC` class defines :
 
-* The ``name`` of the VAC (this is the name that users will enter to access the VAC from Marvin). This is the only required attribute that we need to override from the parent class.
-* A ``version`` dictionary that defines the relationship between Marvin releases (e.g., ``MPL-7``, ``DR15``) and internal MaNGA-HI versions.
-* An ``include`` attribute that contains a list of Marvin Tools classes to which this VAC must be added. In this particular case we only want the HI VAC to show in `~marvin.tools.cube.Cube`, `~marvin.tools.maps.Maps`, and `~marvin.tools.modelcube.ModelCube`. If ``include`` is not defined the VAC will be added to all the Marvin Tools classes with the exception of `~marvin.tools.plate.Plate`.
+* The ``name`` of the VAC (this is the name that users will enter to access the VAC from Marvin). This is the only required 
+attribute that we need to override from the parent class.
+* A ``version`` dictionary that defines the relationship between Marvin releases (e.g., ``MPL-7``, ``DR15``) and internal MaNGA-HI 
+versions.
+* An ``include`` attribute that contains a list of Marvin Tools classes to which this VAC must be added. In this particular 
+case we only want the HI VAC to show in `~marvin.tools.cube.Cube`, `~marvin.tools.maps.Maps`, and 
+`~marvin.tools.modelcube.ModelCube`. If ``include`` is not defined the VAC will be added to all the Marvin Tools classes 
+with the exception of `~marvin.tools.plate.Plate`.
 
-`~.VACMixIn.get_target` is the only method that you need to override from `~.VACMixIn`. You will have noted that `~.VACMixIn.get_target` receives a single, ``parent_object`` argument, which is the object (e.g., a `~marvin.tools.maps.Maps` instance) that is trying to access the VAC information. You can use it and its attributes to do the matching with the VAC information.
+`~.VACMixIn.get_target` is the only method that you need to override from `~.VACMixIn`. You will have noted that 
+`~.VACMixIn.get_target` receives a single, ``parent_object`` argument, which is the object 
+(e.g., a `~marvin.tools.maps.Maps` instance) that is trying to access the VAC information. You can use it and its attributes 
+to do the matching with the VAC information.
 
-We use `sdss_access <http://sdss-access.readthedocs.io/en/stable>`__ to download the necessary files, so we need to be sure that the paths to the VAC files are included in the `tree <http://sdss-tree.readthedocs.io/en/latest/>`_. For these particular filetypes the entry in tree looks like::
+We use `sdss_access <http://sdss-access.readthedocs.io/en/stable>`__ to download the necessary files, so we need to be sure 
+that the paths to the VAC files are included in the `tree <http://sdss-tree.readthedocs.io/en/latest/>`_. For these particular 
+filetypes the entry in tree looks like::
 
     mangahisum = $MANGA_HI/{ver}/mangaHI{type}.fits
     mangahispectra = $MANGA_HI/{ver}/spectra/{program}/fits/mangaHI-{plateifu}.fits
 
-In addition to the tree path names (``mangahi``, ``mangahispectra``) we need to define a dictionary of path parameters. We use the ``parent_object`` to determine the release (and thus the HI ``version``) and the ``plateifu``. Because for a given ``program`` and ``type`` are fixed, they are manually specified in the VAC.
+In addition to the tree path names (``mangahi``, ``mangahispectra``) we need to define a dictionary of path parameters. We use 
+the ``parent_object`` to determine the release (and thus the HI ``version``) and the ``plateifu``. Because for a given 
+``program`` and ``type`` are fixed, they are manually specified in the VAC.
 
-First, we use `~marvin.contrib.vacs.VACMixIn.get_path` to determine whether the file is already present in the local SAS. If that is not the case, we use `~marvin.contrib.vacs.VACMixIn.download_vac` to retrieve it.
+First, we use `~marvin.contrib.vacs.VACMixIn.get_path` to determine whether the file is already present in the local SAS. 
+If that is not the case, we use `~marvin.contrib.vacs.VACMixIn.download_vac` to retrieve it.
 
-Once you have the file(s), all that is left is to return the data you want from the FITS files.  In most cases you may simply want to return the entire FITS file or a specific row of an extension.  In other cases you may want to return something a bit more complex.  Since the HI VAC includes for a given galaxy both data from an HI summary file and an HI flux spectrum, we want to return both the summary and spectral data, plus provide a method for plotting the HI spectrum.  The best way to do that is by creating a new custom class (`~marvin.contrib.vacs.hi.HIData`) that will handle all the HI data for us, along with any other complexity we wish to add.  We can simply return an instance of our custom class in the `~.VACMixIn.get_target` method.
+Once you have the file(s), all that is left is to return the data you want from the FITS files.  In most cases you may 
+simply want to return the entire FITS file or a specific row of an extension.  In other cases you may want to return something 
+a bit more complex.  Since the HI VAC includes for a given galaxy both data from an HI summary file and an HI flux spectrum, 
+we want to return both the summary and spectral data, plus provide a method for plotting the HI spectrum.  The best way to do 
+that is by creating a new custom class (`~marvin.contrib.vacs.hi.HIData`) that will handle all the HI data for us, along with 
+any other complexity we wish to add.  We can simply return an instance of our custom class in the `~.VACMixIn.get_target` method.
 
 
 Now that we have implemented the VAC, let's make sure it works:
@@ -146,11 +176,18 @@ Writing your own VAC
 If you are a VAC owner by now you will have hopefully decided that you want to provide access to it with Marvin. How do you do that?
 
 * First, make sure you read the :ref:`Coding standards` and :ref:`Development process` sections.
-* For the Marvin repository and clone your fork. From the ``python/marvin/contrib/vacs`` directory select an example that looks similar to what you need. Within the ``vacs/`` directory. Duplicate that file and rename it to the name of your VAC.
-* Modify the name of the class that inherits from `.VACMixIn` (important!) and change the ``name`` attribute to the name of your VAC. Update the docstring with information about your VAC. Most importantly, make sure the description clearly states what your VAC is returning.
-* To be able to use `~marvin.contrib.vacs.VACMixIn.download_vac` the archetype of your VAC's file path must have been added to `sdss_paths.ini <https://github.com/sdss/tree/blob/master/data/sdss_paths.ini>`__. Refer to the `tree`_ documentation to learn how to do that.
+* For the Marvin repository and clone your fork. From the ``python/marvin/contrib/vacs`` directory select an example that 
+looks similar to what you need. Within the ``vacs/`` directory. Duplicate that file and rename it to the name of your VAC.
+* Modify the name of the class that inherits from `.VACMixIn` (important!) and change the ``name`` attribute to the name 
+of your VAC. Update the docstring with information about your VAC. Most importantly, make sure the description clearly states 
+what your VAC is returning.
+* To be able to use `~marvin.contrib.vacs.VACMixIn.download_vac` the archetype of your VAC's file path must have been added to 
+`sdss_paths.ini <https://github.com/sdss/tree/blob/master/data/sdss_paths.ini>`__. Refer to the `tree`_ documentation to learn 
+how to do that.
 * Test you implementation by accessing your VAC as ``object.vacs.<your-vac-name>``.
-* As the VAC owner, you are responsible for making sure your class returns the correct information. We **strongly** suggest you implement unittests to make sure that is the case. You can see some examples `here <https://github.com/sdss/marvin/blob/master/python/marvin/tests/contrib/test_vacs.py>`__.
+* As the VAC owner, you are responsible for making sure your class returns the correct information. We **strongly** suggest 
+you implement unittests to make sure that is the case. You can see some examples `here 
+<https://github.com/sdss/marvin/blob/master/python/marvin/tests/contrib/test_vacs.py>`__.
 * Once you are happy with the result, open a new pull request to integrate your changes.
 * If you have any doubt, contact the Marvin team, we will be happy to help you throughout the process.
 

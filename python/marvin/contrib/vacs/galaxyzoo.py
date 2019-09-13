@@ -58,7 +58,7 @@ class GZVAC(VACMixIn):
         if not self.summary_file:
             self.summary_file = self.download_vac("mangagalaxyzoo", path_params=self.path_params)
 
-        # Open the file
+        # Open the file using fits.getdata for extension 1
         data = astropy.io.fits.getdata(self.summary_file, 1)
 
         # Return selected line(s)
