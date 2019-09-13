@@ -103,8 +103,8 @@ class HITarget(VACTarget):
             The target identifier
     '''
 
-    def __init__(self, targetid, vacfile=None, specfile=None):
-        super(HITarget, self).__init__(targetid, vacfile=vacfile)
+    def __init__(self, targetid, vacfile, specfile=None):
+        super(HITarget, self).__init__(targetid, vacfile)
         self._specfile = None
         self._specdata = None
 

@@ -260,9 +260,52 @@ class VACMixIn(object, six.with_metaclass(abc.ABCMeta)):
 
 
 class VACTarget(object):
-    ''' Customized class to handle more complex target data '''
+    ''' Customization Class to allow for returning complex target data
 
-    def __init__(self, targetid, vacfile=None, **kwargs):
+    This parent class provides a framework for returning more complex data associated
+    with a given target observation, for example ancillary spectral or image data.  In these
+    cases, returning a target row from the main VAC summary file, or a simple dictionary of values
+    may not be sufficient.  This class can be subclassed and customized to return any
+    extra functionality or data.
+
+    When used, this class provides convenient access to the underlying VAC data as well
+    as a boolean to indicate if the given target is included in the VAC.
+
+    Parameters:
+        targetid (str):
+            The target id, usually plateifu or mangaid.  Required.
+        vacfile (str):
+            The path to the VAC summary file.  Required.
+    
+    Attributes:
+        targetid (str):
+            The plateifu or mangaid target designation
+        data (row):
+            The extracted row VAC data for the provided targetid
+        _data (HDUList):
+            An Astropy HDUList of the summary VAC FITS file
+        _indata (bool):
+            A boolean indicating if the target is included in the VAC
+
+    To use, subclass this class, add a new `__init__` method.  Make sure to call the original
+    class's `__init__` method with `super`. 
+
+    .. code-block:: python
+
+        from marvin.contrib.vacs.base import VACTarget
+
+        class ExampleTarget(VACTarget):
+
+            def __init__(self, targetid, vacfile):
+                super(ExampleTarget, self).__init__(targetid, vacfile)
+
+    Further customization can now be done, e.g. adding new parameters in the initializtion of the
+    object, adding new methods or attributes, or overriding existing methods, e.g. to customize the
+    return `data` attribute.
+
+    '''
+
+    def __init__(self, targetid, vacfile, **kwargs):
         self.targetid = targetid
         self._ttype = parseIdentifier(targetid)
         assert self._ttype in ['plateifu', 'mangaid'], 'Input targetid must be a valid plateifu or mangaid'

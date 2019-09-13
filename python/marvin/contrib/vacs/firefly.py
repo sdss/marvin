@@ -94,8 +94,8 @@ class FFlyTarget(VACTarget):
             The target identifier
     '''
 
-    def __init__(self, targetid, vacfile=None, imagesz=None):
-        super(FFlyTarget, self).__init__(targetid, vacfile=vacfile)
+    def __init__(self, targetid, vacfile, imagesz=None):
+        super(FFlyTarget, self).__init__(targetid, vacfile)
         self._image_sz = imagesz
         self._parameters = ['lw_age', 'mw_age', 'lw_z', 'mw_z']
 

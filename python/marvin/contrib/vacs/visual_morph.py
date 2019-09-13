@@ -138,8 +138,8 @@ class VizMorphTarget(VACTarget):
             The target identifier
     '''
 
-    def __init__(self, targetid, vacfile=None, sdss=None, desi=None):
-        super(VizMorphTarget, self).__init__(targetid, vacfile=vacfile)
+    def __init__(self, targetid, vacfile, sdss=None, desi=None):
+        super(VizMorphTarget, self).__init__(targetid, vacfile)
         self._sdss_img = sdss
         self._desi_img = desi
 
