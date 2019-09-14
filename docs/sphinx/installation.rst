@@ -20,6 +20,8 @@
 Installation
 ============
 
+.. _marvin-install-quick:
+
 Quick Install
 -------------
 
@@ -31,6 +33,7 @@ If you are using an Anaconda distribution of Python, you may use the following a
 
   conda env create -f marvin_2.3.0_env.yml.
 
+.. _marvin-install-dev:
 
 Developers Installation
 -----------------------
@@ -40,10 +43,12 @@ To develop for marvin, follow these instructions::
     git clone https://github.com/sdss/marvin
     cd marvin
     git submodule update --init --recursive
+    pip install -r requirements_dev.txt
     python setup.py develop
 
 This will checkout the repository, set up the git submodule dependencies, and install marvin into your python path.  You will only need to run this once.  Afterwards, you can start developing for Marvin.
 
+.. _marvin-install-auth:
 
 Access and Authentication
 -------------------------
