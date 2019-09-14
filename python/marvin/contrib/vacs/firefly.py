@@ -100,7 +100,7 @@ class FFlyTarget(VACTarget):
         self._parameters = ['lw_age', 'mw_age', 'lw_z', 'mw_z']
 
         # select the index of the targetid from the main VAC extension
-        self._idx = self._data['GALAXY_INFO'].data['plateifu'] == targetid
+        self._idx = self._get_data(ext='GALAXY_INFO')['plateifu'] == targetid
 
     def stellar_pops(self, parameter=None):
         ''' Returns the global stellar population properties
@@ -125,9 +125,9 @@ class FFlyTarget(VACTarget):
             return "No FIREFLY result exists for {0}".format(self.targetid)
 
         if parameter:
-            return self._data['GLOBAL_PARAMETERS'].data[parameter + '_1re'][self._idx]
+            return self._get_data(ext='GLOBAL_PARAMETERS')[parameter + '_1re'][self._idx]
         else:
-            return self._data['GLOBAL_PARAMETERS'].data[self._idx]
+            return self._get_data(ext='GLOBAL_PARAMETERS')[self._idx]
 
     def stellar_gradients(self, parameter=None):
         ''' Returns the gradient of stellar population properties
@@ -152,9 +152,9 @@ class FFlyTarget(VACTarget):
             return "No FIREFLY result exists for {0}".format(self.targetid)
 
         if parameter:
-            return self._data['GRADIENT_PARAMETERS'].data[parameter + '_gradient'][self._idx]
+            return self._get_data(ext='GRADIENT_PARAMETERS')[parameter + '_gradient'][self._idx]
         else:
-            return self._data['GRADIENT_PARAMETERS'].data[self._idx]
+            return self._get_data(ext='GRADIENT_PARAMETERS')[self._idx]
 
     def _make_map(self, parameter=None):
         ''' Extract and create a 2d map '''
@@ -169,10 +169,10 @@ class FFlyTarget(VACTarget):
             params)
 
         # get the required arrays
-        binid = self._data['SPATIAL_BINID'].data[self._idx].reshape(
+        binid = self._get_data(ext='SPATIAL_BINID')[self._idx].reshape(
             76, 76)
-        bin1d = self._data['SPATIAL_INFO'].data[self._idx, :, 0][0]
-        prop = self._data[parameter + '_voronoi'].data[self._idx, :, 0][0]
+        bin1d = self._get_data(ext='SPATIAL_INFO')[self._idx, :, 0][0]
+        prop = self._get_data(ext=parameter + '_voronoi')[self._idx, :, 0][0]
         image_sz = self._image_sz
 
         # make a base map and reshape to a 1d array

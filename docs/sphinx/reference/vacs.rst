@@ -1,12 +1,14 @@
 Contributed VACs
 ================
 
-Base Class
-----------
+Base Classes
+------------
 
 .. autoclass:: marvin.contrib.vacs.base.VACMixIn
    :members:
 
+.. autoclass:: marvin.contrib.vacs.base.VACTarget
+   :members:
 
 Available VACs
 --------------

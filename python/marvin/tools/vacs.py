@@ -7,7 +7,7 @@
 # Created: Sunday, 8th September 2019 11:16:35 pm
 # License: BSD 3-clause "New" or "Revised" License
 # Copyright (c) 2019 Brian Cherinka
-# Last Modified: Friday, 13th September 2019 12:35:32 am
+# Last Modified: Saturday, 14th September 2019 2:44:09 pm
 # Modified By: Brian Cherinka
 
 
@@ -188,12 +188,14 @@ class VACDataClass(object):
     
     @property
     def data(self):
+        ''' The VAC FITS data '''
         if not self._data:
             self._check_file()
             self._data = fits.open(self._path)
         return self._data
 
     def info(self):
+        ''' print the VAC HDU info '''
         self.data.info()
 
     def get_table(self, ext=None):

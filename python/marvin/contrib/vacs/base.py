@@ -282,8 +282,8 @@ class VACTarget(object):
             The plateifu or mangaid target designation
         data (row):
             The extracted row VAC data for the provided targetid
-        _data (HDUList):
-            An Astropy HDUList of the summary VAC FITS file
+        _data (HDU):
+            the first data HDU of the summary VAC FITS file
         _indata (bool):
             A boolean indicating if the target is included in the VAC
 
@@ -303,6 +303,9 @@ class VACTarget(object):
     object, adding new methods or attributes, or overriding existing methods, e.g. to customize the
     return `data` attribute.
 
+    To access a single HDU from the VAC, use the `_get_data()` method.  If you need to access the entire file,
+    use the `_open_file()` method.
+
     '''
 
     def __init__(self, targetid, vacfile, **kwargs):
@@ -310,8 +313,8 @@ class VACTarget(object):
         self._ttype = parseIdentifier(targetid)
         assert self._ttype in ['plateifu', 'mangaid'], 'Input targetid must be a valid plateifu or mangaid'
         self._vacfile = vacfile
-        self._data = self._open_file(self._vacfile)
-        self._indata = targetid in self._data[1].data[self._ttype]
+        self._data = self._get_data(self._vacfile)
+        self._indata = targetid in self._data[self._ttype]
 
     def __repr__(self):
         return 'Target({0})'.format(self.targetid)
@@ -322,16 +325,17 @@ class VACTarget(object):
         if not self._indata:
             return "No data exists for {0}".format(self.targetid)
 
-        idx = self._data[1].data[self._ttype] == self.targetid
-        return self._data[1].data[idx]
+        idx = self._data[self._ttype] == self.targetid
+        return self._data[idx]
 
     @staticmethod
     def _open_file(vacfile):
         ''' Opens the full FITS VAC file '''
         return fits.open(vacfile)
 
-    @staticmethod
-    def _get_data(vacfile, ext=1):
+    def _get_data(self, vacfile=None, ext=1):
         ''' Get only the data from the VAC file from a given extension '''
-        return fits.getdata(vacfile, ext=ext)
+        if not vacfile:
+            vacfile = self._vacfile
+        return fits.getdata(vacfile, ext)
 

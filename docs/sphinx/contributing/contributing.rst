@@ -98,10 +98,14 @@ to the user. Very little knowledge of how Marvin internally works is required! T
 base code and a list of already implemented VACs that you can use as a template.
 
 
-The VACMixIn class has several methods available to aid the setup of your VAC.  
+The `~.VACMixIn` class has several methods available to aid the setup of your VAC.  
 * set_summary_file
 * get_target
-* set_ancillary_file
+* get_ancillary_file
+
+
+Creating a `~.VACMixIn` also automatically adds your VAC to the `~.marvin.tools.vacs.VACs`tool.
+
 
 Let's see an example of how to put it together.  
 
