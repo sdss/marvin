@@ -7,7 +7,7 @@
 # Created: Sunday, 8th September 2019 11:16:35 pm
 # License: BSD 3-clause "New" or "Revised" License
 # Copyright (c) 2019 Brian Cherinka
-# Last Modified: Saturday, 14th September 2019 2:44:09 pm
+# Last Modified: Sunday, 15th September 2019 4:23:01 pm
 # Modified By: Brian Cherinka
 
 
@@ -16,7 +16,7 @@ import inspect
 import six
 import os
 from marvin.contrib.vacs.base import VACContainer, VACMixIn
-from marvin import config
+from marvin import config, log
 from marvin.core.exceptions import MarvinError
 from marvin.utils.general import parseIdentifier
 from decorator import decorator
@@ -104,8 +104,8 @@ class VACs(VACContainer):
             #     continue
 
             sv = subvac()
-            if not sv.summary_file:
-                print('VAC {0} has no summary file to load.  Skipping.'.format(sv.name))
+            if sv.summary_file is None:
+                log.info('VAC {0} has no summary file to load.  Skipping.'.format(sv.name))
                 continue
             
             cls._vacs.append(subvac.name)
@@ -184,7 +184,10 @@ class VACDataClass(object):
 
     def __repr__(self):
         name = self.name.title().replace('_', '')
-        return '<{0}Data(description={1}, n_hdus={2})>'.format(name, self.description, len(self.data))
+        if not self._data:
+            end = ''
+        end = '' if not self._data else ', n_hdus={0}'.format(len(self.data))
+        return '<{0}Data(description={1}{2})>'.format(name, self.description, end)
     
     @property
     def data(self):
@@ -209,12 +212,12 @@ class VACDataClass(object):
             An Astropy table for the given extension
         '''
         if not ext:
-            print('No HDU extension specified.  Defaulting to ext=1')
+            log.info('No HDU extension specified.  Defaulting to ext=1')
             ext = 1
 
         # check if extension is an image
         if self.data[ext].is_image:
-            print('Ext={0} is not a table extension.  Cannot read.'.format(ext))
+            log.info('Ext={0} is not a table extension.  Cannot read.'.format(ext))
             return
             
         return Table.read(self._path, ext, format='fits')
@@ -222,9 +225,10 @@ class VACDataClass(object):
     def download_vac(self):
         ''' Download a VAC to the local system '''
         if self._data:
-            print('File already downloaded.')
+            log.info('File already downloaded.')
             return
 
+        log.info('Downloading VAC data..')
         self._rsync.reset()
         self._rsync.remote()
         self._rsync.add('', full=self._path)

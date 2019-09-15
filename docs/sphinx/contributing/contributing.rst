@@ -108,7 +108,7 @@ The `~.VACMixIn` class has several methods available to aid the setup of your VA
 * get_target - extracts the row data from the VAC for the specified target observation
 * get_ancillary_file - defines and downloads any paths to ancillary VAC files
 
-Creating a `~.VACMixIn` also automatically adds your VAC to the `~.marvin.tools.vacs.VACs`tool, which you can read more 
+Creating a `~.VACMixIn` also automatically adds your VAC to the `~.marvin.tools.vacs.VACs` tool, which you can read more 
 about here. For now, let's see an example of how to put it all together.  
 
 Example: MaNGA Morphologies from Galaxy Zoo 
@@ -246,6 +246,7 @@ Classes
 .. autosummary::
     marvin.contrib.vacs.base.VACMixIn
 
+.. _marvin-available-vacs:
 
 Available VACs
 ^^^^^^^^^^^^^^

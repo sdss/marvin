@@ -55,7 +55,7 @@ class GZVAC(VACMixIn):
         mangaid = parent_object.mangaid
 
         # download the vac from the SAS if it does not already exist locally
-        if not self.summary_file:
+        if not self.file_exists(self.summary_file):
             self.summary_file = self.download_vac("mangagalaxyzoo", path_params=self.path_params)
 
         # Open the file using fits.getdata for extension 1

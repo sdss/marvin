@@ -59,7 +59,7 @@ class FIREFLYVAC(VACMixIn):
         imagesz = int(parent_object.header['NAXIS1'])
 
         # download the vac from the SAS if it does not already exist locally
-        if not self.summary_file:
+        if not self.file_exists(self.summary_file):
             log.info('Warning: This file is ~6 GB.  It may take awhile to download')
             self.summary_file = self.download_vac('mangaffly', path_params=self.path_params)
 

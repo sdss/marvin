@@ -202,16 +202,24 @@ class VACMixIn(object, six.with_metaclass(abc.ABCMeta)):
         if name is None:
             name = self.name
 
-        # check for and expand any wildcards present in the path_params
-        if self.rsync_access.any(name, **path_params):
-            files = self.rsync_access.expand(name, **path_params)
-            return files[0]
-        else:
-            return False
+        # return the full local path to the file
+        path = self.rsync_access.full(name, **path_params)
+        return path
+        # # check for and expand any wildcards present in the path_params
+        # if self.rsync_access.any(name, **path_params):
+        #     files = self.rsync_access.expand(name, **path_params)
+        #     return files[0]
+        # else:
+        #     return False
 
-    def file_exists(self, name=None, path_params={}):
+    def file_exists(self, path=None, name=None, path_params={}):
         """Check whether a file exists locally"""
 
+        # use the filepath if present
+        if path:
+            return os.path.exists(path)
+
+        # otherwise use name and path_params
         if name is None:
             name = self.name
 

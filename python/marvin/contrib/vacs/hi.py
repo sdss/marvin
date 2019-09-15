@@ -63,7 +63,7 @@ class HIVAC(VACMixIn):
         plateifu = parent_object.plateifu
 
         # download the vac from the SAS if it does not already exist locally
-        if not self.summary_file:
+        if not self.file_exists(self.summary_file):
             self.summary_file = self.download_vac('mangahisum', path_params=self.path_params)
 
         # get path to ancillary VAC file for target HI spectra
