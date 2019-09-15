@@ -57,46 +57,21 @@ into Marvin.  It may return e.g. a single number, ``dict``, ``class instance``, 
 be arbitrarily simple or complex.  Note also that not all VACs will be available for every MaNGA release, and not all targets 
 will have VAC information available.  Please see the list of :ref:`marvin-available-vacs` for details on what each VAC returns.   
 
-.. _marvin-vacs-whole:
-
-Full Catalog VAC Access
-^^^^^^^^^^^^^^^^^^^^^^^
-
-To access the entirety of each available VAC catalogs, use the `~marvin.tools.vacs.VACs` Tool.  
+Some VACs may return a more complicated object with access to additional data and methods.  For example, the MaNGA-HI VAC also
+provides ancillary spectral data for individual targets.  That VAC returns a custom `~.VACTarget` class that includes a method
+for plotting spectra in addition to returning the HI data for the target.  
 
 ::
 
-    >>> from marvin.tools.vacs import VACs
-    >>> v = VACs()
-    >>> print(v)
-        <VACs (firefly, galaxyzoo, gema, HI)>
-
-This tool returns access to the underlying catalog data for each VAC with an available summary FITS file.  The ``data``
-attribute contains the full HDUList of the VAC.  `~.VACs.info` prints file information.        
-
-::
-    >>> # access the complete Galaxy Zoo VAC catalogs
-    >>> gz = v.galaxyzoo
-    >>> print(gz)
-        <GalaxyzooData(description=Returns Galaxy Zoo morphology, n_hdus=2)>
-
-    >>> # access the data
-    >>> gz.data
-        [<astropy.io.fits.hdu.image.PrimaryHDU object at 0x2c95f10b8>, <astropy.io.fits.hdu.table.BinTableHDU object at 0x2c83a6e10>]
-
-Let's try a different galaxy
-
-::
-
-
-    cube = Cube('7443-12701')
-    hi = cube.vacs.mangahi
-    print(hi)  ## prints HI(7443-12701)
-    print(hi.data)
-
-    #  prints
-    #  FITS_rec([('7443-12701', '12-98126', 230.5074624, 43.53234133, 6139, '16A-14', 767.4, 1.76, 8.82, -999., -999., -999., -999., -999, -999., -999, -999, -999, -999, -999, -999., -999., -999., -999., -999., -999.)],
-    #  dtype=(numpy.record, [('plateifu', 'S10'), ('mangaid', 'S9'), ('objra', '>f8'), ('objdec', '>f8'), ('vopt', '>i2'), ('session', 'S12'), ('Exp', '>f4'), ('rms', '>f4'), ('logHIlim200kms', '>f4'), ('peak', '>f4'), ('snr', '>f4'), ('FHI', '>f4'), ('logMHI', '>f4'), ('VHI', '>i2'), ('eV', '>f4'), ('WM50', '>i2'), ('WP50', '>i2'), ('WP20', '>i2'), ('W2P50', '>i2'), ('WF50', '>i2'), ('Pr', '>f4'), ('Pl', '>f4'), ('ar', '>f4'), ('br', '>f4'), ('al', '>f4'), ('bl', '>f4')]))
+    >>> from marvin.tools import Cube
+    >>> cube = Cube('7443-12701')
+    >>> # return an instance of HITarget
+    >>> hi = cube.vacs.mangahi
+    >>> print(hi)
+        Target(7443-12701)
+    >>> print(hi.data)
+        FITS_rec([('7443-12701', '12-98126', 230.5074624, 43.53234133, 6139, '16A-14', 767.4, 1.76, 8.82, -999., -999., -999., -999., -999, -999., -999, -999, -999, -999, -999, -999., -999., -999., -999., -999., -999.)],
+        dtype=(numpy.record, [('plateifu', 'S10'), ('mangaid', 'S9'), ('objra', '>f8'), ('objdec', '>f8'), ('vopt', '>i2'), ('session', 'S12'), ('Exp', '>f4'), ('rms', '>f4'), ('logHIlim200kms', '>f4'), ('peak', '>f4'), ('snr', '>f4'), ('FHI', '>f4'), ('logMHI', '>f4'), ('VHI', '>i2'), ('eV', '>f4'), ('WM50', '>i2'), ('WP50', '>i2'), ('WP20', '>i2'), ('W2P50', '>i2'), ('WF50', '>i2'), ('Pr', '>f4'), ('Pl', '>f4'), ('ar', '>f4'), ('br', '>f4'), ('al', '>f4'), ('bl', '>f4')]))
 
 This galaxy has HI data.  This VAC has also provided two convenience methods for quickly interacting with HI data, 
 ``plot_spectrum``, and ``plot_massfraction``.
@@ -107,6 +82,54 @@ This galaxy has HI data.  This VAC has also provided two convenience methods for
 
     # plot the HI spectrum for 7443-12701
     hi.plot_spectrum()
+
+.. _marvin-vacs-whole:
+
+Full Catalog VAC Access
+^^^^^^^^^^^^^^^^^^^^^^^
+
+To access the entirety of each available VAC catalogs, use the `~marvin.tools.vacs.VACs` Tool.  
+::
+
+    >>> from marvin.tools.vacs import VACs
+    >>> v = VACs()
+    >>> print(v)
+        <VACs (firefly, galaxyzoo, gema, HI)>
+
+This tool returns access to the underlying catalog data for each VAC with an available summary FITS file.  The ``data``
+attribute contains the full HDUList of the VAC.  `~.VACs.info` prints file information.  When the ``data`` attribute is first
+accessed, it will check for local file existence and download the file if necessary.
+::
+
+    >>> # access the complete Galaxy Zoo VAC catalogs
+    >>> gz = v.galaxyzoo
+    >>> print(gz)
+        <GalaxyzooData(description=Returns Galaxy Zoo morphology, n_hdus=2)>
+
+    >>> # access the data
+    >>> gz.data
+        [<astropy.io.fits.hdu.image.PrimaryHDU object at 0x2c95f10b8>, <astropy.io.fits.hdu.table.BinTableHDU object at 0x2c83a6e10>]
+
+To create an Astropy Table representation of a VAC data extension, use `~.VACDataClass.get_table` method.
+::
+
+    # get an Astropy table for extension 1
+    gz = v.galaxyzoo
+    table = gz.get_table(ext=1)
+
+To check if a VAC has a given target, use the `~.VACDataClass.has_target` and pass in a **plateifu** or **mangaid** designation.
+::
+
+    # check if a VAC has a target
+    gz.has_target('1-209232')
+
+Alternatively, you can check all VACs for a given target with `~.VACs.check_target`.  This returns a dictionary of booleans indicating
+whether or not the given target is included in that VAC.
+::
+
+    >>> v.check_target('1-209232')
+        {'firefly': True, 'galaxyzoo': True, 'gema': True, 'HI': False}
+
 
 
 

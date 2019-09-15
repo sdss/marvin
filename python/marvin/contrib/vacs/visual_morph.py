@@ -104,7 +104,7 @@ class VMORPHOVAC(VACMixIn):
         path_params['survey'] = survey
         mosaic = self.get_path('mangaVmorphoImgs', path_params=path_params)
         # download the mosaic file (downloads both surveys at once)
-        if not mosaic:
+        if not self.file_exists(mosaic):
             pp = path_params.copy()
             pp['survey'] = '*'
             mosaics = self.download_vac('mangaVmorphoImgs', path_params=pp)

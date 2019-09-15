@@ -7,7 +7,7 @@
 # Created: Sunday, 8th September 2019 11:16:35 pm
 # License: BSD 3-clause "New" or "Revised" License
 # Copyright (c) 2019 Brian Cherinka
-# Last Modified: Sunday, 15th September 2019 4:23:01 pm
+# Last Modified: Sunday, 15th September 2019 4:37:58 pm
 # Modified By: Brian Cherinka
 
 
@@ -258,9 +258,11 @@ class VACDataClass(object):
         '''
         assert isinstance(target, six.string_types), 'target must be a string' 
         targ_type = parseIdentifier(target)
+        ttypes = ['plateifu', 'mangaid']
+        other = ttypes[ttypes.index(targ_type)-1]
 
         data = self.data[1].data
         assert targ_type in map(str.lower, data.columns.names), \
-            'Identifier "{0}" is not available.  Try the other one'.format(targ_type)
+            'Identifier "{0}" is not available.  Try a "{1}".'.format(targ_type, other)
         
         return target in data[targ_type]

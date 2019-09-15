@@ -74,7 +74,7 @@ class HIVAC(VACMixIn):
         hidata = HITarget(plateifu, vacfile=self.summary_file, specfile=specfile)
 
         # get the spectral data for that row if it exists
-        if hidata._indata and not specfile:
+        if hidata._indata and not self.file_exists(specfile):
             hidata._specfile = self.download_vac('mangahispectra', path_params=self.path_params)
 
         return hidata
@@ -105,7 +105,7 @@ class HITarget(VACTarget):
 
     def __init__(self, targetid, vacfile, specfile=None):
         super(HITarget, self).__init__(targetid, vacfile)
-        self._specfile = None
+        self._specfile = specfile
         self._specdata = None
 
     def plot_spectrum(self):
