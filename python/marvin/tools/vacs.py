@@ -7,7 +7,7 @@
 # Created: Sunday, 8th September 2019 11:16:35 pm
 # License: BSD 3-clause "New" or "Revised" License
 # Copyright (c) 2019 Brian Cherinka
-# Last Modified: Sunday, 15th September 2019 4:37:58 pm
+# Last Modified: Sunday, 15th September 2019 5:35:47 pm
 # Modified By: Brian Cherinka
 
 
@@ -15,6 +15,8 @@ from __future__ import print_function, division, absolute_import
 import inspect
 import six
 import os
+import importlib
+import types
 from marvin.contrib.vacs.base import VACContainer, VACMixIn
 from marvin import config, log
 from marvin.core.exceptions import MarvinError
@@ -100,16 +102,26 @@ class VACs(VACContainer):
             if config.release not in subvac.version:
                 continue
 
-            # if subvac.name == 'galaxyzoo3d':
-            #     continue
-
             sv = subvac()
             if sv.summary_file is None:
                 log.info('VAC {0} has no summary file to load.  Skipping.'.format(sv.name))
                 continue
             
+            # create the VAC data class
+            vacdc = VACDataClass(subvac.name, subvac.description, sv.summary_file)
+
+            # add any custom methods to the VAC
+            if hasattr(subvac, 'add_methods'):
+                for method in getattr(subvac, 'add_methods'):
+                    assert isinstance(method, six.string_types), 'method name must be a string'
+                    svmod = importlib.import_module(subvac.__module__)
+                    assert hasattr(svmod, method), 'method name must be defined in VAC module file'
+                    setattr(vacdc, method, types.MethodType(
+                        getattr(svmod, method), vacdc))
+            
+            # add vac to the container class
             cls._vacs.append(subvac.name)
-            setattr(cls, subvac.name, VACDataClass(subvac.name, subvac.description, sv.summary_file))
+            setattr(cls, subvac.name, vacdc)
 
         return super(VACs, cls).__new__(cls, *args, **kwargs)
 

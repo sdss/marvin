@@ -125,6 +125,14 @@ whether or not the given target is included in that VAC.
     >>> v.check_target('1-209232')
         {'firefly': True, 'galaxyzoo': True, 'gema': True, 'HI': False}
 
+Some VACs may also provide custom convenience methods attached to their VAC object.  For example, the MaNGA-HI VAC provides a method 
+that plots the HI mass fraction for its targets, using info from the MaNGA drpAll file.    
+::
 
+    # access the MaNGA HI VAC
+    hi = v.HI
+
+    # plot the HI mass fraction of targets
+    hi.plot_mas_fraction()
 
 

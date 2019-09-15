@@ -42,8 +42,8 @@ class HIVAC(VACMixIn):
     # optional Marvin Tools to attach your vac to
     include = (marvin.tools.cube.Cube, marvin.tools.maps.Maps, marvin.tools.modelcube.ModelCube)
 
-    #
-    # add_plots = ['plot_test']
+    # optional methods to attach to your main VAC tool in ~marvin.tools.vacs.VACs
+    add_methods = ['plot_mass_fraction']
 
     # Required method
     def set_summary_file(self, release):
@@ -125,94 +125,40 @@ class HITarget(VACTarget):
             return ax
         return None
 
-
-# class HIData(object):
-#     ''' A customized class to handle more complex data
-
-#     This class handles data from both the HI summary file and the
-#     individual HI spectral files.  Row data from the summary file
-#     is returned via the `data` property.  Spectral data can be plotted via
-#     the `plot_spectrum` method.
-
-#     '''
-
-#     def __init__(self, plateifu, vacfile=None, specfile=None):
-#         self._vacfile = vacfile
-#         self._specfile = specfile
-#         self._plateifu = plateifu
-#         self._hi_data = self._open_file(vacfile)
-#         self._indata = plateifu in self._hi_data['plateifu']
-#         self._specdata = None
-
-#     def __repr__(self):
-#         return 'HI({0})'.format(self._plateifu)
-
-#     @staticmethod
-#     def _open_file(hifile):
-#         return astropy.io.fits.getdata(hifile, 1)
-
-#     @property
-#     def data(self):
-#         ''' Returns the FITS row data from the mangaHIall summary file '''
-
-#         if not self._indata:
-#             return "No HI data exists for {0}".format(self._plateifu)
-
-#         idx = self._hi_data['plateifu'] == self._plateifu
-#         return self._hi_data[idx]
-
-#     def plot_spectrum(self):
-#         ''' Plot the HI spectrum '''
-
-#         if self._specfile:
-#             if not self._specdata:
-#                 self._specdata = self._open_file(self._specfile)
-
-#             vel = self._specdata['VHI'][0]
-#             flux = self._specdata['FHI'][0]
-#             spec = Spectrum(flux, unit=u.Jy, wavelength=vel, wavelength_unit=u.km / u.s)
-#             ax = spec.plot(
-#                 ylabel='HI\ Flux', xlabel='Velocity', title=self._plateifu, ytrim='minmax'
-#             )
-#             return ax
-#         return None
-
-#     def plot_massfraction(self):
-#         ''' Plot the HI mass fraction '''
-
-#         drpall = get_drpall_table()
-#         drpall.add_index('plateifu')
-#         subset = drpall.loc[self._hi_data['plateifu']]
-#         log_stmass = np.log10(subset['nsa_elpetro_mass'])
-#         diff = self._hi_data['logMHI'] - log_stmass
-#         fig, axes = scatplot(
-#             log_stmass,
-#             diff,
-#             with_hist=False,
-#             ylim=[-5, 5],
-#             xlabel=r'log $M_*$',
-#             ylabel=r'log $M_{HI}/M_*$',
-#         )
-#         return axes[0]
-
 #
 # Functions to become available on your VAC in marvin.tools.vacs.VACs
-#
 
-# def plot_mass_fraction(self):
-#     ''' Plot the HI mass fraction '''
-#     drpall = get_drpall_table()
-#     drpall.add_index('plateifu')
-#     data = self.data[1].data
-#     subset = drpall.loc[data['plateifu']]
-#     log_stmass = np.log10(subset['nsa_elpetro_mass'])
-#     diff = data['logMHI'] - log_stmass
-#     fig, axes = scatplot(
-#         log_stmass,
-#         diff,
-#         with_hist=False,
-#         ylim=[-5, 5],
-#         xlabel=r'log $M_*$',
-#         ylabel=r'log $M_{HI}/M_*$',
-#     )
-#     return axes[0]
+
+def plot_mass_fraction(vacdata_object):
+    ''' Plot the HI mass fraction
+    
+    Computes and plots the HI mass fraction using
+    the NSA elliptical Petrosian stellar mass from the
+    MaNGA DRPall file.  Only plots data for subset of
+    targets in both the HI VAC and the DRPall file.
+
+    Parameters:
+        vacdata_object (object):
+            The `~.VACDataClass` instance of the HI VAC 
+
+    Example:
+        >>> from marvin.tools.vacs import VACs
+        >>> v = VACs()
+        >>> hi = v.HI
+        >>> hi.plot_mass_fraction()
+    '''
+    drpall = get_drpall_table()
+    drpall.add_index('plateifu')
+    data = vacdata_object.data[1].data
+    subset = drpall.loc[data['plateifu']]
+    log_stmass = np.log10(subset['nsa_elpetro_mass'])
+    diff = data['logMHI'] - log_stmass
+    fig, axes = scatplot(
+        log_stmass,
+        diff,
+        with_hist=False,
+        ylim=[-5, 5],
+        xlabel=r'log $M_*$',
+        ylabel=r'log $M_{HI}/M_*$',
+    )
+    return axes[0]

@@ -78,7 +78,7 @@ Contributing documentation
 Code is only useful if it is well documented! An excellent way of contributing to Marvin is by writing documentation. 
 There are different forms of documentation that you can submit:
 
-* Sphinx documentation of current features, as described in :ref:`marvin-controbuting-code-documentation`.
+* Sphinx documentation of current features, as described in :ref:`marvin-contributing-code-documentation`.
 * Plain-text documentation. If you do not want to write Sphinx documentation, you can still send us the text and we will 
 format it appropriately. Send your text in the form of a `new issue`_.
 * Open a `new issue`_ pointing out parts of the documentation that are unclear, misleading, or deprecated.
@@ -192,6 +192,40 @@ following VACs are examples where more complicated data are returned:
 
 In each case, they subclass the `~.VACTarget` class, customize it to access and return ancillary data, and provide methods
 to plot or display said ancillary data.  This class is then instantiated and returned inside the `~.VACMixIn.get_target` method. 
+
+.. _marvin-add-methods:
+
+Custom Added Convenience Methods
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Within your VAC module file, one may define convenience methods that become available to your main VAC catalog, when it is ingested
+into the Marvin `~.VACs` Tool.  These can provide any functionality or custom plots you wish users' to be able to see/have access
+to.  See the `HI VAC <https://github.com/sdss/marvin/blob/master/python/marvin/contrib/vacs/hi.py>`_ for an example.  Inside is 
+defined a convenience method, ``plot_mass_fraction`` for plotting the HI mass fraction of the complete MaNGA-HI catalog.  
+
+.. literalinclude:: ../../../python/marvin/contrib/vacs/hi.py
+   :language: python
+   :linenos:
+   :lines: 132-160
+
+These convenience methods accept as input a single ``vacdata_object`` argument.  This argument represents the VAC object 
+defined automatically by `~.VACDataClass`.  This object has access to the complete VAC catalog using the ``data`` 
+property of the `~.VACDataClass`.  In the global section, of the `~.HIVAC`, there is defined a new global attribute, 
+``add_methods``, which lists any defined convenience methods to add to your VAC inside the `~.VACs` tool.
+
+.. literalinclude:: ../../../python/marvin/contrib/vacs/hi.py
+   :language: python
+   :linenos:
+   :lines: 45-46
+
+Included is the name of the ``plot_mass_fraction`` method in the list of ``add_methods``.  Once defined, it becomes 
+available in the `~.VACs` tools.  These defined convenience methods are meant to provide conveniences on the main VAC 
+catalog, and should be **not** be target specific.  
+::
+
+    from marvin.tools.vacs import VACs
+    v = VACs()
+    v.HI.plot_mass_fraction()
 
 .. _marvin-write-vacs:
 
