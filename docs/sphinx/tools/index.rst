@@ -44,6 +44,7 @@ The following sections explain how to use the tools in detail. They assume that 
     plate
     spaxel
     image
+    vacs
 
 :rubric-h2:`Common Tools Features`
 

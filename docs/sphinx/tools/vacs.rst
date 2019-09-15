@@ -20,7 +20,7 @@ Target Specific VAC Access
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 When navigating individual targets in Marvin, e.g. via the Cube or Maps tools, to access any available VAC information 
-specific to that targets, use the ``vacs`` attribute attached to most Marvin Tools.   
+specific to that target, use the ``vacs`` attribute attached to most Marvin Tools.   
 
 ::
 
@@ -57,9 +57,9 @@ into Marvin.  It may return e.g. a single number, ``dict``, ``class instance``, 
 be arbitrarily simple or complex.  Note also that not all VACs will be available for every MaNGA release, and not all targets 
 will have VAC information available.  Please see the list of :ref:`marvin-available-vacs` for details on what each VAC returns.   
 
-Some VACs may return a more complicated object with access to additional data and methods.  For example, the MaNGA-HI VAC also
-provides ancillary spectral data for individual targets.  That VAC returns a custom `~.VACTarget` class that includes a method
-for plotting spectra in addition to returning the HI data for the target.  
+For example, the MaNGA-HI VAC also provides ancillary spectral data for individual targets.  Thus it returns a more 
+complicated object with access to additional data and methods. That VAC returns a custom `~.VACTarget` class that 
+includes a method for plotting spectra in addition to returning the HI data for the target.  
 
 ::
 
@@ -69,19 +69,14 @@ for plotting spectra in addition to returning the HI data for the target.
     >>> hi = cube.vacs.mangahi
     >>> print(hi)
         Target(7443-12701)
+
+    >>> # Access the HI data for target 7443-12701
     >>> print(hi.data)
         FITS_rec([('7443-12701', '12-98126', 230.5074624, 43.53234133, 6139, '16A-14', 767.4, 1.76, 8.82, -999., -999., -999., -999., -999, -999., -999, -999, -999, -999, -999, -999., -999., -999., -999., -999., -999.)],
         dtype=(numpy.record, [('plateifu', 'S10'), ('mangaid', 'S9'), ('objra', '>f8'), ('objdec', '>f8'), ('vopt', '>i2'), ('session', 'S12'), ('Exp', '>f4'), ('rms', '>f4'), ('logHIlim200kms', '>f4'), ('peak', '>f4'), ('snr', '>f4'), ('FHI', '>f4'), ('logMHI', '>f4'), ('VHI', '>i2'), ('eV', '>f4'), ('WM50', '>i2'), ('WP50', '>i2'), ('WP20', '>i2'), ('W2P50', '>i2'), ('WF50', '>i2'), ('Pr', '>f4'), ('Pl', '>f4'), ('ar', '>f4'), ('br', '>f4'), ('al', '>f4'), ('bl', '>f4')]))
 
-This galaxy has HI data.  This VAC has also provided two convenience methods for quickly interacting with HI data, 
-``plot_spectrum``, and ``plot_massfraction``.
-
-.. plot::
-    :align: center
-    :include-source: True
-
-    # plot the HI spectrum for 7443-12701
-    hi.plot_spectrum()
+    >>> # plot the HI spectrum for 7443-12701
+    >>> hi.plot_spectrum()
 
 .. _marvin-vacs-whole:
 
