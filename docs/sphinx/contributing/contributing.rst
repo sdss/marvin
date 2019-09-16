@@ -222,7 +222,7 @@ property of the `~.VACDataClass`.  In the global section, of the `~.HIVAC`, ther
 
 Included is the name of the ``plot_mass_fraction`` method in the list of ``add_methods``.  Once defined, it becomes 
 available in the `~.VACs` tools.  These defined convenience methods are meant to provide conveniences on the main VAC 
-catalog, and should be **not** be target specific.  
+catalog, and should **not** be target specific.  
 ::
 
     from marvin.tools.vacs import VACs
