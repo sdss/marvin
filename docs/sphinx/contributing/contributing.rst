@@ -106,10 +106,11 @@ The `~.VACMixIn` class has several methods available to aid the setup of your VA
 
 * set_summary_file - defines the full file path to the main summary VAC FITS file
 * get_target - extracts the row data from the VAC for the specified target observation
+* file_exists - checks whether a file exists in the expected location on the local filesystem 
 * get_ancillary_file - defines and downloads any paths to ancillary VAC files
 
 Creating a `~.VACMixIn` also automatically adds your VAC to the `~.marvin.tools.vacs.VACs` tool, which you can read more 
-about here. For now, let's see an example of how to put it all together.  
+about :ref:`here <marvin-vacs-whole>`. For now, let's see an example of how to put it all together.  
 
 Example: MaNGA Morphologies from Galaxy Zoo 
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -143,14 +144,15 @@ The VAC file path is defined using the `~marvin.contrib.vacs.VACMixIn.get_path` 
 dictionary of path parameters that is used to construct the full filepath to your VAC, which are predefined in the 
 SDSS `tree <http://sdss-tree.readthedocs.io/en/latest/>`_ product.  As Marvin uses 
 `sdss_access <http://sdss-access.readthedocs.io/en/stable>`__ to define and download all necessary files, we need 
-to make sure that the path to the VAC file is included in the ``tree``.  See **Defining a path** for a guide on how 
-to define filepaths in ``tree``.  For this particular file, the entry in ``tree`` looks like::
+to make sure that the path to the VAC file is included in the ``tree``.  See `Adding a Path <https://sdss-tree.readthedocs.io/en/latest/paths.html>`_  
+for a guide on how to define filepaths in ``tree``.  For this particular file, the entry in ``tree`` looks like::
 
     mangagalaxyzoo = $MANGA_MORPHOLOGY/galaxyzoo/MaNGA_gz-{ver}.fits  
 
 In addition to the tree path name ``mangagalaxyzoo`` we also define a dictionary of path parameters. We use the supplied 
 ``release`` argument to determine the Galazy Zoo version, ``ver``.  We use `~marvin.contrib.vacs.VACMixIn.get_path` to determine 
-the file path and set it as the ``summary_file``.  This also checks whether the file is already present in the local SAS.
+the file path and set it as the ``summary_file``.  We can check whether the file is already present in the local SAS with the
+`~.VACMixIn.file_exists` method. 
 
 `~.VACMixIn.get_target` is the main method needed to extract row data from the VAC file for a given target observation.  
 `~.VACMixIn.get_target` receives a single, ``parent_object`` argument, which is the object (e.g., a `~marvin.tools.maps.Maps` 
