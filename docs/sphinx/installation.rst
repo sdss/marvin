@@ -29,9 +29,10 @@ To quickly install Marvin, use::
 
   pip install sdss-marvin
 
-If you are using an Anaconda distribution of Python, you may use the following available ``conda`` environment, **link here**. Once downloaded, set up the virtual environment with::
+If you are using an Anaconda distribution of Python, you may use the following available ``conda`` environment, 
+`here <https://anaconda.org/SDSS/marvin/files>`_. Once downloaded, set up the virtual environment with::
 
-  conda env create -f marvin_2.3.0_env.yml.
+  conda env create -f marvin_2.3.2.yml.
 
 .. _marvin-install-dev:
 
@@ -76,7 +77,8 @@ For SDSS collaboration members, authentication is required to access proprietary
 Set up your netrc
 ~~~~~~~~~~~~~~~~~
 
-SDSS uses ``.netrc`` authentication to access data content on many domains. To set this up, create and edit a file in your home called ``.netrc`` an copy these lines inside::
+SDSS uses ``.netrc`` authentication to access data content on many domains. To set this up, create and edit a file in your 
+home called ``.netrc`` an copy these lines inside::
 
     machine api.sdss.org
        login <username>
@@ -86,7 +88,8 @@ SDSS uses ``.netrc`` authentication to access data content on many domains. To s
        login <username>
        password <password>
 
-and replace ``<username>`` and ``<password>`` with your login credentials. The default SDSS username and password is also acceptable for anonymous access.  **Finally, run** ``chmod 600 ~/.netrc`` **to make the file only accessible to your user.**
+and replace ``<username>`` and ``<password>`` with your login credentials. The default SDSS username and password is also 
+acceptable for anonymous access.  **Finally, run** ``chmod 600 ~/.netrc`` **to make the file only accessible to your user.**
 
 .. _api-token-auth:
 
