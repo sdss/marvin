@@ -248,7 +248,7 @@ Requirements of the VAC:
 
 Creating a VAC Path Template:
 
-#. To enable Marvin to locate and download your VAC, a template of your VAC's file path must have first been added to `sdss_paths.ini <https://github.com/sdss/tree/blob/master/data/sdss_paths.ini>`__. Refer to the SDSS `tree`_ documentation to learn how to do that.
+#. To enable Marvin to locate and download your VAC, a template of your VAC's file path must have first been added to `sdss_paths.ini <https://github.com/sdss/tree/blob/master/data/sdss_paths.ini>`__. Refer to the SDSS `tree <https://sdss-tree.readthedocs.io/en/latest/paths.html>`_ documentation to learn how to do that.
 
 Writing a new VAC script:
 
