@@ -4,6 +4,10 @@ Marvin's Change Log
 [2.3.3] - unreleased
 --------------------
 
+Added
+^^^^^
+- Support for DR16.  Updated datamodels and docs. 
+
 Changed
 ^^^^^^^
 - all yaml.load uses new Loader to accommodate old and new yaml spec;
