@@ -11,6 +11,14 @@ What's New
 
 This section summarises the most important new features a bugfixes in Marvin. For the complete list of changes check the :ref:`marvin-changelog`.
 
+2.3.3 (unreleased)
+------------------
+
+Tools as context managers
+*************************
+
+Support for using Tools as context managers, allowing efficient access and closure of file handlers. This will make workflows relying on looping through lists of galaxies and performing similar actions less error-prone.
+
 2.3.2 (February 2019)
 ---------------------
 
