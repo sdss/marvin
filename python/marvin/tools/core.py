@@ -227,14 +227,38 @@ class MarvinToolsClass(MMAMixIn):
 
         return res
 
-    def __del__(self):
-        """Destructor for closing FITS files."""
+    @property
+    def source_is_fits_hdulist_file(self):
+        source_is_file = (self.data_origin == 'file')
+        data_from_hdulist = isinstance(self.data, astropy.io.fits.HDUList)
 
-        if self.data_origin == 'file' and isinstance(self.data, astropy.io.fits.HDUList):
+        return source_is_file and data_from_hdulist
+
+    def close(self):
+        if self.source_is_fits_hdulist:
             try:
                 self.data.close()
             except Exception as ee:
                 warnings.warn('failed to close FITS instance: {0}'.format(ee), MarvinUserWarning)
+        else:
+            warnings.warn(
+                'data-origin {0} ({1}) not closeable'.format(self.data_origin, self.data.__class__),
+                MarvinUserWarning)
+
+    def __del__(self):
+        """Destructor for closing FITS files."""
+
+        self.close()
+
+    def __enter__(self):
+        if not self.source_is_fits_hdulist_file:
+            raise MarvinError('to use Tools as a context-manager, self.data_origin must be \'file\', '
+                              'and self.data must be a FITS HDUList')
+
+    def __exit__(self, type, value, traceback):
+        self.close()
+
+        return True
 
     @property
     def quality_flag(self):
