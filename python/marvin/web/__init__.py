@@ -54,16 +54,16 @@ def create_app(debug=False, local=False, object_config=None):
 
     # Add Marvin Logger
     # example loguru handler to get working in Flask 
-    # import logging
-    # class InterceptHandler(logging.Handler):
-    #     def emit(self, record):
-    #         # Retrieve context where the logging call occurred, this happens to be in the 6th frame upward
-    #         logger_opt = log.opt(depth=6, exception=record.exc_info)
-    #         logger_opt.log(record.levelno, record.getMessage())
-    # handler = InterceptHandler()
-    # handler.setLevel(0)
-    # app.logger.addHandler(handler)
-    app.logger.addHandler(log)
+    import logging
+    class InterceptHandler(logging.Handler):
+        def emit(self, record):
+            # Retrieve context where the logging call occurred, this happens to be in the 6th frame upward
+            logger_opt = log.opt(depth=6, exception=record.exc_info)
+            logger_opt.log(record.levelno, record.getMessage())
+    handler = InterceptHandler()
+    handler.setLevel(0)
+    app.logger.addHandler(handler)
+    #app.logger.addHandler(log)
 
     # Turn on debug stuff in config
     if app.debug is True:

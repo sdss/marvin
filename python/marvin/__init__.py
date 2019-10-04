@@ -29,41 +29,41 @@ from brain.utils.general.general import getDbMachine, merge, get_yaml_loader
 from brain import bconfig
 from brain.core.core import URLMapDict
 from brain.core.exceptions import BrainError
-from brain.core.logger import initLog
+#from brain.core.logger import initLog
 
 # test example loguru 
-# def initLog(logpath):
-#     ''' test loguru '''
-#     from loguru import logger
-#     import sys
-#     import logging
+def initLog(logpath):
+    ''' test loguru '''
+    from loguru import logger
+    import sys
+    import logging
 
-#     logger.add(sys.stderr, format="{level} | {message} ",
-#                level="INFO", colorize=True, enqueue=True, backtrace=True)
+    logger.add(sys.stderr, format="{level} | {message} ",
+               level="INFO", colorize=True, enqueue=True, backtrace=True)
 
-#     fmt = "{time:YYYY-MM-DD at HH:mm:ss} | {level} | {message} [{function} @ {file}]"
-#     logger.add("logtest.log", rotation='10 seconds', format=fmt,
-#                colorize=True, backtrace=True, enqueue=True)
+    fmt = "{time:YYYY-MM-DD at HH:mm:ss} | {level} | {message} [{function} @ {file}]"
+    logger.add(logpath, rotation='00:00', format=fmt,
+               colorize=True, backtrace=True, enqueue=True)
 
-#     new_level = logger.level("IMPORTANT", no=25, color="<magenta>")
+    new_level = logger.level("IMPORTANT", no=25, color="<magenta>")
 
-#     # capture warnings
-#     showwarning_ = warnings.showwarning
+    # capture warnings
+    showwarning_ = warnings.showwarning
 
-#     def showwarning(message, *args, **kwargs):
-#         logger.warning(message)
-#         showwarning_(message, *args, **kwargs)
+    def showwarning(message, *args, **kwargs):
+        logger.warning(message)
+        showwarning_(message, *args, **kwargs)
 
-#     warnings.showwarning = showwarning
+    warnings.showwarning = showwarning
 
-#     # propagate to standard logger
-#     class PropagateHandler(logging.Handler):
-#         def emit(self, record):
-#             logging.getLogger(record.name).handle(record)
+    # propagate to standard logger
+    class PropagateHandler(logging.Handler):
+        def emit(self, record):
+            logging.getLogger(record.name).handle(record)
 
-#     logger.add(PropagateHandler(), format="{message}")
+    logger.add(PropagateHandler(), format="{message}")
 
-#     return logger
+    return logger
 
 
 # Defines log dir.
