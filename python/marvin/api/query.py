@@ -24,12 +24,29 @@ from marvin.utils.db import get_traceback
 from marvin.web.extensions import limiter, celery
 
 
-@celery.task
-def test_sleep(t):
+@celery.task(bind=True)
+def test_sleep(self, t):
     import time
     log.info('inside celery sleep task')
     time.sleep(t)
     return {'result': 'I have slept', 'status': 'Task Completed', 'current': 10}
+
+
+@celery.task(bind=True)
+def run_query(self, searchfilter, **kwargs):
+    import time
+    log.info('sending query to celery task manager')
+    results = {'data': None, 'status': -1, 'error': None, 'traceback': None}
+    try:
+        output = _getCubes(searchfilter, **kwargs)
+    except MarvinError as e:
+        results['error'] = str(e)
+        results['traceback'] = get_traceback(asstring=True)
+    else:
+        results['status'] = 1
+        results.update(output)
+    time.sleep(30)
+    return results
 
 
 def _recombine_args(args):
@@ -38,13 +55,31 @@ def _recombine_args(args):
     return newargs
 
 
+def _format_remote_kwargs(kwargs):
+    ''' Format the query arguments to proper names '''
+    kwargs['search_filter'] = kwargs.pop('searchfilter', None)
+    kwargs['return_params'] = kwargs.pop('returnparams', None)
+    kwargs['default_params'] = kwargs.pop('defaults', None)
+    kwargs['return_type'] = kwargs.pop('rettype', None)
+    return kwargs
+
+
+def _check_spaxel_query(searchfilter, **kwargs):
+    skwargs = kwargs.copy()
+    #skwargs['return_params'] = skwargs.pop('returnparams', None)
+    #skwargs['default_params'] = skwargs.pop('defaults', None)
+    #skwargs['return_type'] = skwargs.pop('rettype', None)
+    q = Query(search_filter=searchfilter, **skwargs)
+    return q.is_spaxel_query
+
+
 def _run_query(searchfilter, **kwargs):
     ''' Run the query and return the query and results '''
 
     release = kwargs.pop('release', None)
-    kwargs['return_params'] = kwargs.pop('returnparams', None)
-    kwargs['default_params'] = kwargs.pop('defaults', None)
-    kwargs['return_type'] = kwargs.pop('rettype', None)
+    #kwargs['return_params'] = kwargs.pop('returnparams', None)
+    #kwargs['default_params'] = kwargs.pop('defaults', None)
+    #kwargs['return_type'] = kwargs.pop('rettype', None)
 
     try:
         q, r = doQuery(search_filter=searchfilter, release=release, **kwargs)
@@ -70,7 +105,7 @@ def _getCubes(searchfilter, **kwargs):
     start = kwargs.get('start', None)
     end = kwargs.get('end', None)
     limit = kwargs.get('limit', None)
-    returnparams = kwargs.get('returnparams', None)
+    returnparams = kwargs.get('return_params', None)
 
     # retrieve a subset
     chunk = None
@@ -213,36 +248,64 @@ class QueryView(BaseView):
         self.results['status'] = 1
         return jsonify(self.results)
 
-    @route('/stream/', methods=['GET', 'POST'], endpoint='stream')
-    @av.check_args(use_params='query', required='searchfilter')
-    def stream(self, args):
-        ''' test query generator stream '''
+    # @route('/stream/', methods=['GET', 'POST'], endpoint='stream')
+    # @av.check_args(use_params='query', required='searchfilter')
+    # def stream(self, args):
+    #     ''' test query generator stream '''
 
-        searchfilter = args.pop('searchfilter', None)
-        compression = args.pop('compression', config.compression)
-        mimetype = 'json' if compression == 'json' else 'octet-stream'
+    #     args = _format_remote_kwargs(args)
 
-        release = args.pop('release', None)
-        args['return_params'] = args.pop('returnparams', None)
-        args['return_type'] = args.pop('rettype', None)
-        q = Query(search_filter=searchfilter, release=release, **args)
+    #     searchfilter = args.pop('search_filter', None)
+    #     compression = args.pop('compression', config.compression)
+    #     mimetype = 'json' if compression == 'json' else 'octet-stream'
 
-        output = dict(data=None, chunk=q.limit, query=q.show(),
-                      filter=searchfilter, params=q.params, returnparams=q.return_params, runtime=None,
-                      queryparams_order=q._query_params_order, count=None, totalcount=None)
+    #     release = args.pop('release', None)
+    #     #args['return_params'] = args.pop('returnparams', None)
+    #     #args['return_type'] = args.pop('rettype', None)
+    #     q = Query(search_filter=searchfilter, release=release, **args)
 
-        return Response(stream_with_context(gen(q.query, compression=compression, params=q.params)), mimetype='application/{0}'.format(mimetype))
+    #     output = dict(data=None, chunk=q.limit, query=q.show(),
+    #                   filter=searchfilter, params=q.params, returnparams=q.return_params, runtime=None,
+    #                   queryparams_order=q._query_params_order, count=None, totalcount=None)
 
-    @route('/test/', methods=['GET', 'POST'], endpoint='querytest')
+    #     return Response(stream_with_context(gen(q.query, compression=compression, params=q.params)), mimetype='application/{0}'.format(mimetype))
+
+    @route('/sleep/', methods=['GET', 'POST'], endpoint='sleeptest')
     @av.check_args(use_params='query')
-    def test(self, args):
+    def sleep(self, args):
         t = args.pop('start', 10)
         print('celery1', celery)
         task = test_sleep.delay(t)
         self.results['status'] = 1
-        self.results['data'] = ['this is a test']
-        #return jsonify(self.results)
-        return jsonify(self.results)#, 202, {'Location': url_for('test.taskstatus', task_id=task.id)}
+        self.results['data'] = ['this is a sleep test']
+        return jsonify(self.results), 202, {'Location': url_for('api.QueryView:taskstatus', task_id=task.id)}
+
+    @route('/test/', methods=['GET', 'POST'], endpoint='querytest')
+    @av.check_args(use_params='query')
+    def test(self, args):
+        args = _format_remote_kwargs(args)
+
+        searchfilter = args.pop('search_filter', None)
+        print('celery query test')
+        self.results['task_id'] = None
+        if _check_spaxel_query(searchfilter, **args):
+            print('submitting celery task')
+            task = run_query.delay(searchfilter, **args)
+            self.results['status'] = 1
+            self.results['data'] = ['this is a celery test']
+            self.results['task_id'] = task.id
+            self.results['is_celery_task'] = True
+            return jsonify(self.results), 202, {'Location': url_for('api.QueryView:taskstatus', task_id=task.id)}
+        else:
+            print('submitting regular query')
+            output = _getCubes(searchfilter, **args)
+            #q, r = _run_query(searchfilter, **args)
+            self.results['status'] = 1
+            self.results['data'] = ['this is a query test']
+            self.results['is_celery_task'] = False
+            self.update_results(output)
+            #self.results['results'] = r.results
+            return jsonify(self.results), 200
 
     @route('/cubes/', methods=['GET', 'POST'], endpoint='querycubes')
     @av.check_args(use_params='query', required='searchfilter')
@@ -315,185 +378,214 @@ class QueryView(BaseView):
            }
 
         '''
-        # if return_all is True, perform a redirect to stream
-        return_all = args.get('return_all', None)
-        if return_all:
-            args = _recombine_args(args)
-            return redirect(url_for('api.stream', **args))
+        # # if return_all is True, perform a redirect to stream
+        # return_all = args.get('return_all', None)
+        # if return_all:
+        #     args = _recombine_args(args)
+        #     return redirect(url_for('api.stream', **args))
 
-        searchfilter = args.pop('searchfilter', None)
+        args = _format_remote_kwargs(args)
 
-        try:
-            res = _getCubes(searchfilter, **args)
-        except MarvinError as e:
-            self.results['error'] = str(e)
-            self.results['traceback'] = get_traceback(asstring=True)
-        else:
-            self.results['status'] = 1
-            self.update_results(res)
-
+        searchfilter = args.pop('search_filter', None)
         compression = args.pop('compression', config.compression)
-        return _compressed_response(compression, self.results)
 
-    @route('/cubes/columns/', defaults={'colname': None}, methods=['GET', 'POST'], endpoint='getcolumn')
-    @route('/cubes/columns/<colname>/', methods=['GET', 'POST'], endpoint='getcolumn')
-    @av.check_args(use_params='query', required='searchfilter')
-    def query_allcolumn(self, args, colname):
-        ''' Retrieves the entire result set for a single column
+        # set task.id
+        self.results['task_id'] = None
+        self.results['is_celery_task'] = False 
 
-        .. :quickref: Query; Retrieves the entire result set for a single column
-
-        :query string release: the release of MaNGA
-        :form searchfilter: your string searchfilter expression
-        :resjson int status: status of response. 1 if good, -1 if bad.
-        :resjson string error: error message, null if None
-        :resjson json inconfig: json of incoming configuration
-        :resjson json utahconfig: json of outcoming configuration
-        :resjson string traceback: traceback of an error, null if None
-        :resjson string data: dictionary of returned data
-        :json list column: the list of results for the specified column
-        :resheader Content-Type: application/json
-        :statuscode 200: no error
-        :statuscode 422: invalid input parameters
-
-        **Example request**:
-
-        .. sourcecode:: http
-
-           GET /marvin/api/query/cubes/columns/plateifu/ HTTP/1.1
-           Host: api.sdss.org
-           Accept: application/json, */*
-
-        **Example response**:
-
-        .. sourcecode:: http
-
-           HTTP/1.1 200 OK
-           Content-Type: application/json
-           {
-              "status": 1,
-              "error": null,
-              "inconfig": {"release": "MPL-5", "searchfilter": "nsa.z<0.1"},
-              "utahconfig": {"release": "MPL-5", "mode": "local"},
-              "traceback": null,
-              "chunk": 100,
-              "count": 4,
-              "data": ["8485-1901", "8485-1902", "8485-12701", "7443-12701", "8485-12702"],
-           }
-
-        '''
-        searchfilter = args.pop('searchfilter', None)
-        format_type = args.pop('format_type', 'list')
-        colname = args.pop('colname', None)
-
-        try:
-            query, results = _run_query(searchfilter, **args)
-        except MarvinError as e:
-            self.results['error'] = str(e)
-            self.results['traceback'] = get_traceback(asstring=True)
+        # offload spaxel queries to Celery
+        if _check_spaxel_query(searchfilter, **args):
+            print('submitting celery task')
+            task = run_query.delay(searchfilter, **args)
+            self.results['status'] = 1
+            self.results['data'] = ['celery task']
+            self.results['is_celery_task'] = True
+            self.results['task_id'] = task.id
+            return _compressed_response(compression, self.results), 202, {'Location': url_for('api.QueryView:taskstatus', task_id=task.id)}
         else:
+            print('submitting regular query')
             try:
-                column = _get_column(results, colname, format_type=format_type)
+                res = _getCubes(searchfilter, **args)
             except MarvinError as e:
                 self.results['error'] = str(e)
                 self.results['traceback'] = get_traceback(asstring=True)
             else:
                 self.results['status'] = 1
-                self.results['data'] = column
-                self.results['runtime'] = _get_runtime(query)
+                self.update_results(res)
+            return _compressed_response(compression, self.results), 200
 
-        compression = args.pop('compression', config.compression)
-        return _compressed_response(compression, self.results)
-        #return Response(json.dumps(self.results), mimetype='application/json')
+        # try:
+        #     res = _getCubes(searchfilter, **args)
+        # except MarvinError as e:
+        #     self.results['error'] = str(e)
+        #     self.results['traceback'] = get_traceback(asstring=True)
+        # else:
+        #     self.results['status'] = 1
+        #     self.update_results(res)
 
-    @route('/cubes/getsubset/', methods=['GET', 'POST'], endpoint='getsubset')
-    @av.check_args(use_params='query', required=['searchfilter', 'start', 'end'])
-    def query_getsubset(self, args):
-        ''' Remotely grab a subset of results from a query
+        # compression = args.pop('compression', config.compression)
+        # return _compressed_response(compression, self.results), 200
 
-        .. :quickref: Query; Grab a subset of results from a remote query
+    # @route('/cubes/columns/', defaults={'colname': None}, methods=['GET', 'POST'], endpoint='getcolumn')
+    # @route('/cubes/columns/<colname>/', methods=['GET', 'POST'], endpoint='getcolumn')
+    # @av.check_args(use_params='query', required='searchfilter')
+    # def query_allcolumn(self, args, colname):
+    #     ''' Retrieves the entire result set for a single column
 
-        :query string release: the release of MaNGA
-        :form searchfilter: your string searchfilter expression
-        :form params: the list of return parameters
-        :form rettype: the string indicating your Marvin Tool conversion object
-        :form start: the starting page index of results you wish to grab
-        :form end: the ending page index of the results you wish to grab
-        :form limit: the limiting number of results to return for large results
-        :form sort: a string parameter name to sort on
-        :form order: the order of the sort, either ``desc`` or ``asc``
-        :resjson int status: status of response. 1 if good, -1 if bad.
-        :resjson string error: error message, null if None
-        :resjson json inconfig: json of incoming configuration
-        :resjson json utahconfig: json of outcoming configuration
-        :resjson string traceback: traceback of an error, null if None
-        :resjson string data: dictionary of returned data
-        :json list results: the list of results
-        :json string query: the raw SQL string of your query
-        :json int chunk: the page limit of the results
-        :json string filter: the searchfilter used
-        :json list returnparams: the list of return parameters
-        :json list params: the list of parameters used in the query
-        :json list queryparams_order: the list of parameters used in the query
-        :json dict runtime: a dictionary of query time (days, minutes, seconds)
-        :json int totalcount: the total count of results
-        :json int count: the count in the current page of results
-        :resheader Content-Type: application/json
-        :statuscode 200: no error
-        :statuscode 422: invalid input parameters
+    #     .. :quickref: Query; Retrieves the entire result set for a single column
 
-        **Example request**:
+    #     :query string release: the release of MaNGA
+    #     :form searchfilter: your string searchfilter expression
+    #     :resjson int status: status of response. 1 if good, -1 if bad.
+    #     :resjson string error: error message, null if None
+    #     :resjson json inconfig: json of incoming configuration
+    #     :resjson json utahconfig: json of outcoming configuration
+    #     :resjson string traceback: traceback of an error, null if None
+    #     :resjson string data: dictionary of returned data
+    #     :json list column: the list of results for the specified column
+    #     :resheader Content-Type: application/json
+    #     :statuscode 200: no error
+    #     :statuscode 422: invalid input parameters
 
-        .. sourcecode:: http
+    #     **Example request**:
 
-           GET /marvin/api/query/cubes/getsubset/ HTTP/1.1
-           Host: api.sdss.org
-           Accept: application/json, */*
+    #     .. sourcecode:: http
 
-        **Example response**:
+    #        GET /marvin/api/query/cubes/columns/plateifu/ HTTP/1.1
+    #        Host: api.sdss.org
+    #        Accept: application/json, */*
 
-        .. sourcecode:: http
+    #     **Example response**:
 
-           HTTP/1.1 200 OK
-           Content-Type: application/json
-           {
-              "status": 1,
-              "error": null,
-              "inconfig": {"release": "MPL-5", "searchfilter": "nsa.z<0.1", "start":10, "end":15},
-              "utahconfig": {"release": "MPL-5", "mode": "local"},
-              "traceback": null,
-              "chunk": 100,
-              "count": 4,
-              "data": [["1-209232",8485,"8485-1901","1901",0.0407447],
-                       ["1-209113",8485,"8485-1902","1902",0.0378877],
-                       ["1-209191",8485,"8485-12701","12701",0.0234253],
-                       ["1-209151",8485,"8485-12702","12702",0.0185246]
-                      ],
-              "filter": "nsa.z<0.1",
-              "params": ["cube.mangaid","cube.plate","cube.plateifu","ifu.name","nsa.z"],
-              "query": "SELECT ... FROM ... WHERE ...",
-              "queryparams_order": ["mangaid","plate","plateifu","name","z"],
-              "returnparams": null,
-              "runtime": {"days": 0,"microseconds": 55986,"seconds": 0},
-              "totalcount": 4
-           }
+    #     .. sourcecode:: http
 
-        '''
-        searchfilter = args.pop('searchfilter', None)
+    #        HTTP/1.1 200 OK
+    #        Content-Type: application/json
+    #        {
+    #           "status": 1,
+    #           "error": null,
+    #           "inconfig": {"release": "MPL-5", "searchfilter": "nsa.z<0.1"},
+    #           "utahconfig": {"release": "MPL-5", "mode": "local"},
+    #           "traceback": null,
+    #           "chunk": 100,
+    #           "count": 4,
+    #           "data": ["8485-1901", "8485-1902", "8485-12701", "7443-12701", "8485-12702"],
+    #        }
 
-        try:
-            res = _getCubes(searchfilter, **args)
-        except MarvinError as e:
-            self.results['error'] = str(e)
-            self.results['traceback'] = get_traceback(asstring=True)
-        else:
-            self.results['status'] = 1
-            self.update_results(res)
+    #     '''
 
-        compression = args.pop('compression', config.compression)
-        return _compressed_response(compression, self.results)
-        # this needs to be json.dumps until sas-vm at Utah updates to 2.7.11
-        #return Response(json.dumps(self.results), mimetype='application/json')
+    #     args = _format_remote_kwargs(args)
+
+    #     searchfilter = args.pop('search_filter', None)
+    #     format_type = args.pop('format_type', 'list')
+    #     colname = args.pop('colname', None)
+
+    #     try:
+    #         query, results = _run_query(searchfilter, **args)
+    #     except MarvinError as e:
+    #         self.results['error'] = str(e)
+    #         self.results['traceback'] = get_traceback(asstring=True)
+    #     else:
+    #         try:
+    #             column = _get_column(results, colname, format_type=format_type)
+    #         except MarvinError as e:
+    #             self.results['error'] = str(e)
+    #             self.results['traceback'] = get_traceback(asstring=True)
+    #         else:
+    #             self.results['status'] = 1
+    #             self.results['data'] = column
+    #             self.results['runtime'] = _get_runtime(query)
+
+    #     compression = args.pop('compression', config.compression)
+    #     return _compressed_response(compression, self.results)
+
+    # @route('/cubes/getsubset/', methods=['GET', 'POST'], endpoint='getsubset')
+    # @av.check_args(use_params='query', required=['searchfilter', 'start', 'end'])
+    # def query_getsubset(self, args):
+    #     ''' Remotely grab a subset of results from a query
+
+    #     .. :quickref: Query; Grab a subset of results from a remote query
+
+    #     :query string release: the release of MaNGA
+    #     :form searchfilter: your string searchfilter expression
+    #     :form params: the list of return parameters
+    #     :form rettype: the string indicating your Marvin Tool conversion object
+    #     :form start: the starting page index of results you wish to grab
+    #     :form end: the ending page index of the results you wish to grab
+    #     :form limit: the limiting number of results to return for large results
+    #     :form sort: a string parameter name to sort on
+    #     :form order: the order of the sort, either ``desc`` or ``asc``
+    #     :resjson int status: status of response. 1 if good, -1 if bad.
+    #     :resjson string error: error message, null if None
+    #     :resjson json inconfig: json of incoming configuration
+    #     :resjson json utahconfig: json of outcoming configuration
+    #     :resjson string traceback: traceback of an error, null if None
+    #     :resjson string data: dictionary of returned data
+    #     :json list results: the list of results
+    #     :json string query: the raw SQL string of your query
+    #     :json int chunk: the page limit of the results
+    #     :json string filter: the searchfilter used
+    #     :json list returnparams: the list of return parameters
+    #     :json list params: the list of parameters used in the query
+    #     :json list queryparams_order: the list of parameters used in the query
+    #     :json dict runtime: a dictionary of query time (days, minutes, seconds)
+    #     :json int totalcount: the total count of results
+    #     :json int count: the count in the current page of results
+    #     :resheader Content-Type: application/json
+    #     :statuscode 200: no error
+    #     :statuscode 422: invalid input parameters
+
+    #     **Example request**:
+
+    #     .. sourcecode:: http
+
+    #        GET /marvin/api/query/cubes/getsubset/ HTTP/1.1
+    #        Host: api.sdss.org
+    #        Accept: application/json, */*
+
+    #     **Example response**:
+
+    #     .. sourcecode:: http
+
+    #        HTTP/1.1 200 OK
+    #        Content-Type: application/json
+    #        {
+    #           "status": 1,
+    #           "error": null,
+    #           "inconfig": {"release": "MPL-5", "searchfilter": "nsa.z<0.1", "start":10, "end":15},
+    #           "utahconfig": {"release": "MPL-5", "mode": "local"},
+    #           "traceback": null,
+    #           "chunk": 100,
+    #           "count": 4,
+    #           "data": [["1-209232",8485,"8485-1901","1901",0.0407447],
+    #                    ["1-209113",8485,"8485-1902","1902",0.0378877],
+    #                    ["1-209191",8485,"8485-12701","12701",0.0234253],
+    #                    ["1-209151",8485,"8485-12702","12702",0.0185246]
+    #                   ],
+    #           "filter": "nsa.z<0.1",
+    #           "params": ["cube.mangaid","cube.plate","cube.plateifu","ifu.name","nsa.z"],
+    #           "query": "SELECT ... FROM ... WHERE ...",
+    #           "queryparams_order": ["mangaid","plate","plateifu","name","z"],
+    #           "returnparams": null,
+    #           "runtime": {"days": 0,"microseconds": 55986,"seconds": 0},
+    #           "totalcount": 4
+    #        }
+
+    #     '''
+    #     args = _format_remote_kwargs(args)
+    #     searchfilter = args.pop('search_filter', None)
+
+    #     try:
+    #         res = _getCubes(searchfilter, **args)
+    #     except MarvinError as e:
+    #         self.results['error'] = str(e)
+    #         self.results['traceback'] = get_traceback(asstring=True)
+    #     else:
+    #         self.results['status'] = 1
+    #         self.update_results(res)
+
+    #     compression = args.pop('compression', config.compression)
+    #     return _compressed_response(compression, self.results)
 
     @public
     @route('/getparamslist/', methods=['GET', 'POST'], endpoint='getparams')
@@ -556,110 +648,49 @@ class QueryView(BaseView):
         output = jsonify(self.results)
         return output
 
-    @public
-    @route('/getallparams/', methods=['GET', 'POST'], endpoint='getallparams')
-    def getall(self):
-        ''' Retrieve all the query parameters for all releases at once '''
-        params = {}
-        releases = config._allowed_releases.keys()
-        for release in releases:
-            params[release] = Query.get_available_params('all', release=release)
-        self.results['data'] = params
-        self.results['status'] = 1
-        output = jsonify(self.results)
-        return output
+    # @public
+    # @route('/getallparams/', methods=['GET', 'POST'], endpoint='getallparams')
+    # def getall(self):
+    #     ''' Retrieve all the query parameters for all releases at once '''
+    #     params = {}
+    #     releases = config._allowed_releases.keys()
+    #     for release in releases:
+    #         params[release] = Query.get_available_params('all', release=release)
+    #     self.results['data'] = params
+    #     self.results['status'] = 1
+    #     output = jsonify(self.results)
+    #     return output
 
-    @route('/cleanup/', methods=['GET', 'POST'], endpoint='cleanupqueries')
-    @av.check_args(use_params='query', required='task')
-    def cleanup(self, args):
-        ''' Clean up idle server-side queries or retrieve the list of them
-
-        Do not use!
-
-        .. :quickref: Query; Send a cleanup command to the server-side database
-
-        :query string release: the release of MaNGA
-        :form task: ``clean`` or ``getprocs``, the type of task to run
-        :resjson int status: status of response. 1 if good, -1 if bad.
-        :resjson string error: error message, null if None
-        :resjson json inconfig: json of incoming configuration
-        :resjson json utahconfig: json of outcoming configuration
-        :resjson string traceback: traceback of an error, null if None
-        :resjson string data: dictionary of returned data
-        :json string clean: clean success message
-        :json list procs: the list of processes currently running on the db
-        :resheader Content-Type: application/json
-        :statuscode 200: no error
-        :statuscode 422: invalid input parameters
-
-        **Example request**:
-
-        .. sourcecode:: http
-
-           GET /marvin/api/query/cleanup/ HTTP/1.1
-           Host: api.sdss.org
-           Accept: application/json, */*
-
-        **Example response**:
-
-        .. sourcecode:: http
-
-           HTTP/1.1 200 OK
-           Content-Type: application/json
-           {
-              "status": 1,
-              "error": null,
-              "inconfig": {"release": "MPL-5"},
-              "utahconfig": {"release": "MPL-5", "mode": "local"},
-              "traceback": null,
-              "data": 'clean success'
-           }
-
-        '''
-        task = args.pop('task', None)
-        if task == 'clean':
-            q = Query(mode='local')
-            q._cleanUpQueries()
-            res = {'status': 1, 'data': 'clean success'}
-        elif task == 'getprocs':
-            q = Query(mode='local')
-            procs = q._getIdleProcesses()
-            procs = [{k: v for k, v in y.items()} for y in procs]
-            res = {'status': 1, 'data': procs}
+    @route('/status/<task_id>')
+    def taskstatus(self, task_id):
+        task = run_query.AsyncResult(task_id)
+        if task.state == 'PENDING':
+            print('pending task', task.state)
+            # job did not start yet
+            response = {
+                'state': task.state,
+                'taskid': task_id,
+                'status': 'Pending...'
+            }
+        elif task.state != 'FAILURE':
+            print('success task', task.state, task.info)
+            response = {
+                'taskid': task_id,
+                'state': task.state,
+                'status': task.info.get('status', '')
+            }
+            response.update(task.info)
+            # if 'result' in task.info:
+            #     response['result'] = task.info['result']
         else:
-            res = {'status': -1, 'data': None, 'error': 'Task is None or not in [clean, getprocs]'}
-        self.update_results(res)
-        output = jsonify(self.results)
-        return output
-
-
-    # @route('/status/<task_id>')
-    # def taskstatus(self, task_id):
-    #     task = add_test.AsyncResult(task_id)
-    #     if task.state == 'PENDING':
-    #         print('pending task', task.state)
-    #         # job did not start yet
-    #         response = {
-    #             'state': task.state,
-    #             'current': 0,
-    #             'total': 1,
-    #             'status': 'Pending...'
-    #         }
-    #     elif task.state != 'FAILURE':
-    #         print('success task', task.state, task.info)
-    #         response = {
-    #             'state': task.state,
-    #             'current': task.info.get('current', 0),
-    #             'status': task.info.get('status', '')
-    #         }
-    #         if 'result' in task.info:
-    #             response['result'] = task.info['result']
-    #     else:
-    #         print('other task', task.state)
-    #         # something went wrong in the background job
-    #         response = {
-    #             'state': task.state,
-    #             'current': 1,
-    #             'status': str(task.info),  # this is the exception raised
-    #         }
-    #     return jsonify(response)
+            print('other task', task.state, task.result, task.traceback)
+            # something went wrong in the background job
+            response = {
+                'state': task.state,
+                'status': task.info.get('status', ''),
+                'error': task.info.get('error', ''),
+                'failed': task.failed(),
+                'successful': task.successful(),
+            }
+        #task.forget()
+        return jsonify(response)

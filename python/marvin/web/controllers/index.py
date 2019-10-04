@@ -42,8 +42,11 @@ class Marvin(BaseWebView):
 
     @route('/test/')
     def test(self):
-        time.sleep(np.random.randint(0, 80))
-        return 'new test'
+        current_app.logger.info('celery web sleep test')
+        from marvin.api.query import test_sleep
+        t = np.random.randint(0, 80)
+        task = test_sleep.delay(t)
+        return jsonify('web sleep test finished'), 202, {'Location': url_for('api.QueryView:taskstatus', task_id=task.id)}
 
     @route('/versions/')
     def get_versions(self):

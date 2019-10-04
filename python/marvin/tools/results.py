@@ -11,6 +11,7 @@ import datetime
 import json
 import os
 import warnings
+import time
 from collections import namedtuple
 from functools import wraps
 from operator import add
@@ -30,8 +31,8 @@ from marvin.tools.modelcube import ModelCube
 from marvin.tools.rss import RSS
 from marvin.utils.datamodel.query import datamodel
 from marvin.utils.datamodel.query.base import ParameterGroup
-from marvin.utils.general import (downloadList, get_images_by_list, map_bins_to_column, temp_setattr,
-                                  turn_off_ion)
+from marvin.utils.general import (downloadList, get_images_by_list, map_bins_to_column, 
+                                  temp_setattr, turn_off_ion)
 
 try:
     import cPickle as pickle
@@ -383,7 +384,24 @@ class Results(object):
     def __init__(self, results=None, mode=None, data_origin=None, release=None, count=None,
                  totalcount=None, runtime=None, response_time=None, chunk=None, start=None,
                  end=None, queryobj=None, query=None, search_filter=None, return_params=None,
-                 return_type=None, limit=None, params=None, **kwargs):
+                 return_type=None, limit=None, params=None, state=None, taskid=None, **kwargs):
+
+        # initialize the result parameters
+        self._init_params(results=results, mode=mode, data_origin=data_origin, release=release,
+                          count=count, totalcount=totalcount, runtime=runtime,
+                          response_time=response_time, chunk=chunk, start=start, end=end,
+                          queryobj=queryobj, query=query, search_filter=search_filter,
+                          return_params=return_params, return_type=return_type, limit=limit,
+                          params=params, state=state, taskid=taskid, **kwargs)
+
+        # initialize the reults
+        self._init_results()
+
+    def _init_params(self, results=None, mode=None, data_origin=None, release=None, count=None,
+                     totalcount=None, runtime=None, response_time=None, chunk=None, start=None,
+                     end=None, queryobj=None, query=None, search_filter=None, return_params=None,
+                     return_type=None, limit=None, params=None, state=None, taskid=None, **kwargs):
+        ''' initialize the parameters '''
 
         # basic parameters
         self.results = results
@@ -401,9 +419,13 @@ class Results(object):
         self.return_params = self._queryobj.return_params if self._queryobj else return_params
         self.limit = self._queryobj.limit if self._queryobj else limit
 
+        # Celery task parameters
+        self.state = state
+        self.taskid = taskid
+
         # stat parameters
         self.datamodel = datamodel[self.release]
-        self.count = count if count else len(self.results)
+        self.count = count if count else len(self.results) if self.results else 0
         self.totalcount = totalcount if totalcount else self.count
         self._runtime = runtime
         self.query_time = self._getRunTime() if self._runtime is not None else None
@@ -415,6 +437,9 @@ class Results(object):
         self.end = end
         self.sortcol = None
         self.order = None
+
+    def _init_results(self):
+        ''' initialize the result dataset '''
 
         # drop breadcrumb
         breadcrumb.drop(message='Initializing MarvinResults {0}'.format(self.__class__),
@@ -882,11 +907,64 @@ class Results(object):
             >>> [u'mangaid', u'name', u'nsa.z']
 
         '''
+        if not self._params:
+            log.warning('No parameters found to identify columns')
+            self.columns = None
+            return self.columns
+
         try:
             self.columns = ColumnGroup('Columns', self._params, parent=self.datamodel)
         except Exception as e:
             raise MarvinError('Could not create query columns: {0}'.format(e))
         return self.columns
+
+    def poll(self, taskid=None, attempts=None, cycle=5):
+        ''' Check the status of a spaxel query task '''
+
+        taskid = taskid or self.taskid or None
+        assert taskid is not None, ('Must have taskid to poll the Redis db.'
+                                    'Polling only works for spaxel queries.')
+
+        assert isinstance(attempts, (int, type(None))
+                          ), 'attempts must be an integer'
+
+        # do nothing if 0 attempts
+        if attempts == 0:
+            return
+
+        route = 'marvin/api/query/status/{0}'.format(taskid)
+        ii = Interaction(route=route, request_type='get')
+        state = ii.results.get('state', None)
+
+        # continuously poll for status or until number of attempts
+        n_attempt = 0
+        while state == 'PENDING':
+            # check the breaking condition
+            if attempts and n_attempt >= attempts:
+                break
+
+            # check the query state
+            log.info('Query still running...')
+            ii = Interaction(route=route, request_type='get')
+            state = ii.results.get('state', None)
+
+            # increment attempts and sleep for cycle seconds
+            n_attempt += 1
+            time.sleep(cycle)
+
+        else:
+            self._set_task_results(ii)
+
+    def _set_task_results(self, ii):
+        ''' Set the results from the query celery task '''
+        state = ii.results.get('state', None)
+        if state == 'SUCCESS':
+            log.info('Query finished.')
+            remotes = self._queryobj._get_remote_parameters(ii)
+            self._init_params(**remotes)
+            self._init_results()
+        elif state == 'FAILED':
+            log.info('Query failed.')
 
     def _interaction(self, url, params, calltype='', create_set=None, **kwargs):
         ''' Perform a remote Interaction call

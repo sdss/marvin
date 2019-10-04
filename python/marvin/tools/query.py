@@ -363,7 +363,10 @@ class Query(object):
         except Exception as e:
             raise MarvinError('API Query call failed: {0}'.format(e))
         else:
-            # retrive and set some parameters
+            # Check for Celery Task
+            ii = self._check_celery_task(ii)
+
+            # retrieve and set some parameters
             remotes = self._get_remote_parameters(ii)
             remotes.update({'start': start, 'end': end})
 
@@ -384,6 +387,26 @@ class Query(object):
         self._final_time = (posttime - starttime)
 
         return final
+
+    def _check_celery_task(self, response):
+        ''' Check the remote response for Celery task '''
+        is_celery = response.results.get('is_celery_task', None)
+        if not is_celery:
+            return response
+
+        taskid = response.results.get('task_id', None)
+        ii = self._poll_task_once(taskid)
+        state = ii.results.get('state', None)
+        if state == 'PENDING':
+            log.info('Your spaxel query has been submitted. '
+                     'Use the "poll" method on Marvin Results to check the status.')
+        return ii
+
+    def _poll_task_once(self, taskid):
+        ''' Poll a Celery task once '''
+        route = 'marvin/api/query/status/{0}'.format(taskid)
+        ii = Interaction(route=route, request_type='get')
+        return ii
 
     def _get_remote_parameters(self, interaction):
         ''' Retrieve or set parameters needed
@@ -409,6 +432,9 @@ class Query(object):
         chunk = results.get('chunk', self.limit)
         totalcount = results.get('totalcount', None)
         runtime = results.get('runtime', None)
+        is_celery_task = results.get('is_celery_task', None)
+        state = results.get('state', None)
+        taskid = results.get('taskid', None)
 
         # set some parameters when only data is available
         if len(results) == 1 and 'data' in results:
@@ -423,11 +449,15 @@ class Query(object):
             chunk = self.limit
             runtime = response_time
 
+        # reset the celery data results to empty
+        if is_celery_task and taskid:
+            data = []
+
         self.query = query
         self.params = params
         remotes = dict(response_time=response_time, params=params, query=query, results=data,
                        totalcount=totalcount, count=count, runtime=runtime, chunk=int(chunk),
-                       mode=self.mode, queryobj=self)
+                       mode=self.mode, queryobj=self, state=state, taskid=taskid)
 
         return remotes
 
@@ -1026,7 +1056,6 @@ class Query(object):
 
         return use_only
 
-
     def _check_for(self, parameters, schema=None, tables=None, only=None):
         ''' Check if a schema or test of tables names are in the provided parameters
 
@@ -1069,6 +1098,33 @@ class Query(object):
             else:
                 intables = sum([[t in c for c in param_tables] for t in tables], [])
                 return True if fxn(intables) else False
+
+    @property
+    def is_dap_query(self):
+        ''' Checks if the query calls the manga DAP schema '''
+
+        if self.mode == 'remote':
+            log.warning('Cannot check dap query in remote mode.')
+            return
+
+        return self._check_for(self.params, schema='dapdb')
+
+    @property
+    def is_spaxel_query(self):
+        ''' Checks if the query calls any DAP table with spaxel data '''
+
+        if self.mode == 'remote':
+            log.warning('Cannot check dap query in remote mode.')
+            return
+
+        is_spaxel = False
+        if self._check_for(self.params, schema='dapdb'):
+            # Checks if the only table queried from dapdb is dapall or the default parameters
+            all_dapall = self._check_for(self.params, schema='dapdb',
+                                         tables=['dapall', 'bintype', 'template'], only=True)
+            if not all_dapall:
+                is_spaxel = True
+        return is_spaxel
 
     def _build_query(self):
         ''' Build the query '''

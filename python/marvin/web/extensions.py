@@ -52,6 +52,8 @@ jwt = JWTManager()
 # Celery Task Manager
 celery = Celery(__name__, broker=Config.CELERY_BROKER_URL)
 
+after_setup_logger.connect(log)
+after_setup_task_logger.connect(log)
 
 # logger = logging.getLogger(__name__)
 # @after_setup_logger.connect
