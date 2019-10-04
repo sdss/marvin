@@ -12,7 +12,10 @@
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<link rel='stylesheet' href="{{url_for('lib',filename='dist/marvin.min.css')}}"></script>
 	<link rel="shortcut icon" href="{{url_for('static',filename='images/marvin_favicon.ico')}}" type="image/x-icon" />
-	<link rel="preconnect stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/bootstrap-table/1.10.1/bootstrap-table.min.css">
+	{#<link rel="preconnect stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/bootstrap-table/1.10.1/bootstrap-table.min.css">#}
+
+	<link rel="preconnect stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-table/1.15.4/bootstrap-table.min.css" />
+
 	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.6.1/css/font-awesome.min.css">
 	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.10.0/css/bootstrap-select.min.css">
 	<link rel="stylesheet" href="https://gitcdn.github.io/bootstrap-toggle/2.2.2/css/bootstrap-toggle.min.css">
@@ -25,8 +28,12 @@
 	<script rel='preconnect' type="text/javascript" src="//code.jquery.com/jquery-3.2.1.min.js"></script>
 	<script rel='preconnect' type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery.actual/1.0.19/jquery.actual.min.js"></script>
 	<script rel='preconnect' src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
-	<script rel='preconnect' src="//cdnjs.cloudflare.com/ajax/libs/bootstrap-table/1.10.1/bootstrap-table.min.js"></script>
-	<script rel='preconnect' src="//cdnjs.cloudflare.com/ajax/libs/bootstrap-table/1.10.1/locale/bootstrap-table-en-US.min.js"></script>
+
+	{#<script rel='preconnect' src="//cdnjs.cloudflare.com/ajax/libs/bootstrap-table/1.10.1/bootstrap-table.min.js"></script>#}
+	{#<script rel='preconnect' src="//cdnjs.cloudflare.com/ajax/libs/bootstrap-table/1.10.1/locale/bootstrap-table-en-US.min.js"></script>#}
+	<script rel='preconnect' src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-table/1.15.4/bootstrap-table.min.js"></script>
+	<script rel='preconnect' src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-table/1.15.4/locale/bootstrap-table-en-US.min.js"></script>
+
 	<script rel='preconnect' src="//cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.10.0/js/bootstrap-select.min.js"></script>
 	{#<script type="text/javascript" src="{{url_for('static',filename='js/wcs.js')}}"></script>#}
 	<script rel='preconnect' type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/corejs-typeahead/1.1.1/bloodhound.min.js"></script>
