@@ -7,6 +7,10 @@ Marvin's Change Log
 Added
 ^^^^^
 - Support for DR16.  Updated datamodels and docs. 
+- Added Galaxy Zoo VAC 
+- Added GEMA VAC 
+- Added Firefly VAC
+- Added Visual Morphology VAC
 
 Changed
 ^^^^^^^

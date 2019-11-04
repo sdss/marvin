@@ -88,6 +88,7 @@ class MarvinConfig(object):
 
         self._custom_config = None
         self._drpall = None
+        self._dapall = None
         self._inapp = False
 
         self._urlmap = None

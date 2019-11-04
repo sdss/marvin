@@ -90,3 +90,11 @@ Image
    :members:
    :undoc-members:
    :show-inheritance:
+
+VACs
+----
+
+.. automodule:: marvin.tools.vacs
+   :members:
+   :undoc-members:
+   :show-inheritance:
