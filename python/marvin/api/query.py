@@ -45,7 +45,7 @@ def run_query(self, searchfilter, **kwargs):
     else:
         results['status'] = 1
         results.update(output)
-    time.sleep(30)
+    #time.sleep(30)
     return results
 
 
@@ -673,7 +673,7 @@ class QueryView(BaseView):
                 'status': 'Pending...'
             }
         elif task.state != 'FAILURE':
-            print('success task', task.state, task.info)
+            print('success task', task.state)
             response = {
                 'taskid': task_id,
                 'state': task.state,

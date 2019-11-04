@@ -919,7 +919,22 @@ class Results(object):
         return self.columns
 
     def poll(self, taskid=None, attempts=None, cycle=5):
-        ''' Check the status of a spaxel query task '''
+        ''' Check the status of a spaxel query task
+        
+        Continuously polls the Redis db to check the status of the Celery task.
+        If task is complete, it will reinitialize the Marvin Results object with
+        the resulting data.  By default it continuously poll at intervals of 5 seconds
+        until the task is complete.  The polling interval and number of attempts made
+        can be controlled via the `cycle` and `attempts` keywords, respectively.
+
+        Parameters:
+            taskid (str):
+                The Celery worker task id
+            attempts (int):
+                The number of poll attempts to make.  Default is infinite.
+            cycle (int):
+                The number of seconds to wait between pools.  Default is 5 seconds.
+        '''
 
         taskid = taskid or self.taskid or None
         assert taskid is not None, ('Must have taskid to poll the Redis db.'

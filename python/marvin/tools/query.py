@@ -14,6 +14,7 @@ import os
 import re
 import warnings
 import datetime
+import time
 from collections import Counter, defaultdict
 from functools import wraps
 from operator import eq, ge, gt, le, lt, ne
@@ -389,23 +390,36 @@ class Query(object):
         return final
 
     def _check_celery_task(self, response):
-        ''' Check the remote response for Celery task '''
+        ''' Check the remote response for Celery task
+        
+        If the API response is a celery task, it will check
+        the status of the celery task and return the response
+        object.
+
+        Parameters:
+            response (object):
+                The Marvin Interaction response object
+
+        Returns:
+            the Celery task status response object via Marvin Interaction
+        '''
         is_celery = response.results.get('is_celery_task', None)
         if not is_celery:
             return response
 
         taskid = response.results.get('task_id', None)
-        ii = self._poll_task_once(taskid)
+        if not taskid:
+            raise MarvinError('Celery Task should have a task id')
+        
+        # sleep for 1 second before checking
+        time.sleep(1)
+        
+        route = 'marvin/api/query/status/{0}'.format(taskid)
+        ii = Interaction(route=route, request_type='get')
         state = ii.results.get('state', None)
         if state == 'PENDING':
             log.info('Your spaxel query has been submitted. '
                      'Use the "poll" method on Marvin Results to check the status.')
-        return ii
-
-    def _poll_task_once(self, taskid):
-        ''' Poll a Celery task once '''
-        route = 'marvin/api/query/status/{0}'.format(taskid)
-        ii = Interaction(route=route, request_type='get')
         return ii
 
     def _get_remote_parameters(self, interaction):
