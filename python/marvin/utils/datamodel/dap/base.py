@@ -912,14 +912,14 @@ class MultiChannelProperty(list):
         self._parent = None
         self.parent = kwargs.get('parent', None)
 
-        self_list = []
-        for ii, channel in enumerate(channels):
-            this_unit = unit if not isinstance(unit, (list, tuple)) else unit[ii]
-            this_scale = scale if not isinstance(scale, (list, tuple)) else scale[ii]
-            channel_description = self.description + ' Channel = {0}.'.format(channel.to_string())
-            self_list.append(Property(self.name, channel=channel,
-                                      unit=this_unit, scale=this_scale,
-                                      binid=binid, description=channel_description, **kwargs))
+        self._binid = binid
+
+        self_list = self._generate_prop_list(channels, unit=unit, scale=scale, **kwargs)
+        # self_list = []
+        # for ii, channel in enumerate(channels):
+        #     this_unit = unit if not isinstance(unit, (list, tuple)) else unit[ii]
+        #     this_scale = scale if not isinstance(scale, (list, tuple)) else scale[ii]
+        #     self_list.append(self._generate_property(channel, unit=this_unit, scale=this_scale, **kwargs))
 
         list.__init__(self, self_list)
 
@@ -977,6 +977,79 @@ class MultiChannelProperty(list):
         ''' Returns the FITS extension this belongs to '''
 
         return self.name.upper()
+
+    def _generate_prop_list(self, channels, unit=None, scale=1, **kwargs):
+        ''' Generate a new Property list from a list of Channels '''
+        self_list = []
+        for ii, channel in enumerate(channels):
+            this_unit = unit if not isinstance(unit, (list, tuple)) else unit[ii]
+            this_scale = scale if not isinstance(scale, (list, tuple)) else scale[ii]
+            self_list.append(self._generate_property(
+                channel, unit=this_unit, scale=this_scale, **kwargs))
+        return self_list
+
+    def _generate_property(self, channel, unit=None, scale=1, **kwargs):
+        ''' Generate a new Property '''
+
+        channel_description = self.description + ' Channel = {0}.'.format(channel.to_string())
+        new_prop = Property(self.name, channel=channel,
+                            unit=unit, scale=scale,
+                            binid=self._binid, description=channel_description, **kwargs)
+        return new_prop
+
+    def append_channel(self, channel, unit=None, scale=1, at_index=None, **kwargs):
+        ''' Append a Channel to the MultiChannelProperty list
+        
+        Appends a channel to the existing list of channel.  Can either insert the
+        channel at a specified index or at the end of the list (default).  If an index
+        is specified, will automatically reindex the channels to have the proper idx.    
+
+        Parameters:
+            channel (Channel):
+                The channel to append
+            at_index (int):
+                The list index at which to insert the channel.  Default is None.
+            unit (astropy unit or None):
+                The unit for these channels. If set, it will override any unit
+                defined in the individual channels.
+            scale (float):
+                The scaling factor for these channels. If set, it will override
+                any unit defined in the individual channels.
+            kwargs (dict):
+                Arguments to be passed to each ``Property`` on initialisation.
+        '''
+
+        new_prop = self._generate_property(channel, unit=unit, scale=scale, **kwargs)
+        n_item = len(self)
+        idx = at_index if at_index else n_item
+        self.insert(idx, new_prop)
+        # if an insert index is given, then automatically reindex
+        if at_index is not None:
+            self.reindex_channels()
+
+    def reindex_channels(self):
+        ''' Reindex the Channels in the Property list '''
+
+        for idx, channel in enumerate(self.channels):
+            channel.idx = idx
+
+    def update_channels(self, channels, unit=None, scale=1, **kwargs):
+        ''' Update the Channels in the MultiChannelProperty
+
+        Parameters:
+            channels (list):
+                new list of Channels to replace existing ones
+            unit (astropy unit or None):
+                The unit for these channels. If set, it will override any unit
+                defined in the individual channels.
+            scale (float):
+                The scaling factor for these channels. If set, it will override
+                any unit defined in the individual channels.
+            kwargs (dict):
+                Arguments to be passed to each ``Property`` on initialisation.
+        '''
+        self_list = self._generate_prop_list(channels, unit=unit, scale=scale, **kwargs)
+        list.__init__(self, self_list)
 
 
 class Channel(object):
@@ -1217,3 +1290,38 @@ class Model(object):
                 return string
             else:
                 return string + ': ' + self.channel.to_string(mode=mode)
+
+
+# functions to aid in updating datamodel
+def reindex_channels(channels, names=None, indices=None, starting_idx=None):
+    ''' Reindex a list of channels
+    
+    Parameters:
+        channels (list):
+            List of Channel objects to reindex
+        names (list):
+            A list of channel names to reindex by
+        indices (list):
+            A list of integers to reindex by
+        starting_idx (int):
+            An starting index to offset by when reindexing
+    
+    Returns:
+        A new sorted and reindexed list of Channels
+
+    '''
+
+    # sort the channels by new names or indices
+    if names:
+        channels = sorted(channels, key=lambda t: names.index(t.name))
+
+    if indices:
+        channels = [i for i, __ in sorted((zip(channels, indices)),key=lambda t:t[1])]
+
+    # update the channel indexes
+    for i, channel in enumerate(channels):
+        idx = i + starting_idx if starting_idx else i
+        channel.idx = idx
+
+    return channels
+    
