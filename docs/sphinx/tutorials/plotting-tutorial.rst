@@ -118,24 +118,31 @@ BPT Plot
 Multi-panel Map Plot (Single Galaxy)
 ------------------------------------
 
+This code produces the right panel of Figure 1 from the `Marvin paper
+<https://ui.adsabs.harvard.edu/abs/2018arXiv181203833C/abstract>`_.
+
 .. plot::
     :align: center
     :include-source: True
 
     import matplotlib.pyplot as plt
+    import numpy as np
     from marvin.tools import Maps
-    import marvin.utils.plot.map as mapplot
 
-    maps = Maps('8485-1901')
-    stvel = maps['stellar_vel']
-    ha = maps['emline_gflux_ha_6564']
-    d4000 = maps['specindex_d4000']
+    maps = Maps('7977-12705')
 
-    fig, axes = plt.subplots(1, 3, figsize=(15, 4))
-    for ax, map_ in zip(axes, [stvel, ha, d4000]):
-        mapplot.plot(dapmap=map_, fig=fig, ax=ax)
+    halpha = maps.emline_gflux_ha_6564
+    nii_ha = np.log10(maps.emline_gflux_nii_6585 / halpha)
+    stvel = maps.stellar_vel
+    stsig = maps.stellar_sigma
+    stsig_corr = stsig.inst_sigma_correction()
 
-    fig.tight_layout()
+    with plt.style.context('seaborn-darkgrid'):
+        fig, axes = plt.subplots(nrows=2, ncols=2, figsize=(12, 11))
+        halpha.plot(fig=fig, ax=axes[0, 0])
+        nii_ha.plot(fig=fig, ax=axes[0, 1], title="log([NII]6585 / H-alpha)", snr_min=None)
+        stvel.plot(fig=fig, ax=axes[1, 0])
+        stsig_corr.plot(fig=fig, ax=axes[1, 1])
 
 
 .. _marvin-plotting-multipanel-multiple:
@@ -154,15 +161,16 @@ Multi-panel Map Plot (Multiple Galaxies)
     plateifus = ['8485-1901', '7443-12701']
     mapnames = ['stellar_vel', 'stellar_sigma']
 
-    rows = len(plateifus)
-    cols = len(mapnames)
-    fig, axes = plt.subplots(rows, cols, figsize=(8, 6))
-    for row, plateifu in zip(axes, plateifus):
-        maps = Maps(plateifu=plateifu)
-        for ax, mapname in zip(row, mapnames):
-            mapplot.plot(dapmap=maps[mapname], fig=fig, ax=ax, title=' '.join((plateifu, mapname)))
+    with plt.style.context('seaborn-darkgrid'):
+        rows = len(plateifus)
+        cols = len(mapnames)
+        fig, axes = plt.subplots(rows, cols, figsize=(8, 6))
+        for row, plateifu in zip(axes, plateifus):
+            maps = Maps(plateifu=plateifu)
+            for ax, mapname in zip(row, mapnames):
+                mapplot.plot(dapmap=maps[mapname], fig=fig, ax=ax, title=' '.join((plateifu, mapname)))
 
-    fig.tight_layout()
+        fig.tight_layout()
 
 
 .. _marvin-plotting-zoom-in:

@@ -507,7 +507,8 @@ class PipelineInfo(Base):
     __table_args__ = {'autoload': True, 'schema': 'mangadatadb'}
 
     def __repr__(self):
-        return '<Pipeline_Info (pk={0})>'.format(self.pk)
+        return ('<Pipeline_Info (pk={0}, name={3}, ver={1}, release={2})>'.format(self.pk, 
+                self.version.version, self.version.label, self.name.label))
 
 
 class PipelineVersion(Base):
@@ -515,7 +516,7 @@ class PipelineVersion(Base):
     __table_args__ = {'autoload': True, 'schema': 'mangadatadb'}
 
     def __repr__(self):
-        return '<Pipeline_Version (pk={0}, version={1})>'.format(self.pk, self.version)
+        return '<Pipeline_Version (pk={0}, version={1}, release={2})>'.format(self.pk, self.version, self.label)
 
 
 class PipelineStage(Base):

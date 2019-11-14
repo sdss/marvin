@@ -13,6 +13,7 @@ from __future__ import print_function, division, absolute_import
 import numpy as np
 import pytest
 from marvin.tools.image import Image
+from marvin.utils.general import check_versions
 
 
 IMCOORDS = np.array([[275.38201798, 275.38201798],
@@ -46,7 +47,9 @@ class TestImage(object):
         im = Image(plateifu)
         assert im.plateifu == plateifu
         assert im.data_origin == origin
-        assert dir3d in im._getFullPath()
+
+        if not check_versions(im._drpver, 'v2_5_3'):
+            assert dir3d in im._getFullPath()
 
     def test_release(self, plateifu):
         im = Image(plateifu, release='MPL-5')
@@ -85,7 +88,7 @@ class TestImage(object):
         cube = image.getCube()
         wcs = cube.wcs.celestial
         aper = cube.getAperture((17, 17), 1)
-        coords = zip(*np.where(aper.mask))
+        coords = list(zip(*np.where(aper.mask)))
         im_radec = image.wcs.all_pix2world(IMCOORDS, 1)
         cube_radec = wcs.all_pix2world(coords, 0)
         assert im_radec == pytest.approx(cube_radec, rel=1e-6)

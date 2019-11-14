@@ -16,6 +16,7 @@ import distutils
 import warnings
 
 import numpy as np
+from pkg_resources import parse_version
 from astropy.io import fits
 from astropy.wcs import WCS
 
@@ -27,7 +28,7 @@ import marvin.utils.general.general
 from marvin.core.exceptions import MarvinError
 from marvin.tools.quantities import DataCube, Map, Spectrum
 from marvin.utils.datamodel.dap import Model, datamodel
-from marvin.utils.general import FuzzyDict, gunzip
+from marvin.utils.general import FuzzyDict, gunzip, check_versions
 
 from .core import MarvinToolsClass
 from .mixins import DAPallMixIn, GetApertureMixIn, NSAMixIn
@@ -212,7 +213,11 @@ class ModelCube(MarvinToolsClass, NSAMixIn, DAPallMixIn, GetApertureMixIn):
         # Updates datamodel, bintype, and template with the versions from the header.
         self.datamodel = datamodel[self._dapver].models
         self.bintype = self.datamodel.parent.get_bintype(self.header['BINKEY'].strip().upper())
-        self.template = self.datamodel.parent.get_template(self.header['SCKEY'].strip().upper())
+        if check_versions(self._dapver, datamodel['MPL-8'].release):
+            tempkey = self.header['DAPTYPE'].split('-', 1)[-1]
+        else:
+            tempkey = self.header['SCKEY']
+        self.template = self.datamodel.parent.get_template(tempkey.strip().upper())
 
     def _load_modelcube_from_db(self):
         """Initialises a model cube from the DB."""
@@ -602,7 +607,10 @@ class ModelCube(MarvinToolsClass, NSAMixIn, DAPallMixIn, GetApertureMixIn):
         model = self.datamodel['emline_fit']
 
         emline_array = self._get_extension_data('emline_fit')
-        emline_mask = self._get_extension_data('emline_fit', 'mask')
+        if model.has_mask():
+            emline_mask = self._get_extension_data('emline_fit', 'mask')
+        else:
+            emline_mask = None
 
         return DataCube(emline_array,
                         np.array(self._wavelength),
@@ -617,18 +625,23 @@ class ModelCube(MarvinToolsClass, NSAMixIn, DAPallMixIn, GetApertureMixIn):
     def stellarcont_fit(self):
         """Returns the stellar continuum fit."""
 
-        array = (self._get_extension_data('full_fit') -
-                 self._get_extension_data('emline_fit') -
-                 self._get_extension_data('emline_base_fit'))
+        isMPL8 = check_versions(self._dapver, datamodel['MPL-8'].release)
 
-        model = self.datamodel['full_fit']
-
-        stellarcont_mask = self._get_extension_data('flux', 'mask')
+        if isMPL8:
+            array = self._get_extension_data('stellar_fit')
+            model = self.datamodel['stellar_fit']
+            mask = self._get_extension_data('stellar_fit', 'mask')
+        else:
+            array = (self._get_extension_data('full_fit') -
+                     self._get_extension_data('emline_fit') -
+                     self._get_extension_data('emline_base_fit'))
+            model = self.datamodel['full_fit']
+            mask = self._get_extension_data('flux', 'mask')
 
         return DataCube(array,
                         np.array(self._wavelength),
                         ivar=None,
-                        mask=stellarcont_mask,
+                        mask=mask,
                         redcorr=self._redcorr,
                         binid=self.get_binid(model),
                         unit=model.unit,

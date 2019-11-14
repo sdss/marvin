@@ -11,7 +11,33 @@ What's New
 
 This section summarises the most important new features a bugfixes in Marvin. For the complete list of changes check the :ref:`marvin-changelog`.
 
-2.3.0 (unreleased)
+2.3.2 (February 2019)
+---------------------
+
+Support for MPL-8.  MPL-8 includes several changes to the DAP Datamodel.  
+Please see the :ref:`MPL-8 DataModel<datamodel-mpl8>` and the `MPL-8 TRM <https://trac.sdss.org/wiki/MANGA/TRM/TRM_MPL-8/DAPDataModel>`_ page (SDSS collaboration access required).  In summary, the changes include:
+
+- The stellar template is now `MILESHC-MILESHC`, indicating the template used for the stellar kinematics fitting and the emission-lines, respectively.
+- The binning types now include `SPX`, in addition to `HYB10` and `VOR10`.  `HYB10` is still the default bintype.
+- Changes to ModelCubes
+
+    - Removed `emline_base_fit` Model
+    - New `stellar_fit` Model
+- Changes to Maps
+
+    - The `stellar_sigmacorr` now has two channels.
+    - New `stellar_fom` multi-channel property.  This property contains figure-of-merit metrics for the stellar kinematics.
+    - Moved `stellar_cont_fresid` and `stellar_cont_rchi2` into the stellar_fom property.
+    - Three new emission-lines: `HeI 3889`, `NI 5199`, `NI 5201`
+    - New `emline_ga` multi-channel property; the amplitude of the fitted Gaussian  
+    - New `emline_ganr` multi-channel property; the amplitude/noise of the fitted Gaussian  
+    - New `emline_fom` multi-channel property; full spectrum figure-of-merits for the emission lines 
+    - New `emline_lfom` multi-channel property; reduced chi-square figure-of-merits for the emission lines 
+
+- The DRPall file now has two data extensions, **MANGA**, and **MASTAR**.  The MANGA extension contains all MaNGA-lead galaxy observations.  The MASTAR extension contains all mini-bundles and MaStar (APOGEE-lead) targets of observation.  Marvin currently does not support MaStar observations.
+
+
+2.3.0 (December 2018)
 ------------------
 
 .. todo:: Fix link to authentication.
@@ -55,13 +81,6 @@ A new :ref:`Marvin Image <marvin-image>` Tool is now available for interacting w
 The old image utility functions documented :ref:`here <marvin-images>` remain but have now been deprecated by the new `~marvin.tools.image.Image` class.  Replacement utility functions are now available, with more information located :ref:`here<image-utils>`.
 
 |
-
-2.2.6 (August 2018)
--------------------
-
-=======
-What's new in Marvin
-====================
 
 2.2.6 (August 2018)
 -------------------

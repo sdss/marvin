@@ -28,7 +28,8 @@ from marvin.tools.maps import Maps
 from marvin.tools.modelcube import ModelCube
 from marvin.tools.query import Query
 from marvin.utils.datamodel.dap import datamodel
-
+from marvin.utils.general import check_versions
+from brain.utils.general import get_yaml_loader
 
 warnings.simplefilter('always')
 
@@ -76,13 +77,20 @@ class TravisSubset(object):
 
 # Global Parameters for FIXTURES
 # ------------------------------
-releases = ['MPL-6', 'MPL-5', 'MPL-4']  # to loop over releases (see release fixture)
+#releases = ['MPL-6', 'MPL-5', 'MPL-4']  # to loop over releases (see release fixture)
+releases = ['MPL-8']
 
 bintypes_accepted = {'MPL-4': ['NONE', 'VOR10'],
                      'MPL-5': ['SPX', 'VOR10'],
-                     'MPL-6': ['SPX', 'HYB10']}
+                     'MPL-6': ['SPX', 'HYB10'],
+                     'MPL-7': ['HYB10', 'VOR10'],
+                     'MPL-8': ['HYB10', 'SPX']}
 
-templates_accepted = {'MPL-4': ['MIUSCAT_THIN', 'MILES_THIN']}
+templates_accepted = {'MPL-4': ['MIUSCAT_THIN', 'MILES_THIN'],
+                      'MPL-5': ['GAU-MILESHC'],
+                      'MPL-6': ['GAU-MILESHC'],
+                      'MPL-7': ['GAU-MILESHC'],
+                      'MPL-8': ['MILESHC-MILESHC']}
 
 
 def populate_bintypes_templates(releases):
@@ -114,8 +122,10 @@ origins = ['file', 'db', 'api']         # to loop over data origins (see data_or
 
 
 # Galaxy and Query data is stored in a YAML file
-galaxy_data = yaml.load(open(os.path.join(os.path.dirname(__file__), 'data/galaxy_test_data.dat')))
-query_data = yaml.load(open(os.path.join(os.path.dirname(__file__), 'data/query_test_data.dat')))
+with open(os.path.join(os.path.dirname(__file__), 'data/galaxy_test_data.dat')) as f:
+    galaxy_data = yaml.load(f, Loader=get_yaml_loader())
+with open(os.path.join(os.path.dirname(__file__), 'data/query_test_data.dat')) as f:
+    query_data = yaml.load(f, Loader=get_yaml_loader())
 
 
 @pytest.fixture(scope='session', params=releases)
@@ -513,7 +523,10 @@ class Galaxy(object):
     def set_filepaths(self, pathtype='full'):
         """Set the paths for cube, maps, etc."""
         self.path = Path()
-        self.imgpath = self.path.__getattribute__(pathtype)('mangaimage', **self.access_kwargs)
+        if check_versions(self.drpver, 'v2_5_3'):
+            self.imgpath = self.path.__getattribute__(pathtype)('mangaimagenew', **self.access_kwargs)
+        else:
+            self.imgpath = self.path.__getattribute__(pathtype)('mangaimage', **self.access_kwargs)
         self.cubepath = self.path.__getattribute__(pathtype)('mangacube', **self.access_kwargs)
         self.rsspath = self.path.__getattribute__(pathtype)('mangarss', **self.access_kwargs)
 

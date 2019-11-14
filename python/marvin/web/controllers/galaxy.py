@@ -28,7 +28,8 @@ from marvin.core.exceptions import MarvinError
 from marvin.tools.cube import Cube
 from marvin.utils.datamodel.dap import datamodel
 from marvin.utils.general.general import (_db_row_to_dict, convertImgCoords, getDapRedux,
-                                          getDefaultMapPath, parseIdentifier, target_status)
+                                          getDefaultMapPath, parseIdentifier, target_status,
+                                          get_manga_image)
 from marvin.utils.general.maskbit import Maskbit
 from marvin.web.controllers import BaseWebView
 from marvin.web.extensions import cache
@@ -320,7 +321,7 @@ class Galaxy(BaseWebView):
                     is_public = 'DR' in self._release
                     path_release = self._release.lower() if is_public else None
                     sdss_path = Path(public=is_public, release=path_release)
-                    self.galaxy['image'] = sdss_path.url('mangaimage', drpver=cube._drpver, plate=cube.plate, ifu=cube.ifu, dir3d=cube.dir3d)
+                    self.galaxy['image'] = get_manga_image(cube)
                     cubelink = sdss_path.url('mangacube', drpver=cube._drpver, plate=cube.plate, ifu=cube.ifu)
                     rsslink = sdss_path.url('mangarss', drpver=cube._drpver, plate=cube.plate, ifu=cube.ifu)
                     daptype = "{0}-{1}".format(dm.default_bintype, dm.default_template)
@@ -420,10 +421,7 @@ class Galaxy(BaseWebView):
         else:
             output['specstatus'] = 1
 
-        is_public = 'DR' in self._release
-        path_release = self._release.lower() if is_public else None
-        sdss_path = Path(public=is_public, release=path_release)
-        output['image'] = sdss_path.url('mangaimage', drpver=cube._drpver, plate=cube.plate, ifu=cube.ifu, dir3d=cube.dir3d)
+        output['image'] = get_manga_image(cube)
         output['spectra'] = webspec
         output['specmsg'] = specmsg
         output['maps'] = mapdict

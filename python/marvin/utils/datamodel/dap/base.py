@@ -751,14 +751,15 @@ class Property(object):
         if hasattr(self, '_binid') and self._binid is not None:
             self._binid.parent = value
 
-    def full(self, web=None):
+    def full(self, web=None, db=None):
         """Returns the name + channel string."""
 
         if self.channel:
+            channel_name = self.channel.db_name if db else self.channel.name
             if web:
-                return self.name + ':' + self.channel.name
+                return self.name + ':' + channel_name
             else:
-                return self.name + '_' + self.channel.name
+                return self.name + '_' + channel_name
 
         return self.name
 
@@ -792,15 +793,15 @@ class Property(object):
         assert ext is None or ext in ['ivar', 'mask'], 'invalid extension'
 
         if ext is None:
-            return self.full()
+            return self.full(db=True)
 
         if ext == 'ivar':
-            assert self.ivar is True, 'no ivar for property {0!r}'.format(self.full())
+            assert self.ivar is True, 'no ivar for property {0!r}'.format(self.full(db=True))
             return self.name + '_ivar' + \
                 ('_{0}'.format(self.channel.db_name) if self.channel else '')
 
         if ext == 'mask':
-            assert self.mask is True, 'no mask for property {0!r}'.format(self.full())
+            assert self.mask is True, 'no mask for property {0!r}'.format(self.full(db=True))
             return self.name + '_mask' + \
                 ('_{0}'.format(self.channel.db_name) if self.channel else '')
 

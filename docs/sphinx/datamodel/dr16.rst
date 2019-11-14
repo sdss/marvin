@@ -1,0 +1,57 @@
+
+.. _datamodel-dr16:
+
+DR16
+====
+
+This datamodel corresponds to the DR16 release of MaNGA data.
+
+
+DataModel
+---------
+
+.. datamodel:: marvin.utils.datamodel.drp.MPL:MPL7
+   :prog: DRP DataModel
+   :title: DR15 DataModel
+   :spectra:
+   :datacubes:
+
+.. datamodel:: marvin.utils.datamodel.dap:MPL7
+   :prog: DAP DataModel
+   :title: DR15 DataModel
+   :bintypes:
+   :templates:
+   :models:
+   :properties:
+
+.. datamodel:: marvin.utils.datamodel.query:MPL7
+   :prog: Query DataModel
+   :title: DR15 DataModel
+   :parameters:
+
+
+Maskbits
+--------
+
+.. datamodel:: marvin.utils.datamodel.dap:MPL7
+   :prog: DRP Maskbits
+   :bitmasks:
+   :bittype: DRP
+
+.. datamodel:: marvin.utils.datamodel.dap:MPL7
+   :prog: DAP Maskbits
+   :bitmasks:
+   :bittype: DAP
+
+.. datamodel:: marvin.utils.datamodel.dap:MPL7
+   :prog: Targeting Maskbits
+   :bitmasks:
+   :bittype: Target
+
+
+VACs
+----
+
+.. datamodel:: marvin.utils.datamodel.vacs:datamodel
+   :prog: Available VACs
+   :vac: DR16

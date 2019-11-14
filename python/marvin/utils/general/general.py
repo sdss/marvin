@@ -6,8 +6,8 @@
 # @Filename: general.py
 # @License: BSD 3-clause (http://www.opensource.org/licenses/BSD-3-Clause)
 #
-# @Last modified by:   Brian Cherinka
-# @Last modified time: 2018-08-11 23:34:07
+# @Last modified by: José Sánchez-Gallego (gallegoj@uw.edu)
+# @Last modified time: 2019-08-29 15:58:00
 
 
 from __future__ import absolute_import, division, print_function
@@ -22,6 +22,7 @@ import warnings
 from builtins import range
 from collections import OrderedDict
 from functools import wraps
+from pkg_resources import parse_version
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -65,7 +66,8 @@ __all__ = ('convertCoords', 'parseIdentifier', 'mangaid2plateifu', 'findClosestV
            'isCallableWithArgs', 'map_bins_to_column', '_sort_dir',
            'get_dapall_file', 'temp_setattr', 'map_dapall', 'turn_off_ion', 'memory_usage',
            'validate_jwt', 'target_status', 'target_is_observed', 'get_drpall_file',
-           'target_is_mastar', 'get_plates')
+           'target_is_mastar', 'get_plates', 'get_manga_image', 'check_versions',
+           'get_drpall_table')
 
 drpTable = {}
 
@@ -844,7 +846,10 @@ def downloadList(inputlist, dltype='cube', **kwargs):
     elif dltype == 'mastar':
         name = 'mangamastar'
     elif dltype == 'image':
-        name = 'mangaimage'
+        if check_versions(drpver, 'v2_5_3'):
+            name = 'mangaimagenew'
+        else:
+            name = 'mangaimage'
 
     # check for public release
     is_public = 'DR' in release
@@ -859,7 +864,7 @@ def downloadList(inputlist, dltype='cube', **kwargs):
         if idtype == 'mangaid':
             try:
                 plateifu = mangaid2plateifu(item)
-            except MarvinError as e:
+            except MarvinError:
                 plateifu = None
             else:
                 plateid, ifu = plateifu.split('-')
@@ -940,12 +945,16 @@ def get_drpall_row(plateifu, drpver=None, drpall=None):
     """Returns a dictionary from drpall matching the plateifu."""
 
     # get the drpall table
-    drpall_table = get_drpall_table(drpver=drpver, drpall=drpall)
+    drpall_table = get_drpall_table(drpver=drpver, drpall=drpall, hdu='MANGA')
+    in_table = plateifu in drpall_table['plateifu']
+    # check the mastar extension
+    if not in_table:
+        drpall_table = get_drpall_table(drpver=drpver, drpall=drpall, hdu='MASTAR')
+        in_table = plateifu in drpall_table['plateifu']
+        if not in_table:
+            raise ValueError('No results found for {0} in drpall table'.format(plateifu))
 
     row = drpall_table[drpall_table['plateifu'] == plateifu]
-
-    if len(row) != 1:
-        raise ValueError('{0} results found for {1} in drpall table'.format(len(row), plateifu))
 
     return row[0]
 
@@ -1659,22 +1668,29 @@ def target_is_mastar(plateifu, drpver=None, drpall=None):
     return row['srvymode'] == 'APOGEE lead'
 
 
-def get_drpall_table(drpver=None, drpall=None):
+def get_drpall_table(drpver=None, drpall=None, hdu='MANGA'):
     ''' Gets the drpall table
 
-    Gets the drpall table either from cache or loads it
+    Gets the drpall table either from cache or loads it. For releases
+    of MPL-8 and up, galaxies are in the MANGA extension, and mastar
+    targets are in the MASTAR extension, specified with the hdu keyword. For
+    MPLs 1-7, there is only one data extension, which is read.
 
     Parameters:
         drpver (str):
             The DRP release version to load.  Defaults to current marvin release
         drpall (str):
             The full path to the drpall table. Defaults to current marvin release.
+        hdu (str):
+            The name of the HDU to read in.  Default is 'MANGA'
 
     Returns:
         An Astropy Table
     '''
 
     from marvin import config
+    assert hdu.lower() in ['manga', 'mastar'], 'hdu can either be MANGA or MASTAR'
+    hdu = hdu.upper()
 
     # get the drpall file
     get_drpall_file(drpall=drpall, drpver=drpver)
@@ -1683,11 +1699,18 @@ def get_drpall_table(drpver=None, drpall=None):
     config_drpver, __ = config.lookUpVersions()
     drpver = drpver if drpver else config_drpver
 
+    # check for drpver
     if drpver not in drpTable:
-        drpall = drpall if drpall else config._getDrpAllPath(drpver=drpver)
-        drpTable[drpver] = table.Table.read(drpall)
+        drpTable[drpver] = {}
 
-    drpall_table = drpTable[drpver]
+    # check for hdu
+    hduext = hdu if check_versions(drpver, 'v2_5_3') else 'MANGA'
+    if hdu not in drpTable[drpver]:
+        drpall = drpall if drpall else config._getDrpAllPath(drpver=drpver)
+        data = {hduext: table.Table.read(drpall, hdu=hduext)}
+        drpTable[drpver].update(data)
+
+    drpall_table = drpTable[drpver][hduext]
 
     return drpall_table
 
@@ -1715,3 +1738,63 @@ def get_plates(drpver=None, drpall=None, release=None):
     drpall_table = get_drpall_table(drpver=drpver, drpall=drpall)
     plates = list(set(drpall_table['plate']))
     return plates
+
+
+def check_versions(version1, version2):
+    ''' Compate two version ids against each other
+
+    Checks if version1 is greater than or equal to version2.
+
+    Parameters:
+        version1 (str):
+            The version to check
+        version2 (str):
+            The version to check against
+
+    Returns:
+        A boolean indicating if version1 is >= version2
+    '''
+
+    return parse_version(version1) >= parse_version(version2)
+
+
+def get_manga_image(cube=None, drpver=None, plate=None, ifu=None, dir3d=None):
+    ''' Get a MaNGA IFU optical PNG image
+
+    Parameters:
+        cube (Cube):
+            A Marvin Cube instance
+        drpver (str):
+            The drpver version
+        plate (str|int):
+            The plate id
+        ifu (str|int):
+            An IFU designation
+        dir3d (str):
+            The directory for 3d data, either 'stack' or 'mastar'
+    Returns:
+        A url to an IFU MaNGA image
+    '''
+
+    # check inputs
+    drpver = cube._drpver if cube else drpver
+    plate = cube.plate if cube else plate
+    ifu = cube.ifu if cube else ifu
+    dir3d = cube.dir3d if cube else dir3d
+    assert all([drpver, plate, ifu]), 'drpver, plate, and ifu must be specified'
+
+    # create the sdss Path
+    release = marvin.config.lookUpRelease(drpver)
+    is_public = 'DR' in release
+    path_release = release.lower() if is_public else None
+    path = Path(public=is_public, release=path_release)
+
+    # check if MPL-8 or not
+    is_MPL8 = check_versions(drpver, 'v2_5_3')
+    if is_MPL8:
+        img = path.url('mangaimagenew', drpver=drpver, plate=plate, ifu=ifu)
+    else:
+        assert dir3d is not None, 'dir3d must also be specified'
+        assert dir3d in ['stack', 'mastar'], 'dir3d can only be stack or mastar'
+        img = path.url('mangaimage', drpver=drpver, plate=plate, ifu=ifu, dir3d=dir3d)
+    return img

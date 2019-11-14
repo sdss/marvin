@@ -13,7 +13,6 @@ from __future__ import absolute_import, division, print_function
 import os
 import sys
 import warnings
-from distutils.version import StrictVersion
 from functools import wraps
 
 import numpy as np
@@ -22,7 +21,7 @@ import requests
 
 import marvin
 from marvin.core.exceptions import MarvinDeprecationWarning, MarvinError, MarvinUserWarning
-from marvin.utils.general import mangaid2plateifu, parseIdentifier
+from marvin.utils.general import mangaid2plateifu, parseIdentifier, check_versions
 
 
 if sys.version_info.major == 2:
@@ -80,10 +79,8 @@ def getDir3d(inputid, mode=None, release=None):
 
     release = marvin.config.release if not release else release
     drpver, __ = marvin.config.lookUpVersions(release=release)
-    drpstrict = StrictVersion(drpver.strip('v').replace('_', '.'))
-    verstrict = StrictVersion('1.5.4')
 
-    if drpstrict >= verstrict:
+    if check_versions(drpver, 'v1_5_4'):
         from marvin.tools.plate import Plate
         try:
             plate = Plate(plate=plateid, nocubes=True, mode=mode, release=release)
@@ -150,6 +147,8 @@ def getRandomImages(num=10, download=False, mode=None, as_url=None, verbose=None
     rsync_access = Access(label='marvin_getrandom', verbose=verbose, public=is_public,
                           release=rsync_release)
 
+    imgname = 'mangaimagenew' if check_versions(drpver, 'v2_5_3') else 'mangaimage'
+
     # if mode is auto, set it to remote:
     if mode == 'auto':
         warnings.warn('Mode is auto.  Defaulting to remote.  If you want to access your '
@@ -158,7 +157,7 @@ def getRandomImages(num=10, download=False, mode=None, as_url=None, verbose=None
 
     # do a local or remote thing
     if mode == 'local':
-        full = rsync_access.full('mangaimage', plate='*', drpver=drpver, ifu='*', dir3d='stack')
+        full = rsync_access.full(imgname, plate='*', drpver=drpver, ifu='*', dir3d='stack')
         listofimages = rsync_access.random('', full=full, num=num, refine=r'\d{4,5}.png', as_url=as_url)
 
         # if download, issue warning that cannot do it
@@ -168,7 +167,7 @@ def getRandomImages(num=10, download=False, mode=None, as_url=None, verbose=None
         return listofimages
     elif mode == 'remote':
         rsync_access.remote()
-        rsync_access.add('mangaimage', plate='*', drpver=drpver, ifu='*', dir3d='stack')
+        rsync_access.add(imgname, plate='*', drpver=drpver, ifu='*', dir3d='stack')
         try:
             rsync_access.set_stream()
         except AccessError as e:
@@ -249,9 +248,11 @@ def getImagesByPlate(plateid, download=False, mode=None, as_url=None, verbose=No
                       'local images, set the mode explicitly to local', MarvinUserWarning)
         mode = 'remote'
 
+    imgname = 'mangaimagenew' if check_versions(drpver, 'v2_5_3') else 'mangaimage'
+
     # do a local or remote thing
     if mode == 'local':
-        full = rsync_access.full('mangaimage', plate=plateid, drpver=drpver, ifu='*', dir3d='*')
+        full = rsync_access.full(imgname, plate=plateid, drpver=drpver, ifu='*', dir3d='*')
         listofimages = rsync_access.expand('', full=full, as_url=as_url)
 
         # if download, issue warning that cannot do it
@@ -261,7 +262,7 @@ def getImagesByPlate(plateid, download=False, mode=None, as_url=None, verbose=No
         return listofimages
     elif mode == 'remote':
         rsync_access.remote()
-        rsync_access.add('mangaimage', plate=plateid, drpver=drpver, ifu='*', dir3d='*')
+        rsync_access.add(imgname, plate=plateid, drpver=drpver, ifu='*', dir3d='*')
 
         # set the stream
         try:
@@ -335,7 +336,7 @@ def getImagesByList(inputlist, download=False, mode=None, as_url=None, verbose=N
         for myid in inputlist:
             try:
                 plateifu = mangaid2plateifu(myid)
-            except MarvinError as e:
+            except MarvinError:
                 plateifu = None
             newlist.append(plateifu)
         inputlist = newlist
@@ -347,6 +348,8 @@ def getImagesByList(inputlist, download=False, mode=None, as_url=None, verbose=N
     rsync_release = release.lower() if is_public else None
     rsync_access = Access(label='marvin_getlist', verbose=verbose, public=is_public,
                           release=rsync_release)
+
+    imgname = 'mangaimagenew' if check_versions(drpver, 'v2_5_3') else 'mangaimage'
 
     # if mode is auto, set it to remote:
     if mode == 'auto':
@@ -362,9 +365,9 @@ def getImagesByList(inputlist, download=False, mode=None, as_url=None, verbose=N
             dir3d = getDir3d(plateifu, mode=mode, release=release)
             plateid, ifu = plateifu.split('-')
             if as_url:
-                path = rsync_access.url('mangaimage', plate=plateid, drpver=drpver, ifu=ifu, dir3d=dir3d)
+                path = rsync_access.url(imgname, plate=plateid, drpver=drpver, ifu=ifu, dir3d=dir3d)
             else:
-                path = rsync_access.full('mangaimage', plate=plateid, drpver=drpver, ifu=ifu, dir3d=dir3d)
+                path = rsync_access.full(imgname, plate=plateid, drpver=drpver, ifu=ifu, dir3d=dir3d)
             listofimages.append(path)
 
         # if download, issue warning that cannot do it
@@ -378,7 +381,7 @@ def getImagesByList(inputlist, download=False, mode=None, as_url=None, verbose=N
         for plateifu in inputlist:
             dir3d = getDir3d(plateifu, mode=mode, release=release)
             plateid, ifu = plateifu.split('-')
-            rsync_access.add('mangaimage', plate=plateid, drpver=drpver, ifu=ifu, dir3d=dir3d)
+            rsync_access.add(imgname, plate=plateid, drpver=drpver, ifu=ifu, dir3d=dir3d)
 
         # set the stream
         try:
@@ -437,6 +440,7 @@ def showImage(path=None, plateifu=None, release=None, return_image=True, show_im
     drpver, __ = marvin.config.lookUpVersions(release=release)
     args = [path, plateifu]
     assert any(args), 'A filepath or plateifu must be specified!'
+    imgname = 'mangaimagenew' if check_versions(drpver, 'v2_5_3') else 'mangaimage'
 
     # check path
     if path:
@@ -455,8 +459,8 @@ def showImage(path=None, plateifu=None, release=None, return_image=True, show_im
             else:
                 mode = 'local'
 
-    def _do_local_plateifu():
-        full = http_access.full('mangaimage', plate=plateid, drpver=drpver, ifu=ifu, dir3d='*')
+    def _do_local_plateifu(name):
+        full = http_access.full(name, plate=plateid, drpver=drpver, ifu=ifu, dir3d='*')
         filepath = http_access.expand('', full=full)
         if filepath:
             filepath = filepath[0]
@@ -466,8 +470,8 @@ def showImage(path=None, plateifu=None, release=None, return_image=True, show_im
                               'Use one of the image utility functions to download them first or '
                               'switch to remote mode'.format(plateifu))
 
-    def _do_remote_plateifu():
-        filepath = http_access.url('mangaimage', plate=plateid, drpver=drpver, ifu=ifu, dir3d='stack')
+    def _do_remote_plateifu(name):
+        filepath = http_access.url(name, plate=plateid, drpver=drpver, ifu=ifu, dir3d='stack')
         return filepath
 
     # check plateifu
@@ -475,16 +479,16 @@ def showImage(path=None, plateifu=None, release=None, return_image=True, show_im
         plateid, ifu = plateifu.split('-')
         http_access = HttpAccess(verbose=False)
         if mode == 'local':
-            filepath = _do_local_plateifu()
+            filepath = _do_local_plateifu(imgname)
         elif mode == 'remote':
-            filepath = _do_remote_plateifu()
+            filepath = _do_remote_plateifu(imgname)
         elif mode == 'auto':
             try:
-                filepath = _do_local_plateifu()
+                filepath = _do_local_plateifu(imgname)
                 mode = 'local'
-            except MarvinError as e:
+            except MarvinError:
                 marvin.log.debug('Local mode failed.  Trying remote.')
-                filepath = _do_remote_plateifu()
+                filepath = _do_remote_plateifu(imgname)
                 mode = 'remote'
 
     # check if filepath exists either locally or remotely

@@ -57,7 +57,7 @@ class TestGeneralNSAFull(object):
         page.load_page(reqtype, page.url.format(mangaid=mangaid), params=params)
         assert page.json['data'] is None
         assert page.json['status'] == -1
-        assert page.json['error'] == error
+        assert error in page.json['error']
 
 
 @pytest.mark.parametrize('page', [('api', 'nsa_drpall')], ids=['nsa_drpall'], indirect=True)

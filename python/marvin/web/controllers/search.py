@@ -107,6 +107,7 @@ class Search(BaseWebView):
         self.search['guideparams'] = [{'id': p.full, 'optgroup': group.name, 'type': 'double' if p.dtype == 'float' else p.dtype, 'validation': {'step': 'any'}} for group in query_params for p in group]
         self.search['searchform'] = searchform
         self.search['placeholder'] = getRandomQuery()
+        self.search['returnurl'] = 'https://sdss-marvin.readthedocs.io/en/stable/datamodel/{0}.html'.format(current_session['release'].lower().replace('-',''))
 
         # If form parameters then try to do a search
         if form:
@@ -198,12 +199,11 @@ class Search(BaseWebView):
             output = jsonify({'errmsg': 'No searchvalue found', 'status': -1})
             return output
 
-        # this is to fix the brokeness with sorting on a table column using remote names
-        #print('rp', returnparams, args)
-
+        defaults = args.pop('defaults', None)
         # do query
         try:
-            q, res = doQuery(search_filter=searchvalue, release=self._release, return_params=returnparams, **args)
+            q, res = doQuery(search_filter=searchvalue, release=self._release, 
+                             return_params=returnparams, default_params=defaults, **args)
         except Exception as e:
             errmsg = 'Error generating webtable: {0}'.format(e)
             output = jsonify({'status': -1, 'errmsg': errmsg})

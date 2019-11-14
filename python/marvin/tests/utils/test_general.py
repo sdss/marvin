@@ -33,7 +33,8 @@ from marvin.utils.general.structs import DotableCaseInsensitive
 from marvin.core.exceptions import MarvinError
 from marvin.utils.general import (convertCoords, get_nsa_data, getWCSFromPng,
                                   _sort_dir, getDapRedux, getDefaultMapPath, target_status,
-                                  target_is_observed, downloadList)
+                                  target_is_observed, downloadList, check_versions,
+                                  get_manga_image)
 from marvin.utils.datamodel.dap import datamodel
 
 
@@ -232,8 +233,8 @@ class TestSortDir(object):
                              [(Map, ['error', 'inst_sigma_correction', 'ivar',
                                      'getMaps', 'mask', 'masked', 'plot', 'getSpaxel',
                                      'restore', 'save', 'snr', 'value', 'from_maps',
-                                     'binid', 'descale', 'datamodel', 'pixmask',
-                                     'quality_flag', 'target_flags', 'manga_target1',
+                                     'binid', 'descale', 'datamodel', 'pixmask_flag',
+                                     'pixmask', 'target_flags', 'manga_target1',
                                      'manga_target2', 'manga_target3', 'specindex_correction'])])
     def test_sort_dir_map(self, galaxy, class_, expected):
         maps = Maps(plateifu=galaxy.plateifu)
@@ -245,7 +246,8 @@ class TestSortDir(object):
 
     @pytest.mark.parametrize('class_, expected',
                              [(Spectrum, ['error', 'masked', 'plot', 'snr', 'ivar', 'mask',
-                                          'wavelength', 'value', 'descale'])])
+                                          'wavelength', 'value', 'descale', 'pixmask', 
+                                          'pixmask_flag'])])
     def test_sort_dir_spectrum(self, galaxy, class_, expected):
         cube = Cube(plateifu=galaxy.plateifu)
         spax = cube[0, 0]
@@ -318,6 +320,27 @@ class TestDownloadList(object):
 
     def test_dap(self):
         res = downloadList(self.dl, dltype='dap', test=True)
-        good = all([re.search('(common|GAU).*(MAPS|LOGCUBE|SNRG)', s) for s in res])
+        good = all([re.search('(common|MILESHC).*(MAPS|LOGCUBE|SNRG)', s) for s in res])
         assert good is True
+
+
+class TestCheckVersion(object):
+
+    @pytest.mark.parametrize('v1, exp',
+                             [('v2_5_3', True),
+                              ('v2_4_3', False)], ids=['good', 'bad'])
+    def test_checks(self, v1, exp):
+        assert check_versions(v1, 'v2_5_3') is exp
+
+
+class TestGetMangaImage(object):
+
+    @pytest.mark.parametrize('v1, exp',
+                             [('v2_5_3', '8485/images/'),
+                              ('v2_4_3', '8485/stack/images')], 
+                             ids=['postMPL8', 'preMPL8'])
+    def test_image(self, v1, exp):
+        dir3d = 'stack' if v1 == 'v2_4_3' else None
+        img = get_manga_image(drpver=v1, plate=8485, ifu=1901, dir3d=dir3d)
+        assert exp in img
 

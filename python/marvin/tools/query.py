@@ -25,7 +25,7 @@ from marvin.api.api import Interaction
 from marvin.core import marvin_pickle
 from marvin.core.exceptions import MarvinError, MarvinUserWarning
 from marvin.tools.results import Results, remote_mode_only
-from marvin.utils.general import temp_setattr
+from marvin.utils.general import temp_setattr, getKeywordArgs
 from marvin.utils.datamodel.query import datamodel
 from marvin.utils.datamodel.query.base import query_params
 
@@ -63,10 +63,15 @@ def doQuery(**kwargs):
             :class:`~marvin.tools.query.Query` instance, and the
             :class:`~marvin.tools.results.Results` instance.
     """
+    # pop some pagination keywords
     start = kwargs.pop('start', None)
     end = kwargs.pop('end', None)
     query_type = kwargs.pop('query_type', None)
-    q = Query(**kwargs)
+    # get Query keyword arguments and check input kwargs
+    qwargs = getKeywordArgs(Query)
+    good_kwargs = {k: v for k, v in kwargs.items() if k in qwargs}
+    # run the query
+    q = Query(**good_kwargs)
     try:
         res = q.run(start=start, end=end, query_type=query_type)
     except TypeError as e:
@@ -470,9 +475,6 @@ class Query(object):
         # get the runtime
         endtime = datetime.datetime.now()
         self._run_time = (endtime - starttime)
-
-        # clear the session
-        self.session.close()
 
         # convert to Marvin Results
         final = Results(results=results, query=query, count=self._count, mode=self.mode,

@@ -361,6 +361,8 @@ texinfo_documents = [
 # -- Options for nbsphinx -----------------------------------------
 
 nbsphinx_prolog = """:download:`Download this as a Jupyter notebook! </{{ env.doc2path(env.docname, base=None) }}>`"""
+nbsphinx_allow_errors = True
+nbsphinx_execute = 'never'
 
 # -- Extensions to the  Napoleon GoogleDocstring class ---------------------
 

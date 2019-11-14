@@ -27,7 +27,8 @@ from astropy.io import fits
 import marvin
 from marvin.tools.mixins import MMAMixIn
 from marvin.core.exceptions import MarvinError, MarvinUserWarning
-from marvin.utils.general import getWCSFromPng, Bundle, Cutout, target_is_mastar, get_plates
+from marvin.utils.general import (getWCSFromPng, Bundle, Cutout, target_is_mastar,
+                                  get_plates, check_versions)
 try:
     from sdss_access import HttpAccess
 except ImportError:
@@ -95,7 +96,7 @@ class Image(MMAMixIn):
         # try to create a header
         try:
             self.header = fits.header.Header(self.data.info)
-        except Exception as e:
+        except Exception:
             warnings.warn('No proper header found image', MarvinUserWarning)
             self.header = None
 
@@ -107,7 +108,7 @@ class Image(MMAMixIn):
         # try to set the WCS
         try:
             self.wcs = getWCSFromPng(image=self.data)
-        except MarvinError as e:
+        except MarvinError:
             self.wcs = None
             warnings.warn('No proper WCS info for this image')
 
@@ -123,13 +124,6 @@ class Image(MMAMixIn):
         image_dir = 'mastar' if is_mastar else 'stack'
         return image_dir
 
-    def _old_version(self):
-        ''' Checks if the version if less than MPL-8 '''
-        from distutils.version import StrictVersion
-        drpstrict = StrictVersion(self._drpver.strip('v').replace('_', '.'))
-        mpl8strict = StrictVersion('2.5.0')
-        return drpstrict < mpl8strict
-
     def _getFullPath(self):
         """Returns the full path of the file in the tree."""
 
@@ -140,7 +134,8 @@ class Image(MMAMixIn):
         dir3d = self._get_image_dir()
 
         # use version to toggle old/new images path
-        name = 'mangaimage' if self._old_version() else 'newmangaimage'
+        isMPL8 = check_versions(self._drpver, 'v2_5_3')
+        name = 'mangaimagenew' if isMPL8 else 'mangaimage'
 
         return super(Image, self)._getFullPath(name, ifu=ifu, dir3d=dir3d,
                                                drpver=self._drpver, plate=plate)
@@ -155,7 +150,8 @@ class Image(MMAMixIn):
         dir3d = self._get_image_dir()
 
         # use version to toggle old/new images path
-        name = 'mangaimage' if self._old_version() else 'newmangaimage'
+        isMPL8 = check_versions(self._drpver, 'v2_5_3')
+        name = 'mangaimagenew' if isMPL8 else 'mangaimage'
 
         return super(Image, self).download(name, ifu=ifu, dir3d=dir3d,
                                            drpver=self._drpver, plate=plate)
@@ -174,17 +170,22 @@ class Image(MMAMixIn):
         ''' Load an image from a remote location '''
 
         filepath = self._getFullPath()
-        if not HttpAccess:
-            raise MarvinError('sdss_access not installed')
-
-        http = HttpAccess(verbose=False)
-        url = http.url("", full=filepath)
-        response = requests.get(url)
+        response = requests.get(self.url)
         if not response.ok:
             raise MarvinError('Error: remote filepath {0} does not exist'.format(filepath))
         else:
             fileobj = stringio(response.content)
-            self.data = self._open_image(fileobj, filepath=url)
+            self.data = self._open_image(fileobj, filepath=self.url)
+
+    @property
+    def url(self):
+        if not HttpAccess:
+            raise MarvinError('sdss_access not installed')
+
+        filepath = self._getFullPath()
+        http = HttpAccess(verbose=False)
+        url = http.url("", full=filepath)
+        return url
 
     @staticmethod
     def _open_image(fileobj, filepath=None):
@@ -477,7 +478,7 @@ class Image(MMAMixIn):
     def get_random(cls, num=5, minis=None, release=None):
         ''' Generate a set of random Marvin Images
 
-        Class method to generate a randome list of Marvin Images
+        Class method to generate a random list of Marvin Images
 
         Parameters:
             num (int):

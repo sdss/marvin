@@ -24,6 +24,12 @@ from marvin.utils.db import get_traceback
 from marvin.web.extensions import limiter
 
 
+def _recombine_args(args):
+    ''' Recombine any list keyword args intro strings '''
+    newargs = {k: ','.join(v) if isinstance(v, list) else v for k, v in args.items()}
+    return newargs
+
+
 def _run_query(searchfilter, **kwargs):
     ''' Run the query and return the query and results '''
 
@@ -31,6 +37,7 @@ def _run_query(searchfilter, **kwargs):
     kwargs['return_params'] = kwargs.pop('returnparams', None)
     kwargs['default_params'] = kwargs.pop('defaults', None)
     kwargs['return_type'] = kwargs.pop('rettype', None)
+
     try:
         q, r = doQuery(search_filter=searchfilter, release=release, **kwargs)
     except Exception as e:
@@ -292,6 +299,7 @@ class QueryView(BaseView):
         # if return_all is True, perform a redirect to stream
         return_all = args.get('return_all', None)
         if return_all:
+            args = _recombine_args(args)
             return redirect(url_for('api.stream', **args))
 
         searchfilter = args.pop('searchfilter', None)

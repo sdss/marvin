@@ -179,6 +179,15 @@ Fuzzy key slicing works if the input is unambiguously associated with a particul
     # There are two [O III] lines.
     >>> maps['gflux oiii']  # ValueError
 
+.. warning:: Fuzzy key slicing is *textual, not contextual*, so sometimes inputs will be matched to unexpected keys.
+  Fuzzy string matching can be fooled!
+
+.. code-block:: python
+
+    >>> maps.getMap('emline_gflux', 'H-beta')         # target channel: Hb_4862
+    <Marvin Map (property='emline_gflux_heta_3836')>  # actual channel: Heta_3836
+    
+In this case, the input `'H-beta'` is supplied by the user with the understanding that the Balmer beta line at 4862 Angstroms is being requested. Unfortunately, that input matches more closely to they key `'Heta_3836'` than it does to `'Hb-4862'`, but the match to `'Hb-4862'` is not strong enough for the input to be labeled as ambiguous and raise an exception. When developing analysis scripts, check your inputs carefully, and make sure that data retrieval making use of fuzzy string-matching retrieves the correct channels!
 
 .. _marvin-maps-access-spaxel:
 

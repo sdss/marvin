@@ -10,6 +10,7 @@
 
 from __future__ import print_function, division, absolute_import
 from marvin.api.base import BaseView
+from marvin import config
 import pytest
 
 
@@ -41,7 +42,7 @@ class TestBase(object):
     def test_add_config(self, baseview, release, mode):
         baseview.add_config()
         desired = {'data': None, 'status': -1, 'error': None, 'traceback': None,
-                   'utahconfig': {'release': 'MPL-7', 'mode': 'local'}}
+                   'utahconfig': {'release': config.release, 'mode': 'local'}}
         assert baseview.results == desired
 
     def test_after_request_return_response(self, baseview):

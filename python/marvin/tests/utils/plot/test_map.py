@@ -205,7 +205,7 @@ class TestMapPlot(object):
                              [(True, 'arcsec'),
                               (False, 'spaxel')])
     def test_ax_labels(self, sky_coords, expected):
-        fig, ax = mapplot.ax_setup(sky_coords, fig=None, ax=None, facecolor='#A8A8A8')
+        fig, ax = mapplot._ax_setup(sky_coords, fig=None, ax=None, facecolor='#A8A8A8')
         assert ax.get_xlabel() == expected
         assert ax.get_ylabel() == expected
 

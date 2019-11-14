@@ -127,7 +127,7 @@ class Hdu(Base):
     __table_args__ = {'autoload': True, 'schema': 'mangadapdb'}
 
     def __repr__(self):
-        return '<Hdu (pk={0})'.format(self.pk)
+        return '<Hdu (pk={0}, name={1}, ext={2})'.format(self.pk, self.name, self.extno)
 
     @property
     def header(self):

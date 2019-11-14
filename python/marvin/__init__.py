@@ -19,13 +19,13 @@ from collections import OrderedDict
 from astropy.wcs import FITSFixedWarning
 
 # Set the Marvin version
-__version__ = '2.3.2dev'
+__version__ = '2.3.3dev'
 
 # Does this so that the implicit module definitions in extern can happen.
 # time - 483 ms
 from marvin import extern
 from marvin.core.exceptions import MarvinUserWarning, MarvinError
-from brain.utils.general.general import getDbMachine, merge
+from brain.utils.general.general import getDbMachine, merge, get_yaml_loader
 from brain import bconfig
 from brain.core.core import URLMapDict
 from brain.core.exceptions import BrainError
@@ -88,6 +88,7 @@ class MarvinConfig(object):
 
         self._custom_config = None
         self._drpall = None
+        self._dapall = None
         self._inapp = False
 
         self._urlmap = None
@@ -125,11 +126,11 @@ class MarvinConfig(object):
 
         '''
         with open(os.path.join(os.path.dirname(__file__), 'data/marvin.yml'), 'r') as f:
-            config = yaml.load(f)
+            config = yaml.load(f, Loader=get_yaml_loader())
         user_config_path = os.path.expanduser('~/.marvin/marvin.yml')
         if os.path.exists(user_config_path):
             with open(user_config_path, 'r') as f:
-                config = merge(yaml.load(f), config)
+                config = merge(yaml.load(f, Loader=get_yaml_loader()), config)
 
         # update any matching Config values
         for key, value in config.items():
@@ -376,12 +377,14 @@ class MarvinConfig(object):
         ''' Update the allowed releases based on access '''
 
         # define release dictionaries
-        mpldict = {'MPL-7': ('v2_4_3', '2.2.1'),
+        mpldict = {'MPL-8': ('v2_5_3', '2.3.0'),
+                   'MPL-7': ('v2_4_3', '2.2.1'),
                    'MPL-6': ('v2_3_1', '2.1.3'),
                    'MPL-5': ('v2_0_1', '2.0.2'),
                    'MPL-4': ('v1_5_1', '1.1.1')}
 
-        drdict = {'DR15': ('v2_4_3', '2.2.1')}
+        drdict = {'DR15': ('v2_4_3', '2.2.1'),
+                  'DR16': ('v2_4_3', '2.2.1')}
 
         # set the allowed releases based on access
         self._allowed_releases = {}

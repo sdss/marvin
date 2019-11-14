@@ -21,9 +21,10 @@ from .base import QueryDataModel
 # all, no spaxelprop, no daptables
 # MPL-4 - 571 (309) (309)
 # MPL-5 - 703 (322) (301)
-# MPL-6 - 1676 (1008) (987)
-# MPL-7 - 1676 (1008) (987)
-# DR15 - 1676 (1008) (987)
+# MPL-6 - 1676 (1008) (1031)
+# MPL-7 - 1676 (1008) (1031)
+# DR15 - 1676 (1008) (1031)
+# MPL-8 - xx (xx) (1031)
 
 def groups():
     return copy.deepcopy(query_params)
@@ -71,3 +72,12 @@ MPL7 = QueryDataModel(release='MPL-7', groups=groups(), aliases=['MPL7', 'v2_4_3
 # DR15
 
 DR15 = QueryDataModel(release='DR15', groups=groups(), aliases=['DR15', 'v2_4_3', '2.2.0'], exclude=EX6, dapdm=datamodel['DR15'])
+
+# MPL-8
+
+MPL8 = QueryDataModel(release='MPL-8', groups=groups(),
+                      aliases=['MPL8', 'v2_5_3', '2.3.0'], exclude=EX6, dapdm=datamodel['MPL-8'])
+
+# DR16
+
+DR16 = QueryDataModel(release='DR16', groups=groups(), aliases=['DR15', 'v2_4_3', '2.2.0'], exclude=EX6, dapdm=datamodel['DR16'])
