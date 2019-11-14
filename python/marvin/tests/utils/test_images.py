@@ -19,10 +19,10 @@ import warnings
 
 
 try:
-    from sdss_access import RsyncAccess, AccessError
+    from sdss_access import Access, AccessError
 except ImportError:
     Path = None
-    RsyncAccess = None
+    Access = None
 
 
 imagelist = ['8485-1901', '7443-12701', '7443-1901']
@@ -33,7 +33,7 @@ newgals = ['7495-1901']
 def rsync(mode):
     ''' fixture to create generic rsync object '''
 
-    rsync = RsyncAccess(label='marvin_getlist', verbose=False)
+    rsync = Access(label='marvin_getlist', verbose=False)
     if mode != 'local':
         rsync.remote()
     yield rsync

@@ -13,12 +13,6 @@
 from __future__ import division, print_function
 
 import os
-import platform
-from sdss_access import is_posix
-if is_posix:
-    import pwd
-else:
-    pwd = None
 import sys
 import warnings
 
@@ -50,12 +44,8 @@ class MarvinSentry(object):
                 )
             )
             try:                                                    
-                if is_posix:
-                    self.client.context.merge({'user': {'name': pwd.getpwuid(os.getuid())[0],
-                                                        'system': '_'.join(os.uname())}})
-                else:
-                    self.client.context.merge({'user': {'name': platform.node(),
-                                                        'system': '_'.join(platform.uname()[:-1])}})
+                self.client.context.merge({'user': {'name': os.getlogin(),
+                                                    'system': '_'.join(os.uname())}})
             except (OSError, IOError) as ee:
                 warnings.warn('cannot initiate Sentry error reporting: {0}.'.format(str(ee)),
                               UserWarning)

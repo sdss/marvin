@@ -22,17 +22,13 @@ from marvin import config, log
 from marvin.core.exceptions import MarvinError, MarvinMissingDependency, MarvinUserWarning
 from marvin.utils.db import testDbConnection
 from marvin.utils.general.general import mangaid2plateifu
-from sdss_access import os_windows
 try:
     from sdss_access.path import Path
 except ImportError:
     Path = None
 
 try:
-    if os_windows:
-        from sdss_access import CurlAccess as Access
-    else:
-        from sdss_access import RsyncAccess as Access
+    from sdss_access import Access
 except ImportError:
     Access = None
 
