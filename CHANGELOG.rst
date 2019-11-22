@@ -6,9 +6,9 @@ Marvin's Change Log
 
 Added
 ^^^^^
-- Support for DR16.  Updated datamodels and docs. 
-- Added Galaxy Zoo VAC 
-- Added GEMA VAC 
+- Support for DR16.  Updated datamodels and docs.
+- Added Galaxy Zoo VAC
+- Added GEMA VAC
 - Added Firefly VAC
 - Added Visual Morphology VAC
 
@@ -24,6 +24,7 @@ Fixed
 - Issue :issue:`655` - added yaml loader to remove yaml warnings for 5.1 spec
 - Fixed bug when server tries to access NSA on cube when none exists and triggers remote authentication issue
 - Issue :issue:`664` - Fixed link to MaNGA's Getting Started in docs.
+- Issue :issue:`686` - added reflexive operators to EnhancedMap
 
 
 [2.3.2] - 2019/02/27
