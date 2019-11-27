@@ -11,12 +11,16 @@ Added
 - Added GEMA VAC 
 - Added Firefly VAC
 - Added Visual Morphology VAC
+- Merged :pr:`678`, richer support for VACs
+- Merged :pr:`652`, richer support for Windows
+- Merged :pr:`677`, updated documentation on issues with fuzzy string matching
 
 Changed
 ^^^^^^^
 - all yaml.load uses new Loader to accommodate old and new yaml spec;
 - updated Runtime Issues documentation to include section on numpy.ufunc binary warnings
 - added to reprs for some db ModelClasses
+- all `sdss_access.sync.RsyncAccess` has been converted to `sdss_access.sync.Access` to allow for Linux/Windows switching
 
 Fixed
 ^^^^^
