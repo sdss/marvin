@@ -1,14 +1,13 @@
 #!/usr/bin/env python
 
-import marvin
 from marvin import config
 try:
-    from sdss_access import RsyncAccess
+    from sdss_access import Access
 except ImportError as e:
-    RsyncAccess = None
+    Access = None
 
 
-rsync_access = RsyncAccess(label='marvin_get_test_data')
+rsync_access = Access(label='marvin_get_test_data')
 rsync_access.remote()
 
 

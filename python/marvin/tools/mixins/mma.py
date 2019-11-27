@@ -22,17 +22,15 @@ from marvin import config, log
 from marvin.core.exceptions import MarvinError, MarvinMissingDependency, MarvinUserWarning
 from marvin.utils.db import testDbConnection
 from marvin.utils.general.general import mangaid2plateifu
-
-
 try:
     from sdss_access.path import Path
 except ImportError:
     Path = None
 
 try:
-    from sdss_access import RsyncAccess
+    from sdss_access import Access
 except ImportError:
-    RsyncAccess = None
+    Access = None
 
 __all__ = ['MMAMixIn']
 
@@ -309,15 +307,15 @@ class MMAMixIn(object, six.with_metaclass(abc.ABCMeta)):
         is_public = 'DR' in self._release
         rsync_release = self._release.lower() if is_public else None
 
-        if not RsyncAccess:
+        if not Access:
             raise MarvinError('sdss_access is not installed')
         else:
-            rsync_access = RsyncAccess(public=is_public, release=rsync_release)
-            rsync_access.remote()
-            rsync_access.add(pathType, **pathParams)
-            rsync_access.set_stream()
-            rsync_access.commit()
-            paths = rsync_access.get_paths()
+            access = Access(public=is_public, release=rsync_release)
+            access.remote()
+            access.add(pathType, **pathParams)
+            access.set_stream()
+            access.commit()
+            paths = access.get_paths()
             # adding a millisecond pause for download to finish and file existence to register
             time.sleep(0.001)
 

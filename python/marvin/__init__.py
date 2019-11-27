@@ -35,7 +35,7 @@ from brain.core.logger import initLog
 if 'MARVIN_LOGS_DIR' in os.environ:
     logFilePath = os.path.join(os.path.realpath(os.environ['MARVIN_LOGS_DIR']), 'marvin.log')
 else:
-    logFilePath = os.path.realpath(os.path.join(os.environ['HOME'], '.marvin', 'marvin.log'))
+    logFilePath = os.path.realpath(os.path.join(os.path.expanduser('~'), '.marvin', 'marvin.log'))
 
 # Inits the log
 log = initLog(logFilePath)
