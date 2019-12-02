@@ -581,7 +581,8 @@ maskbits EBOSS_TARGET0 35 TDSS_FES_VARBAL           "TDSS Few epoch spectroscopy
 maskbits EBOSS_TARGET0 40 SEQUELS_PTF_VARIABLE          "Variability objects from PTF"
 maskbits EBOSS_TARGET0 41 SEQUELS_COLLIDED          "Collided galaxies from BOSS"
 #
-
+#------------------------------------------------------------------------------
+#-------- eboss target1 bitmask (for eBOSS/SPIDERS/TDSS)
 masktype EBOSS_TARGET1 64 "targeting bitmask for eBOSS"
 maskbits EBOSS_TARGET1 0 DO_NOT_OBSERVE             "Don't put a fiber on this object"
 maskbits EBOSS_TARGET1 1 LRG1_WISE                "LRG selection in i/z/W plane"
@@ -597,23 +598,42 @@ maskbits EBOSS_TARGET1 15 QSO1_BAD_BOSS              "QSOs from BOSS with bad sp
 maskbits EBOSS_TARGET1 16 QSO_BOSS_TARGET           "Known TARGETS from BOSS with spectra"
 maskbits EBOSS_TARGET1 17 QSO_SDSS_TARGET           "Known TARGETS from SDSS with spectra"
 maskbits EBOSS_TARGET1 18 QSO_KNOWN             "Known QSOs from previous surveys"
+maskbits EBOSS_TARGET1 19 EFEDS_EROSITA_AGN   "eFEDS: point-like eROSITA source - target expected to be AGN, star or compact object"
+maskbits EBOSS_TARGET1 20 EFEDS_EROSITA_CLUS  "eFEDS: extended eROSITA source - target expected to be galaxy cluster member"
+maskbits EBOSS_TARGET1 21 EFEDS_EROSITA_TDA   "eFEDS: transient/variable eROSITA source - target expected to be transient"
+maskbits EBOSS_TARGET1 22 EFEDS_HSC_HIZQSO    "eFEDS: High redshift QSO candidate from HSC"
+maskbits EBOSS_TARGET1 23 EFEDS_HSC_WERGS     "eFEDS: WISE bright, optically faint radio galaxy from HSC"
+maskbits EBOSS_TARGET1 24 EFEDS_HSC_REDAGN    "eFEDS: Obscured AGN selected in HSC+WISE and/or HSC+VIKING"
+maskbits EBOSS_TARGET1 25 EFEDS_COSMOQSO      "eFEDS: UVX/variability QSO selected as per 4MOST COSMO Survey"
+maskbits EBOSS_TARGET1 26 EFEDS_WISE_AGN      "eFEDS: WISE colour-selected AGN"
+maskbits EBOSS_TARGET1 27 EFEDS_WISE_VARAGN   "eFEDS: WISE variability-selected AGN"
+maskbits EBOSS_TARGET1 28 EFEDS_XMMATLAS      "eFEDS: X-ray selected target from the XMM-ATLAS coverage in the eFEDS field"
+maskbits EBOSS_TARGET1 29 EFEDS_CSC2          "eFEDS: X-ray selected target from the Chandra Source Catalogue in the eFEDS field"
 maskbits EBOSS_TARGET1 30 TDSS_TARGET          "Target for TDSS (subclass found in eboss_target2)"
 maskbits EBOSS_TARGET1 31 SPIDERS_TARGET          "Target for SPIDERS (subclass found in eboss_target2)"
 maskbits EBOSS_TARGET1 32 S82X_TILE1		  " "
 maskbits EBOSS_TARGET1 33 S82X_TILE2		  " "
 maskbits EBOSS_TARGET1 34 S82X_TILE3		  " "
+maskbits EBOSS_TARGET1 35 EFEDS_SDSSWISE_QSO  "eFEDS: QSO candidate from Clarke+2019 UMAP classification of SDSS+WISE photometric sources"
+maskbits EBOSS_TARGET1 36 EFEDS_GAIAWISE_QSO  "eFEDS: QSO candidate from Shu+2019 RF classification of Gaia-unWISE sources"
+maskbits EBOSS_TARGET1 37 EFEDS_KIDS_QSO      "eFEDS: QSO candidate from Nakoneczny+2018 classification of KiDS+VIKING DR3 sources"
+maskbits EBOSS_TARGET1 38 EFEDS_SDSS_REDMAPPER "eFEDS: RedMaPPER galaxy cluster candidate from Rykoff+2014"
+maskbits EBOSS_TARGET1 39 EFEDS_HSC_REDMAPPER  "eFEDS: RedMaPPER galaxy cluster candidate derived from HSC photometry"
 maskbits EBOSS_TARGET1 40 ELG_TEST1          "Test targets for ELG selection"
 maskbits EBOSS_TARGET1 41 ELG1_EBOSS          "Standard DECALS ELG target selection"
 maskbits EBOSS_TARGET1 42 ELG1_EXTENDED          "Extended DECALS ELG target selection"
 maskbits EBOSS_TARGET1 43 ELG1_SGC          "Final ELG selection, SGC data"
 maskbits EBOSS_TARGET1 44 ELG1_NGC          "Final ELG selection, NGC data"
+maskbits EBOSS_TARGET1 45 EFEDS_GAIA_WD      "eFEDS: Gaia-selected WD binary candidate in the region between the ZAMS and the WD sequence."
+maskbits EBOSS_TARGET1 46 EFEDS_GAIAGALEX_WD "eFEDS: Gaia-GALEX UV excess source - expected to be compact binary harbouring a WD"
+maskbits EBOSS_TARGET1 47 EFEDS_VAR_WD       "eFEDS: Optical variability selected WD candidate"
 # standards
 maskbits EBOSS_TARGET1 50 STD_FSTAR				"standard f-stars"
 maskbits EBOSS_TARGET1 51 STD_WD            			"white dwarfs"
 maskbits EBOSS_TARGET1 52 STD_QSO           			"qso"
 #
 #------------------------------------------------------------------------------
-#-------- eboss target2 bitmask (for eBOSS)
+#-------- eboss target2 bitmask (for eBOSS/SPIDERS/TDSS)
 masktype EBOSS_TARGET2 64 "targeting bitmask for eBOSS"
 maskbits EBOSS_TARGET2 0 SPIDERS_RASS_AGN          "RASS AGN sources"
 maskbits EBOSS_TARGET2 1 SPIDERS_RASS_CLUS         "RASS Cluster sources"
@@ -991,6 +1011,8 @@ maskbits MANGA_DRP2QUAL 14 VGROOVEFAIL " Possible V-groove glue failure"
 maskbits MANGA_DRP2QUAL 15 NOGUIDER " No guider data available"
 maskbits MANGA_DRP2QUAL 16 NOSPEC1 " No data from spec1"
 maskbits MANGA_DRP2QUAL 17 NOSPEC2 " No data from spec2"
+maskbits MANGA_DRP2QUAL 18 BLOWTORCH " Blowtorch artifact detected"
+maskbits MANGA_DRP2QUAL 19 BLOWTORCHFAIL " Blowtorch artifact severe and uncorrectable"
 
 # DRP-3d quality flag bitmask
 masktype MANGA_DRP3QUAL 64 "Mask bits for MaNGA DRP-3d quality flags"
@@ -1006,6 +1028,7 @@ maskbits MANGA_DRP3QUAL  8 BADFLUX " Bad flux calibration"
 maskbits MANGA_DRP3QUAL  9 BADPSF " PSF estimate may be bad"
 maskbits MANGA_DRP3QUAL 10 MANYDEAD " Many dead fibers"
 maskbits MANGA_DRP3QUAL 11 RETIRED2 " Bit retired, moved into MASTAR_QUAL instead"
+maskbits MANGA_DRP3QUAL 12 BLOWTORCH " Blowtorch artifact in one or more frames"
 maskbits MANGA_DRP3QUAL 30 CRITICAL " Critical failure in one or more frames"
 
 # MaStar quality flag bitmask
@@ -1020,6 +1043,8 @@ maskbits MASTAR_QUAL  6 BADHELIORV " High variance between stellar RVs"
 maskbits MASTAR_QUAL  7 MANUAL " Flagged as problematic by visual inspection"
 maskbits MASTAR_QUAL  8 EMLINE " Spectrum contain emission lines"
 maskbits MASTAR_QUAL  9 LOWSN  " Per-MJD Spectrum has median S/N <= 15"
+maskbits MASTAR_QUAL 10 MULTIFIBER " Composite spectrum combined from multiple fibers"
+maskbits MASTAR_QUAL 11 BLOWTORCH " Blowtorch artifact in one or more frames"
 maskbits MASTAR_QUAL 30 CRITICAL " Critical failure in one or more frames"
 
 # The following mask bits are for the 2D MANGA pipeline
@@ -1183,3 +1208,4 @@ maskbits MANGA_TARGET3    23   MW_ANALOG " "
 maskbits MANGA_TARGET3    24   POST-STARBURST " "
 maskbits MANGA_TARGET3    25   GLSB " "
 maskbits MANGA_TARGET3    26   SN1A_HOST " "
+maskbits MANGA_TARGET3    27   GLOBULAR_CLUSTER " "
