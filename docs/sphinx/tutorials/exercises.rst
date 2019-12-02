@@ -12,7 +12,7 @@ Here are exercises and activities designed to stimulate your usage of Marvin in 
 
 :download:`Investigating Gas and Stellar Kinematics using Marvin <exercises/marvin_kinematics.ipynb>` [`Solution <exercises/marvin_kinematics_solution.ipynb>`_]
 
-:download:`Constructing the Spatially-resolved Mass-Metallicity Relation <exercises/resolved_mass_metallicity_relation.ipynb>` [`Solution <exercises/resolved_mass_metallicity_relation_SOLUTION.ipynb>`_] :download:`Data <exercises/data/manga-8077-6104_mstar.csv>`
+:download:`Constructing the Spatially-resolved Mass-Metallicity Relation <exercises/resolved_mass_metallicity_relation.ipynb>` :download:`Data <exercises/data/manga-8077-6104_mstar.csv>` [`Solution <exercises/resolved_mass_metallicity_relation_SOLUTION.ipynb>`_]
 
 
 |
