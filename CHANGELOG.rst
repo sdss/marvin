@@ -26,6 +26,7 @@ Fixed
 - Fixed bug when server tries to access NSA on cube when none exists and triggers remote authentication issue
 - Issue :issue:`664` - Fixed link to MaNGA's Getting Started in docs.
 - Issue :issue:`686` - added reflexive operators to EnhancedMap
+- Issue :issue:`689` - added link to CSV file of Firefly stellar mass measurements needed for the Spatially-Resolved Mass-Metallicity Relation Tutorial
 
 
 [2.3.2] - 2019/02/27
