@@ -19,6 +19,7 @@ Changed
 - updated Runtime Issues documentation to include section on numpy.ufunc binary warnings
 - added to reprs for some db ModelClasses
 - updated datamodels to include MPL-9 changes
+- turned off API rate limiting globally
 
 Fixed
 ^^^^^
