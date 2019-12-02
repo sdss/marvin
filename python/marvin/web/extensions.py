@@ -17,6 +17,7 @@ from flask_profiler import Profiler
 from flask_caching import Cache
 from flask_login import LoginManager
 from flask_jwt_extended import JWTManager
+from flask_cors import CORS
 import flask_jsglue as jsg
 import logging
 
@@ -43,3 +44,6 @@ login_manager = LoginManager()
 
 # Flask-JWT (JSON Web Token)
 jwt = JWTManager()
+
+# Flask CORS
+cors = CORS()
