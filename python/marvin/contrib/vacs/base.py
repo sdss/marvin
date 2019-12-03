@@ -87,6 +87,8 @@ class VACMixIn(object, six.with_metaclass(abc.ABCMeta)):
     and then the VACs can be accessed as properties in ``my_map.vacs``.
 
     """
+    # Set this is True on your VAC to exclude it from Marvin
+    _hidden = False
 
     # The name and description of the VAC.
     name = None
@@ -156,6 +158,9 @@ class VACMixIn(object, six.with_metaclass(abc.ABCMeta)):
         vac_container = VACContainer()
 
         for subvac in VACMixIn.__subclasses__():
+            # check if VAC is hidden
+            if subvac._hidden:
+                continue
 
             # Excludes VACs from showing up in Plate
             if issubclass(parent_object.__class__, marvin.tools.plate.Plate):

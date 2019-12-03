@@ -32,6 +32,8 @@ class VMORPHOVAC(VACMixIn):
     Authors: J. Antonio Vazquez-Mata and Hector Hernandez-Toledo
 
     """
+    # Hiding for DR16; until DR16+ release
+    _hidden = True
 
     # Required parameters
     name = 'visual_morphology'

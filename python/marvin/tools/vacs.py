@@ -7,7 +7,7 @@
 # Created: Sunday, 8th September 2019 11:16:35 pm
 # License: BSD 3-clause "New" or "Revised" License
 # Copyright (c) 2019 Brian Cherinka
-# Last Modified: Thursday, 14th November 2019 5:46:15 pm
+# Last Modified: Tuesday, 3rd December 2019 2:43:32 pm
 # Modified By: Brian Cherinka
 
 
@@ -97,6 +97,9 @@ class VACs(VACContainer):
         cls._vacs = []
         cls.release = config.release
         for subvac in VACMixIn.__subclasses__():
+            # Exclude any hidden VACs
+            if subvac._hidden:
+                continue
 
             # Excludes VACs from other releases
             if config.release not in subvac.version:
