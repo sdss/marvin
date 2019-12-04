@@ -6,9 +6,9 @@ Marvin's Change Log
 
 Added
 ^^^^^
-- Support for DR16.  Updated datamodels and docs. 
-- Added Galaxy Zoo VAC 
-- Added GEMA VAC 
+- Support for DR16.  Updated datamodels and docs.
+- Added Galaxy Zoo VAC
+- Added GEMA VAC
 - Added Firefly VAC
 - Added Visual Morphology VAC
 
@@ -17,6 +17,7 @@ Changed
 - all yaml.load uses new Loader to accommodate old and new yaml spec;
 - updated Runtime Issues documentation to include section on numpy.ufunc binary warnings
 - added to reprs for some db ModelClasses
+- updates citation to Marvin paper
 
 Fixed
 ^^^^^
@@ -24,6 +25,8 @@ Fixed
 - Issue :issue:`655` - added yaml loader to remove yaml warnings for 5.1 spec
 - Fixed bug when server tries to access NSA on cube when none exists and triggers remote authentication issue
 - Issue :issue:`664` - Fixed link to MaNGA's Getting Started in docs.
+- Issue :issue:`686` - added reflexive operators to EnhancedMap
+- Issue :issue:`689` - added link to CSV file of Firefly stellar mass measurements needed for the Spatially-Resolved Mass-Metallicity Relation Tutorial
 
 
 [2.3.2] - 2019/02/27

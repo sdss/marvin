@@ -6,8 +6,8 @@
 # @Filename: test_map.py
 # @License: BSD 3-clause (http://www.opensource.org/licenses/BSD-3-Clause)
 #
-# @Last modified by: José Sánchez-Gallego (gallegoj@uw.edu)
-# @Last modified time: 2018-08-09 16:08:28
+# @Last modified by:   andrews
+# @Last modified time: 2019-11-22 12:11:29
 
 
 import operator
@@ -245,12 +245,30 @@ class TestMapArith(object):
         assert ha10.ivar == pytest.approx(ha.ivar)
         assert ha10.mask == pytest.approx(ha.mask)
 
+    def test_reflexive_add_constant(self, galaxy):
+        maps = Maps(plateifu=galaxy.plateifu)
+        ha = maps['emline_gflux_ha_6564']
+        ha10 = 10. + ha
+
+        assert ha10.value == pytest.approx(ha.value + 10.)
+        assert ha10.ivar == pytest.approx(ha.ivar)
+        assert ha10.mask == pytest.approx(ha.mask)
+
     def test_subtract_constant(self, galaxy):
         maps = Maps(plateifu=galaxy.plateifu)
         ha = maps['emline_gflux_ha_6564']
         ha10 = ha - 10.
 
         assert ha10.value == pytest.approx(ha.value - 10.)
+        assert ha10.ivar == pytest.approx(ha.ivar)
+        assert ha10.mask == pytest.approx(ha.mask)
+
+    def test_reflexive_subtract_constant(self, galaxy):
+        maps = Maps(plateifu=galaxy.plateifu)
+        ha = maps['emline_gflux_ha_6564']
+        ha10 = 10. - ha
+
+        assert ha10.value == pytest.approx(10. - ha.value)
         assert ha10.ivar == pytest.approx(ha.ivar)
         assert ha10.mask == pytest.approx(ha.mask)
 
@@ -263,6 +281,15 @@ class TestMapArith(object):
         assert ha10.ivar == pytest.approx(ha.ivar / 10.**2)
         assert ha10.mask == pytest.approx(ha.mask)
 
+    def test_reflexive_multiply_constant(self, galaxy):
+        maps = Maps(plateifu=galaxy.plateifu)
+        ha = maps['emline_gflux_ha_6564']
+        ha10 = 10. * ha
+
+        assert ha10.value == pytest.approx(ha.value * 10.)
+        assert ha10.ivar == pytest.approx(ha.ivar / 10.**2)
+        assert ha10.mask == pytest.approx(ha.mask)
+
     def test_divide_constant(self, galaxy):
         maps = Maps(plateifu=galaxy.plateifu)
         ha = maps['emline_gflux_ha_6564']
@@ -270,6 +297,15 @@ class TestMapArith(object):
 
         assert ha10.value == pytest.approx(ha.value / 10.)
         assert ha10.ivar == pytest.approx(ha.ivar * 10.**2)
+        assert ha10.mask == pytest.approx(ha.mask)
+
+    def test_reflexive_divide_constant(self, galaxy):
+        maps = Maps(plateifu=galaxy.plateifu)
+        ha = maps['emline_gflux_ha_6564']
+        ha10 = 10. / ha
+
+        assert ha10.value == pytest.approx(10. / ha.value)
+        assert ha10.ivar == pytest.approx(ha.ivar)
         assert ha10.mask == pytest.approx(ha.mask)
 
     @pytest.mark.parametrize('ivar1, ivar2, expected',
@@ -321,7 +357,7 @@ class TestMapArith(object):
         assert log_niiha.unit == u.dimensionless_unscaled
 
     @pytest.mark.runslow
-    @marvin_test_if(mark='skip', ufunc='log10')
+    @marvin_test_if(mark='skip', ufunc=['log10'])
     @pytest.mark.parametrize('ufunc', ufuncs)
     def test_np_ufunc_notimplemented(self, maps_release_only, ufunc):
         ha = maps_release_only.emline_gflux_ha_6564
