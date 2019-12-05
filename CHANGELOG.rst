@@ -23,6 +23,7 @@ Changed
 - added to reprs for some db ModelClasses
 - all `sdss_access.sync.RsyncAccess` has been converted to `sdss_access.sync.Access` to allow for Linux/Windows switching
 - updates citation to Marvin paper
+- DAP Maps label on galaxy page now contains a pop up of links for more info
 
 Fixed
 ^^^^^
@@ -32,7 +33,7 @@ Fixed
 - Issue :issue:`664` - Fixed link to MaNGA's Getting Started in docs.
 - Issue :issue:`686` - added reflexive operators to EnhancedMap
 - Issue :issue:`689` - added link to CSV file of Firefly stellar mass measurements needed for the Spatially-Resolved Mass-Metallicity Relation Tutorial
-
+- Issue :issue:`682` - adds info links next to DAP Maps selection on galaxy page
 
 [2.3.2] - 2019/02/27
 --------------------
