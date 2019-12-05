@@ -1,5 +1,5 @@
 {% extends "layout.html" %}
-{% from 'macros.html' import download, panellist, infopopup, nsatable, nsascatter, dygraph_popup %}
+{% from 'macros.html' import download, panellist, infopopup, nsatable, nsascatter, dygraph_popup, maphelp_popup %}
 
 <!-- Galaxy CSS Sources -->
 {% block csshead %}
@@ -169,10 +169,11 @@
                         <div class='row'>
                             <form class="form-inline" id='dapmapform' method='POST' role='form' action="#">
                               <div class="form-group col-md-6 col-md-offset-2">
-                                <label for='setdefaults' class='control-label'><a href="https://www.sdss.org/{{latest_dr}}/manga/manga-data/data-model/#DAP" target="_blank">DAP Maps:</a></label>
+                                <label style="cursor:pointer" id='maphelp' for='setdefaults' class='control-label' data-toggle='modal' data-target='#maphelp_modal'><span class="glyphicon glyphicon-question-sign"></span> DAP Maps</label>
+                                {{maphelp_popup(release, latest_dr)}}
                                 <div class="input-group">
                                     <select class="selectpicker show-tick" id='dapmapchoices' multiple data-selected-text-format="count" 
-                                    data-header='See <a href="https://www.sdss.org/{{latest_dr}}/manga/manga-data/data-model/#DAP" target="_blank">here</a> to learn about properties' data-live-search="true" data-max-options="6" title='No Maps selected'>
+                                    data-header='Select your map properties.' data-live-search="true" data-max-options="6" title='No Maps selected'>
                                         {% for dapmap in dapmaps %}
                                         {% if dapmap in dapmapselect %}
                                         <option selected >{{dapmap}}</option>
@@ -181,7 +182,7 @@
                                         {% endif %}
                                         {% endfor %}
                                     </select>
-                                    <select class="selectpicker show-tick" id='dapbtchoices' data-header='See <a href="https://www.sdss.org/{{latest_dr}}/manga/manga-data/data-model/#DAP" target="_blank">here</a> to learn about bintypes'>
+                                    <select class="selectpicker show-tick" id='dapbtchoices' data-header='Select a bintype'>
                                         {% for bt in dapbintemps %}
                                             {% if bt == session.bintemp %}
                                             <option selected >{{bt}}</option>

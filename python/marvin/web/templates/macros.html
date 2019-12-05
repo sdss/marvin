@@ -274,3 +274,29 @@
     </div>
 </div>
 {% endmacro %}
+
+{% macro maphelp_popup(release, dr) %}
+<div class="modal fade" id="maphelp_modal" tabindex="-1" role="dialog" aria-labelledby="gLabel" aria-hidden="true">
+    <div class="modal-dialog modal-sm" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                <h4 class="modal-title" id="myModalLabel">Learn more about DAP MAPS</h4>
+            </div>
+            <div id="gbody" class="modal-body">
+              <div class='row'>
+                <div class='col-md-12'>
+                <ul>
+                  <li><a target='_blank' href='https://www.sdss.org/{{dr}}/manga/manga-data/data-model/#DAP'>About DAP MAPs</a></li>
+                  <li><a target='_blank' href='https://www.sdss.org/{{dr}}/manga/manga-data/working-with-manga-data/#daphyb'>About HYB Binning</a></li>
+                  <li><a target='_blank' href='https://sdss-marvin.readthedocs.io/en/stable/datamodel/{{release|striprelease}}.html#{{release|striprelease}}dap'>Marvin DAP DataModel</a></li>
+                  <li><a target='_blank' href='https://data.sdss.org/datamodel/files/MANGA_SPECTRO_ANALYSIS/DRPVER/DAPVER/DAPTYPE/PLATE/IFU/manga-MAPS-DAPTYPE.html'>MAPs FITS DataModel</a></li>
+                  <li><a target='_blank' href='https://data.sdss.org/datamodel/files/MANGA_SPECTRO_ANALYSIS/DRPVER/DAPVER/DAPTYPE/PLATE/IFU/manga-LOGCUBE-DAPTYPE.html'>ModelCube FITS DataModel</a></li>
+                </ul>
+                </div>
+              </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endmacro %}
