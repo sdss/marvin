@@ -56,10 +56,10 @@ MPL6_spectra = [
 ]
 
 RSS_extensions = [
-    RSS('xpos', 'XPOS', extension_wave='WAVE', unit=u.arcsec,
+    RSS('xpos', 'XPOS', extension_wave='WAVE', unit=u.arcsec, db_table='rssfiber',
         formats={'string': 'Fiber X-positions from the IFU center'},
         description='Array of fiber X-positions relative to the IFU center'),
-    RSS('ypos', 'YPOS', extension_wave='WAVE', unit=u.arcsec,
+    RSS('ypos', 'YPOS', extension_wave='WAVE', unit=u.arcsec, db_table='rssfiber',
         formats={'string': 'Fiber Y-positions from the IFU center'},
         description='Array of fiber Y-positions relative to the IFU center'),
 ]
@@ -120,3 +120,5 @@ for release in datamodel_rss:
     flux = datamodel_rss[release].rss.flux
     flux.description = 'Row-stacked spectra from all exposures for the target'
     flux.unit = flux.unit * spaxel_unit / fiber_unit
+
+    locals()

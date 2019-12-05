@@ -169,9 +169,10 @@
                         <div class='row'>
                             <form class="form-inline" id='dapmapform' method='POST' role='form' action="#">
                               <div class="form-group col-md-6 col-md-offset-2">
-                                <label for='setdefaults' class='control-label'>DAP Maps:</label>
+                                <label for='setdefaults' class='control-label'><a href="https://www.sdss.org/{{latest_dr}}/manga/manga-data/data-model/#DAP" target="_blank">DAP Maps:</a></label>
                                 <div class="input-group">
-                                    <select class="selectpicker show-tick" id='dapmapchoices' multiple data-selected-text-format="count" data-live-search="true" data-max-options="6" title='No Maps selected'>
+                                    <select class="selectpicker show-tick" id='dapmapchoices' multiple data-selected-text-format="count" 
+                                    data-header='See <a href="https://www.sdss.org/{{latest_dr}}/manga/manga-data/data-model/#DAP" target="_blank">here</a> to learn about properties' data-live-search="true" data-max-options="6" title='No Maps selected'>
                                         {% for dapmap in dapmaps %}
                                         {% if dapmap in dapmapselect %}
                                         <option selected >{{dapmap}}</option>
@@ -180,7 +181,7 @@
                                         {% endif %}
                                         {% endfor %}
                                     </select>
-                                    <select class="selectpicker show-tick" id='dapbtchoices'>
+                                    <select class="selectpicker show-tick" id='dapbtchoices' data-header='See <a href="https://www.sdss.org/{{latest_dr}}/manga/manga-data/data-model/#DAP" target="_blank">here</a> to learn about bintypes'>
                                         {% for bt in dapbintemps %}
                                             {% if bt == session.bintemp %}
                                             <option selected >{{bt}}</option>

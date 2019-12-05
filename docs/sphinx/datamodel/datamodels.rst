@@ -31,8 +31,9 @@ By Release
 DRP Datamodel
 -------------
 
-The DRP datamodel contains two descriptors of MaNGA data, **spectra** and **datacubes**.  **spectra** are 1-d arrays of data, 
-while **datacubes** are 3-d arrays of data.  Access the DRP datamodels with ``from marvin.utils.datamodel.drp import datamodel``.
+The DRP datamodel contains three descriptors of MaNGA data, **spectra**, **datacubes**, and **rss**.  **spectra** are 1-d arrays of data, 
+**rss** are 2d-arrays of data, while **datacubes** are 3-d arrays of data.  Access the DRP datamodels for cubes with 
+``from marvin.utils.datamodel.drp import datamodel`` and the datamodels for rss files with ``from marvin.utils.datamodel.drp import datamodel_rss``.
 
 DAP Datamodel
 -------------

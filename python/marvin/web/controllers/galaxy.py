@@ -289,6 +289,7 @@ class Galaxy(BaseWebView):
         # determine type of galid
         args = av.manual_parse(self, request, use_params='galaxy')
         self.galaxy['id'] = args['galid']
+        self.galaxy['latest_dr'] = self._release.lower() if 'DR' in self._release else marvin.config._get_latest_release(dr_only=True).lower()
         idtype = parseIdentifier(galid)
         if idtype in ['plateifu', 'mangaid']:
             # set plateifu or mangaid
