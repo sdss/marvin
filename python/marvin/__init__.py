@@ -398,11 +398,14 @@ class MarvinConfig(object):
         relsorted = sorted(self._allowed_releases.items(), key=lambda p: p[1][0], reverse=True)
         self._allowed_releases = OrderedDict(relsorted)
 
-    def _get_latest_release(self, mpl_only=None):
+    def _get_latest_release(self, mpl_only=None, dr_only=None):
         ''' Get the latest release from allowed list '''
 
         if mpl_only:
-            return [r for r in list(self._allowed_releases) if 'MPL' in r][0]
+            return max([r for r in list(self._allowed_releases) if 'MPL' in r], key=lambda t: int(t.split('-')[-1]))
+
+        if dr_only:
+            return max([r for r in list(self._allowed_releases) if 'DR' in r], key=lambda t: int(t[2:]))
 
         return list(self._allowed_releases)[0]
 
