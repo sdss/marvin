@@ -395,7 +395,9 @@ class Galaxy(BaseWebView):
         dm = datamodel[self._dapver]
 
         # turning toggle on
-        current_session['toggleon'] = args.get('toggleon')
+        nowebsession = marvin.config._custom_config.get('no_web_session', None)
+        if not nowebsession: 
+            current_session['toggleon'] = args.get('toggleon')
 
         # get the cube
         cubeinputs = {'plateifu': args.get('plateifu'), 'release': self._release}
