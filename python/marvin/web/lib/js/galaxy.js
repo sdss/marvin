@@ -108,7 +108,6 @@ var Galaxy = function () {
 
         // init some stuff
         this.initFlagPopovers();
-        //this.checkToggle();
 
         //Event Handlers
         this.maptab.on('click', this, this.resizeSpecView); // this event fires when a user clicks the MapSpec View Tab
@@ -121,14 +120,6 @@ var Galaxy = function () {
         this.nsaplotbuttons.on('click', this, this.updateNSAPlot);
         //this.nsatable.on('page-change.bs.table', this, this.updateTableEvents);
         //this.nsatable.on('page-change.bs.table', this, this.updateTableEvents);
-
-        // NSA movers events
-        // var _this = this;
-        // $.each(this.nsamovers, function(index, mover) {
-        //     var id = mover.id;
-        //     $('#'+id).on('dragstart', this, _this.dragStart);
-        //     $('#'+id).on('dragover', this, _this.dragOver);
-        // });
     }
 
     // Test print
@@ -277,7 +268,7 @@ var Galaxy = function () {
     }, {
         key: 'checkToggle',
         value: function checkToggle() {
-            if (this.toggleon) {
+            if (this.toggleon === 'true') {
                 this.toggleOn();
             } else {
                 this.toggleOff();

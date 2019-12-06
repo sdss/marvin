@@ -303,6 +303,11 @@
         m.galaxy = new Galaxy(undefined, toggleon);
         m.galaxy.print();
         m.galaxy.hasNSA({{hasnsa|tojson}});
+
+        // if toggleon is set then initialize the mapspec view
+        if (toggleon === 'true') {
+          m.galaxy.togglediv.bootstrapToggle('toggle');
+        }
     });
 </script>
 {% endblock code %}

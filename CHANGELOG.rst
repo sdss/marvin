@@ -34,6 +34,7 @@ Fixed
 - Issue :issue:`686` - added reflexive operators to EnhancedMap
 - Issue :issue:`689` - added link to CSV file of Firefly stellar mass measurements needed for the Spatially-Resolved Mass-Metallicity Relation Tutorial
 - Issue :issue:`682` - adds info links next to DAP Maps selection on galaxy page
+- Issue :issue:`581` - makes MapSpecView button a session variable
 
 [2.3.2] - 2019/02/27
 --------------------
