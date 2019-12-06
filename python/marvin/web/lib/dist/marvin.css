@@ -6182,6 +6182,10 @@ section h3.section-subheading {
 .infopop .popover {
   max-width: 100%; }
 
+.vertical-align {
+  display: flex;
+  align-items: center; }
+
 /*
 * @Author: Brian Cherinka
 * @Date:   2016-04-29 10:40:57

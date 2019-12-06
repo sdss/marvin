@@ -1,6 +1,6 @@
 {% extends "layout.html" %}
 {% set active_page = active_page|default("search") %}
-{% from 'macros.html' import infopopup %}
+{% from 'macros.html' import infopopup, queryhelp_popup %}
 
 {% block csshead %}
     <link rel='preconnect stylesheet' href='https://unpkg.com/jQuery-QueryBuilder@2.4.3/dist/css/query-builder.dark.min.css'>
@@ -13,12 +13,19 @@
         <div class='row'>
 
             <form class='form' id='searchform' method='POST' role='form' action="{{url_for('search_page.Search:index')}}">
-              <div class='row'>
-                {# Return Paramter dropdown select #}
-                <div class='col-md-2 col-md-offset-1'>
+              <div class='row vertical-align'>
+                <div class='col-md-1 col-md-offset-1'>
                     <div class='form-group'>
-                        <label><a target='_blank' href='{{returnurl}}'>Return Parameters:</a></label>
-                        <select class="selectpicker form-control" id='returnparams' name='returnparams' multiple data-live-search='True' title='Choose Parameters (limit 5)' data-max-options='5'>
+                        <label style="cursor:pointer" id='queryhelp' for='setdefaults' class='pull-right' data-toggle='modal' data-target='#queryhelp_modal'><span class="glyphicon glyphicon-question-sign"></span> Learn more</label>
+                        {{queryhelp_popup(release, latest_dr)}}
+                    </div>
+                </div>
+
+                {# Return Paramter dropdown select #}
+                <div class='col-md-2'>
+                    <div class='form-group'>
+                        <label><a target='_blank' href='{{returnurl}}' data-toggle="tooltip" title="Click to see the full list of parameters">Return Parameters:</a></label>
+                        <select class="selectpicker form-control" id='returnparams' name='returnparams' multiple data-live-search='True' title='Choose Parameters (limit 5)' data-max-options='5' data-header='Select parameters to return'>
                             {% for group in paramdata %}
                                 <optgroup label='{{group.name}}'>
                                     {% for param in paramdata[group.name] %}
