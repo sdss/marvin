@@ -174,7 +174,8 @@ var Galaxy = function () {
                 labels: labels,
                 errorBars: true, // TODO DyGraph shows 2-sigma error bars FIX THIS
                 ylabel: 'Flux [10<sup>-17</sup> erg/cm<sup>2</sup>/s/Å]',
-                xlabel: 'Observed Wavelength [Ångströms]'
+                xlabel: 'Observed Wavelength [Ångströms]',
+                valueRange: [0, null]
             });
         }
 
