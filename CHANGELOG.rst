@@ -1,6 +1,17 @@
 Marvin's Change Log
 ===================
 
+[2.3.4] - 2019/12/09
+--------------------
+
+Changed
+^^^^^^^
+- Added explicit python path in uwsgi prod.ini file
+
+Fixed
+^^^^^
+- Bug in session variable controlling DAP bintemps 
+
 [2.3.3] - 2019/12/09
 --------------------
 
