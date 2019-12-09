@@ -32,7 +32,7 @@ To quickly install Marvin, use::
 If you are using an Anaconda distribution of Python, you may use the following available ``conda`` environment, 
 `here <https://anaconda.org/SDSS/marvin/files>`_. Once downloaded, set up the virtual environment with::
 
-  conda env create -f marvin_2.3.2.yml.
+  conda env create -f marvin_2.3.4.yml.
 
 .. _marvin-install-dev:
 
