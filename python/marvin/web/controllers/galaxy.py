@@ -360,7 +360,7 @@ class Galaxy(BaseWebView):
                 self.galaxy['dapmapselect'] = current_session.get('selected_dapmaps', dapdefaults)
                 dm = datamodel[self._dapver]
                 self.galaxy['dapbintemps'] = dm.get_bintemps(db_only=True)
-                if 'bintemp' not in current_session:
+                if 'bintemp' not in current_session or current_session['bintemp'] not in self.galaxy['dapbintemps']:
                     current_session['bintemp'] = '{0}-{1}'.format(dm.get_bintype(), dm.get_template())
 
                 # TODO - make this general - see also search.py for querystr
@@ -415,6 +415,10 @@ class Galaxy(BaseWebView):
         selected_bintemp = current_session.get('bintemp', None)
         selected_maps = current_session.get('selected_dapmaps', dapdefaults)
 
+        # check for correct bintemp
+        if selected_bintemp and selected_bintemp not in dm.get_bintemps(db_only=True):
+            selected_bintemp = '{0}-{1}'.format(dm.get_bintype(), dm.get_template())
+
         # build the uber map dictionary
         try:
             mapdict = buildMapDict(cube, selected_maps, self._dapver, bintemp=selected_bintemp)
@@ -436,7 +440,6 @@ class Galaxy(BaseWebView):
         output['maps'] = mapdict
         output['mapmsg'] = mapmsg
         output['dapmaps'] = daplist
-        print('selected maps', selected_maps)
         output['dapmapselect'] = selected_maps
 
         output['dapbintemps'] = dm.get_bintemps(db_only=True)
