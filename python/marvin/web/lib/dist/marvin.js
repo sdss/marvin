@@ -678,6 +678,24 @@ var Galaxy = function () {
     }, {
         key: 'loadSpaxel',
         value: function loadSpaxel(spaxel, title) {
+            this._spaxeldata = spaxel;
+            // this plugin renables dygraphs 1.1 behaviour of unzooming to specified valueRange 
+            var doubleClickZoomOutPlugin = {
+                activate: function activate(g) {
+                    // Save the initial y-axis range for later.
+                    var initialValueRange = g.getOption('valueRange');
+                    return {
+                        dblclick: function dblclick(e) {
+                            e.dygraph.updateOptions({
+                                dateWindow: null, // zoom all the way out
+                                valueRange: initialValueRange // zoom to a specific y-axis range.
+                            });
+                            e.preventDefault(); // prevent the default zoom out action.
+                        }
+                    };
+                }
+            };
+
             var labels = spaxel[0].length == 3 ? ['Wavelength', 'Flux', 'Model Fit'] : ['Wavelength', 'Flux'];
             this.webspec = new Dygraph(this.graphdiv[0], spaxel, {
                 title: title,
@@ -685,8 +703,33 @@ var Galaxy = function () {
                 errorBars: true, // TODO DyGraph shows 2-sigma error bars FIX THIS
                 ylabel: 'Flux [10<sup>-17</sup> erg/cm<sup>2</sup>/s/Å]',
                 xlabel: 'Observed Wavelength [Ångströms]',
-                valueRange: [0, null]
+                valueRange: [0, null],
+                plugins: [doubleClickZoomOutPlugin],
+                axes: {
+                    x: {
+                        axisLabelFormatter: this.setSpectrumAxisFormatter('obs')
+                    }
+                }
             });
+        }
+
+        // Dygraph Axis Formatter
+
+    }, {
+        key: 'setSpectrumAxisFormatter',
+        value: function setSpectrumAxisFormatter(wave, redshift) {
+            var obs = function obs(d, gran) {
+                return d;
+            };
+            var rest = function rest(d, gran) {
+                return d / (1 + redshift);
+            };
+
+            if (wave === 'obs') {
+                return obs;
+            } else if (wave === 'rest') {
+                return rest;
+            }
         }
 
         // Update the spectrum message div for errors only
