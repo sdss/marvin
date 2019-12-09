@@ -11,6 +11,23 @@ What's New
 
 This section summarises the most important new features a bugfixes in Marvin. For the complete list of changes check the :ref:`marvin-changelog`.
 
+2.3.4 (December 2019)
+---------------------
+
+Along with plenty of bug fixes, the following things are new
+- Support for DR16, which is the same as DR15.
+- Added support for the following :ref:`MaNGA VACS<marvin-available-vacs>`
+    - GEMA: Returns GEMA table data
+    - Galaxy Zoo: Returns Galaxy Zoo morphologies
+    - Firefly: Returns stellar population parameters fitted by FIREFLY
+    - MaNGA HI: Returns HI summary data and spectra
+- A new :ref:`Marvin VACs<marvin-vacs>` tool to access the full VAC FITS file.  
+- Complete support for Windows.  With an update to `sdss_access`, Marvin now fully works on Windows, using `curl` as the default download service.
+- No more API rate limiting.  This has been removed until further notice.
+- New info popups for "DAP Maps" and "Queries" with links to additional information.  Click the "DAP Maps" and "Learn More' labels with the question marks, on the galaxy and query pages, respectively.   
+- Improved galaxy web memory - the galaxy web page now remembers when you've selected the dynamic MapSpecView, as well your map and bintype selections. Quickly move from galaxy to galaxy without reselecting the same things over and over.  
+- Improved DataModel documentation 
+
 2.3.2 (February 2019)
 ---------------------
 
