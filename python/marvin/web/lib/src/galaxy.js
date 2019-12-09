@@ -32,9 +32,10 @@ class MapError extends Error {
 class Galaxy {
 
     // Constructor
-    constructor(plateifu, toggleon) {
+    constructor(plateifu, toggleon, redshift) {
         this.setPlateIfu(plateifu);
         this.toggleon = toggleon;
+        this.redshift = redshift;
         // main elements
         this.maindiv = $('#'+this.plateifu);
         this.metadiv = this.maindiv.find('#metadata');
@@ -53,6 +54,8 @@ class Galaxy {
         this.togglediv = $('#toggleinteract');
         this.toggleload = $('#toggle-load');
         this.togglediv.bootstrapToggle('off');
+        this.toggleframe = $('#toggleframe');
+        this.togglelines= $('#togglelines'); 
         // flag popover elements
         this.qualpop = $('#qualitypopover');
         this.targpops = $('.targpopovers');
@@ -92,6 +95,8 @@ class Galaxy {
         this.nsaplotbuttons.on('click', this, this.updateNSAPlot);
         //this.nsatable.on('page-change.bs.table', this, this.updateTableEvents);
         //this.nsatable.on('page-change.bs.table', this, this.updateTableEvents);
+        this.toggleframe.on('change', this, this.toggleWavelength); // this event fires when a user clicks the Toggle Obs/Rest Frame
+        this.togglelines.on('change', this, this.toggleLines); // this event fires when a user clicks the Toggle Lines
 
     }
 
@@ -120,9 +125,18 @@ class Galaxy {
         }, 10);
     }
 
+    // Compute rest-frame wavelength
+    computeRestWave() {
+        let rest = this.setSpectrumAxisFormatter('rest', this.redshift);
+        this.obswave = this._spaxeldata.map(x => x[0]);
+        this.restwave = this.obswave.map(x => rest(x));
+        this.rest_spaxeldata = this._spaxeldata.map((x, i) => [this.restwave[i], x.slice(1)[0], x.slice(1)[1]]);
+    }
+
     // Initialize and Load a DyGraph spectrum
     loadSpaxel(spaxel, title) {
         this._spaxeldata = spaxel;
+        this.computeRestWave();
         // this plugin renables dygraphs 1.1 behaviour of unzooming to specified valueRange 
         const doubleClickZoomOutPlugin = {
             activate: function (g) {
@@ -141,34 +155,56 @@ class Galaxy {
         };
 
         let labels = (spaxel[0].length == 3) ? ['Wavelength','Flux', 'Model Fit'] : ['Wavelength','Flux'];
+        let options = {
+            title: title,
+            labels: labels,
+            legend: 'always',
+            errorBars: true,  // TODO DyGraph shows 2-sigma error bars FIX THIS
+            ylabel: 'Flux [10<sup>-17</sup> erg/cm<sup>2</sup>/s/Å]',
+            valueRange: [0, null],
+            plugins: [doubleClickZoomOutPlugin],
+        };
+        let data = this.toggleframe.prop('checked') ? this.rest_spaxeldata : spaxel;
+        options = this.addDygraphWaveOptions(options);
         this.webspec = new Dygraph(this.graphdiv[0],
-                  spaxel,
-                  {
-                    title: title,
-                    labels: labels,
-                    errorBars: true,  // TODO DyGraph shows 2-sigma error bars FIX THIS
-                    ylabel: 'Flux [10<sup>-17</sup> erg/cm<sup>2</sup>/s/Å]',
-                    xlabel: 'Observed Wavelength [Ångströms]',
-                    valueRange: [0,null],
-                    plugins: [doubleClickZoomOutPlugin],
-                    axes: {
-                        x: {
-                            axisLabelFormatter: this.setSpectrumAxisFormatter('obs')
-                        }
-                    }
-                });
+                  data, 
+                  options);
     }
 
     // Dygraph Axis Formatter
     setSpectrumAxisFormatter(wave, redshift) {                
         let obs = (d, gran) => d;
-        let rest = (d, gran) => d / (1 + redshift);
+        let rest = (d, gran) => parseFloat((d / (1 + redshift)).toPrecision(5));
 
         if (wave === 'obs') {
             return obs;            
          } else if (wave === 'rest') {
             return rest;
          }
+    }
+
+    addDygraphWaveOptions(oldoptions) {
+        let newopts = {};
+        if (this.toggleframe.prop('checked')) {
+            newopts = { 'file': this.rest_spaxeldata, 'xlabel': 'Rest Wavelength [Ångströms]' };
+        } else {
+            newopts = { 'file': this._spaxeldata, 'xlabel': 'Observed Wavelength [Ångströms]' };
+        }
+        let options = Object.assign(oldoptions, newopts);
+        return options;         
+    }
+
+    // Toggle the Observed/Rest Wavelength
+    toggleWavelength(event) {
+        let _this = event.data;
+        let options = {};
+        options = _this.addDygraphWaveOptions(options);
+        _this.webspec.updateOptions(options);
+    }
+
+    // Toggle Line Display
+    toggleLines(event) {
+
     }
 
     // Update the spectrum message div for errors only

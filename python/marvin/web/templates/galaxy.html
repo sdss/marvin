@@ -147,13 +147,26 @@
                         </div>
                         <div class='col-md-8'>
                             <div id='graphdiv' style="width:100%;"></div>
-                            <!-- This div is for dygraphs help popup-->
-                            <div>
-                              {# Dygraphs help button #}
-                              <button type="button" id="dyghel_btn" class="btn btn-primary btn-sm pull-right" data-toggle="modal" data-target="#dyghelp_modal"><span class="glyphicon glyphicon-question-sign"></span> Graph: Zoom, Pan, Values</button>
-                              <!-- Modal popup-->
-                              {{dygraph_popup()}}
+
+                            <!-- This div is for dygraphs buttons -->
+                            <div class='row'>
+                            <div class='col-md-6'>
+                                <div class='input-group pull-left btn-group-sm' role="group" aria-label="plothelp">
+                                  {# Toggle lines #}
+                                  <input type="checkbox" id='togglelines' aria-pressed="false" data-size='small' data-toggle="toggle" data-on="Toggle Lines Off" data-off="Toggle Lines On" data-onstyle="info" data-offstyle="info" data-width="170" data-height='35'>
+                                </div>                
                             </div>
+                            <div class='col-md-6'>
+                                <div class='input-group pull-right btn-group-sm' role="group" aria-label="plothelp">
+                                  {# Toggle Wavelength #}
+                                  <input type="checkbox" id='toggleframe' aria-pressed="false" data-size='small' data-toggle="toggle" data-on="Toggle Observed" data-off="Toggle Rest-Frame" data-onstyle="info" data-offstyle="info" data-width="170" data-height='35'>
+                                  {# Dygraphs help button #}
+                                  <button type="button" id="dyghel_btn" class="btn btn-primary" data-toggle="modal" data-target="#dyghelp_modal"><span class="glyphicon glyphicon-question-sign"></span> Graph: How To</button>
+                                </div>                
+                            </div>
+                            </div>
+
+                            <!-- This div is for error message -->
                             <div class='row'>
                                 <div class='col-md-5 col-md-offset-1'>
                                     {% if error %}
@@ -293,6 +306,9 @@
 
 </div> {# end of singlegalaxydiv #}
 
+<!-- Dygraph Modal popup-->
+{{dygraph_popup()}}
+
 {% endblock body %}
 
 <!-- JS Code -->
@@ -300,14 +316,21 @@
 <script type='application/javascript'>
     var galaxy = {};
     $(function() {
-        var toggleon = {{toggleon|tojson}};
-        m.galaxy = new Galaxy(undefined, toggleon);
+        let toggleon = {{toggleon|tojson}};
+        let nsadict = {{nsadict|tojson}};
+        let redshift = 'z' in nsadict ? nsadict['z'] : null;
+        m.galaxy = new Galaxy(undefined, toggleon, redshift);
         m.galaxy.print();
         m.galaxy.hasNSA({{hasnsa|tojson}});
 
         // if toggleon is set then initialize the mapspec view
         if (toggleon === 'true') {
           m.galaxy.togglediv.bootstrapToggle('toggle');
+        }
+
+        // disable the rest-frame toggle if no redshift
+        if (redshift === null) {
+          $('#toggleframe').bootstrapToggle('disable');
         }
     });
 </script>

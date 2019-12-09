@@ -248,11 +248,11 @@
 {# Dygraphs Help Popup #}
 {% macro dygraph_popup() %}
 <div class="modal fade" id="dyghelp_modal" tabindex="-1" role="dialog" aria-labelledby="gLabel" aria-hidden="true">
-    <div class="modal-dialog modal-sm" role="document">
+    <div class="modal-dialog modal-lg" role="document">
         <div class="modal-content">
             <div class="modal-header">
                 <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-                <h4 class="modal-title" id="myModalLabel">Graph: Zoom, Pan, Values</h4>
+                <h4 class="modal-title" id="myModalLabel">Graph: How to use the spectrum plotter</h4>
             </div>
             <div id="gbody" class="modal-body">
               <div class='row'>
@@ -263,6 +263,8 @@
                   <li>Double click on the plot to <em>zoom out</em>.</li>
                   <li>Hold SHIFT key and drag to pan right, left, up, down.</li>
                   <li>Hover for wavelength vs. flux values.</li>
+                  <li>Click Toggle Observed/Rest Frame to switch between rest-frame and observed wavelengths</li>
+                  <li>Click Toggle Lines On/Off to turn on common emission/absorption lines</li>
                 </ul>
                 </div>
               </div>
