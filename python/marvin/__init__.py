@@ -103,7 +103,7 @@ class MarvinConfig(object):
         self._allowed_releases = {}
 
         # Allow DAP queries
-        self._allow_DAP_queries = False
+        self._allow_DAP_queries = True
 
         # perform some checks
         self._load_defaults()
