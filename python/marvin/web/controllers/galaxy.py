@@ -441,6 +441,7 @@ class Galaxy(BaseWebView):
         output['mapmsg'] = mapmsg
         output['dapmaps'] = daplist
         output['dapmapselect'] = selected_maps
+        output['daplines'] = dm.get_channels('emline_gflux', formatted=True)
 
         output['dapbintemps'] = dm.get_bintemps(db_only=True)
         if 'bintemp' not in current_session:

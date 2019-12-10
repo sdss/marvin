@@ -15,6 +15,8 @@ var _slicedToArray = function () { function sliceIterator(arr, i) { var _arr = [
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
+function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
+
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
@@ -192,8 +194,6 @@ var Galaxy = function () {
     }, {
         key: 'loadSpaxel',
         value: function loadSpaxel(spaxel, title) {
-            this._spaxeldata = spaxel;
-            this.computeRestWave();
             // this plugin renables dygraphs 1.1 behaviour of unzooming to specified valueRange 
             var doubleClickZoomOutPlugin = {
                 activate: function activate(g) {
@@ -211,6 +211,9 @@ var Galaxy = function () {
                 }
             };
 
+            this.setupSpaxel(spaxel);
+
+            // initialize Dygraph
             var labels = spaxel[0].length == 3 ? ['Wavelength', 'Flux', 'Model Fit'] : ['Wavelength', 'Flux'];
             var options = {
                 title: title,
@@ -224,6 +227,19 @@ var Galaxy = function () {
             var data = this.toggleframe.prop('checked') ? this.rest_spaxeldata : spaxel;
             options = this.addDygraphWaveOptions(options);
             this.webspec = new Dygraph(this.graphdiv[0], data, options);
+
+            // create dap line annotations and conditionally display
+            this.updateAnnotations();
+        }
+
+        // set up some spaxel data arrays
+
+    }, {
+        key: 'setupSpaxel',
+        value: function setupSpaxel(spaxel) {
+            this._spaxeldata = spaxel;
+            this.computeRestWave();
+            this.annotations = this.daplines.map(this.createAnnotation, this);
         }
 
         // Dygraph Axis Formatter
@@ -266,13 +282,50 @@ var Galaxy = function () {
             var options = {};
             options = _this.addDygraphWaveOptions(options);
             _this.webspec.updateOptions(options);
+            _this.updateAnnotations();
+        }
+    }, {
+        key: 'updateAnnotations',
+        value: function updateAnnotations() {
+            if (this.togglelines.prop('checked')) {
+                this.annotations = this.daplines.map(this.createAnnotation, this);
+                this.webspec.setAnnotations(this.annotations);
+            } else {
+                this.webspec.setAnnotations([]);
+            }
         }
 
         // Toggle Line Display
 
     }, {
         key: 'toggleLines',
-        value: function toggleLines(event) {}
+        value: function toggleLines(event) {
+            var _this = event.data;
+            _this.updateAnnotations();
+        }
+
+        // create a Dygraph annotation for measured DAP lines
+
+    }, {
+        key: 'createAnnotation',
+        value: function createAnnotation(x, index, arr) {
+            var _x$split = x.split(' '),
+                _x$split2 = _slicedToArray(_x$split, 2),
+                name = _x$split2[0],
+                wave = _x$split2[1];
+
+            name = name.includes('-') ? name.split('-')[0] + name.split('-')[1][0] : name;
+            var owave = parseInt(wave) * (1 + this.redshift);
+            var wavedata = this.toggleframe.prop('checked') ? this.restwave : this.obswave;
+            var use_wave = this.toggleframe.prop('checked') ? wave : owave;
+            var diff = wavedata.map(function (y) {
+                return Math.abs(y - use_wave);
+            });
+            var idx = diff.indexOf(Math.min.apply(Math, _toConsumableArray(diff)));
+            var closest_wave = String(wavedata[idx]);
+            var annot = { 'series': "Flux", 'x': closest_wave, 'shortText': name, 'text': x, 'width': 30, 'height': 20, 'tickHeight': 40, 'tickColor': '#cd5c5c', 'cssClass': 'annotation' };
+            return annot;
+        }
 
         // Update the spectrum message div for errors only
 
@@ -294,8 +347,12 @@ var Galaxy = function () {
     }, {
         key: 'updateSpaxel',
         value: function updateSpaxel(spaxel, specmsg) {
+            this.setupSpaxel(spaxel);
             this.updateSpecMsg(specmsg);
-            this.webspec.updateOptions({ 'file': spaxel, 'title': specmsg });
+            var options = { 'title': specmsg };
+            options = this.addDygraphWaveOptions(options);
+            this.webspec.updateOptions(options);
+            this.updateAnnotations();
         }
 
         // Initialize OpenLayers Map
@@ -448,6 +505,7 @@ var Galaxy = function () {
                         var spectitle = data.result.specmsg;
                         var maps = data.result.maps;
                         var mapmsg = data.result.mapmsg;
+                        _this.daplines = data.result.daplines;
                         // Load the Galaxy Image
                         _this.initOpenLayers(image);
                         _this.toggleload.hide();

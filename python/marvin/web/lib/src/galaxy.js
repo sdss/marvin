@@ -135,8 +135,6 @@ class Galaxy {
 
     // Initialize and Load a DyGraph spectrum
     loadSpaxel(spaxel, title) {
-        this._spaxeldata = spaxel;
-        this.computeRestWave();
         // this plugin renables dygraphs 1.1 behaviour of unzooming to specified valueRange 
         const doubleClickZoomOutPlugin = {
             activate: function (g) {
@@ -154,6 +152,9 @@ class Galaxy {
             }
         };
 
+        this.setupSpaxel(spaxel);
+
+        // initialize Dygraph
         let labels = (spaxel[0].length == 3) ? ['Wavelength','Flux', 'Model Fit'] : ['Wavelength','Flux'];
         let options = {
             title: title,
@@ -166,10 +167,18 @@ class Galaxy {
         };
         let data = this.toggleframe.prop('checked') ? this.rest_spaxeldata : spaxel;
         options = this.addDygraphWaveOptions(options);
-        this.webspec = new Dygraph(this.graphdiv[0],
-                  data, 
-                  options);
+        this.webspec = new Dygraph(this.graphdiv[0], data, options);
+
+        // create dap line annotations and conditionally display
+        this.updateAnnotations();
     }
+
+    // set up some spaxel data arrays
+    setupSpaxel(spaxel) {
+        this._spaxeldata = spaxel;
+        this.computeRestWave();
+        this.annotations = this.daplines.map(this.createAnnotation, this);
+    } 
 
     // Dygraph Axis Formatter
     setSpectrumAxisFormatter(wave, redshift) {                
@@ -200,11 +209,36 @@ class Galaxy {
         let options = {};
         options = _this.addDygraphWaveOptions(options);
         _this.webspec.updateOptions(options);
+        _this.updateAnnotations();
+    }
+
+    updateAnnotations() {
+        if (this.togglelines.prop('checked')) {
+            this.annotations = this.daplines.map(this.createAnnotation, this);
+            this.webspec.setAnnotations(this.annotations);
+        } else {
+            this.webspec.setAnnotations([]);
+        }
     }
 
     // Toggle Line Display
     toggleLines(event) {
+        let _this = event.data;
+        _this.updateAnnotations();
+    }
 
+    // create a Dygraph annotation for measured DAP lines
+    createAnnotation(x, index, arr) {
+        let [name, wave] = x.split(' ');
+        name = name.includes('-') ? name.split('-')[0] + name.split('-')[1][0] : name;
+        let owave = parseInt(wave) * (1 + this.redshift);
+        let wavedata = (this.toggleframe.prop('checked')) ? this.restwave : this.obswave;
+        let use_wave = (this.toggleframe.prop('checked')) ? wave : owave;
+        let diff = wavedata.map(y => Math.abs(y - use_wave));
+        let idx = diff.indexOf(Math.min(...diff));
+        let closest_wave = String(wavedata[idx]);
+        let annot = { 'series': "Flux", 'x': closest_wave, 'shortText': name, 'text': x, 'width': 30, 'height': 20, 'tickHeight': 40, 'tickColor': '#cd5c5c', 'cssClass': 'annotation'};
+        return annot;
     }
 
     // Update the spectrum message div for errors only
@@ -221,8 +255,12 @@ class Galaxy {
 
     // Update a DyGraph spectrum
     updateSpaxel(spaxel, specmsg) {
+        this.setupSpaxel(spaxel);
         this.updateSpecMsg(specmsg);
-        this.webspec.updateOptions({'file': spaxel, 'title':specmsg});
+        let options = {'title': specmsg};
+        options = this.addDygraphWaveOptions(options);
+        this.webspec.updateOptions(options);
+        this.updateAnnotations();
     }
 
     // Initialize OpenLayers Map
@@ -354,6 +392,7 @@ class Galaxy {
                         let spectitle = data.result.specmsg;
                         let maps = data.result.maps;
                         let mapmsg = data.result.mapmsg;
+                        _this.daplines = data.result.daplines;
                         // Load the Galaxy Image
                         _this.initOpenLayers(image);
                         _this.toggleload.hide();

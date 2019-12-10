@@ -266,6 +266,18 @@ class DAPDataModel(object):
 
         return ['-'.join(item) for item in list(itertools.product(bins, temps))]
 
+    def get_properties(self, name):
+        ''' Returns a list of properties of the given name '''
+        assert isinstance(name, six.string_types), 'given name must be a string'
+        prop_list = [prop for prop in self.properties if name.lower() in prop.name]
+        return prop_list
+
+    def get_channels(self, name, formatted=None):
+        ''' Returns a list of channels of a given property name '''
+        props = self.get_properties(name)
+        channels = [prop.channel.formats['string'] if formatted else prop.channel for prop in props if prop.channel]
+        return channels
+
     @staticmethod
     def get_default_mapset(default=None):
         ''' Return the default set of maps
