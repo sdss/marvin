@@ -154,12 +154,14 @@
                                 <div class='input-group pull-left btn-group-sm' role="group" aria-label="plothelp">
                                   {# Toggle lines #}
                                   <input type="checkbox" id='togglelines' aria-pressed="false" data-size='small' data-toggle="toggle" data-on="Toggle Lines Off" data-off="Toggle Lines On" data-onstyle="info" data-offstyle="info" data-width="170" data-height='35'>
+                                  {# Toggle Wavelength #}
+                                  <input type="checkbox" id='toggleframe' aria-pressed="false" data-size='small' data-toggle="toggle" data-on="Toggle Observed" data-off="Toggle Rest-Frame" data-onstyle="info" data-offstyle="info" data-width="170" data-height='35'>
                                 </div>                
                             </div>
                             <div class='col-md-6'>
                                 <div class='input-group pull-right btn-group-sm' role="group" aria-label="plothelp">
-                                  {# Toggle Wavelength #}
-                                  <input type="checkbox" id='toggleframe' aria-pressed="false" data-size='small' data-toggle="toggle" data-on="Toggle Observed" data-off="Toggle Rest-Frame" data-onstyle="info" data-offstyle="info" data-width="170" data-height='35'>
+                                  {# Toggle Mask #}
+                                  <input type="checkbox" id='togglemask' aria-pressed="false" data-size='small' data-toggle="toggle" data-on="Toggle Mask On" data-off="Toggle Mask Off" data-onstyle="info" data-offstyle="info" data-width="170" data-height='35'>
                                   {# Dygraphs help button #}
                                   <button type="button" id="dyghel_btn" class="btn btn-primary" data-toggle="modal" data-target="#dyghelp_modal"><span class="glyphicon glyphicon-question-sign"></span> Graph: How To</button>
                                 </div>                
@@ -213,6 +215,22 @@
                                       <div class='infopop' id='marvinmaps'>
                                       {{infopopup('Use maps in Python', 'Marvin Maps - start iPython', mapstr, 'marvinmaps', 'success', 'left')}}
                                       </div>
+                                </div>
+
+                                <!-- Map Quality Flags -->
+                                {# Map Quality Flags #}
+                                <div class='col-md-2 flagalert'>
+                                    {% set qualstatus = (mapquality|qaclass)[0] %}
+                                    {% set qualmsg = (mapquality|qaclass)[1] %}
+                                      <div class="panel panel-{{qualstatus}}" id='panel_qualityflag'>
+                                          <div class="panel-heading">
+                                              <h3 class="panel-title">Map Quality: {{qualmsg}}</h3>
+                                          </div>
+                                          <div class='panel-body'>
+                                            Bit: {{mapquality[1]}} <a tabindex='0' role="button" class='btn btn-{{qualstatus}} btn-xs flagpopover qualpopovers pull-right' id='mapqualitypopover' data-placement='left' data-trigger='hover' data-toggle="popover" title="Quality Flags">Flags</a>
+                                          </div>
+                                      </div>
+                                      {{panellist('Quality Flags', mapquality[2], 'dapquality')}}
                                 </div>
                             </form>
                         </div>

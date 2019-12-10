@@ -596,8 +596,10 @@ var Galaxy = function () {
         this.togglediv.bootstrapToggle('off');
         this.toggleframe = $('#toggleframe');
         this.togglelines = $('#togglelines');
+        this.togglemask = $('#togglemask');
         // flag popover elements
         this.qualpop = $('#qualitypopover');
+        this.mapqualpop = $('#mapqualitypopover');
         this.targpops = $('.targpopovers');
         // maps elements
         this.dapmapsbut = $('#dapmapsbut');
@@ -637,6 +639,7 @@ var Galaxy = function () {
         //this.nsatable.on('page-change.bs.table', this, this.updateTableEvents);
         this.toggleframe.on('change', this, this.toggleWavelength); // this event fires when a user clicks the Toggle Obs/Rest Frame
         this.togglelines.on('change', this, this.toggleLines); // this event fires when a user clicks the Toggle Lines
+        this.togglemask.on('change', this, this.toggleMask); // this event fires when a user clicks the Toggle Masks
     }
 
     // Test print
@@ -732,14 +735,42 @@ var Galaxy = function () {
                 errorBars: true, // TODO DyGraph shows 2-sigma error bars FIX THIS
                 ylabel: 'Flux [10<sup>-17</sup> erg/cm<sup>2</sup>/s/Å]',
                 valueRange: [0, null],
-                plugins: [doubleClickZoomOutPlugin]
+                plugins: [doubleClickZoomOutPlugin],
+                underlayCallback: this.underlay
             };
             var data = this.toggleframe.prop('checked') ? this.rest_spaxeldata : spaxel;
             options = this.addDygraphWaveOptions(options);
             this.webspec = new Dygraph(this.graphdiv[0], data, options);
 
+            this.webspec.wave = this.toggleframe.prop('checked') ? this.restwave : this.obswave;
+            this.webspec.badspots = this.badspots;
+
             // create dap line annotations and conditionally display
             this.updateAnnotations();
+        }
+    }, {
+        key: 'underlay',
+        value: function underlay(canvas, area, g) {
+
+            canvas.fillStyle = 'rgb(205, 92, 92, 1.0)';
+
+            if (g.badspots == null) {
+                return;
+            }
+
+            function highlight_mask(x_start, x_end) {
+                var bottom_left = g.toDomCoords(x_start, -20);
+                var top_right = g.toDomCoords(x_end, +20);
+
+                var left = bottom_left[0];
+                var right = top_right[0];
+                canvas.fillRect(left, area.y, right - left, area.h);
+            }
+            g.badspots.forEach(function (x) {
+                var xstart = g.wave[x[0]];
+                var xend = g.wave[x[1]];
+                highlight_mask(xstart, xend);
+            });
         }
 
         // set up some spaxel data arrays
@@ -793,6 +824,7 @@ var Galaxy = function () {
             options = _this.addDygraphWaveOptions(options);
             _this.webspec.updateOptions(options);
             _this.updateAnnotations();
+            _this.updateMask(_this.badspots);
         }
     }, {
         key: 'updateAnnotations',
@@ -837,6 +869,28 @@ var Galaxy = function () {
             return annot;
         }
 
+        // Toggle Masks
+
+    }, {
+        key: 'toggleMask',
+        value: function toggleMask(event) {
+            var _this = event.data;
+            if (_this.togglemask.prop('checked')) {
+                _this.webspec.badspots = null;
+            } else {
+                _this.webspec.badspots = _this.badspots;
+            }
+            _this.webspec.updateOptions({});
+        }
+    }, {
+        key: 'updateMask',
+        value: function updateMask(badspots) {
+            this.badspots = badspots == null ? badspots : this.badspots;
+            this.webspec.wave = this.toggleframe.prop('checked') ? this.restwave : this.obswave;
+            this.webspec.badspots = this.togglemask.prop('checked') ? null : badspots;
+            this.webspec.updateOptions({});
+        }
+
         // Update the spectrum message div for errors only
 
     }, {
@@ -856,13 +910,14 @@ var Galaxy = function () {
 
     }, {
         key: 'updateSpaxel',
-        value: function updateSpaxel(spaxel, specmsg) {
+        value: function updateSpaxel(spaxel, specmsg, badspots) {
             this.setupSpaxel(spaxel);
             this.updateSpecMsg(specmsg);
             var options = { 'title': specmsg };
             options = this.addDygraphWaveOptions(options);
             this.webspec.updateOptions(options);
             this.updateAnnotations();
+            this.updateMask(badspots);
         }
 
         // Initialize OpenLayers Map
@@ -918,7 +973,7 @@ var Galaxy = function () {
                 if (data.result.status === -1) {
                     throw new SpaxelError('Error: ' + data.result.specmsg);
                 }
-                _this5.updateSpaxel(data.result.spectra, data.result.specmsg);
+                _this5.updateSpaxel(data.result.spectra, data.result.specmsg, data.result.badspots);
             }).catch(function (error) {
                 var errmsg = error.message === undefined ? _this5.makeError('getSpaxel') : error.message;
                 _this5.updateSpecMsg(errmsg, -1);
@@ -1016,6 +1071,7 @@ var Galaxy = function () {
                         var maps = data.result.maps;
                         var mapmsg = data.result.mapmsg;
                         _this.daplines = data.result.daplines;
+                        _this.badspots = data.result.badspots;
                         // Load the Galaxy Image
                         _this.initOpenLayers(image);
                         _this.toggleload.hide();
@@ -1041,6 +1097,8 @@ var Galaxy = function () {
         value: function initFlagPopovers() {
             // DRP Quality Popovers
             this.qualpop.popover({ html: true, content: $('#list_drp3quality').html() });
+            // DAP Map Quality Popovers
+            this.mapqualpop.popover({ html: true, content: $('#list_dapquality').html() });
             // MaNGA Target Popovers
             $.each(this.targpops, function (index, value) {
                 // get id of flag link

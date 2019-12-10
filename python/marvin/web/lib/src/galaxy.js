@@ -55,9 +55,11 @@ class Galaxy {
         this.toggleload = $('#toggle-load');
         this.togglediv.bootstrapToggle('off');
         this.toggleframe = $('#toggleframe');
-        this.togglelines= $('#togglelines'); 
+        this.togglelines= $('#togglelines');
+        this.togglemask = $('#togglemask'); 
         // flag popover elements
         this.qualpop = $('#qualitypopover');
+        this.mapqualpop = $('#mapqualitypopover');
         this.targpops = $('.targpopovers');
         // maps elements
         this.dapmapsbut = $('#dapmapsbut');
@@ -97,6 +99,7 @@ class Galaxy {
         //this.nsatable.on('page-change.bs.table', this, this.updateTableEvents);
         this.toggleframe.on('change', this, this.toggleWavelength); // this event fires when a user clicks the Toggle Obs/Rest Frame
         this.togglelines.on('change', this, this.toggleLines); // this event fires when a user clicks the Toggle Lines
+        this.togglemask.on('change', this, this.toggleMask); // this event fires when a user clicks the Toggle Masks
 
     }
 
@@ -164,13 +167,41 @@ class Galaxy {
             ylabel: 'Flux [10<sup>-17</sup> erg/cm<sup>2</sup>/s/Å]',
             valueRange: [0, null],
             plugins: [doubleClickZoomOutPlugin],
+            underlayCallback: this.underlay
         };
         let data = this.toggleframe.prop('checked') ? this.rest_spaxeldata : spaxel;
         options = this.addDygraphWaveOptions(options);
         this.webspec = new Dygraph(this.graphdiv[0], data, options);
 
+        this.webspec.wave = this.toggleframe.prop('checked') ? this.restwave : this.obswave;
+        this.webspec.badspots = this.badspots;
+
         // create dap line annotations and conditionally display
         this.updateAnnotations();
+    }
+
+    underlay(canvas, area, g) {
+
+        canvas.fillStyle = 'rgb(205, 92, 92, 1.0)';
+
+        if (g.badspots == null ) {
+            return;
+        }
+
+        function highlight_mask(x_start, x_end) {
+            let bottom_left = g.toDomCoords(x_start, -20);
+            let top_right = g.toDomCoords(x_end, +20);
+
+            let left = bottom_left[0];
+            let right = top_right[0];
+            canvas.fillRect(left, area.y, right - left, area.h);
+        }
+        g.badspots.forEach( x => {
+            let xstart = g.wave[x[0]];
+            let xend = g.wave[x[1]];
+            highlight_mask(xstart, xend);
+        })
+        
     }
 
     // set up some spaxel data arrays
@@ -210,6 +241,7 @@ class Galaxy {
         options = _this.addDygraphWaveOptions(options);
         _this.webspec.updateOptions(options);
         _this.updateAnnotations();
+        _this.updateMask(_this.badspots);
     }
 
     updateAnnotations() {
@@ -241,6 +273,24 @@ class Galaxy {
         return annot;
     }
 
+    // Toggle Masks
+    toggleMask(event) {
+        let _this = event.data; 
+        if (_this.togglemask.prop('checked')) {
+            _this.webspec.badspots = null;
+        } else {
+            _this.webspec.badspots = _this.badspots;
+        }
+        _this.webspec.updateOptions({});
+    }
+
+    updateMask(badspots) {
+        this.badspots = badspots == null ? badspots : this.badspots;
+        this.webspec.wave = this.toggleframe.prop('checked') ? this.restwave : this.obswave;
+        this.webspec.badspots = this.togglemask.prop('checked') ? null : badspots;
+        this.webspec.updateOptions({});
+    }
+
     // Update the spectrum message div for errors only
     updateSpecMsg(specmsg, status) {
         this.specmsg.hide();
@@ -254,13 +304,14 @@ class Galaxy {
     }
 
     // Update a DyGraph spectrum
-    updateSpaxel(spaxel, specmsg) {
+    updateSpaxel(spaxel, specmsg, badspots) {
         this.setupSpaxel(spaxel);
         this.updateSpecMsg(specmsg);
         let options = {'title': specmsg};
         options = this.addDygraphWaveOptions(options);
         this.webspec.updateOptions(options);
         this.updateAnnotations();
+        this.updateMask(badspots);
     }
 
     // Initialize OpenLayers Map
@@ -307,7 +358,7 @@ class Galaxy {
                 if (data.result.status === -1) {
                     throw new SpaxelError(`Error: ${data.result.specmsg}`);
                 }
-                this.updateSpaxel(data.result.spectra, data.result.specmsg);
+                this.updateSpaxel(data.result.spectra, data.result.specmsg, data.result.badspots);
             })
             .catch((error)=>{
                 let errmsg = (error.message === undefined) ? this.makeError('getSpaxel') : error.message;
@@ -393,6 +444,7 @@ class Galaxy {
                         let maps = data.result.maps;
                         let mapmsg = data.result.mapmsg;
                         _this.daplines = data.result.daplines;
+                        _this.badspots = data.result.badspots;
                         // Load the Galaxy Image
                         _this.initOpenLayers(image);
                         _this.toggleload.hide();
@@ -416,6 +468,8 @@ class Galaxy {
     initFlagPopovers() {
         // DRP Quality Popovers
         this.qualpop.popover({html:true,content:$('#list_drp3quality').html()});
+        // DAP Map Quality Popovers
+        this.mapqualpop.popover({html:true,content:$('#list_dapquality').html()});
         // MaNGA Target Popovers
         $.each(this.targpops, function(index, value) {
             // get id of flag link
