@@ -371,7 +371,9 @@ class ValidOperand(object):
 class SearchForm(Form):
     ''' Main Search Level WTForm for Marvin '''
 
-    searchbox = StringField("<a target='_blank' href='https://sdss-marvin.readthedocs.io/en/stable/query/query/query_using.html'>Input Search Filter</a>",
+    url = ("<a target='_blank' data-toggle='tooltip' title='Click to read more about Queries' "
+           "href='https://sdss-marvin.readthedocs.io/en/stable/query/query/query_using.html'>Input Search Filter</a>")
+    searchbox = StringField(url,
                             [validators.Length(min=3, message='Input must have at least 3 characters'),
                              validators.DataRequired(message='Input filter string required'),
                              ValidOperand('[<>=betweenradial]', message='Input must contain a valid operand.')])

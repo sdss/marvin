@@ -19,6 +19,27 @@ import flask_featureflags as feature
 import re
 
 
+def check_request_for_release(request):
+    ''' Check Flask request for release information and set it in config
+
+    Parameters:
+        request (Flask.Request): 
+            Flask Request object
+
+    '''
+
+    # get release from request header
+    release = request.headers.get('Release', None)
+
+    # if no release, get release variable from Flask request
+    if not release:
+        release = request.environ.get('MARVIN_RELEASE', None)
+
+    # if release then set change it in the config but only when the session is empty
+    if release:
+        config.setRelease(release.upper())
+
+
 def configFeatures(app):
     ''' Configure Flask Feature Flags '''
 
@@ -55,14 +76,23 @@ def check_access():
 
 
 def update_allowed():
-    ''' Update the allowed versions '''
+    ''' Update the allowed versions shown in the header dropdown '''
     logged_in = current_session.get('loginready', None)
     mpls = list(config._allowed_releases.keys())
 
     # this is to remove MPLs from the list of web versions when not logged in to the collaboration site
     if not logged_in:
+        # select only DR allowed releases
         mpls = [mpl for mpl in mpls if 'DR' in mpl]
-        set_session_versions(max(mpls))
+
+        # select the release to switch to; prioritize the session release
+        if 'release' not in current_session:
+            release = config.release if 'DR' in config.release else max(mpls)
+        else:
+            release = current_session['release'] if 'DR' in current_session['release'] else max(mpls)
+
+        # update the session with the new release
+        set_session_versions(release)
 
     versions = [{'name': mpl, 'subtext': str(config.lookUpVersions(release=mpl))} for mpl in mpls]
     return versions

@@ -289,6 +289,7 @@ class Galaxy(BaseWebView):
         # determine type of galid
         args = av.manual_parse(self, request, use_params='galaxy')
         self.galaxy['id'] = args['galid']
+        self.galaxy['latest_dr'] = self._release.lower() if 'DR' in self._release else marvin.config._get_latest_release(dr_only=True).lower()
         idtype = parseIdentifier(galid)
         if idtype in ['plateifu', 'mangaid']:
             # set plateifu or mangaid
@@ -356,10 +357,12 @@ class Galaxy(BaseWebView):
                     self.galaxy['nsadict'] = nsadict
 
                 self.galaxy['dapmaps'] = daplist
-                self.galaxy['dapmapselect'] = dapdefaults
+                self.galaxy['dapmapselect'] = current_session.get('selected_dapmaps', dapdefaults)
                 dm = datamodel[self._dapver]
                 self.galaxy['dapbintemps'] = dm.get_bintemps(db_only=True)
-                current_session['bintemp'] = '{0}-{1}'.format(dm.get_bintype(), dm.get_template())
+                if 'bintemp' not in current_session or current_session['bintemp'] not in self.galaxy['dapbintemps']:
+                    current_session['bintemp'] = '{0}-{1}'.format(dm.get_bintype(), dm.get_template())
+
                 # TODO - make this general - see also search.py for querystr
                 self.galaxy['cubestr'] = ("<html><samp>from marvin.tools.cube import Cube<br>cube = \
                     Cube(plateifu='{0}')<br># access the header<br>cube.header<br># get NSA data<br>\
@@ -394,7 +397,9 @@ class Galaxy(BaseWebView):
         dm = datamodel[self._dapver]
 
         # turning toggle on
-        current_session['toggleon'] = args.get('toggleon')
+        nowebsession = marvin.config._custom_config.get('no_web_session', None)
+        if not nowebsession: 
+            current_session['toggleon'] = args.get('toggleon')
 
         # get the cube
         cubeinputs = {'plateifu': args.get('plateifu'), 'release': self._release}
@@ -406,9 +411,17 @@ class Galaxy(BaseWebView):
         daplist = [p.full(web=True) for p in dm.properties]
         dapdefaults = dm.get_default_mapset()
 
+        # select any DAP maps and bin-template from the session
+        selected_bintemp = current_session.get('bintemp', None)
+        selected_maps = current_session.get('selected_dapmaps', dapdefaults)
+
+        # check for correct bintemp
+        if selected_bintemp and selected_bintemp not in dm.get_bintemps(db_only=True):
+            selected_bintemp = '{0}-{1}'.format(dm.get_bintype(), dm.get_template())
+
         # build the uber map dictionary
         try:
-            mapdict = buildMapDict(cube, dapdefaults, self._dapver)
+            mapdict = buildMapDict(cube, selected_maps, self._dapver, bintemp=selected_bintemp)
             mapmsg = None
         except Exception as e:
             mapdict = [{'data': None, 'msg': 'Error', 'plotparams': None} for m in dapdefaults]
@@ -427,10 +440,11 @@ class Galaxy(BaseWebView):
         output['maps'] = mapdict
         output['mapmsg'] = mapmsg
         output['dapmaps'] = daplist
-        output['dapmapselect'] = dapdefaults
+        output['dapmapselect'] = selected_maps
 
         output['dapbintemps'] = dm.get_bintemps(db_only=True)
-        current_session['bintemp'] = '{0}-{1}'.format(dm.get_bintype(), dm.get_template())
+        if 'bintemp' not in current_session:
+            current_session['bintemp'] = '{0}-{1}'.format(dm.get_bintype(), dm.get_template())
 
         # try to jsonify the result
         try:
@@ -505,7 +519,11 @@ class Galaxy(BaseWebView):
         cubeinputs = {'plateifu': args.get('plateifu'), 'release': self._release}
         params = args.getlist('params[]', type=str)
         bintemp = args.get('bintemp', None, type=str)
+
+        # update the session variables
         current_session['bintemp'] = bintemp
+        current_session['selected_dapmaps'] = params
+
         # get cube (self.galaxy['cube'] does not work)
         try:
             cube = Cube(**cubeinputs)

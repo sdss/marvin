@@ -39,9 +39,9 @@ from marvin.core.exceptions import MarvinError, MarvinUserWarning
 
 
 try:
-    from sdss_access import RsyncAccess, AccessError
+    from sdss_access import Access, AccessError
 except ImportError:
-    RsyncAccess = None
+    Access = None
 
 try:
     from sdss_access.path import Path
@@ -800,7 +800,7 @@ def downloadList(inputlist, dltype='cube', **kwargs):
     test = kwargs.get('test', None)
 
     # check for sdss_access
-    if not RsyncAccess:
+    if not Access:
         raise MarvinError('sdss_access not installed.')
 
     # Assert correct dltype
@@ -856,7 +856,7 @@ def downloadList(inputlist, dltype='cube', **kwargs):
     rsync_release = release.lower() if is_public else None
 
     # create rsync
-    rsync_access = RsyncAccess(label='marvin_download', verbose=verbose, public=is_public, release=rsync_release)
+    rsync_access = Access(label='marvin_download', verbose=verbose, public=is_public, release=rsync_release)
     rsync_access.remote()
 
     # Add objects
@@ -928,7 +928,7 @@ def get_drpall_file(drpall=None, drpver=None):
 
     if not os.path.isfile(drpall):
         warnings.warn('drpall file not found. Downloading it.', MarvinUserWarning)
-        rsync = RsyncAccess(label='get_drpall', public=is_public, release=release)
+        rsync = Access(label='get_drpall', public=is_public, release=release)
         rsync.remote()
         rsync.add('drpall', drpver=drpver)
         try:

@@ -1,13 +1,14 @@
 {% extends "layout.html" %}
-{% from 'macros.html' import download, panellist, infopopup, nsatable, nsascatter, dygraph_popup %}
+{% from 'macros.html' import download, panellist, infopopup, nsatable, nsascatter, dygraph_popup, maphelp_popup %}
 
 <!-- Galaxy CSS Sources -->
 {% block csshead %}
     <link rel='preconnect stylesheet' href='//cdnjs.cloudflare.com/ajax/libs/ol3/3.14.2/ol.min.css'>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/dygraph/2.1.0/dygraph.min.css" integrity="sha256-NmfeKHX4FgSrBzL2BhPhzy41cHgzNYIEZyLyqf2/B30=" crossorigin="anonymous" />
 {% endblock csshead %}
 <!-- Galaxy JS Sources-->
 {% block jshead %}
-    <script rel='preconnect' src="//cdnjs.cloudflare.com/ajax/libs/dygraph/1.1.1/dygraph-combined.js"></script>
+    <script rel'preconnect' src="https://cdnjs.cloudflare.com/ajax/libs/dygraph/2.1.0/dygraph.min.js" integrity="sha256-XT58qJPKCsRBRq+MIcNDQ7dVh0GAa1k2r24w62z0Olk=" crossorigin="anonymous"></script>
     <script rel='preconnect' src="//cdnjs.cloudflare.com/ajax/libs/ol3/3.14.2/ol.min.js"></script>
     <script rel='preconnect' src="https://code.highcharts.com/highcharts.js"></script>
     <script rel='preconnect' src="https://code.highcharts.com/highcharts-more.js"></script>
@@ -169,9 +170,11 @@
                         <div class='row'>
                             <form class="form-inline" id='dapmapform' method='POST' role='form' action="#">
                               <div class="form-group col-md-6 col-md-offset-2">
-                                <label for='setdefaults' class='control-label'>DAP Maps:</label>
+                                <label style="cursor:pointer" id='maphelp' for='setdefaults' class='control-label' data-toggle='modal' data-target='#maphelp_modal'><span class="glyphicon glyphicon-question-sign"></span> DAP Maps</label>
+                                {{maphelp_popup(release, latest_dr)}}
                                 <div class="input-group">
-                                    <select class="selectpicker show-tick" id='dapmapchoices' multiple data-selected-text-format="count" data-live-search="true" data-max-options="6" title='No Maps selected'>
+                                    <select class="selectpicker show-tick" id='dapmapchoices' multiple data-selected-text-format="count" 
+                                    data-header='Select your map properties.' data-live-search="true" data-max-options="6" title='No Maps selected'>
                                         {% for dapmap in dapmaps %}
                                         {% if dapmap in dapmapselect %}
                                         <option selected >{{dapmap}}</option>
@@ -180,7 +183,7 @@
                                         {% endif %}
                                         {% endfor %}
                                     </select>
-                                    <select class="selectpicker show-tick" id='dapbtchoices'>
+                                    <select class="selectpicker show-tick" id='dapbtchoices' data-header='Select a bintype'>
                                         {% for bt in dapbintemps %}
                                             {% if bt == session.bintemp %}
                                             <option selected >{{bt}}</option>
@@ -301,6 +304,11 @@
         m.galaxy = new Galaxy(undefined, toggleon);
         m.galaxy.print();
         m.galaxy.hasNSA({{hasnsa|tojson}});
+
+        // if toggleon is set then initialize the mapspec view
+        if (toggleon === 'true') {
+          m.galaxy.togglediv.bootstrapToggle('toggle');
+        }
     });
 </script>
 {% endblock code %}

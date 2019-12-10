@@ -1,25 +1,52 @@
 Marvin's Change Log
 ===================
 
-[2.3.3] - unreleased
+[2.3.5] - unreleased
 --------------------
 
 Added
 ^^^^^
-- Support for DR16.  Updated datamodels and docs. 
-- Added Galaxy Zoo VAC 
-- Added GEMA VAC 
+- Support for MPL-9 MaNGA data
+
+Changed
+^^^^^^^
+- updated datamodels to include MPL-9 changes
+- turned off API rate limiting globally
+
+[2.3.4] - 2019/12/09
+--------------------
+
+Changed
+^^^^^^^
+- Added explicit python path in uwsgi prod.ini file
+
+Fixed
+^^^^^
+- Bug in session variable controlling DAP bintemps 
+
+[2.3.3] - 2019/12/09
+--------------------
+
+Added
+^^^^^
+- Support for DR16.  Updated datamodels and docs.
+- Added Galaxy Zoo VAC
+- Added GEMA VAC
 - Added Firefly VAC
 - Added Visual Morphology VAC
-- Support for MPL-9 MaNGA data
+- Merged :pr:`678`, richer support for VACs
+- Merged :pr:`652`, richer support for Windows
+- Merged :pr:`677`, updated documentation on issues with fuzzy string matching
+- Merged :pr:`687`, fixes map arithmetic with reflexive operators
 
 Changed
 ^^^^^^^
 - all yaml.load uses new Loader to accommodate old and new yaml spec;
 - updated Runtime Issues documentation to include section on numpy.ufunc binary warnings
 - added to reprs for some db ModelClasses
-- updated datamodels to include MPL-9 changes
-- turned off API rate limiting globally
+- all `sdss_access.sync.RsyncAccess` has been converted to `sdss_access.sync.Access` to allow for Linux/Windows switching
+- updates citation to Marvin paper
+- DAP Maps label on galaxy page now contains a pop up of links for more info
 
 Fixed
 ^^^^^
@@ -27,7 +54,12 @@ Fixed
 - Issue :issue:`655` - added yaml loader to remove yaml warnings for 5.1 spec
 - Fixed bug when server tries to access NSA on cube when none exists and triggers remote authentication issue
 - Issue :issue:`664` - Fixed link to MaNGA's Getting Started in docs.
-
+- Issue :issue:`686` - added reflexive operators to EnhancedMap
+- Issue :issue:`689` - added link to CSV file of Firefly stellar mass measurements needed for the Spatially-Resolved Mass-Metallicity Relation Tutorial
+- Issue :issue:`682` - adds info links next to DAP Maps selection on galaxy page
+- Issue :issue:`581` - makes MapSpecView button a session variable
+- Issuu :issue:`208` - makes map selections session variable
+- Issue :issue:`171` - fix y-min to 0 for spectrum web view
 
 [2.3.2] - 2019/02/27
 --------------------

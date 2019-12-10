@@ -9,10 +9,10 @@ contribute added value to its core deliverables with additional science products
 catalogs (VACS) are derived data products based on the core deliverables that are vetted, hosted, and released by SDSS 
 in order to maximize the impact of SDSS data sets.
 
-Marvin provides access to any VACs that have been contributed into Marvin's framework.  To contribute a MaNGA VAC to 
-Marvin, see :ref:`how to contribute <marvin-contributing>`.  Marvin collects all contributed VACs for a given release and 
-places them inside a ``VACContainer`` object.  This container is available as a ``vacs`` attribute on most Marvin Tools 
-relevant to that VAC as well as as a separate `~.VACs` tool class.  
+Marvin provides access to any VACs that have been contributed into Marvin's framework.  For members of the SDSS collaboration,
+to contribute a MaNGA VAC to Marvin, see :ref:`how to contribute <marvin-contributing>`.  Marvin collects all contributed VACs 
+for a given release and places them inside a ``VACContainer`` object.  This container is available as a ``vacs`` attribute on 
+most Marvin Tools relevant to that VAC as well as as a separate `~.VACs` tool class.
 
 .. _marvin-vacs-target:
 
@@ -133,6 +133,6 @@ that plots the HI mass fraction for its targets, using info from the MaNGA drpAl
     hi = v.HI
 
     # plot the HI mass fraction of targets
-    hi.plot_mas_fraction()
+    hi.plot_mass_fraction()
 
 

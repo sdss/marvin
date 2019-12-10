@@ -115,3 +115,11 @@ def split(context, value, delim=None):
     if not delim:
         delim = ' '
     return value.split(delim) if value else None
+
+
+@jinja2.contextfilter
+@jinjablue.app_template_filter()
+def striprelease(context, value):
+    '''Strip and trim and lowercase a release string'''
+    value = value.strip().replace('-', '').lower()
+    return value

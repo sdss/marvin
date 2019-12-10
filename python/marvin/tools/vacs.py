@@ -7,7 +7,7 @@
 # Created: Sunday, 8th September 2019 11:16:35 pm
 # License: BSD 3-clause "New" or "Revised" License
 # Copyright (c) 2019 Brian Cherinka
-# Last Modified: Sunday, 15th September 2019 5:35:47 pm
+# Last Modified: Tuesday, 3rd December 2019 2:43:32 pm
 # Modified By: Brian Cherinka
 
 
@@ -97,6 +97,9 @@ class VACs(VACContainer):
         cls._vacs = []
         cls.release = config.release
         for subvac in VACMixIn.__subclasses__():
+            # Exclude any hidden VACs
+            if subvac._hidden:
+                continue
 
             # Excludes VACs from other releases
             if config.release not in subvac.version:
@@ -187,12 +190,12 @@ class VACDataClass(object):
         self._path = path
         self._data = None
 
-        if not sdss_access.sync.RsyncAccess:
+        if not sdss_access.sync.Access:
             raise MarvinError('sdss_access is not installed')
         else:
             is_public = 'DR' in config.release
             rsync_release = config.release.lower() if is_public else None
-            self._rsync = sdss_access.sync.RsyncAccess(public=is_public, release=rsync_release)
+            self._rsync = sdss_access.sync.Access(public=is_public, release=rsync_release)
 
     def __repr__(self):
         name = self.name.title().replace('_', '')

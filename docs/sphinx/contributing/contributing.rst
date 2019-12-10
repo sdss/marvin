@@ -93,7 +93,8 @@ Contributing a VAC
 
 `Value Added Catalogues (VAC) <http://www.sdss.org/dr15/data_access/value-added-catalogs/>`_ are an important part of 
 how SDSS and MaNGA data is analysed and distributed. Following SDSS policy, Marvin does not directly support VACs, but it 
-does supply a framework for VAC owners to implement access to their catalogues from Marvin.
+does supply a framework for VAC owners to implement access to their catalogues from Marvin.  If you are a member of the SDSS 
+collaboration, we encourage you to contribute a VAC, in coordination with the SDSS Data Team.
 
 At this time, only file-based access is supported (i.e., no querying or remote access is available) but 
 the `~.VACMixIn` class provides a convenient way of matching targets with their VAC information and returning it 

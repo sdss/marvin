@@ -13,7 +13,6 @@
 from __future__ import division, print_function
 
 import os
-import pwd
 import sys
 import warnings
 
@@ -44,8 +43,8 @@ class MarvinSentry(object):
                     'raven.processors.SanitizePasswordsProcessor',
                 )
             )
-            try:
-                self.client.context.merge({'user': {'name': pwd.getpwuid(os.getuid())[0],
+            try:                                                    
+                self.client.context.merge({'user': {'name': os.getlogin(),
                                                     'system': '_'.join(os.uname())}})
             except (OSError, IOError) as ee:
                 warnings.warn('cannot initiate Sentry error reporting: {0}.'.format(str(ee)),
