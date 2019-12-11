@@ -10,11 +10,13 @@ Added
 - Issue :issue:`648` - Option to toggle common lines from the DAP in web spectrum viewer
 - Issue :issue:`112` - Option to toggle between rest-frame and observed wavelength in web spectrum viewer
 - Issue :issue:`679` - Option to toggle on DONOTUSE pixel region masks in web spectrum viewer
+- master-fifo file to uwsgi base config ini file
 
 Changed
 ^^^^^^^
 - updated datamodels to include MPL-9 changes
 - turned off API rate limiting globally
+- turned back on old spaxel query method
 
 
 [2.3.4] - 2019/12/09
