@@ -49,6 +49,7 @@
                                 <tr><th>DAP Output</th><td colspan='2' align='center'><a target='_blank' data-toggle="tooltip" title="{{daplink|default('None')}}" href='{{daplink|default("#")}}'>DAP URL</a></td></tr>
                             </tbody>
                         </table>
+                        <h6 id='noimagealert' class="alert alert-danger" role="alert" style="display: none">Don't see images below? Authenticate <a target='_blank' href='https://data.sdss.org/sas/mangawork/manga/'>here</a> and reload.</h6>
                     </div>
                     <!-- Cube Quality Flags -->
                     {# Cube Quality Flags #}
@@ -351,6 +352,9 @@
           $('#toggleframe').bootstrapToggle('disable');
           $('#togglelines').bootstrapToggle('disable');
         }
+
+        // show or hide the image alert;
+        $('#staticimage').prop('height') <= 50 ? $('#noimagealert').show() : $('#noimagealert').hide();
     });
 </script>
 {% endblock code %}

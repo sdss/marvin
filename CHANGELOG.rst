@@ -11,6 +11,7 @@ Added
 - Issue :issue:`112` - Option to toggle between rest-frame and observed wavelength in web spectrum viewer
 - Issue :issue:`679` - Option to toggle on DONOTUSE pixel region masks in web spectrum viewer
 - master-fifo file to uwsgi base config ini file
+- adds an alert to authenticate when no static image detected
 
 Changed
 ^^^^^^^
