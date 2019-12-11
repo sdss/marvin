@@ -11,6 +11,15 @@ What's New
 
 This section summarises the most important new features a bugfixes in Marvin. For the complete list of changes check the :ref:`marvin-changelog`.
 
+2.3.5 (December 2019)
+---------------------
+
+- Support for MPL-9
+- New options in web spectrum display 
+    - Toggle common lines measured by the DAP
+    - Toggle between rest-frame and observed wavelength
+    - Toggle bad DONOTUSE pixel regions 
+
 2.3.4 (December 2019)
 ---------------------
 

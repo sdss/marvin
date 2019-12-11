@@ -214,6 +214,7 @@ var Galaxy = function () {
                 }
             };
 
+            // run intial setup of spaxel data
             this.setupSpaxel(spaxel);
 
             // initialize Dygraph
@@ -228,16 +229,23 @@ var Galaxy = function () {
                 plugins: [doubleClickZoomOutPlugin],
                 underlayCallback: this.underlay
             };
+            // set up the wavelength axis
             var data = this.toggleframe.prop('checked') ? this.rest_spaxeldata : spaxel;
             options = this.addDygraphWaveOptions(options);
+
+            // create the Dygraph object
             this.webspec = new Dygraph(this.graphdiv[0], data, options);
 
+            // assign the wavelength data and bad mask regions to the Dygraph object; makes accessibile inside underlay callback
             this.webspec.wave = this.toggleframe.prop('checked') ? this.restwave : this.obswave;
             this.webspec.badspots = this.badspots;
 
             // create dap line annotations and conditionally display
             this.updateAnnotations();
         }
+
+        // This function draws highlighted masks on the Dygraph canvas
+
     }, {
         key: 'underlay',
         value: function underlay(canvas, area, g) {
@@ -291,6 +299,9 @@ var Galaxy = function () {
                 return rest;
             }
         }
+
+        // update the Dygraph x-axis label and data with rest-frame / obs wavelength
+
     }, {
         key: 'addDygraphWaveOptions',
         value: function addDygraphWaveOptions(oldoptions) {
@@ -316,6 +327,9 @@ var Galaxy = function () {
             _this.updateAnnotations();
             _this.updateMask(_this.badspots);
         }
+
+        // Update the line annotations on Dygraph
+
     }, {
         key: 'updateAnnotations',
         value: function updateAnnotations() {
@@ -359,7 +373,7 @@ var Galaxy = function () {
             return annot;
         }
 
-        // Toggle Masks
+        // Toggle DONOTUSE Masks
 
     }, {
         key: 'toggleMask',
@@ -372,6 +386,9 @@ var Galaxy = function () {
             }
             _this.webspec.updateOptions({});
         }
+
+        // Update the masks with new bad regions 
+
     }, {
         key: 'updateMask',
         value: function updateMask(badspots) {
@@ -396,7 +413,7 @@ var Galaxy = function () {
             this.specmsg.html(newmsg);
         }
 
-        // Update a DyGraph spectrum
+        // Update a DyGraph spectrum after clicking on a Map or the Image
 
     }, {
         key: 'updateSpaxel',
@@ -420,6 +437,9 @@ var Galaxy = function () {
             // add click event handler on map to get spaxel
             this.olmap.map.on('singleclick', this.getSpaxel, this);
         }
+
+        // Initialize the DAP Heatmap displays
+
     }, {
         key: 'initHeatmap',
         value: function initHeatmap(maps) {
@@ -555,13 +575,17 @@ var Galaxy = function () {
                             throw new MapError('Error: ' + data.result.mapmsg);
                         }
 
+                        // extract some properties from the result
                         var image = data.result.image;
                         var spaxel = data.result.spectra;
                         var spectitle = data.result.specmsg;
                         var maps = data.result.maps;
                         var mapmsg = data.result.mapmsg;
+
+                        // add the list of DAP lines and bad mask regions to the global scope
                         _this.daplines = data.result.daplines;
                         _this.badspots = data.result.badspots;
+
                         // Load the Galaxy Image
                         _this.initOpenLayers(image);
                         _this.toggleload.hide();

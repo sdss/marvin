@@ -155,6 +155,7 @@ class Galaxy {
             }
         };
 
+        // run intial setup of spaxel data
         this.setupSpaxel(spaxel);
 
         // initialize Dygraph
@@ -169,10 +170,14 @@ class Galaxy {
             plugins: [doubleClickZoomOutPlugin],
             underlayCallback: this.underlay
         };
+        // set up the wavelength axis
         let data = this.toggleframe.prop('checked') ? this.rest_spaxeldata : spaxel;
         options = this.addDygraphWaveOptions(options);
+
+        // create the Dygraph object
         this.webspec = new Dygraph(this.graphdiv[0], data, options);
 
+        // assign the wavelength data and bad mask regions to the Dygraph object; makes accessibile inside underlay callback
         this.webspec.wave = this.toggleframe.prop('checked') ? this.restwave : this.obswave;
         this.webspec.badspots = this.badspots;
 
@@ -180,6 +185,7 @@ class Galaxy {
         this.updateAnnotations();
     }
 
+    // This function draws highlighted masks on the Dygraph canvas
     underlay(canvas, area, g) {
 
         canvas.fillStyle = 'rgb(205, 92, 92, 0.5)';
@@ -223,6 +229,7 @@ class Galaxy {
          }
     }
 
+    // update the Dygraph x-axis label and data with rest-frame / obs wavelength
     addDygraphWaveOptions(oldoptions) {
         let newopts = {};
         if (this.toggleframe.prop('checked')) {
@@ -244,6 +251,7 @@ class Galaxy {
         _this.updateMask(_this.badspots);
     }
 
+    // Update the line annotations on Dygraph
     updateAnnotations() {
         if (this.togglelines.prop('checked')) {
             this.annotations = this.daplines.map(this.createAnnotation, this);
@@ -273,7 +281,7 @@ class Galaxy {
         return annot;
     }
 
-    // Toggle Masks
+    // Toggle DONOTUSE Masks
     toggleMask(event) {
         let _this = event.data; 
         if (_this.togglemask.prop('checked')) {
@@ -284,6 +292,7 @@ class Galaxy {
         _this.webspec.updateOptions({});
     }
 
+    // Update the masks with new bad regions 
     updateMask(badspots) {
         this.badspots = badspots == null ? this.badspots : badspots;
         this.webspec.wave = this.toggleframe.prop('checked') ? this.restwave : this.obswave;
@@ -303,7 +312,7 @@ class Galaxy {
         this.specmsg.html(newmsg);
     }
 
-    // Update a DyGraph spectrum
+    // Update a DyGraph spectrum after clicking on a Map or the Image
     updateSpaxel(spaxel, specmsg, badspots) {
         this.setupSpaxel(spaxel);
         this.updateSpecMsg(specmsg);
@@ -322,6 +331,7 @@ class Galaxy {
         this.olmap.map.on('singleclick', this.getSpaxel, this);
     }
 
+    // Initialize the DAP Heatmap displays
     initHeatmap(maps) {
         let mapchildren = this.mapsdiv.children('div');
         let _this = this;
@@ -438,13 +448,17 @@ class Galaxy {
                             throw new MapError(`Error: ${data.result.mapmsg}`);
                         }
 
+                        // extract some properties from the result
                         let image = data.result.image;
                         let spaxel = data.result.spectra;
                         let spectitle = data.result.specmsg;
                         let maps = data.result.maps;
                         let mapmsg = data.result.mapmsg;
+
+                        // add the list of DAP lines and bad mask regions to the global scope
                         _this.daplines = data.result.daplines;
                         _this.badspots = data.result.badspots;
+
                         // Load the Galaxy Image
                         _this.initOpenLayers(image);
                         _this.toggleload.hide();
