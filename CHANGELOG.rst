@@ -19,6 +19,7 @@ Changed
 - turned off API rate limiting globally
 - turned back on old spaxel query method
 - switched random image web page to use improved `get_random_images` function
+- changing galaxy page static image grab to use `cube.getImage().url`
 
 
 [2.3.4] - 2019/12/09

@@ -361,7 +361,7 @@ class Galaxy(BaseWebView):
                     is_public = 'DR' in self._release
                     path_release = self._release.lower() if is_public else None
                     sdss_path = Path(public=is_public, release=path_release)
-                    self.galaxy['image'] = get_manga_image(cube)
+                    self.galaxy['image'] = cube.getImage().url
                     cubelink = sdss_path.url('mangacube', drpver=cube._drpver, plate=cube.plate, ifu=cube.ifu)
                     rsslink = sdss_path.url('mangarss', drpver=cube._drpver, plate=cube.plate, ifu=cube.ifu)
                     daptype = "{0}-{1}".format(dm.default_bintype, dm.default_template)
@@ -478,7 +478,7 @@ class Galaxy(BaseWebView):
         else:
             output['specstatus'] = 1
 
-        output['image'] = get_manga_image(cube)
+        output['image'] = cube.getImage().url
         output['spectra'] = webspec
         output['specmsg'] = specmsg
         output['maps'] = mapdict
