@@ -17,6 +17,7 @@ Changed
 - updated datamodels to include MPL-9 changes
 - turned off API rate limiting globally
 - turned back on old spaxel query method
+- switched random image web page to use improved `get_random_images` function
 
 
 [2.3.4] - 2019/12/09
