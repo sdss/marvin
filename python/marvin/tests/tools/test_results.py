@@ -97,7 +97,7 @@ class TestResultsColumns(object):
     @pytest.mark.parametrize('results', [('nsa.z < 0.1 and emline_gflux_ha_6564 > 25')], indirect=True)
     @pytest.mark.parametrize('full, name', [('nsa.z', 'z'), ('cube.plateifu', 'plateifu'),
                                             ('cube.mangaid', 'mangaid'),
-                                            ('emline_gflux_ha_6564', 'haflux')])
+                                            ('spaxelprop.emline_gflux_ha_6564', 'haflux')])
     def test_colnames(self, results, full, name):
         cols = results.columns
         assert full in cols

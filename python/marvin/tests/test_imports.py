@@ -21,7 +21,6 @@ class TestImports(object):
         assert marvin.tools.maps.Maps is not None
         assert marvin.tools.modelcube.ModelCube is not None
         assert marvin.tools.spaxel.Spaxel is not None
-        assert marvin.tools.spaxel.Bin is not None
         assert marvin.tools.image.Image is not None
 
     def test_access_tools_from_root(self):
@@ -31,5 +30,4 @@ class TestImports(object):
         assert marvin.tools.Maps is not None
         assert marvin.tools.ModelCube is not None
         assert marvin.tools.Spaxel is not None
-        assert marvin.tools.Bin is not None
         assert marvin.tools.Image is not None

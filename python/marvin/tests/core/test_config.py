@@ -198,7 +198,7 @@ class TestConfig(object):
         assert 'You must have collaboration access to login.' in str(cm.value)
 
     @pytest.mark.parametrize('defrel, exprel',
-                             [('DR20', 'MPL-7'), ('bad_release', 'MPL-7')])
+                             [('DR20', 'MPL-9'), ('bad_release', 'MPL-9')])
     def test_bad_default_release(self, initconfig, defrel, exprel):
         ''' this tests some initial conditions on config '''
         config._release = defrel
