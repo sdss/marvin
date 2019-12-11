@@ -26,6 +26,7 @@ from marvin.tools.modelcube import ModelCube
 from marvin.tools.quantities import Spectrum
 from marvin.tools.spaxel import Spaxel
 from marvin.utils.datamodel.dap import Property
+from marvin.web.controllers.galaxy import get_flagged_regions
 
 spaxel_modes = [True, False, 'object']
 
@@ -420,6 +421,15 @@ class TestMaskbit(object):
         maps = Maps(plateifu=galaxy.plateifu)
         sp = maps.getSpaxel(0, 0, modelcube=True)
         assert len(sp.quality_flags) == 2
+
+    def test_flagged_regions(self, cube, galaxy):
+        params = {'x': galaxy.spaxel['x'], 'y': galaxy.spaxel['y'], 'xyorig': 'lower'}
+        spaxel = cube.getSpaxel(**params)
+        donotuse = spaxel.flux.pixmask.get_mask(['DONOTUSE'])
+        val = 1024
+        assert val in donotuse
+        badspots = get_flagged_regions(donotuse, value=val)
+        assert badspots == galaxy.badspots
 
 
 class TestCubeGetSpaxel(object):

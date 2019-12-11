@@ -14,18 +14,24 @@ This section summarises the most important new features a bugfixes in Marvin. Fo
 2.3.5 (December 2019)
 ---------------------
 
-- Support for MPL-9
-- New options in web spectrum display 
-    - Toggle common lines measured by the DAP
-    - Toggle between rest-frame and observed wavelength
-    - Toggle bad DONOTUSE pixel regions 
+- Support for :ref:`MPL-9 MaNGA data<datamodel-mpl9>`
+- Enhancements to the web spectrum display 
+
+    - You can now toggle common lines measured by the DAP (annotations placed using global NSA redshift)
+    - You can now toggle between rest-frame and observed wavelength (shifted using global NSA redshift)
+    - You can toggle a bad pixel mask. Pixel regions marked as DONOTUSE are now displayed as a red highlighted region. 
+
+- Improved image loading on Image Roulette page
+- "Traditional" spaxel queries have been reimplemented until ongoing improvements can be completed
 
 2.3.4 (December 2019)
 ---------------------
 
 Along with plenty of bug fixes, the following things are new
+
 - Support for DR16, which is the same as DR15.
 - Added support for the following :ref:`MaNGA VACS<marvin-available-vacs>`
+
     - GEMA: Returns GEMA table data
     - Galaxy Zoo: Returns Galaxy Zoo morphologies
     - Firefly: Returns stellar population parameters fitted by FIREFLY
