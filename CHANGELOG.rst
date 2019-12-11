@@ -7,11 +7,15 @@ Marvin's Change Log
 Added
 ^^^^^
 - Support for MPL-9 MaNGA data
+- Issue :issue:`648` - Option to toggle common lines from the DAP in web spectrum viewer
+- Issue :issue:`112` - Option to toggle between rest-frame and observed wavelength in web spectrum viewer
+- Issue :issue:`679` - Option to toggle on DONOTUSE pixel region masks in web spectrum viewer
 
 Changed
 ^^^^^^^
 - updated datamodels to include MPL-9 changes
 - turned off API rate limiting globally
+
 
 [2.3.4] - 2019/12/09
 --------------------

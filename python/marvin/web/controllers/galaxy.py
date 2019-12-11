@@ -15,6 +15,8 @@ from __future__ import division, print_function
 import os
 
 import numpy as np
+from itertools import groupby
+from operator import itemgetter
 from brain.utils.general.general import convertIvarToErr
 from flask import Blueprint, jsonify, render_template, request
 from flask import session as current_session
@@ -43,6 +45,39 @@ except ImportError as e:
 galaxy = Blueprint("galaxy_page", __name__)
 
 
+def get_flagged_regions(data, value=None):
+    ''' Retrieves bad pixel regions in a spectrum
+
+    Searches an input mask for a given value, looks for 
+    regions of consecutive bad values and returns the
+    min and max index bound for each consectuive region.
+
+    Parameters:
+        data (list):
+            An array of mask values
+        value (int):
+            The maskbit value to search on
+
+    Returns:
+        A list of bad region bounds
+
+    Example:
+        >>> data = [0, 1, 1, 1, 0, 0, 2, 1, 1]
+        >>> bad = get_flagged_region(data, value=1)
+        >>> print(bad)
+        >>> [[1, 3], [7,8]]
+    '''
+    chunks = []
+    data = np.where(data == value)[0]
+    data_list = data.tolist()
+    if not data_list:
+        return chunks
+    for k, g in groupby(enumerate(data_list), lambda ix: ix[0] - ix[1]):
+        tmp = (list(map(itemgetter(1), g)))
+        chunks.append([min(tmp), max(tmp)])
+    return chunks
+
+
 def getWebSpectrum(cube, x, y, xyorig=None, byradec=False):
     ''' Get and format a spectrum for the web '''
     webspec = None
@@ -67,6 +102,10 @@ def getWebSpectrum(cube, x, y, xyorig=None, byradec=False):
         error = convertIvarToErr(spaxel.flux.ivar)
         wave = spaxel.flux.wavelength
 
+        # retrieve the index bounds for DONOTUSE pixel regions
+        badspots = get_flagged_regions(spaxel.flux.pixmask.get_mask(
+            'DONOTUSE'), value=spaxel.flux.pixmask.labels_to_value('DONOTUSE'))
+
         # try to get the model flux
         try:
             modelfit = spaxel.full_fit
@@ -81,7 +120,7 @@ def getWebSpectrum(cube, x, y, xyorig=None, byradec=False):
 
         specmsg = "Spectrum in Spaxel (j, i)=({2},{3}) at RA, Dec = ({0}, {1})".format(spaxel.ra, spaxel.dec, spaxel.x, spaxel.y)
 
-    return webspec, specmsg
+    return webspec, specmsg, badspots
 
 
 def getWebMap(cube, parameter='emline_gflux', channel='ha_6564',
@@ -363,6 +402,11 @@ class Galaxy(BaseWebView):
                 if 'bintemp' not in current_session or current_session['bintemp'] not in self.galaxy['dapbintemps']:
                     current_session['bintemp'] = '{0}-{1}'.format(dm.get_bintype(), dm.get_template())
 
+                # get default map quality
+                maps = cube.getMaps(plateifu=cube.plateifu, mode='local', bintype=current_session['bintemp'].split('-')[0])
+                mapqual = ('DAPQUAL', maps.quality_flag.mask, maps.quality_flag.labels)
+                self.galaxy['mapquality'] = mapqual
+
                 # TODO - make this general - see also search.py for querystr
                 self.galaxy['cubestr'] = ("<html><samp>from marvin.tools.cube import Cube<br>cube = \
                     Cube(plateifu='{0}')<br># access the header<br>cube.header<br># get NSA data<br>\
@@ -407,7 +451,7 @@ class Galaxy(BaseWebView):
         output = {'specstatus': -1, 'mapstatus': -1}
 
         # get web spectrum
-        webspec, specmsg = getWebSpectrum(cube, cube.ra, cube.dec, byradec=True)
+        webspec, specmsg, badspots = getWebSpectrum(cube, cube.ra, cube.dec, byradec=True)
         daplist = [p.full(web=True) for p in dm.properties]
         dapdefaults = dm.get_default_mapset()
 
@@ -441,6 +485,8 @@ class Galaxy(BaseWebView):
         output['mapmsg'] = mapmsg
         output['dapmaps'] = daplist
         output['dapmapselect'] = selected_maps
+        output['daplines'] = dm.get_channels('emline_gflux', formatted=True)
+        output['badspots'] = badspots
 
         output['dapbintemps'] = dm.get_bintemps(db_only=True)
         if 'bintemp' not in current_session:
@@ -478,14 +524,14 @@ class Galaxy(BaseWebView):
                     arrcoords = convertImgCoords(mousecoords, infile, to_radec=True)
 
                     cube = Cube(**cubeinputs)
-                    webspec, specmsg = getWebSpectrum(cube, arrcoords[0], arrcoords[1], byradec=True)
+                    webspec, specmsg, badspots = getWebSpectrum(cube, arrcoords[0], arrcoords[1], byradec=True)
                     if not webspec:
                         self.galaxy['error'] = 'Error: {0}'.format(specmsg)
                         status = -1
                     else:
                         status = 1
                     msg = 'gettin some spaxel at RA/Dec {0}'.format(arrcoords)
-                    output = {'message': msg, 'specmsg': specmsg, 'spectra': webspec, 'status': status}
+                    output = {'message': msg, 'specmsg': specmsg, 'spectra': webspec, 'status': status, 'badspots': badspots}
             else:
                 output = {'specmsg': 'Error getting mouse coords', 'status': -1}
                 self.galaxy['error'] = output['specmsg']
@@ -495,14 +541,14 @@ class Galaxy(BaseWebView):
             y = args.get('y', None, type=int)
             if all([x, y]):
                 cube = Cube(**cubeinputs)
-                webspec, specmsg = getWebSpectrum(cube, x, y, xyorig='lower')
+                webspec, specmsg, badspots = getWebSpectrum(cube, x, y, xyorig='lower')
                 msg = 'gettin some spaxel with (x={0}, y={1})'.format(x, y)
                 if not webspec:
                     self.galaxy['error'] = 'Error: {0}'.format(specmsg)
                     status = -1
                 else:
                     status = 1
-                output = {'message': msg, 'specmsg': specmsg, 'spectra': webspec, 'status': status}
+                output = {'message': msg, 'specmsg': specmsg, 'spectra': webspec, 'status': status, 'badspots': badspots}
             else:
                 output = {'specmsg': 'Error: X or Y not specified for map', 'status': -1}
                 self.galaxy['error'] = output['specmsg']

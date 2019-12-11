@@ -6252,6 +6252,10 @@ section h3.section-subheading {
   overflow-x: auto;
   white-space: nowrap; }
 
+.annotation {
+  color: indianred !important;
+  border-color: indianred !important; }
+
 /*
 * @Author: Brian Cherinka
 * @Date:   2016-04-28 00:05:52
