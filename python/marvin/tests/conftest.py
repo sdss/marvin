@@ -84,13 +84,15 @@ bintypes_accepted = {'MPL-4': ['NONE', 'VOR10'],
                      'MPL-5': ['SPX', 'VOR10'],
                      'MPL-6': ['SPX', 'HYB10'],
                      'MPL-7': ['HYB10', 'VOR10'],
-                     'MPL-8': ['HYB10', 'SPX']}
+                     'MPL-8': ['HYB10', 'SPX'],
+                     'MPL-9': ['HYB10', 'SPX']}
 
 templates_accepted = {'MPL-4': ['MIUSCAT_THIN', 'MILES_THIN'],
                       'MPL-5': ['GAU-MILESHC'],
                       'MPL-6': ['GAU-MILESHC'],
                       'MPL-7': ['GAU-MILESHC'],
-                      'MPL-8': ['MILESHC-MILESHC']}
+                      'MPL-8': ['MILESHC-MILESHC'],
+                      'MPL-9': ['MILESHC-MASTARHC']}
 
 
 def populate_bintypes_templates(releases):
