@@ -182,7 +182,7 @@ class Galaxy {
 
     underlay(canvas, area, g) {
 
-        canvas.fillStyle = 'rgb(205, 92, 92, 1.0)';
+        canvas.fillStyle = 'rgb(205, 92, 92, 0.5)';
 
         if (g.badspots == null ) {
             return;
@@ -285,7 +285,7 @@ class Galaxy {
     }
 
     updateMask(badspots) {
-        this.badspots = badspots == null ? badspots : this.badspots;
+        this.badspots = badspots == null ? this.badspots : badspots;
         this.webspec.wave = this.toggleframe.prop('checked') ? this.restwave : this.obswave;
         this.webspec.badspots = this.togglemask.prop('checked') ? null : badspots;
         this.webspec.updateOptions({});
