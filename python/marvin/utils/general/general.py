@@ -1758,7 +1758,7 @@ def check_versions(version1, version2):
     return parse_version(version1) >= parse_version(version2)
 
 
-def get_manga_image(cube=None, drpver=None, plate=None, ifu=None, dir3d=None):
+def get_manga_image(cube=None, drpver=None, plate=None, ifu=None, dir3d=None, local=None):
     ''' Get a MaNGA IFU optical PNG image
 
     Parameters:
@@ -1772,6 +1772,8 @@ def get_manga_image(cube=None, drpver=None, plate=None, ifu=None, dir3d=None):
             An IFU designation
         dir3d (str):
             The directory for 3d data, either 'stack' or 'mastar'
+        local (bool):
+            If True, return the local file path to the image
     Returns:
         A url to an IFU MaNGA image
     '''
@@ -1792,9 +1794,15 @@ def get_manga_image(cube=None, drpver=None, plate=None, ifu=None, dir3d=None):
     # check if MPL-8 or not
     is_MPL8 = check_versions(drpver, 'v2_5_3')
     if is_MPL8:
-        img = path.url('mangaimagenew', drpver=drpver, plate=plate, ifu=ifu)
+        if local:
+            img = path.full('mangaimagenew', drpver=drpver, plate=plate, ifu=ifu)
+        else:
+            img = path.url('mangaimagenew', drpver=drpver, plate=plate, ifu=ifu)
     else:
         assert dir3d is not None, 'dir3d must also be specified'
         assert dir3d in ['stack', 'mastar'], 'dir3d can only be stack or mastar'
-        img = path.url('mangaimage', drpver=drpver, plate=plate, ifu=ifu, dir3d=dir3d)
+        if local:
+            img = path.full('mangaimage', drpver=drpver, plate=plate, ifu=ifu, dir3d=dir3d)
+        else:
+            img = path.url('mangaimage', drpver=drpver, plate=plate, ifu=ifu, dir3d=dir3d)
     return img
