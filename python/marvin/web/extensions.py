@@ -18,6 +18,7 @@ from flask_caching import Cache
 from flask_login import LoginManager
 from flask_jwt_extended import JWTManager
 from flask_cors import CORS
+from flask_session import Session
 import flask_jsglue as jsg
 import logging
 
@@ -47,3 +48,6 @@ jwt = JWTManager()
 
 # Flask CORS
 cors = CORS()
+
+# Flask Session
+session = Session()
