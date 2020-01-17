@@ -210,7 +210,7 @@ class MarvinConfig(object):
         self._checkPaths('MANGA_SPECTRO_REDUX')
         self._checkPaths('MANGA_SPECTRO_ANALYSIS')
 
-    def setDefaultDrpAll(self, drpver=None):
+    def setDefaultDrpAll(self, drpver=None, dapver=None):
         """Tries to set the default location of drpall.
 
         Sets the drpall attribute to the location of your DRPall file, based on the
@@ -222,18 +222,33 @@ class MarvinConfig(object):
                 The DRP version to set.  Defaults to the version corresponding to config.release.
         """
 
-        if not drpver:
-            drpver, __ = self.lookUpVersions(self.release)
+        if not drpver or not dapver:
+            drpver, dapver = self.lookUpVersions(self.release)
         self.drpall = self._getDrpAllPath(drpver)
+        self.dapall = self._getDapAllPath(drpver, dapver)
+
+    def _get_default_path(self, name, drpver, dapver=None):
+        ''' Return a default path to a summary file '''
+        assert name in ['drpall', 'dapall'], 'name must be either drpall or dapall'
+        envvar = 'MANGA_SPECTRO_REDUX' if name == 'drpall' else 'MANGA_SPECTRO_ANALYSIS'
+        version = drpver if name == 'drpall' else dapver
+        if name == 'drpall':
+            path = os.path.join(str(drpver), 'drpall-{0}.fits'.format(version))
+        elif name == 'dapall':
+            path = os.path.join(str(drpver), str(dapver), 'dapall-{0}-{1}.fits'.format(drpver, dapver))
+
+        if envvar in os.environ and version:
+            return os.path.join(os.environ[envvar], path)
+        else:
+            raise MarvinError('Must have the {0} environment variable set'.format(envvar))
 
     def _getDrpAllPath(self, drpver):
         """Returns the default path for drpall, give a certain ``drpver``."""
+        return self._get_default_path('drpall', drpver)
 
-        if 'MANGA_SPECTRO_REDUX' in os.environ and drpver:
-            return os.path.join(os.environ['MANGA_SPECTRO_REDUX'], str(drpver),
-                                'drpall-{0}.fits'.format(drpver))
-        else:
-            raise MarvinError('Must have the MANGA_SPECTRO_REDUX environment variable set')
+    def _getDapAllPath(self, drpver, dapver):
+        """Returns the default path for dapall, give a certain ``drpver, dapver``."""
+        return self._get_default_path('dapall', drpver, dapver=dapver)
 
 ############ Brain Config overrides ############
 # These are configuration parameter defined in Brain.bconfig. We need
@@ -271,9 +286,12 @@ class MarvinConfig(object):
         with self._replant_tree(value) as val:
             self._release = val
 
+        drpver, dapver = self.lookUpVersions(value)
         if 'MANGA_SPECTRO_REDUX' in os.environ:
-            drpver, __ = self.lookUpVersions(value)
             self.drpall = self._getDrpAllPath(drpver)
+
+        if 'MANGA_SPECTRO_ANALYSIS' in os.environ:
+            self.dapall = self._getDapAllPath(drpver, dapver)
 
     @property
     def access(self):
@@ -367,6 +385,19 @@ class MarvinConfig(object):
         else:
             self._drpall = None
             warnings.warn('path {0} cannot be found. Setting drpall to None.'
+                          .format(value), MarvinUserWarning)
+
+    @property
+    def dapall(self):
+        return self._dapall
+
+    @dapall.setter
+    def dapall(self, value):
+        if os.path.exists(value):
+            self._dapall = value
+        else:
+            self._dapall = None
+            warnings.warn('path {0} cannot be found. Setting dapall to None.'
                           .format(value), MarvinUserWarning)
 
     def _setDbConfig(self):
