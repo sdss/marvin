@@ -13,7 +13,7 @@ Revision History:
 from __future__ import division, print_function
 
 import os
-
+import functools
 import numpy as np
 from itertools import groupby
 from operator import itemgetter
@@ -233,6 +233,7 @@ def make_nsa_dict(nsa, cols=None):
     return nsadict, cols
 
 
+@functools.lru_cache
 def get_nsa_dict(name, drpver, makenew=None):
     ''' Gets a NSA dictionary from a pickle or a query '''
     nsapath = os.environ.get('MANGA_SCRATCH_DIR', None)
