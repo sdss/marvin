@@ -26,7 +26,7 @@ import marvin.utils.general.general
 from marvin.core.exceptions import MarvinError, MarvinUserWarning
 from marvin.tools.quantities import DataCube, Spectrum
 from marvin.utils.datamodel.drp import datamodel
-from marvin.utils.general import FuzzyDict, get_nsa_data, gunzip
+from marvin.utils.general import FuzzyDict, get_nsa_data, gunzip, get_dapall_table
 
 from .core import MarvinToolsClass
 from .mixins import GetApertureMixIn, NSAMixIn
@@ -605,3 +605,28 @@ class Cube(MarvinToolsClass, NSAMixIn, GetApertureMixIn):
         maps = marvin.tools.maps.Maps(**kwargs)
 
         return maps
+
+    def get_available_bintypes(self):
+        ''' List the available DAP binning schemes for this object
+        
+            For ``data_origin`` of file or API, uses the local DAPall summary
+            file to determine the available bintypes for a given plateifu.
+        '''
+
+        if self.data_origin == 'file' or self.data_origin == 'api':
+            daptable = get_dapall_table(drpver=self._drpver, dapver=self._dapver)
+            locs = (daptable['PLATEIFU'] == self.plateifu) & (daptable['DAPDONE'] == True)
+            return daptable[locs]['BINKEY'].tolist()
+        elif self.data_origin == 'db':
+            session = marvin.marvindb.session
+            datadb = marvin.marvindb.datadb
+            dapdb = marvin.marvindb.dapdb
+
+            query = session.query(dapdb.BinType.name).join(
+                    dapdb.Structure, dapdb.File, datadb.PipelineInfo,
+                    datadb.PipelineVersion).filter(
+                        datadb.PipelineVersion.version == self._dapver,
+                        dapdb.File.filename.ilike('%{0}%MAPS%'.format(self.plateifu)))
+            bintypes = [i[0] for i in query]
+            return bintypes
+
