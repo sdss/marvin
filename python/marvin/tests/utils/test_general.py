@@ -347,30 +347,31 @@ class TestGetMangaImage(object):
 
 
 class TestSummaryFiles(object):
+    drp = 'v2_5_3'
+    dap = '2.3.0'
 
     @pytest.mark.parametrize('name', [('drpall'), ('dapall')])
     def test_paths(self, name):
         if name == 'drpall':
-            path = get_drpall_path('v2_5_3')
-            assert 'drpall-v2_5_3' in path
+            path = get_drpall_path(self.drp)
+            assert 'drpall-{0}'.format(self.drp) in path
         else:
-            path = get_dapall_path('v2_5_3', '2.3.1')
-            assert 'dapall-v2_5_3-2.3.1' in path
+            path = get_dapall_path(self.drp, self.dap)
+            assert 'dapall-{0}-{1}'.format(self.drp, self.dap) in path
 
     @pytest.mark.parametrize('name, hdu, expnum', 
                              [('drpall', 'MANGA', 6779), 
                               ('drpall', 'MASTAR', 20649), 
                               ('dapall', 1, 19596)])
     def test_tables(self, name, hdu, expnum):
-        drp, dap = 'v2_5_3', '2.3.0'
         if name == 'drpall':
-            table = get_drpall_table(drp, hdu=hdu)
+            table = get_drpall_table(self.drp, hdu=hdu)
             assert 'nsa_z' in table.colnames
-            assert drp in set(table['versdrp3'])
+            assert self.drp in set(table['versdrp3'])
         else:
-            table = get_dapall_table(drp, dap)
+            table = get_dapall_table(self.drp, self.dap)
             assert 'SFR_TOT' in table.colnames
-            assert dap in set(table['VERSDAP'])
+            assert self.dap in set(table['VERSDAP'])
         
         assert len(table) == expnum
         if hdu == 'MASTAR':
