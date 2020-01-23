@@ -233,7 +233,7 @@ def make_nsa_dict(nsa, cols=None):
     return nsadict, cols
 
 
-@functools.lru_cache
+@functools.lru_cache(maxsize=128)
 def get_nsa_dict(name, drpver, makenew=None):
     ''' Gets a NSA dictionary from a pickle or a query '''
     nsapath = os.environ.get('MANGA_SCRATCH_DIR', None)
@@ -413,8 +413,12 @@ class Galaxy(BaseWebView):
                     current_session['bintemp'] = '{0}-{1}'.format(dm.get_bintype(), dm.get_template())
 
                 # get default map quality
-                maps = cube.getMaps(plateifu=cube.plateifu, mode='local', bintype=current_session['bintemp'].split('-')[0])
-                mapqual = ('DAPQUAL', maps.quality_flag.mask, maps.quality_flag.labels)
+                try:
+                    maps = cube.getMaps(plateifu=cube.plateifu, mode='local', bintype=current_session['bintemp'].split('-')[0])
+                except MarvinError:
+                    mapqual = ('DAPQUAL', [], [])
+                else:
+                    mapqual = ('DAPQUAL', maps.quality_flag.mask, maps.quality_flag.labels)
                 self.galaxy['mapquality'] = mapqual
 
                 # TODO - make this general - see also search.py for querystr
@@ -473,13 +477,19 @@ class Galaxy(BaseWebView):
         if selected_bintemp and selected_bintemp not in dm.get_bintemps(db_only=True):
             selected_bintemp = '{0}-{1}'.format(dm.get_bintype(), dm.get_template())
 
+        # check that selected bintemp is available for target
+        hasbin = selected_bintemp.split('-')[0] in cube.get_available_bintypes()
+
         # build the uber map dictionary
         try:
             mapdict = buildMapDict(cube, selected_maps, self._dapver, bintemp=selected_bintemp)
             mapmsg = None
         except Exception as e:
             mapdict = [{'data': None, 'msg': 'Error', 'plotparams': None} for m in dapdefaults]
-            mapmsg = 'Error getting maps: {0}'.format(e)
+            if hasbin:
+                mapmsg = 'Error getting maps: {0}'.format(e)
+            else:
+                mapmsg = 'No maps available for selected bintype {0}. Try a different one.'.format(selected_bintemp)
         else:
             output['mapstatus'] = 1
 

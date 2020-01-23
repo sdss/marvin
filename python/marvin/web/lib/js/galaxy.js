@@ -187,8 +187,9 @@ var Galaxy = function () {
             this.restwave = this.obswave.map(function (x) {
                 return rest(x);
             });
+            // check if modelfit data included and build new Dygraph data array of Nx3 or Nx2
             this.rest_spaxeldata = this._spaxeldata.map(function (x, i) {
-                return [_this4.restwave[i], x.slice(1)[0], x.slice(1)[1]];
+                return x.length === 3 ? [_this4.restwave[i], x.slice(1)[0], x.slice(1)[1]] : [_this4.restwave[i], x.slice(1)[0]];
             });
         }
 
@@ -564,41 +565,50 @@ var Galaxy = function () {
 
                     // send the form data
                     Promise.resolve($.post(Flask.url_for('galaxy_page.initdynamic'), form, 'json')).then(function (data) {
+                        // resolve and load galaxy image
+                        var image = data.result.image;
+                        _this.initOpenLayers(image);
+                        _this.toggleload.hide();
+
+                        // load the spaxel data 
                         if (data.result.error) {
                             var err = data.result.error;
                             throw new SpaxelError('Error : ' + err);
                         }
+
+                        // resolve and load spaxel data
                         if (data.result.specstatus === -1) {
                             throw new SpaxelError('Error: ' + data.result.specmsg);
+                        } else {
+                            var spaxel = data.result.spectra;
+                            var spectitle = data.result.specmsg;
+
+                            // add the list of DAP lines and bad mask regions to the global scope
+                            _this.daplines = data.result.daplines;
+                            _this.badspots = data.result.badspots;
+
+                            _this.loadSpaxel(spaxel, spectitle);
                         }
+
+                        // resolve and load maps data
                         if (data.result.mapstatus === -1) {
                             throw new MapError('Error: ' + data.result.mapmsg);
+                        } else {
+                            var maps = data.result.maps;
+                            var mapmsg = data.result.mapmsg;
+
+                            _this.initHeatmap(maps);
+
+                            // refresh the map selectpicker
+                            _this.dapselect.selectpicker('refresh');
                         }
-
-                        // extract some properties from the result
-                        var image = data.result.image;
-                        var spaxel = data.result.spectra;
-                        var spectitle = data.result.specmsg;
-                        var maps = data.result.maps;
-                        var mapmsg = data.result.mapmsg;
-
-                        // add the list of DAP lines and bad mask regions to the global scope
-                        _this.daplines = data.result.daplines;
-                        _this.badspots = data.result.badspots;
-
-                        // Load the Galaxy Image
-                        _this.initOpenLayers(image);
-                        _this.toggleload.hide();
-
-                        // Load the Spaxel and Maps
-                        _this.loadSpaxel(spaxel, spectitle);
-                        _this.initHeatmap(maps);
-                        // refresh the map selectpicker
-                        _this.dapselect.selectpicker('refresh');
                     }).catch(function (error) {
                         var errmsg = error.message === undefined ? _this6.makeError('initDynamic') : error.message;
-                        _this.updateSpecMsg(errmsg, -1);
-                        _this.updateMapMsg(errmsg, -1);
+                        if (error.name === 'SpaxelError') {
+                            _this.updateSpecMsg(errmsg, -1);
+                        } else if (error.name === 'MapError') {
+                            _this.updateMapMsg(errmsg, -1);
+                        }
                     });
                 }
             }

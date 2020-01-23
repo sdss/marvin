@@ -133,7 +133,8 @@ class Galaxy {
         let rest = this.setSpectrumAxisFormatter('rest', this.redshift);
         this.obswave = this._spaxeldata.map(x => x[0]);
         this.restwave = this.obswave.map(x => rest(x));
-        this.rest_spaxeldata = this._spaxeldata.map((x, i) => [this.restwave[i], x.slice(1)[0], x.slice(1)[1]]);
+        // check if modelfit data included and build new Dygraph data array of Nx3 or Nx2
+        this.rest_spaxeldata = this._spaxeldata.map((x, i) => (x.length === 3) ? [this.restwave[i], x.slice(1)[0], x.slice(1)[1]] : [this.restwave[i], x.slice(1)[0]]);
     }
 
     // Initialize and Load a DyGraph spectrum
@@ -437,42 +438,51 @@ class Galaxy {
                 // send the form data
                 Promise.resolve($.post(Flask.url_for('galaxy_page.initdynamic'), form,'json'))
                     .then((data)=>{
+                        // resolve and load galaxy image
+                        let image = data.result.image;
+                        _this.initOpenLayers(image);
+                        _this.toggleload.hide();
+
+                        // load the spaxel data 
                         if (data.result.error) {
                             let err = data.result.error;
                             throw new SpaxelError(`Error : ${err}`);
                         }
+
+                        // resolve and load spaxel data
                         if (data.result.specstatus === -1) {
                             throw new SpaxelError(`Error: ${data.result.specmsg}`);
+                        } else {
+                            let spaxel = data.result.spectra;
+                            let spectitle = data.result.specmsg;
+
+                            // add the list of DAP lines and bad mask regions to the global scope
+                            _this.daplines = data.result.daplines;
+                            _this.badspots = data.result.badspots;
+
+                            _this.loadSpaxel(spaxel, spectitle);                            
                         }
+
+                        // resolve and load maps data
                         if (data.result.mapstatus === -1) {
                             throw new MapError(`Error: ${data.result.mapmsg}`);
+                        } else {
+                            let maps = data.result.maps;
+                            let mapmsg = data.result.mapmsg;
+
+                            _this.initHeatmap(maps);
+
+                            // refresh the map selectpicker
+                            _this.dapselect.selectpicker('refresh');
                         }
-
-                        // extract some properties from the result
-                        let image = data.result.image;
-                        let spaxel = data.result.spectra;
-                        let spectitle = data.result.specmsg;
-                        let maps = data.result.maps;
-                        let mapmsg = data.result.mapmsg;
-
-                        // add the list of DAP lines and bad mask regions to the global scope
-                        _this.daplines = data.result.daplines;
-                        _this.badspots = data.result.badspots;
-
-                        // Load the Galaxy Image
-                        _this.initOpenLayers(image);
-                        _this.toggleload.hide();
-
-                        // Load the Spaxel and Maps
-                        _this.loadSpaxel(spaxel, spectitle);
-                        _this.initHeatmap(maps);
-                        // refresh the map selectpicker
-                        _this.dapselect.selectpicker('refresh');
                     })
                     .catch((error)=>{
                         let errmsg = (error.message === undefined) ? this.makeError('initDynamic') : error.message;
-                        _this.updateSpecMsg(errmsg, -1);
-                        _this.updateMapMsg(errmsg, -1);
+                        if (error.name === 'SpaxelError') {
+                            _this.updateSpecMsg(errmsg, -1);
+                        } else if (error.name === 'MapError') {
+                            _this.updateMapMsg(errmsg, -1);
+                        }
                     });
             }
         }
