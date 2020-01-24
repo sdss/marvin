@@ -454,6 +454,7 @@ except RuntimeError as error:
     print('DapModelClasses, Error during configure_mapper: {0}'.format(error))
 
 dap_cache = RelationshipCache(File.cube).\
+               and_(RelationshipCache(File.pipelineinfo)).\
                and_(RelationshipCache(File.filetype)).\
                and_(RelationshipCache(File.structure)).\
                and_(RelationshipCache(ModelCube.file)).\

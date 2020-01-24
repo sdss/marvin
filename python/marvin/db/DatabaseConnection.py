@@ -16,70 +16,78 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.event import listen
 from sqlalchemy.pool import Pool
 from marvin.core import caching_query
-from marvin import config
-from hashlib import md5
-from dogpile.cache.region import make_region
-import os
+from marvin.db.caching import regions
 
-# DOGPILE CACHING SETUP
+# from marvin import config
+# from hashlib import md5
+# from dogpile.cache.region import make_region
+# import os
 
-# dogpile cache regions.  A home base for cache configurations.
-regions = {}
+# # DOGPILE CACHING SETUP
 
-dogpath = os.environ.get('MANGA_SCRATCH_DIR', None)
-if dogpath and os.path.isdir(dogpath):
-    dogpath = dogpath
-else:
-    dogpath = os.path.expanduser('~')
+# # dogpile cache regions.  A home base for cache configurations.
+# regions = {}
 
-dogroot = os.path.join(dogpath, 'dogpile_data')
-if not os.path.isdir(dogroot):
-    os.makedirs(dogroot)
+# dogpath = os.environ.get('MANGA_SCRATCH_DIR', None)
+# if dogpath and os.path.isdir(dogpath):
+#     dogpath = dogpath
+# else:
+#     dogpath = os.path.expanduser('~')
 
-
-# make an nsa region
-def make_nsa_region(name):
-    reg = make_region(key_mangler=md5_key_mangler).configure(
-            'dogpile.cache.dbm',
-            expiration_time=3600,
-            arguments={'filename': os.path.join(dogroot, '{0}_cache.dbm'.format(name))}
-        )
-    return reg
+# dogroot = os.path.join(dogpath, 'dogpile_data')
+# if not os.path.isdir(dogroot):
+#     os.makedirs(dogroot)
 
 
-# db hash key
-def md5_key_mangler(key):
-    """Receive cache keys as long concatenated strings;
-    distill them into an md5 hash.
+# # make an nsa region
+# def make_nsa_region(name):
+#     ''' make a dogpile cache region for NSA sample queries
+    
+#     Creates a file-based cache with expiration time of 1 hour
 
-    """
-    return md5(key.encode('ascii')).hexdigest()
+#     Parameter:
+#         name (str):
+#             The name of the cache region
+#     '''
+#     reg = make_region(key_mangler=md5_key_mangler).configure(
+#             'dogpile.cache.dbm',
+#             expiration_time=3600,
+#             arguments={'filename': os.path.join(dogroot, '{0}_cache.dbm'.format(name))}
+#         )
+#     return reg
 
-# configure the "default" cache region.
-regions['default'] = make_region(
-            # the "dbm" backend needs string-encoded keys
-            key_mangler=md5_key_mangler
-        ).configure(
-        # using type 'file' to illustrate
-        # serialized persistence.  Normally
-        # memcached or similar is a better choice
-        # for caching.
-        # 'dogpile.cache.dbm',  # file-based backend
-        'dogpile.cache.memcached',  # memcached-based backend
-        expiration_time=3600,
-        arguments={
-            'url': "127.0.0.1:11211"  # memcached option
-            # "filename": os.path.join(dogroot, "cache.dbm") # file option
-        }
-    )
 
-for mpl in config._allowed_releases.keys():
-    nsacache = 'nsa_{0}'.format(mpl.lower().replace('-', ''))
-    regions[nsacache] = make_nsa_region(nsacache)
+# # db hash key
+# def md5_key_mangler(key):
+#     """Receive cache keys as long concatenated strings;
+#     distill them into an md5 hash.
 
-#regions['nsa_mpl5'] = make_nsa_region('nsa_mpl5')
-#regions['nsa_mpl4'] = make_nsa_region('nsa_mpl4')
-#regions['nsa_mpl6'] = make_nsa_region('nsa_mpl6')
+#     """
+#     return md5(key.encode('ascii')).hexdigest()
+
+
+# # configure the "default" cache region.
+# regions['default'] = make_region(
+#             # the "dbm" backend needs string-encoded keys
+#             key_mangler=md5_key_mangler
+#         ).configure(
+#         # using type 'file' to illustrate
+#         # serialized persistence.  Normally
+#         # memcached or similar is a better choice
+#         # for caching.
+#         # 'dogpile.cache.dbm',  # file-based backend
+#         'dogpile.cache.memcached',  # memcached-based backend
+#         expiration_time=3600,
+#         arguments={
+#             'url': "127.0.0.1:11211"  # memcached option
+#             # "filename": os.path.join(dogroot, "cache.dbm") # file option
+#         }
+#     )
+
+# # cache regions for NSA tables
+# for mpl in config._allowed_releases.keys():
+#     nsacache = 'nsa_{0}'.format(mpl.lower().replace('-', ''))
+#     regions[nsacache] = make_nsa_region(nsacache)
 
 
 def clearSearchPathCallback(dbapi_con, connection_record):
@@ -104,6 +112,7 @@ def clearSearchPathCallback(dbapi_con, connection_record):
     cursor = dbapi_con.cursor()
     cursor.execute('SET search_path TO "$user",functions,public')
     dbapi_con.commit()
+
 
 listen(Pool, 'connect', clearSearchPathCallback)
 
