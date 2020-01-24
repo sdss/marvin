@@ -523,19 +523,25 @@ class MarvinConfig(object):
 
         return drpver, dapver
 
-    def lookUpRelease(self, drpver):
+    def lookUpRelease(self, drpver, public_only=None):
         """Retrieve the release version for a given DRP version
 
         Parameters:
             drpver (str):
                 The DRP version to use
+            public_only (bool):
+                If True, uses only DR releases
         Returns:
             release (str):
                 The release version according to the input DRP version
         """
 
         # Flip the mpldict
-        verdict = {val[0]: key for key, val in self._allowed_releases.items()}
+        verdict = {}
+        for key, val in self._allowed_releases.items():
+            if (public_only and 'MPL' in key) or (not public_only and 'DR' in key):
+                continue
+            verdict[val[0]] = key
 
         try:
             release = verdict[drpver]

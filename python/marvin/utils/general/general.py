@@ -1859,7 +1859,7 @@ def check_versions(version1, version2):
     return parse_version(version1) >= parse_version(version2)
 
 
-def get_manga_image(cube=None, drpver=None, plate=None, ifu=None, dir3d=None, local=None):
+def get_manga_image(cube=None, drpver=None, plate=None, ifu=None, dir3d=None, local=None, public=None):
     ''' Get a MaNGA IFU optical PNG image
 
     Parameters:
@@ -1875,6 +1875,8 @@ def get_manga_image(cube=None, drpver=None, plate=None, ifu=None, dir3d=None, lo
             The directory for 3d data, either 'stack' or 'mastar'
         local (bool):
             If True, return the local file path to the image
+        public (bool):
+            If True, use only DR releases
     Returns:
         A url to an IFU MaNGA image
     '''
@@ -1887,7 +1889,7 @@ def get_manga_image(cube=None, drpver=None, plate=None, ifu=None, dir3d=None, lo
     assert all([drpver, plate, ifu]), 'drpver, plate, and ifu must be specified'
 
     # create the sdss Path
-    release = marvin.config.lookUpRelease(drpver)
+    release = cube.release if cube else marvin.config.lookUpRelease(drpver, public_only=public)
     is_public = 'DR' in release
     path_release = release.lower() if is_public else None
     path = Path(public=is_public, release=path_release)
