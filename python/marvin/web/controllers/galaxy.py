@@ -259,7 +259,8 @@ def get_nsa_dict(name, drpver, makenew=None):
             join(sampledb.MangaTargetToNSA, sampledb.MangaTarget,
                  marvindb.datadb.Cube, marvindb.datadb.PipelineInfo,
                  marvindb.datadb.PipelineVersion, marvindb.datadb.IFUDesign).\
-            filter(marvindb.datadb.PipelineVersion.version == drpver).options(FromCache(name)).all()
+            filter(marvindb.datadb.PipelineVersion.version == drpver).options(
+                FromCache(name)).options(*marvindb.cache_bits).all()
         nsadict = [(_db_row_to_dict(n[0], remove_columns=['pk', 'catalogue_pk']), n[1]) for n in allnsa]
 
         # write a new NSA pickle object
@@ -478,7 +479,7 @@ class Galaxy(BaseWebView):
             selected_bintemp = '{0}-{1}'.format(dm.get_bintype(), dm.get_template())
 
         # check that selected bintemp is available for target
-        hasbin = selected_bintemp.split('-')[0] in cube.get_available_bintypes()
+        hasbin = selected_bintemp.split('-')[0] in cube.get_available_bintypes() if selected_bintemp else None
 
         # build the uber map dictionary
         try:
@@ -498,7 +499,7 @@ class Galaxy(BaseWebView):
         else:
             output['specstatus'] = 1
 
-        output['image'] = cube.getImage().url
+        output['image'] = get_manga_image(cube)
         output['spectra'] = webspec
         output['specmsg'] = specmsg
         output['maps'] = mapdict
