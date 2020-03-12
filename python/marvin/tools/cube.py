@@ -213,7 +213,7 @@ class Cube(MarvinToolsClass, NSAMixIn, GetApertureMixIn):
                         datadb.PipelineInfo, datadb.PipelineVersion, datadb.IFUDesign).filter(
                             mdb.datadb.PipelineVersion.version == self._drpver,
                             datadb.Cube.plate == int(plate),
-                            datadb.IFUDesign.name == ifu).one()
+                            datadb.IFUDesign.name == ifu).use_cache(self.cache_region).one()
                 except sqlalchemy.orm.exc.MultipleResultsFound as ee:
                     raise MarvinError('Could not retrieve cube for plate-ifu {0}: '
                                       'Multiple Results Found: {1}'.format(self.plateifu, ee))
@@ -466,7 +466,7 @@ class Cube(MarvinToolsClass, NSAMixIn, GetApertureMixIn):
                             if 'datacubes' not in _db_rows:
                                 _db_rows['datacubes'] = session.query(datadb.Spaxel).filter(
                                     datadb.Spaxel.cube == self.data,
-                                    datadb.Spaxel.x == x, datadb.Spaxel.y == y).one()
+                                    datadb.Spaxel.x == x, datadb.Spaxel.y == y).use_cache(self.cache_region).one()
 
                             spaxel_data = getattr(_db_rows['datacubes'], colname)
 
@@ -474,7 +474,7 @@ class Cube(MarvinToolsClass, NSAMixIn, GetApertureMixIn):
 
                             if 'spectra' not in _db_rows:
                                 _db_rows['spectra'] = session.query(datadb.Cube).filter(
-                                    datadb.Cube.pk == self.data.pk).one()
+                                    datadb.Cube.pk == self.data.pk).use_cache(self.cache_region).one()
 
                             spaxel_data = getattr(_db_rows['spectra'], colname, None)
 

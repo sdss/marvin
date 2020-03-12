@@ -7,7 +7,7 @@
 # Created: Friday, 24th January 2020 2:47:54 pm
 # License: BSD 3-clause "New" or "Revised" License
 # Copyright (c) 2020 Brian Cherinka
-# Last Modified: Friday, 24th January 2020 4:42:30 pm
+# Last Modified: Monday, 27th January 2020 6:36:07 pm
 # Modified By: Brian Cherinka
 
 
@@ -111,7 +111,16 @@ def make_new_region(name='cache.dbm', backend='file', expiration=3600, redis_exp
 # make a default cache region
 regions['default'] = make_new_region()
 
+# make a null cache for tests and dumps
+regions['null'] = make_new_region(backend='null')
+
 # make cache regions for NSA tables
 for mpl in config._allowed_releases.keys():
     nsacache = 'nsa_{0}'.format(mpl.lower().replace('-', ''))
     regions[nsacache] = make_new_region(name=nsacache)
+
+# make a maps redis cache
+regions['maps'] = make_new_region(backend='redis')
+
+# make a modelcube redis cache
+regions['models'] = make_new_region(backend='redis')

@@ -28,6 +28,7 @@ import marvin.utils.general
 import marvin.utils.plot.map
 from marvin.utils.datamodel.dap.base import Property
 from marvin.utils.general.general import add_doc
+from marvin.tools.mixins.caching import CacheMixIn
 
 from .base_quantity import QuantityMixIn
 
@@ -277,26 +278,29 @@ class Map(units.Quantity, QuantityMixIn):
         table = getattr(mdb.dapdb, prop.model)
 
         fullname_value = prop.db_column()
-        value = mdb.session.query(getattr(table, fullname_value)).filter(
-            table.file_pk == maps.data.pk).order_by(table.spaxel_index).all()
+        props = [getattr(table, fullname_value)]
+        if prop.ivar:
+            fullname_ivar = prop.db_column(ext='ivar')
+            props.append(getattr(table, fullname_ivar))
+        if prop.mask:
+            fullname_mask = prop.db_column(ext='mask')
+            props.append(getattr(table, fullname_mask))
 
-        shape = (int(np.sqrt(len(value))), int(np.sqrt(len(value))))
-        value = np.array(value).reshape(shape).T
+        n_props = len(props)
 
         ivar = None
         mask = None
+        tmp = mdb.session.query(*props).filter(table.file_pk == maps.data.pk).use_cache(
+            maps.cache_region).order_by(table.spaxel_index).all()
 
+        shape = (int(np.sqrt(len(tmp))), int(np.sqrt(len(tmp))), n_props)
+        newtmp = np.array(tmp).reshape(shape).T
+        value = newtmp[0, :, :]
         if prop.ivar:
-            fullname_ivar = prop.db_column(ext='ivar')
-            ivar = mdb.session.query(getattr(table, fullname_ivar)).filter(
-                table.file_pk == maps.data.pk).order_by(table.spaxel_index).all()
-            ivar = np.array(ivar).reshape(shape).T
-
+            ivar = newtmp[1, :, :]
         if prop.mask:
-            fullname_mask = prop.db_column(ext='mask')
-            mask = mdb.session.query(getattr(table, fullname_mask)).filter(
-                table.file_pk == maps.data.pk).order_by(table.spaxel_index).all()
-            mask = np.array(mask).reshape(shape).T
+            mask = newtmp[2, :, :]
+            mask = mask.astype(int)
 
         return value, ivar, mask
 

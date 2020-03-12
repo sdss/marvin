@@ -7,7 +7,7 @@
 # Created: Monday, 27th January 2020 2:41:01 pm
 # License: BSD 3-clause "New" or "Revised" License
 # Copyright (c) 2020 Brian Cherinka
-# Last Modified: Monday, 27th January 2020 6:14:40 pm
+# Last Modified: Monday, 27th January 2020 6:35:50 pm
 # Modified By: Brian Cherinka
 
 
@@ -18,7 +18,7 @@ from marvin.db.caching import regions
 __all__ = ['CacheMixIn']
 
 
-cache_dict = {'Map': 'maps', 'Maps': 'maps'}
+cache_dict = {'Map': 'maps', 'Maps': 'maps', 'ModelCube': 'models'}
 
 
 class CacheMixIn(object):

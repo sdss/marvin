@@ -106,7 +106,7 @@ class DAPallMixIn(object):
             dapdb.File, datadb.PipelineInfo, datadb.PipelineVersion).filter(
                 mdb.datadb.PipelineVersion.version == self._dapver,
                 dapdb.DapAll.plateifu == self.plateifu,
-                dapdb.DapAll.daptype == daptype).first()
+                dapdb.DapAll.daptype == daptype).use_cache().first()
 
         if dapall_row is None:
             raise MarvinError('cannot find a DAPall match for this target in the DB.')

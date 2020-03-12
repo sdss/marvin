@@ -374,7 +374,7 @@ def mangaid2plateifu(mangaid, mode='auto', drpall=None, drpver=None):
         cubes = marvindb.session.query(marvindb.datadb.Cube).join(
             marvindb.datadb.PipelineInfo, marvindb.datadb.PipelineVersion).filter(
                 marvindb.datadb.Cube.mangaid == mangaid,
-                marvindb.datadb.PipelineVersion.version == drpver).all()
+                marvindb.datadb.PipelineVersion.version == drpver).use_cache().all()
 
         if len(cubes) == 0:
             raise ValueError('no plate-ifus found for mangaid={0}'.format(mangaid))
@@ -645,7 +645,7 @@ def getSpaxelXY(cube, plateifu, x, y):
     mdb = marvin.marvindb
 
     try:
-        spaxel = mdb.session.query(mdb.datadb.Spaxel).filter_by(cube=cube, x=x, y=y).one()
+        spaxel = mdb.session.query(mdb.datadb.Spaxel).filter_by(cube=cube, x=x, y=y).use_cache().one()
     except sqlalchemy.orm.exc.NoResultFound as e:
         raise MarvinError('Could not retrieve spaxel for plate-ifu {0} at position {1},{2}: No Results Found: {3}'.format(plateifu, x, y, e))
     except Exception as e:
@@ -1092,7 +1092,7 @@ def get_nsa_data(mangaid, source='nsa', mode='auto', drpver=None, drpall=None):
 
                 nsa_row = session.query(sampledb.NSA).join(sampledb.MangaTargetToNSA,
                                                            sampledb.MangaTarget).filter(
-                    sampledb.MangaTarget.mangaid == mangaid).all()
+                    sampledb.MangaTarget.mangaid == mangaid).use_cache().all()
 
                 if len(nsa_row) == 1:
                     return DotableCaseInsensitive(
