@@ -158,8 +158,14 @@ Enable the spectrum display by toggling on the Map/SpecView box.  The spectrum d
 
   * green solid line: spectrum (in observed frame)
   * green shaded region: 1-sigma error range
-  * blue solid line: full model fit (HYB10-MILESHC for Data Release >= 15 and MPLs >= 7)
+  * blue solid line: full model fit (HYB10-GAU-MILESHC for Data Release >= 15 and MPL-7, HYB10-MILESHC-MILESHC for MPL-8, HYB10-MILESHC-MASTARHC for MPL-9)
   * cursor coordinates: wavelength, flux, and model fit values
+
+* **Toggle Options**:
+
+  * Toggle common lines measured by the DAP
+  * Toggle between observed and rest-frame wavelengths
+  * Toggle a mask of bad DONOTUSE pixel regions
 
 
 .. _web-maps:

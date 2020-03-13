@@ -97,6 +97,7 @@ class Search(BaseWebView):
         # Attempt to retrieve search parameters
         form = processRequest(request=request)
         self.search['formparams'] = form
+        self.search['latest_dr'] = self._release.lower() if 'DR' in self._release else config._get_latest_release(dr_only=True).lower()
 
         # set the search form and form validation
         searchform = self.mf.SearchForm(form)
@@ -107,7 +108,8 @@ class Search(BaseWebView):
         self.search['guideparams'] = [{'id': p.full, 'optgroup': group.name, 'type': 'double' if p.dtype == 'float' else p.dtype, 'validation': {'step': 'any'}} for group in query_params for p in group]
         self.search['searchform'] = searchform
         self.search['placeholder'] = getRandomQuery()
-        self.search['returnurl'] = 'https://sdss-marvin.readthedocs.io/en/stable/datamodel/{0}.html'.format(current_session['release'].lower().replace('-',''))
+        self.search['returnurl'] = 'https://sdss-marvin.readthedocs.io/en/stable/datamodel/{0}.html#{0}query'.format(
+            current_session['release'].lower().replace('-', ''))
 
         # If form parameters then try to do a search
         if form:

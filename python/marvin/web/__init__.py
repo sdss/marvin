@@ -16,7 +16,7 @@ from marvin.web.web_utils import configFeatures
 from marvin.web.jinja_filters import jinjablue
 from marvin.web.error_handlers import errors
 from marvin.web.extensions import jsglue, flags, sentry, limiter, profiler, cache
-from marvin.web.extensions import login_manager, jwt, celery
+from marvin.web.extensions import login_manager, jwt, cors, celery
 from marvin.web.settings import ProdConfig, DevConfig, CustomConfig
 # Web Views
 from marvin.web.controllers.index import index
@@ -171,6 +171,11 @@ def register_extensions(app, app_base=None):
 
     # Celery
     celery.conf.update(app.config)
+
+    # intialize CORS
+    cors.init_app(app, supports_credentials=True, expose_headers='Authorization', 
+                  origins=['https://*.sdss.org', 'https://*.sdss.utah.edu', 'http://localhost:*'])
+
 
     
 def register_blueprints(app, url_prefix=None):

@@ -15,12 +15,14 @@ from marvin import config
 from marvin.utils.datamodel.query import datamodel
 
 
-PARAM_COUNT = {'MPL-4': {'all': 571, 'nospaxels': 309, 'nodap': 309},
-               'MPL-5': {'all': 703, 'nospaxels': 322, 'nodap': 301},
-               'MPL-6': {'all': 1676, 'nospaxels': 1008, 'nodap': 1031},
-               'MPL-7': {'all': 1676, 'nospaxels': 1008, 'nodap': 1031},
-               'DR15': {'all': 1676, 'nospaxels': 1008, 'nodap': 1031},
-               'MPL-8': {'all': 1676, 'nospaxels': 1008, 'nodap': 1031}
+PARAM_COUNT = {'MPL-4': {'all': 574, 'nospaxels': 309, 'nodap': 309},
+               'MPL-5': {'all': 707, 'nospaxels': 322, 'nodap': 301},
+               'MPL-6': {'all': 1863, 'nospaxels': 1008, 'nodap': 1031},
+               'MPL-7': {'all': 1863, 'nospaxels': 1008, 'nodap': 1031},
+               'DR15': {'all': 1863, 'nospaxels': 1008, 'nodap': 1031},
+               'MPL-8': {'all': 2014, 'nospaxels': 1008, 'nodap': 1031},
+               'DR16': {'all': 1863, 'nospaxels': 1008, 'nodap': 1031},
+               'MPL-9': {'all': 2546, 'nospaxels': 1008, 'nodap': 1031}
                }
 
 

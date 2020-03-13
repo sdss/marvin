@@ -19,7 +19,7 @@ from collections import OrderedDict
 from astropy.wcs import FITSFixedWarning
 
 # Set the Marvin version
-__version__ = '2.3.3dev'
+__version__ = '2.3.6dev'
 
 # Does this so that the implicit module definitions in extern can happen.
 # time - 483 ms
@@ -70,7 +70,7 @@ def initLog(logpath):
 if 'MARVIN_LOGS_DIR' in os.environ:
     logFilePath = os.path.join(os.path.realpath(os.environ['MARVIN_LOGS_DIR']), 'marvin.log')
 else:
-    logFilePath = os.path.realpath(os.path.join(os.environ['HOME'], '.marvin', 'marvin.log'))
+    logFilePath = os.path.realpath(os.path.join(os.path.expanduser('~'), '.marvin', 'marvin.log'))
 
 # Inits the log
 log = initLog(logFilePath)
@@ -124,6 +124,7 @@ class MarvinConfig(object):
 
         self._custom_config = None
         self._drpall = None
+        self._dapall = None
         self._inapp = False
 
         self._urlmap = None
@@ -412,7 +413,8 @@ class MarvinConfig(object):
         ''' Update the allowed releases based on access '''
 
         # define release dictionaries
-        mpldict = {'MPL-8': ('v2_5_3', '2.3.0'),
+        mpldict = {'MPL-9': ('v2_7_1', '2.4.1'),
+                   'MPL-8': ('v2_5_3', '2.3.0'),
                    'MPL-7': ('v2_4_3', '2.2.1'),
                    'MPL-6': ('v2_3_1', '2.1.3'),
                    'MPL-5': ('v2_0_1', '2.0.2'),
@@ -433,11 +435,14 @@ class MarvinConfig(object):
         relsorted = sorted(self._allowed_releases.items(), key=lambda p: p[1][0], reverse=True)
         self._allowed_releases = OrderedDict(relsorted)
 
-    def _get_latest_release(self, mpl_only=None):
+    def _get_latest_release(self, mpl_only=None, dr_only=None):
         ''' Get the latest release from allowed list '''
 
         if mpl_only:
-            return [r for r in list(self._allowed_releases) if 'MPL' in r][0]
+            return max([r for r in list(self._allowed_releases) if 'MPL' in r], key=lambda t: int(t.split('-')[-1]))
+
+        if dr_only:
+            return max([r for r in list(self._allowed_releases) if 'DR' in r], key=lambda t: int(t[2:]))
 
         return list(self._allowed_releases)[0]
 

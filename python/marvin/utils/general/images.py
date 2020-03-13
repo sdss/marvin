@@ -30,10 +30,10 @@ else:
     from io import BytesIO as stringio
 
 try:
-    from sdss_access import RsyncAccess, AccessError, HttpAccess
+    from sdss_access import Access, AccessError, HttpAccess
 except ImportError:
     Path = None
-    RsyncAccess = None
+    Access = None
     HttpAccess = None
 
 __all__ = ['getRandomImages', 'getImagesByPlate', 'getImagesByList', 'showImage',
@@ -57,11 +57,11 @@ def setMode(func):
 
 
 def checkPath(func):
-    '''Decorator that checks if RsyncAccess has been imported '''
+    '''Decorator that checks if Access has been imported '''
 
     @wraps(func)
     def wrapper(*args, **kwargs):
-        if not RsyncAccess:
+        if not Access:
             raise MarvinError('sdss_access is not installed')
         else:
             return func(*args, **kwargs)
@@ -144,8 +144,8 @@ def getRandomImages(num=10, download=False, mode=None, as_url=None, verbose=None
     drpver, __ = marvin.config.lookUpVersions(release=release)
     is_public = 'DR' in release
     rsync_release = release.lower() if is_public else None
-    rsync_access = RsyncAccess(label='marvin_getrandom', verbose=verbose, public=is_public,
-                               release=rsync_release)
+    rsync_access = Access(label='marvin_getrandom', verbose=verbose, public=is_public,
+                          release=rsync_release)
 
     imgname = 'mangaimagenew' if check_versions(drpver, 'v2_5_3') else 'mangaimage'
 
@@ -239,7 +239,7 @@ def getImagesByPlate(plateid, download=False, mode=None, as_url=None, verbose=No
     # setup Rsync Access
     is_public = 'DR' in release
     rsync_release = release.lower() if is_public else None
-    rsync_access = RsyncAccess(label='marvin_getplate', verbose=verbose, public=is_public,
+    rsync_access = Access(label='marvin_getplate', verbose=verbose, public=is_public,
                                release=rsync_release)
 
     # if mode is auto, set it to remote:
@@ -346,8 +346,8 @@ def getImagesByList(inputlist, download=False, mode=None, as_url=None, verbose=N
     drpver, __ = marvin.config.lookUpVersions(release=release)
     is_public = 'DR' in release
     rsync_release = release.lower() if is_public else None
-    rsync_access = RsyncAccess(label='marvin_getlist', verbose=verbose, public=is_public,
-                               release=rsync_release)
+    rsync_access = Access(label='marvin_getlist', verbose=verbose, public=is_public,
+                          release=rsync_release)
 
     imgname = 'mangaimagenew' if check_versions(drpver, 'v2_5_3') else 'mangaimage'
 
@@ -539,7 +539,7 @@ def show_image(input, **kwargs):
 
 def _download_images(images, label='get_images'):
     ''' Download a set of images '''
-    rsync = RsyncAccess(label=label)
+    rsync = Access(label=label)
     rsync.remote()
     for image in images:
         full = image._getFullPath()

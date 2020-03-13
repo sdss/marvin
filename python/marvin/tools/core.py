@@ -29,9 +29,9 @@ except ImportError:
     Path = None
 
 try:
-    from sdss_access import RsyncAccess
+    from sdss_access import Access
 except ImportError:
-    RsyncAccess = None
+    Access = None
 
 
 __ALL__ = ['MarvinToolsClass']

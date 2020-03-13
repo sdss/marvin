@@ -7,6 +7,7 @@
     redshift: 0.0407447
     shape: [34, 34]
     iauname: 'J153010.73+484124.8'
+    badspots: [[0, 4562]]
     nsa_data:
         nsa:
             elpetro_absmag_i: -19.1125469207764
@@ -305,6 +306,7 @@
     redshift: 0.020478
     shape: [72, 72]
     iauname: 'J152201.78+433156.3'
+    badspots: [[4557, 4562]]
     nsa_data:
         nsa:
             elpetro_absmag_i: -19.4085063934

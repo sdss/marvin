@@ -12,11 +12,10 @@ Revision History:
 '''
 from __future__ import print_function
 from __future__ import division
-from flask import Blueprint, render_template, request
+from flask import Blueprint, render_template
 from flask_classful import route
-from brain.api.base import processRequest
 from marvin.core.exceptions import MarvinError
-from marvin.utils.general import getRandomImages
+from marvin.utils.general import get_random_images
 from marvin.web.web_utils import buildImageDict
 from marvin.web.controllers import BaseWebView
 
@@ -40,18 +39,18 @@ class Random(BaseWebView):
     def index(self):
 
         # Attempt to retrieve search parameters
-        form = processRequest(request=request)
         self.random['imnumber'] = 16
         images = []
 
         # Get random images ; parse out thumbnails ; construct plate-IFUs
         imfiles = None
         try:
-            imfiles = getRandomImages(as_url=True, num=self.random['imnumber'], mode='local', release=self._release)
+            imfiles = get_random_images(num=self.random['imnumber'], release=self._release)
         except (MarvinError, AssertionError) as e:
             self.random['error'] = 'Error: could not get images: {0}'.format(e)
         else:
-            images = buildImageDict(imfiles)
+            urls = [i.url for i in imfiles]
+            images = buildImageDict(urls)
 
         # if image grab failed, make placeholders
         if not imfiles:

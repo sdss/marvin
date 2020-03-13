@@ -21,6 +21,7 @@ from celery import Celery
 from celery.signals import after_setup_logger, after_setup_task_logger
 from marvin.web.settings import Config
 from marvin import log
+from flask_cors import CORS
 import flask_jsglue as jsg
 import logging
 
@@ -71,3 +72,6 @@ after_setup_task_logger.connect(log)
 #     fh = logging.FileHandler('celerylogs.log')
 #     fh.setFormatter(formatter)
 #     logger.addHandler(fh)
+
+# Flask CORS
+cors = CORS()

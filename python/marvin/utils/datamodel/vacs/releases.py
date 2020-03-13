@@ -22,6 +22,10 @@ vacdms = []
 # create a dictionary of VACs by release
 vacdict = defaultdict(list)
 for sv in subvacs:
+    # skip hidden VACs
+    if sv._hidden:
+        continue
+    # add versions to dictionary
     for k in sv.version.keys():
         vacdict[k].append(sv)
 

@@ -15,6 +15,8 @@ var _slicedToArray = function () { function sliceIterator(arr, i) { var _arr = [
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
+function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
+
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
@@ -58,11 +60,12 @@ var MapError = function (_Error2) {
 var Galaxy = function () {
 
     // Constructor
-    function Galaxy(plateifu, toggleon) {
+    function Galaxy(plateifu, toggleon, redshift) {
         _classCallCheck(this, Galaxy);
 
         this.setPlateIfu(plateifu);
         this.toggleon = toggleon;
+        this.redshift = redshift;
         // main elements
         this.maindiv = $('#' + this.plateifu);
         this.metadiv = this.maindiv.find('#metadata');
@@ -81,8 +84,12 @@ var Galaxy = function () {
         this.togglediv = $('#toggleinteract');
         this.toggleload = $('#toggle-load');
         this.togglediv.bootstrapToggle('off');
+        this.toggleframe = $('#toggleframe');
+        this.togglelines = $('#togglelines');
+        this.togglemask = $('#togglemask');
         // flag popover elements
         this.qualpop = $('#qualitypopover');
+        this.mapqualpop = $('#mapqualitypopover');
         this.targpops = $('.targpopovers');
         // maps elements
         this.dapmapsbut = $('#dapmapsbut');
@@ -108,7 +115,6 @@ var Galaxy = function () {
 
         // init some stuff
         this.initFlagPopovers();
-        //this.checkToggle();
 
         //Event Handlers
         this.maptab.on('click', this, this.resizeSpecView); // this event fires when a user clicks the MapSpec View Tab
@@ -121,14 +127,9 @@ var Galaxy = function () {
         this.nsaplotbuttons.on('click', this, this.updateNSAPlot);
         //this.nsatable.on('page-change.bs.table', this, this.updateTableEvents);
         //this.nsatable.on('page-change.bs.table', this, this.updateTableEvents);
-
-        // NSA movers events
-        // var _this = this;
-        // $.each(this.nsamovers, function(index, mover) {
-        //     var id = mover.id;
-        //     $('#'+id).on('dragstart', this, _this.dragStart);
-        //     $('#'+id).on('dragover', this, _this.dragOver);
-        // });
+        this.toggleframe.on('change', this, this.toggleWavelength); // this event fires when a user clicks the Toggle Obs/Rest Frame
+        this.togglelines.on('change', this, this.toggleLines); // this event fires when a user clicks the Toggle Lines
+        this.togglemask.on('change', this, this.toggleMask); // this event fires when a user clicks the Toggle Masks
     }
 
     // Test print
@@ -172,19 +173,229 @@ var Galaxy = function () {
             }, 10);
         }
 
+        // Compute rest-frame wavelength
+
+    }, {
+        key: 'computeRestWave',
+        value: function computeRestWave() {
+            var _this4 = this;
+
+            var rest = this.setSpectrumAxisFormatter('rest', this.redshift);
+            this.obswave = this._spaxeldata.map(function (x) {
+                return x[0];
+            });
+            this.restwave = this.obswave.map(function (x) {
+                return rest(x);
+            });
+            this.rest_spaxeldata = this._spaxeldata.map(function (x, i) {
+                return [_this4.restwave[i], x.slice(1)[0], x.slice(1)[1]];
+            });
+        }
+
         // Initialize and Load a DyGraph spectrum
 
     }, {
         key: 'loadSpaxel',
         value: function loadSpaxel(spaxel, title) {
+            // this plugin renables dygraphs 1.1 behaviour of unzooming to specified valueRange 
+            var doubleClickZoomOutPlugin = {
+                activate: function activate(g) {
+                    // Save the initial y-axis range for later.
+                    var initialValueRange = g.getOption('valueRange');
+                    return {
+                        dblclick: function dblclick(e) {
+                            e.dygraph.updateOptions({
+                                dateWindow: null, // zoom all the way out
+                                valueRange: initialValueRange // zoom to a specific y-axis range.
+                            });
+                            e.preventDefault(); // prevent the default zoom out action.
+                        }
+                    };
+                }
+            };
+
+            // run intial setup of spaxel data
+            this.setupSpaxel(spaxel);
+
+            // initialize Dygraph
             var labels = spaxel[0].length == 3 ? ['Wavelength', 'Flux', 'Model Fit'] : ['Wavelength', 'Flux'];
-            this.webspec = new Dygraph(this.graphdiv[0], spaxel, {
+            var options = {
                 title: title,
                 labels: labels,
+                legend: 'always',
                 errorBars: true, // TODO DyGraph shows 2-sigma error bars FIX THIS
                 ylabel: 'Flux [10<sup>-17</sup> erg/cm<sup>2</sup>/s/Å]',
-                xlabel: 'Observed Wavelength [Ångströms]'
+                valueRange: [0, null],
+                plugins: [doubleClickZoomOutPlugin],
+                underlayCallback: this.underlay
+            };
+            // set up the wavelength axis
+            var data = this.toggleframe.prop('checked') ? this.rest_spaxeldata : spaxel;
+            options = this.addDygraphWaveOptions(options);
+
+            // create the Dygraph object
+            this.webspec = new Dygraph(this.graphdiv[0], data, options);
+
+            // assign the wavelength data and bad mask regions to the Dygraph object; makes accessibile inside underlay callback
+            this.webspec.wave = this.toggleframe.prop('checked') ? this.restwave : this.obswave;
+            this.webspec.badspots = this.badspots;
+
+            // create dap line annotations and conditionally display
+            this.updateAnnotations();
+        }
+
+        // This function draws highlighted masks on the Dygraph canvas
+
+    }, {
+        key: 'underlay',
+        value: function underlay(canvas, area, g) {
+
+            canvas.fillStyle = 'rgb(205, 92, 92, 0.5)';
+
+            if (g.badspots == null) {
+                return;
+            }
+
+            function highlight_mask(x_start, x_end) {
+                var bottom_left = g.toDomCoords(x_start, -20);
+                var top_right = g.toDomCoords(x_end, +20);
+
+                var left = bottom_left[0];
+                var right = top_right[0];
+                canvas.fillRect(left, area.y, right - left, area.h);
+            }
+            g.badspots.forEach(function (x) {
+                var xstart = g.wave[x[0]];
+                var xend = g.wave[x[1]];
+                highlight_mask(xstart, xend);
             });
+        }
+
+        // set up some spaxel data arrays
+
+    }, {
+        key: 'setupSpaxel',
+        value: function setupSpaxel(spaxel) {
+            this._spaxeldata = spaxel;
+            this.computeRestWave();
+            this.annotations = this.daplines.map(this.createAnnotation, this);
+        }
+
+        // Dygraph Axis Formatter
+
+    }, {
+        key: 'setSpectrumAxisFormatter',
+        value: function setSpectrumAxisFormatter(wave, redshift) {
+            var obs = function obs(d, gran) {
+                return d;
+            };
+            var rest = function rest(d, gran) {
+                return parseFloat((d / (1 + redshift)).toPrecision(5));
+            };
+
+            if (wave === 'obs') {
+                return obs;
+            } else if (wave === 'rest') {
+                return rest;
+            }
+        }
+
+        // update the Dygraph x-axis label and data with rest-frame / obs wavelength
+
+    }, {
+        key: 'addDygraphWaveOptions',
+        value: function addDygraphWaveOptions(oldoptions) {
+            var newopts = {};
+            if (this.toggleframe.prop('checked')) {
+                newopts = { 'file': this.rest_spaxeldata, 'xlabel': 'Rest Wavelength [Ångströms]' };
+            } else {
+                newopts = { 'file': this._spaxeldata, 'xlabel': 'Observed Wavelength [Ångströms]' };
+            }
+            var options = Object.assign(oldoptions, newopts);
+            return options;
+        }
+
+        // Toggle the Observed/Rest Wavelength
+
+    }, {
+        key: 'toggleWavelength',
+        value: function toggleWavelength(event) {
+            var _this = event.data;
+            var options = {};
+            options = _this.addDygraphWaveOptions(options);
+            _this.webspec.updateOptions(options);
+            _this.updateAnnotations();
+            _this.updateMask(_this.badspots);
+        }
+
+        // Update the line annotations on Dygraph
+
+    }, {
+        key: 'updateAnnotations',
+        value: function updateAnnotations() {
+            if (this.togglelines.prop('checked')) {
+                this.annotations = this.daplines.map(this.createAnnotation, this);
+                this.webspec.setAnnotations(this.annotations);
+            } else {
+                this.webspec.setAnnotations([]);
+            }
+        }
+
+        // Toggle Line Display
+
+    }, {
+        key: 'toggleLines',
+        value: function toggleLines(event) {
+            var _this = event.data;
+            _this.updateAnnotations();
+        }
+
+        // create a Dygraph annotation for measured DAP lines
+
+    }, {
+        key: 'createAnnotation',
+        value: function createAnnotation(x, index, arr) {
+            var _x$split = x.split(' '),
+                _x$split2 = _slicedToArray(_x$split, 2),
+                name = _x$split2[0],
+                wave = _x$split2[1];
+
+            name = name.includes('-') ? name.split('-')[0] + name.split('-')[1][0] : name;
+            var owave = parseInt(wave) * (1 + this.redshift);
+            var wavedata = this.toggleframe.prop('checked') ? this.restwave : this.obswave;
+            var use_wave = this.toggleframe.prop('checked') ? wave : owave;
+            var diff = wavedata.map(function (y) {
+                return Math.abs(y - use_wave);
+            });
+            var idx = diff.indexOf(Math.min.apply(Math, _toConsumableArray(diff)));
+            var closest_wave = String(wavedata[idx]);
+            var annot = { 'series': "Flux", 'x': closest_wave, 'shortText': name, 'text': x, 'width': 30, 'height': 20, 'tickHeight': 40, 'tickColor': '#cd5c5c', 'cssClass': 'annotation' };
+            return annot;
+        }
+
+        // Toggle DONOTUSE Masks
+
+    }, {
+        key: 'toggleMask',
+        value: function toggleMask(event) {
+            var _this = event.data;
+            if (_this.togglemask.prop('checked')) {
+                _this.webspec.badspots = null;
+            } else {
+                _this.webspec.badspots = _this.badspots;
+            }
+            _this.webspec.updateOptions({});
+        }
+
+        // Update the masks with new bad regions 
+
+    }, {
+        key: 'updateMask',
+        value: function updateMask(badspots) {
+            this.badspots = badspots == null ? this.badspots : badspots;
+            this.webspec.wave = this.toggleframe.prop('checked') ? this.restwave : this.obswave;
+            this.webspec.badspots = this.togglemask.prop('checked') ? null : badspots;
+            this.webspec.updateOptions({});
         }
 
         // Update the spectrum message div for errors only
@@ -202,13 +413,18 @@ var Galaxy = function () {
             this.specmsg.html(newmsg);
         }
 
-        // Update a DyGraph spectrum
+        // Update a DyGraph spectrum after clicking on a Map or the Image
 
     }, {
         key: 'updateSpaxel',
-        value: function updateSpaxel(spaxel, specmsg) {
+        value: function updateSpaxel(spaxel, specmsg, badspots) {
+            this.setupSpaxel(spaxel);
             this.updateSpecMsg(specmsg);
-            this.webspec.updateOptions({ 'file': spaxel, 'title': specmsg });
+            var options = { 'title': specmsg };
+            options = this.addDygraphWaveOptions(options);
+            this.webspec.updateOptions(options);
+            this.updateAnnotations();
+            this.updateMask(badspots);
         }
 
         // Initialize OpenLayers Map
@@ -221,6 +437,9 @@ var Galaxy = function () {
             // add click event handler on map to get spaxel
             this.olmap.map.on('singleclick', this.getSpaxel, this);
         }
+
+        // Initialize the DAP Heatmap displays
+
     }, {
         key: 'initHeatmap',
         value: function initHeatmap(maps) {
@@ -249,7 +468,7 @@ var Galaxy = function () {
     }, {
         key: 'getSpaxel',
         value: function getSpaxel(event) {
-            var _this4 = this;
+            var _this5 = this;
 
             var mousecoords = event.coordinate === undefined ? null : event.coordinate;
             var divid = $(event.target).parents('div').first().attr('id');
@@ -264,10 +483,10 @@ var Galaxy = function () {
                 if (data.result.status === -1) {
                     throw new SpaxelError('Error: ' + data.result.specmsg);
                 }
-                _this4.updateSpaxel(data.result.spectra, data.result.specmsg);
+                _this5.updateSpaxel(data.result.spectra, data.result.specmsg, data.result.badspots);
             }).catch(function (error) {
-                var errmsg = error.message === undefined ? _this4.makeError('getSpaxel') : error.message;
-                _this4.updateSpecMsg(errmsg, -1);
+                var errmsg = error.message === undefined ? _this5.makeError('getSpaxel') : error.message;
+                _this5.updateSpecMsg(errmsg, -1);
             });
         }
 
@@ -277,7 +496,7 @@ var Galaxy = function () {
     }, {
         key: 'checkToggle',
         value: function checkToggle() {
-            if (this.toggleon) {
+            if (this.toggleon === 'true') {
                 this.toggleOn();
             } else {
                 this.toggleOff();
@@ -320,7 +539,7 @@ var Galaxy = function () {
     }, {
         key: 'initDynamic',
         value: function initDynamic(event) {
-            var _this5 = this;
+            var _this6 = this;
 
             var _this = event.data;
 
@@ -356,11 +575,17 @@ var Galaxy = function () {
                             throw new MapError('Error: ' + data.result.mapmsg);
                         }
 
+                        // extract some properties from the result
                         var image = data.result.image;
                         var spaxel = data.result.spectra;
                         var spectitle = data.result.specmsg;
                         var maps = data.result.maps;
                         var mapmsg = data.result.mapmsg;
+
+                        // add the list of DAP lines and bad mask regions to the global scope
+                        _this.daplines = data.result.daplines;
+                        _this.badspots = data.result.badspots;
+
                         // Load the Galaxy Image
                         _this.initOpenLayers(image);
                         _this.toggleload.hide();
@@ -371,7 +596,7 @@ var Galaxy = function () {
                         // refresh the map selectpicker
                         _this.dapselect.selectpicker('refresh');
                     }).catch(function (error) {
-                        var errmsg = error.message === undefined ? _this5.makeError('initDynamic') : error.message;
+                        var errmsg = error.message === undefined ? _this6.makeError('initDynamic') : error.message;
                         _this.updateSpecMsg(errmsg, -1);
                         _this.updateMapMsg(errmsg, -1);
                     });
@@ -386,6 +611,8 @@ var Galaxy = function () {
         value: function initFlagPopovers() {
             // DRP Quality Popovers
             this.qualpop.popover({ html: true, content: $('#list_drp3quality').html() });
+            // DAP Map Quality Popovers
+            this.mapqualpop.popover({ html: true, content: $('#list_dapquality').html() });
             // MaNGA Target Popovers
             $.each(this.targpops, function (index, value) {
                 // get id of flag link
@@ -525,7 +752,7 @@ var Galaxy = function () {
     }, {
         key: 'updateNSAData',
         value: function updateNSAData(index, type) {
-            var _this6 = this;
+            var _this7 = this;
 
             var data = void 0,
                 options = void 0;
@@ -545,7 +772,7 @@ var Galaxy = function () {
                 data = [];
                 $.each(_x, function (index, value) {
                     if (value > -9999 && _y[index] > -9999) {
-                        var tmp = { 'name': _this6.nsasample.plateifu[index], 'x': value, 'y': _y[index] };
+                        var tmp = { 'name': _this7.nsasample.plateifu[index], 'x': value, 'y': _y[index] };
                         data.push(tmp);
                     }
                 });
@@ -560,24 +787,24 @@ var Galaxy = function () {
     }, {
         key: 'setTableEvents',
         value: function setTableEvents() {
-            var _this7 = this;
+            var _this8 = this;
 
             var tabledata = this.nsatable.bootstrapTable('getData');
 
             $.each(this.nsamovers, function (index, mover) {
                 var id = mover.id;
-                $('#' + id).on('dragstart', _this7, _this7.dragStart);
-                $('#' + id).on('dragover', _this7, _this7.dragOver);
-                $('#' + id).on('drop', _this7, _this7.moverDrop);
+                $('#' + id).on('dragstart', _this8, _this8.dragStart);
+                $('#' + id).on('dragover', _this8, _this8.dragOver);
+                $('#' + id).on('drop', _this8, _this8.moverDrop);
             });
 
             this.nsatable.on('page-change.bs.table', function () {
                 $.each(tabledata, function (index, row) {
                     var mover = row[0];
                     var id = $(mover).attr('id');
-                    $('#' + id).on('dragstart', _this7, _this7.dragStart);
-                    $('#' + id).on('dragover', _this7, _this7.dragOver);
-                    $('#' + id).on('drop', _this7, _this7.moverDrop);
+                    $('#' + id).on('dragstart', _this8, _this8.dragStart);
+                    $('#' + id).on('dragover', _this8, _this8.dragOver);
+                    $('#' + id).on('drop', _this8, _this8.moverDrop);
                 });
             });
         }
@@ -587,7 +814,7 @@ var Galaxy = function () {
     }, {
         key: 'addNSAEvents',
         value: function addNSAEvents() {
-            var _this8 = this;
+            var _this9 = this;
 
             //let _this = this;
             // NSA plot events
@@ -597,12 +824,12 @@ var Galaxy = function () {
                 var highx = $('#' + id).find('.highcharts-xaxis');
                 var highy = $('#' + id).find('.highcharts-yaxis');
 
-                highx.on('dragover', _this8, _this8.dragOver);
-                highx.on('dragenter', _this8, _this8.dragEnter);
-                highx.on('drop', _this8, _this8.dropElement);
-                highy.on('dragover', _this8, _this8.dragOver);
-                highy.on('dragenter', _this8, _this8.dragEnter);
-                highy.on('drop', _this8, _this8.dropElement);
+                highx.on('dragover', _this9, _this9.dragOver);
+                highx.on('dragenter', _this9, _this9.dragEnter);
+                highx.on('drop', _this9, _this9.dropElement);
+                highy.on('dragover', _this9, _this9.dragOver);
+                highy.on('dragenter', _this9, _this9.dragEnter);
+                highy.on('drop', _this9, _this9.dropElement);
             });
         }
 
@@ -633,12 +860,12 @@ var Galaxy = function () {
     }, {
         key: 'createD3data',
         value: function createD3data() {
-            var _this9 = this;
+            var _this10 = this;
 
             var data = [];
             this.nsaplotcols.forEach(function (column, index) {
-                var goodsample = _this9.nsasample[column].filter(_this9.filterArray);
-                var tmp = { 'value': _this9.mygalaxy[column], 'title': column, 'sample': goodsample };
+                var goodsample = _this10.nsasample[column].filter(_this10.filterArray);
+                var tmp = { 'value': _this10.mygalaxy[column], 'title': column, 'sample': goodsample };
                 data.push(tmp);
             });
             return data;
@@ -677,7 +904,7 @@ var Galaxy = function () {
     }, {
         key: 'initNSAScatter',
         value: function initNSAScatter(parentid) {
-            var _this10 = this;
+            var _this11 = this;
 
             // only update the single parent div element
             if (parentid !== undefined) {
@@ -703,18 +930,18 @@ var Galaxy = function () {
                 $.each(this.nsaplots, function (index, plot) {
                     var plotdiv = $(plot);
 
-                    var _updateNSAData5 = _this10.updateNSAData(index + 1, 'galaxy'),
+                    var _updateNSAData5 = _this11.updateNSAData(index + 1, 'galaxy'),
                         _updateNSAData6 = _slicedToArray(_updateNSAData5, 2),
                         data = _updateNSAData6[0],
                         options = _updateNSAData6[1];
 
-                    var _updateNSAData7 = _this10.updateNSAData(index + 1, 'sample'),
+                    var _updateNSAData7 = _this11.updateNSAData(index + 1, 'sample'),
                         _updateNSAData8 = _slicedToArray(_updateNSAData7, 2),
                         sdata = _updateNSAData8[0],
                         soptions = _updateNSAData8[1];
 
                     options.altseries = { data: sdata, name: 'Sample' };
-                    _this10.nsascatter[index + 1] = new Scatter(plotdiv, data, options);
+                    _this11.nsascatter[index + 1] = new Scatter(plotdiv, data, options);
                 });
             }
         }

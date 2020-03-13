@@ -26,6 +26,7 @@ Marvin Tools provide the core functionality for accessing MaNGA data with Marvin
 - Autocompletion of properties and channels (powered by a datamodel).
 - The ability to :ref:`extract all spaxels within a region <marvin-get-aperture>`.
 - Access to NSA and DRPall data.
+- Access to contributed :ref:`MaNGA VACS<marvin-vacs>`
 - Easy :ref:`data download <marvin-download-objects>`.
 
 The following sections explain how to use the tools in detail. They assume that you have read our :ref:`marvin-getting_started` and are familiar with :ref:`Astropy quantities <marvin-quantities>`.
@@ -44,6 +45,7 @@ The following sections explain how to use the tools in detail. They assume that 
     plate
     spaxel
     image
+    vacs
 
 :rubric-h2:`Common Tools Features`
 

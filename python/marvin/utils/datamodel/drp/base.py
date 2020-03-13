@@ -394,6 +394,7 @@ class DataCube(object):
         copy_of_self = self.copy()
         copy_of_self.__class__ = RSS
         copy_of_self.parent = new_parent
+        copy_of_self.db_table = 'rssfiber'
 
         return copy_of_self
 

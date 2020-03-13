@@ -31,15 +31,26 @@ class GEMAVAC(VACMixIn):
     """
 
     # Required parameters
-    name = 'mangagema'
+    name = 'gema'
     description = 'Returns GEMA table data'
-    version = {'MPL-7': '1.0.1', 'DR15': '1.0.1'}
+    version = {'MPL-7': '1.0.1', 'DR15': '1.0.1', 'DR16': '1.0.1'}
 
     # optional Marvin Tools to attach your vac to
     include = (marvin.tools.cube.Cube, marvin.tools.maps.Maps, marvin.tools.modelcube.ModelCube)
 
     # Required method
-    def get_data(self, parent_object):
+    def set_summary_file(self, release):
+        ''' Sets the path to the GEMA summary file '''
+
+        # define the variables to build a unique path to your VAC file
+        self.path_params = {"ver": self.version[release]}
+
+        # get_path returns False if the files do not exist locally
+        self.summary_file = self.get_path('mangagema', path_params=self.path_params)
+
+    # Required method
+    def get_target(self, parent_object):
+        ''' Accesses VAC data for a specific target from a Marvin Tool object '''
 
         # Create a dictionary for GEMA VAC data
         gemadata = {
@@ -62,20 +73,13 @@ class GEMAVAC(VACMixIn):
 
         # get any parameters you need from the parent object
         mangaid = parent_object.mangaid
-        release = parent_object.release
-
-        # define the variables to build a unique path to your VAC file
-        path_params = {'ver': self.version[release]}
-
-        # get_path returns False if the files do not exist locally
-        gemapath = self.get_path('mangagema', path_params=path_params)
 
         # download the vac from the SAS if it does not already exist locally
-        if not gemapath:
-            gemapath = self.download_vac('mangagema', path_params=path_params)
+        if not self.file_exists(self.summary_file):
+            self.summary_file = self.download_vac('mangagema', path_params=self.path_params)
 
         # opening tables in VAC file
-        gemafile = fits.open(gemapath)
+        gemafile = fits.open(self.summary_file)
 
         # Return selected line(s) for a mangaid galaxy
         # LSS parameters

@@ -61,4 +61,4 @@ class TestMangaHI(object):
     def test_return_type(self, plateifu):
 
         my_map = Maps(plateifu)
-        assert isinstance(my_map.vacs.mangahi, object)
+        assert isinstance(my_map.vacs.HI, object)

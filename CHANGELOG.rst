@@ -1,18 +1,64 @@
 Marvin's Change Log
 ===================
 
-[2.3.3] - unreleased
+[2.3.6] - unreleased
+--------------------
+
+[2.3.5] - 2019/12/09
 --------------------
 
 Added
 ^^^^^
-- Support for DR16.  Updated datamodels and docs. 
+- Support for MPL-9 MaNGA data
+- Issue :issue:`648` - Option to toggle common lines from the DAP in web spectrum viewer
+- Issue :issue:`112` - Option to toggle between rest-frame and observed wavelength in web spectrum viewer
+- Issue :issue:`679` - Option to toggle on DONOTUSE pixel region masks in web spectrum viewer
+- master-fifo file to uwsgi base config ini file
+- adds an alert to authenticate when no static image detected
+
+Changed
+^^^^^^^
+- updated datamodels to include MPL-9 changes
+- turned off API rate limiting globally
+- turned back on old spaxel query method
+- switched random image web page to use improved `get_random_images` function
+- changing galaxy page static image grab to use `cube.getImage().url`
+
+
+[2.3.4] - 2019/12/09
+--------------------
+
+Changed
+^^^^^^^
+- Added explicit python path in uwsgi prod.ini file
+
+Fixed
+^^^^^
+- Bug in session variable controlling DAP bintemps 
+
+[2.3.3] - 2019/12/09
+--------------------
+
+Added
+^^^^^
+- Support for DR16.  Updated datamodels and docs.
+- Added Galaxy Zoo VAC
+- Added GEMA VAC
+- Added Firefly VAC
+- Added Visual Morphology VAC
+- Merged :pr:`678`, richer support for VACs
+- Merged :pr:`652`, richer support for Windows
+- Merged :pr:`677`, updated documentation on issues with fuzzy string matching
+- Merged :pr:`687`, fixes map arithmetic with reflexive operators
 
 Changed
 ^^^^^^^
 - all yaml.load uses new Loader to accommodate old and new yaml spec;
 - updated Runtime Issues documentation to include section on numpy.ufunc binary warnings
 - added to reprs for some db ModelClasses
+- all `sdss_access.sync.RsyncAccess` has been converted to `sdss_access.sync.Access` to allow for Linux/Windows switching
+- updates citation to Marvin paper
+- DAP Maps label on galaxy page now contains a pop up of links for more info
 
 Fixed
 ^^^^^
@@ -20,7 +66,12 @@ Fixed
 - Issue :issue:`655` - added yaml loader to remove yaml warnings for 5.1 spec
 - Fixed bug when server tries to access NSA on cube when none exists and triggers remote authentication issue
 - Issue :issue:`664` - Fixed link to MaNGA's Getting Started in docs.
-
+- Issue :issue:`686` - added reflexive operators to EnhancedMap
+- Issue :issue:`689` - added link to CSV file of Firefly stellar mass measurements needed for the Spatially-Resolved Mass-Metallicity Relation Tutorial
+- Issue :issue:`682` - adds info links next to DAP Maps selection on galaxy page
+- Issue :issue:`581` - makes MapSpecView button a session variable
+- Issuu :issue:`208` - makes map selections session variable
+- Issue :issue:`171` - fix y-min to 0 for spectrum web view
 
 [2.3.2] - 2019/02/27
 --------------------
