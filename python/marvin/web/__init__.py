@@ -16,7 +16,7 @@ from marvin.web.web_utils import updateGlobalSession, check_access, configFeatur
 from marvin.web.jinja_filters import jinjablue
 from marvin.web.error_handlers import errors
 from marvin.web.extensions import jsglue, flags, sentry, limiter, profiler, cache
-from marvin.web.extensions import login_manager, jwt, cors, session
+from marvin.web.extensions import login_manager, jwt, cors, session, compress
 from marvin.web.settings import ProdConfig, DevConfig, CustomConfig
 # Web Views
 from marvin.web.controllers.index import index
@@ -165,6 +165,9 @@ def register_extensions(app, app_base=None):
 
     # initialize the Session
     session.init_app(app)
+
+    # initialize Compress
+    compress.init_app(app)
 
 
 def register_blueprints(app, url_prefix=None):
