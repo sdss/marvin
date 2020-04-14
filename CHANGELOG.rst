@@ -12,9 +12,6 @@ Marvin's Change Log
 - **Adds** - new utility functions for DRPall, and DAPall files, `get_xxx_path`, `get_xxx_file`, `get_xxx_table`
 - **Fixes** - Issue :issue:`695` - better web spectra/map error messages; 
 
-[2.3.7] - unreleased
---------------------
-
 [2.3.6] - 2020/04/14
 --------------------
 
