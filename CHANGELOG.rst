@@ -1,8 +1,12 @@
 Marvin's Change Log
 ===================
 
-[2.3.6] - unreleased
+[2.3.6] - 2020/04/14
 --------------------
+
+Fixed
+^^^^^
+- Issue :issue:`700` - pinned webargs package to version <6, networkx package <2.4  
 
 [2.3.5] - 2019/12/09
 --------------------
