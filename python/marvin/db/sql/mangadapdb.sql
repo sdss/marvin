@@ -65,6 +65,8 @@ create table mangadapdb.spaxelprop8 (pk bigserial primary key not null, file_pk 
 
 create table mangadapdb.spaxelprop9 (pk bigserial primary key not null, file_pk integer, spaxel_index integer, binid_pk integer, x integer, y integer);
 
+create table mangadapdb.spaxelprop10 (pk bigserial primary key not null, file_pk integer, spaxel_index integer, binid_pk integer, x integer, y integer);
+
 create table mangadapdb.modelcube (pk serial primary key not null, file_pk integer);
 
 create table mangadapdb.modelspaxel (pk serial primary key not null, flux real[], ivar real[], mask integer[], model real[],
@@ -229,6 +231,11 @@ ALTER TABLE ONLY mangadapdb.spaxelprop9
     FOREIGN KEY (file_pk) REFERENCES mangadapdb.file(pk)
     ON UPDATE CASCADE ON DELETE CASCADE;
 
+ALTER TABLE ONLY mangadapdb.spaxelprop10
+    ADD CONSTRAINT file_fk
+    FOREIGN KEY (file_pk) REFERENCES mangadapdb.file(pk)
+    ON UPDATE CASCADE ON DELETE CASCADE;
+
 CREATE INDEX CONCURRENTLY cube_pk_idx ON mangadapdb.file using BTREE(cube_pk);
 CREATE INDEX CONCURRENTLY pipeline_info_pk_idx ON mangadapdb.file using BTREE(pipeline_info_pk);
 CREATE INDEX CONCURRENTLY extname_pk_idx ON mangadapdb.hdu using BTREE(extname_pk);
@@ -304,6 +311,18 @@ CREATE INDEX CONCURRENTLY emline9_gflux_oiii_idx ON mangadapdb.spaxelprop9 using
 CREATE INDEX CONCURRENTLY emline9_gflux_sii_idx ON mangadapdb.spaxelprop9 using BTREE(emline_gflux_sii_6718);
 CREATE INDEX CONCURRENTLY emline9_gflux_oii_idx ON mangadapdb.spaxelprop9 using BTREE(emline_gflux_oiid_3728);
 CREATE INDEX CONCURRENTLY emline9_gflux_nii_idx ON mangadapdb.spaxelprop9 using BTREE(emline_gflux_nii_6585);
+
+CREATE INDEX CONCURRENTLY binid10_idx ON mangadapdb.spaxelprop9 using BTREE(binid);
+CREATE INDEX CONCURRENTLY file10_pk_idx ON mangadapdb.spaxelprop9 using BTREE(file_pk);
+CREATE INDEX CONCURRENTLY spaxel10_index_idx ON mangadapdb.spaxelprop9 using BTREE(spaxel_index);
+create index concurrently spx10_x_idx on mangadapdb.spaxelprop9 using btree(x);
+create index concurrently spx10_y_idx on mangadapdb.spaxelprop9 using btree(y);
+CREATE INDEX CONCURRENTLY emline10_gflux_ha_idx ON mangadapdb.spaxelprop9 using BTREE(emline_gflux_ha_6564);
+CREATE INDEX CONCURRENTLY emline10_gflux_hb_idx ON mangadapdb.spaxelprop9 using BTREE(emline_gflux_hb_4862);
+CREATE INDEX CONCURRENTLY emline10_gflux_oiii_idx ON mangadapdb.spaxelprop9 using BTREE(emline_gflux_oiii_5008);
+CREATE INDEX CONCURRENTLY emline10_gflux_sii_idx ON mangadapdb.spaxelprop9 using BTREE(emline_gflux_sii_6718);
+CREATE INDEX CONCURRENTLY emline10_gflux_oii_idx ON mangadapdb.spaxelprop9 using BTREE(emline_gflux_oiid_3728);
+CREATE INDEX CONCURRENTLY emline10_gflux_nii_idx ON mangadapdb.spaxelprop9 using BTREE(emline_gflux_nii_6585);
 
 CREATE INDEX CONCURRENTLY mc_file_pk_idx ON mangadapdb.modelcube using BTREE(file_pk);
 CREATE INDEX CONCURRENTLY rc_mc_pk_idx ON mangadapdb.redcorr using BTREE(modelcube_pk);
