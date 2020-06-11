@@ -57,7 +57,7 @@ def _getRSS(name, use_file=True, release=None, **kwargs):
                 plate, ifu = name.split('-')
 
             if Path is not None:
-                filename = Path().full('mangarss', ifu=ifu, plate=plate, drpver=drpver)
+                filename = Path(release=release).full('mangarss', ifu=ifu, plate=plate, drpver=drpver)
                 assert os.path.exists(filename), 'file not found.'
             else:
                 raise MarvinError('cannot create path for MaNGA rss.')

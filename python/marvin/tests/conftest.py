@@ -525,10 +525,10 @@ class Galaxy(object):
     def set_filepaths(self, pathtype='full'):
         """Set the paths for cube, maps, etc."""
         self.path = Path()
-        if check_versions(self.drpver, 'v2_5_3'):
-            self.imgpath = self.path.__getattribute__(pathtype)('mangaimagenew', **self.access_kwargs)
-        else:
-            self.imgpath = self.path.__getattribute__(pathtype)('mangaimage', **self.access_kwargs)
+        # if check_versions(self.drpver, 'v2_5_3'):
+        #     self.imgpath = self.path.__getattribute__(pathtype)('mangaimagenew', **self.access_kwargs)
+        # else:
+        self.imgpath = self.path.__getattribute__(pathtype)('mangaimage', **self.access_kwargs)
         self.cubepath = self.path.__getattribute__(pathtype)('mangacube', **self.access_kwargs)
         self.rsspath = self.path.__getattribute__(pathtype)('mangarss', **self.access_kwargs)
 
@@ -537,9 +537,9 @@ class Galaxy(object):
             self.modelpath = None
         else:
             self.access_kwargs.pop('mode')
-            self.mapspath = self.path.__getattribute__(pathtype)('mangadap5', mode='MAPS',
+            self.mapspath = self.path.__getattribute__(pathtype)('mangadap', mode='MAPS',
                                                                  **self.access_kwargs)
-            self.modelpath = self.path.__getattribute__(pathtype)('mangadap5', mode='LOGCUBE',
+            self.modelpath = self.path.__getattribute__(pathtype)('mangadap', mode='LOGCUBE',
                                                                   **self.access_kwargs)
 
     def get_location(self, path):
@@ -561,10 +561,10 @@ class Galaxy(object):
 
         if name == 'maps':
             access_copy['mode'] = 'MAPS'
-            name = 'mangamap' if self.release == 'MPL-4' else 'mangadap5'
+            name = 'mangamap' if self.release == 'MPL-4' else 'mangadap'
         elif name == 'modelcube':
             access_copy['mode'] = 'LOGCUBE'
-            name = None if self.release == 'MPL-4' else 'mangadap5'
+            name = None if self.release == 'MPL-4' else 'mangadap'
 
         path = self.path.full(name, **access_copy) if name else None
         return path

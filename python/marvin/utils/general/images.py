@@ -142,12 +142,12 @@ def getRandomImages(num=10, download=False, mode=None, as_url=None, verbose=None
 
     release = release if release else marvin.config.release
     drpver, __ = marvin.config.lookUpVersions(release=release)
-    is_public = 'DR' in release
-    rsync_release = release.lower() if is_public else None
-    rsync_access = Access(label='marvin_getrandom', verbose=verbose, public=is_public,
-                          release=rsync_release)
+    # is_public = 'DR' in release
+    # rsync_release = release.lower() if is_public else None
+    rsync_access = Access(label='marvin_getrandom', verbose=verbose, release=release)
 
-    imgname = 'mangaimagenew' if check_versions(drpver, 'v2_5_3') else 'mangaimage'
+    #imgname = 'mangaimagenew' if check_versions(drpver, 'v2_5_3') else 'mangaimage'
+    imgname = 'mangaimage'
 
     # if mode is auto, set it to remote:
     if mode == 'auto':
@@ -237,10 +237,9 @@ def getImagesByPlate(plateid, download=False, mode=None, as_url=None, verbose=No
     #dir3d = getDir3d(plateid, mode=mode, release=release)
 
     # setup Rsync Access
-    is_public = 'DR' in release
-    rsync_release = release.lower() if is_public else None
-    rsync_access = Access(label='marvin_getplate', verbose=verbose, public=is_public,
-                               release=rsync_release)
+    # is_public = 'DR' in release
+    # rsync_release = release.lower() if is_public else None
+    rsync_access = Access(label='marvin_getplate', verbose=verbose, release=release)
 
     # if mode is auto, set it to remote:
     if mode == 'auto':
@@ -248,7 +247,8 @@ def getImagesByPlate(plateid, download=False, mode=None, as_url=None, verbose=No
                       'local images, set the mode explicitly to local', MarvinUserWarning)
         mode = 'remote'
 
-    imgname = 'mangaimagenew' if check_versions(drpver, 'v2_5_3') else 'mangaimage'
+    #imgname = 'mangaimagenew' if check_versions(drpver, 'v2_5_3') else 'mangaimage'
+    imgname = 'mangaimage'
 
     # do a local or remote thing
     if mode == 'local':
@@ -344,12 +344,12 @@ def getImagesByList(inputlist, download=False, mode=None, as_url=None, verbose=N
     # setup Rsync Access
     release = release if release else marvin.config.release
     drpver, __ = marvin.config.lookUpVersions(release=release)
-    is_public = 'DR' in release
-    rsync_release = release.lower() if is_public else None
-    rsync_access = Access(label='marvin_getlist', verbose=verbose, public=is_public,
-                          release=rsync_release)
+    # is_public = 'DR' in release
+    # rsync_release = release.lower() if is_public else None
+    rsync_access = Access(label='marvin_getlist', verbose=verbose, release=release)
 
-    imgname = 'mangaimagenew' if check_versions(drpver, 'v2_5_3') else 'mangaimage'
+    #imgname = 'mangaimagenew' if check_versions(drpver, 'v2_5_3') else 'mangaimage'
+    imgname = 'mangaimage'
 
     # if mode is auto, set it to remote:
     if mode == 'auto':
@@ -440,7 +440,8 @@ def showImage(path=None, plateifu=None, release=None, return_image=True, show_im
     drpver, __ = marvin.config.lookUpVersions(release=release)
     args = [path, plateifu]
     assert any(args), 'A filepath or plateifu must be specified!'
-    imgname = 'mangaimagenew' if check_versions(drpver, 'v2_5_3') else 'mangaimage'
+    #imgname = 'mangaimagenew' if check_versions(drpver, 'v2_5_3') else 'mangaimage'
+    imgname = 'mangaimage'
 
     # check path
     if path:
@@ -477,7 +478,7 @@ def showImage(path=None, plateifu=None, release=None, return_image=True, show_im
     # check plateifu
     if plateifu:
         plateid, ifu = plateifu.split('-')
-        http_access = HttpAccess(verbose=False)
+        http_access = HttpAccess(verbose=False, release=release)
         if mode == 'local':
             filepath = _do_local_plateifu(imgname)
         elif mode == 'remote':
@@ -537,9 +538,9 @@ def show_image(input, **kwargs):
     image.show()
 
 
-def _download_images(images, label='get_images'):
+def _download_images(images, label='get_images', release=None):
     ''' Download a set of images '''
-    rsync = Access(label=label)
+    rsync = Access(label=label, release=release)
     rsync.remote()
     for image in images:
         full = image._getFullPath()
@@ -573,7 +574,7 @@ def get_images_by_plate(plateid, download=None, release=None):
     images = Image.by_plate(plateid, release=release)
 
     if download:
-        _download_images(images, label='by_plate')
+        _download_images(images, label='by_plate', release=release)
 
     return images
 
@@ -603,7 +604,7 @@ def get_images_by_list(inputlist, release=None, download=None):
     images = Image.from_list(inputlist, release=release)
 
     if download:
-        _download_images(images, label='by_list')
+        _download_images(images, label='by_list', release=release)
 
     return images
 
@@ -632,6 +633,6 @@ def get_random_images(num, release=None, download=None):
     images = Image.get_random(num=num, release=release)
 
     if download:
-        _download_images(images, label='by_random')
+        _download_images(images, label='by_random', release=release)
 
     return images

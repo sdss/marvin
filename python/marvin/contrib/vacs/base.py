@@ -100,9 +100,9 @@ class VACMixIn(object, six.with_metaclass(abc.ABCMeta)):
             raise MarvinError('sdss_access is not installed')
         else:
             self._release = marvin.config.release
-            is_public = 'DR' in self._release
-            rsync_release = self._release.lower() if is_public else None
-            self.rsync_access = sdss_access.sync.Access(public=is_public, release=rsync_release)
+            # is_public = 'DR' in self._release
+            # rsync_release = self._release.lower() if is_public else None
+            self.rsync_access = sdss_access.sync.Access(release=self._release)
 
         # file path for VAC summary file
         self.summary_file = None
@@ -249,7 +249,7 @@ class VACMixIn(object, six.with_metaclass(abc.ABCMeta)):
         * Define a dictionary of keyword parameters that defines the `tree` path
         * Use `~VACMixIn.get_path` to construct the VAC path
         * Set that path to the `~VACMixIn.summary_file` attribute
-        
+
         Setting a VAC summary file allows the `~marvin.tools.vacs.VACs` tool to load
         the full VAC data.  If the VAC does not contain a summary file, this method
         should `pass` or return `None`.
@@ -289,7 +289,7 @@ class VACTarget(object):
             The target id, usually plateifu or mangaid.  Required.
         vacfile (str):
             The path to the VAC summary file.  Required.
-    
+
     Attributes:
         targetid (str):
             The plateifu or mangaid target designation
@@ -301,7 +301,7 @@ class VACTarget(object):
             A boolean indicating if the target is included in the VAC
 
     To use, subclass this class, add a new `__init__` method.  Make sure to call the original
-    class's `__init__` method with `super`. 
+    class's `__init__` method with `super`.
 
     .. code-block:: python
 

@@ -24,8 +24,8 @@ def add_data(rsync, release=None, plate=None, ifu=None, exclude=[]):
         rsync.add('mangaimage', plate=plate, drpver=drpver, dir3d='stack', ifu='*')
 
     if release in ['MPL-5', 'MPL-6', 'MPL-7']:
-        if 'mangadap5' not in exclude:
-            rsync.add('mangadap5', plate=plate, drpver=drpver, dapver=dapver, ifu=ifu, daptype='*', mode='*')
+        if 'mangadap' not in exclude:
+            rsync.add('mangadap', plate=plate, drpver=drpver, dapver=dapver, ifu=ifu, daptype='*', mode='*')
     elif release == 'MPL-4':
         if 'mangamap' not in exclude:
             rsync.add('mangamap', plate=plate, drpver=drpver, dapver=dapver, ifu=ifu, bintype='*', mode='*', n='**')
@@ -45,8 +45,8 @@ rsync_access = add_data(rsync_access, release='MPL-6', plate='7443', ifu='12701'
 
 # MPL-5
 #rsync_access = add_data(rsync_access, release='MPL-5', plate='8485', ifu='1901')
-#rsync_access = add_data(rsync_access, release='MPL-5', plate='7443', ifu='12701')  #, exclude=['mangaimage', 'mangadap5'])
-rsync_access = add_data(rsync_access, release='MPL-5', plate='8485', ifu='1901', exclude=['mangacube', 'mangarss', 'mangaimage', 'mangadap5'])
+#rsync_access = add_data(rsync_access, release='MPL-5', plate='7443', ifu='12701')  #, exclude=['mangaimage', 'mangadap'])
+rsync_access = add_data(rsync_access, release='MPL-5', plate='8485', ifu='1901', exclude=['mangacube', 'mangarss', 'mangaimage', 'mangadap'])
 
 # MPL-4
 #rsync_access = add_data(rsync_access, release='MPL-4', plate='8485', ifu='1901')

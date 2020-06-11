@@ -231,7 +231,7 @@ class Maps(MarvinToolsClass, NSAMixIn, DAPallMixIn, GetApertureMixIn):
             daptype = '{0}-{1}'.format(self.bintype.name, self.template.name)
             params = dict(drpver=self._drpver, dapver=self._dapver,
                           plate=plate, ifu=ifu, mode='MAPS', daptype=daptype,
-                          path_type='mangadap5')
+                          path_type='mangadap')
 
         return params
 

@@ -49,7 +49,7 @@ galaxy = Blueprint("galaxy_page", __name__)
 def get_flagged_regions(data, value=None):
     ''' Retrieves bad pixel regions in a spectrum
 
-    Searches an input mask for a given value, looks for 
+    Searches an input mask for a given value, looks for
     regions of consecutive bad values and returns the
     min and max index bound for each consectuive region.
 
@@ -364,9 +364,9 @@ class Galaxy(BaseWebView):
                 self.galaxy['daplink'] = getDapRedux(release=self._release)
                 # get SAS url links to cube, rss, maps, image
                 if Path:
-                    is_public = 'DR' in self._release
-                    path_release = self._release.lower() if is_public else None
-                    sdss_path = Path(public=is_public, release=path_release)
+                    # is_public = 'DR' in self._release
+                    # path_release = self._release.lower() if is_public else None
+                    sdss_path = Path(release=self._release)
                     self.galaxy['image'] = cube.getImage().url
                     cubelink = sdss_path.url('mangacube', drpver=cube._drpver, plate=cube.plate, ifu=cube.ifu)
                     rsslink = sdss_path.url('mangarss', drpver=cube._drpver, plate=cube.plate, ifu=cube.ifu)
@@ -457,7 +457,7 @@ class Galaxy(BaseWebView):
 
         # turning toggle on
         nowebsession = marvin.config._custom_config.get('no_web_session', None)
-        if not nowebsession: 
+        if not nowebsession:
             current_session['toggleon'] = args.get('toggleon')
 
         # get the cube
@@ -666,7 +666,7 @@ class Galaxy(BaseWebView):
 
 def get_spaxel_cache(*args, **kwargs):
     ''' Function used to generate the route cache key
-    
+
     Cache key when using cache.memoize or cache.cached decorator.
     memoize remembers input methods arguments; cached does not.
 
@@ -711,7 +711,7 @@ def get_spaxel_cache(*args, **kwargs):
 
 def get_nsa_cache(*args, **kwargs):
     ''' Function used to generate the route cache key
-    
+
     Cache key when using cache.memoize or cache.cached decorator.
     memoize remembers input methods arguments; cached does not.
 
@@ -740,7 +740,7 @@ def get_nsa_cache(*args, **kwargs):
 
 def update_maps_cache(*args, **kwargs):
     ''' Function used to generate the route cache key
-    
+
     Cache key when using cache.memoize or cache.cached decorator.
     memoize remembers input methods arguments; cached does not.
 
