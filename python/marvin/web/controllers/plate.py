@@ -89,7 +89,7 @@ class Plate(BaseWebView):
 
 def get_plate_cache(*args, **kwargs):
     ''' Function used to generate the route cache key
-    
+
     Cache key when using cache.memoize or cache.cached decorator.
     memoize remembers input methods arguments; cached does not.
 
@@ -108,6 +108,9 @@ def get_plate_cache(*args, **kwargs):
 
     # create unique cache key name
     key = 'getplate_{0}_{1}'.format(plateid, inst._release.lower().replace('-', ''))
+    # append if logged in
+    if inst.plate['loggedin']:
+        key = '{0}_loggedin'.format(key)
     return key
 
 

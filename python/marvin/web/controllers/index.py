@@ -7,6 +7,7 @@ from marvin.utils.general.general import parseIdentifier
 from marvin.api.base import arg_validate as av
 from marvin.web.controllers import BaseWebView
 from marvin.web.web_utils import setGlobalSession, set_session_versions
+from marvin.web.extensions import cache
 
 from brain.utils.general import validate_user, get_db_user
 from flask_login import current_user, login_user, logout_user
@@ -55,7 +56,10 @@ class Marvin(BaseWebView):
 
     @route('/clear/')
     def clear_session(self):
+        # clear the session
         current_session.clear()
+        # clear the cache
+        cache.clear()
         return jsonify(result=dict(current_session))
 
     def database(self):
