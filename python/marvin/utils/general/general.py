@@ -676,9 +676,10 @@ def getDapRedux(release=None):
 
     release = release or marvin.config.release
     drpver, dapver = marvin.config.lookUpVersions(release=release)
-    # hack a url version of MANGA_SPECTRO_ANALYSIS
-    dapdefault = sdss_path.dir('mangadefault', drpver=drpver, dapver=dapver, plate=None, ifu=None)
-    dappath = dapdefault.rsplit('/', 2)[0]
+    ## hack a url version of MANGA_SPECTRO_ANALYSIS
+    #dapdefault = sdss_path.dir('mangadefault', drpver=drpver, dapver=dapver, plate=None, ifu=None)
+    #dappath = dapdefault.rsplit('/', 2)[0]
+    dappath = os.path.join(os.getenv("MANGA_SPECTRO_ANALYSIS"), drpver, dapver)
     dapredux = sdss_path.url('', full=dappath)
     return dapredux
 
@@ -799,6 +800,7 @@ def downloadList(inputlist, dltype='cube', **kwargs):
     n = kwargs.get('n', '*')
     limit = kwargs.get('limit', None)
     test = kwargs.get('test', None)
+    wave = 'LOG'
 
     # check for sdss_access
     if not Access:
@@ -876,7 +878,8 @@ def downloadList(inputlist, dltype='cube', **kwargs):
             ifu = '*'
 
         rsync_access.add(name, plate=plateid, drpver=drpver, ifu=ifu, dapver=dapver, dir3d=dir3d,
-                         mpl=release, bintype=bintype, n=n, mode=binmode, daptype=daptype)
+                         mpl=release, bintype=bintype, n=n, mode=binmode, daptype=daptype,
+                         wave=wave)
 
     # set the stream
     try:

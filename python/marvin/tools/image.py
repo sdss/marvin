@@ -158,6 +158,10 @@ class Image(MMAMixIn):
         return super(Image, self).download(name, ifu=ifu, dir3d=dir3d,
                                            drpver=self._drpver, plate=plate)
 
+    def __del__(self):
+        if self.data:
+            self.data.close()
+
     def _load_image_from_file(self):
         ''' Load an image from a local file '''
 
@@ -207,6 +211,11 @@ class Image(MMAMixIn):
         ''' Show the image '''
         if self.data:
             self.data.show()
+
+    def close(self):
+        ''' Slose the image '''
+        if self.data:
+            self.data.close()
 
     def save(self, filename, filetype='png', **kwargs):
         ''' Save the image to a file

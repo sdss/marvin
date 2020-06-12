@@ -520,7 +520,7 @@ class Galaxy(object):
         self.access_kwargs = {'plate': self.plate, 'ifu': self.ifu, 'drpver': self.drpver,
                               'dapver': self.dapver, 'dir3d': self.dir3d, 'mpl': self.release,
                               'bintype': self.bintype.name, 'n': self.niter, 'mode': '*',
-                              'daptype': self.bintemp}
+                              'daptype': self.bintemp, 'wave': 'LOG'}
 
     def set_filepaths(self, pathtype='full'):
         """Set the paths for cube, maps, etc."""
