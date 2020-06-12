@@ -17,9 +17,9 @@ def add_data(rsync, release=None, plate=None, ifu=None, exclude=[]):
     if 'drpall' not in exclude:
         rsync.add('drpall', drpver=drpver)
     if 'mangacube' not in exclude:
-        rsync.add('mangacube', plate=plate, ifu=ifu, drpver=drpver)
+        rsync.add('mangacube', plate=plate, ifu=ifu, drpver=drpver, wave='LOG')
     if 'mangarss' not in exclude:
-        rsync.add('mangarss', plate=plate, ifu=ifu, drpver=drpver)
+        rsync.add('mangarss', plate=plate, ifu=ifu, drpver=drpver, wave='LOG')
     if 'mangaimage' not in exclude:
         rsync.add('mangaimage', plate=plate, drpver=drpver, dir3d='stack', ifu='*')
 

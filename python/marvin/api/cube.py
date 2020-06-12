@@ -54,7 +54,7 @@ def _getCube(name, use_file=False, release=None, **kwargs):
                 plate, ifu = name.split('-')
 
             if Path is not None:
-                filename = Path(release=release).full('mangacube', ifu=ifu, plate=plate, drpver=drpver)
+                filename = Path(release=release).full('mangacube', ifu=ifu, plate=plate, drpver=drpver, wave='LOG')
                 assert os.path.exists(filename), 'file not found.'
             else:
                 raise MarvinError('cannot create path for MaNGA cube.')

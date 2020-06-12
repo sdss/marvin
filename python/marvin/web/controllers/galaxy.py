@@ -364,22 +364,14 @@ class Galaxy(BaseWebView):
                 self.galaxy['daplink'] = getDapRedux(release=self._release)
                 # get SAS url links to cube, rss, maps, image
                 if Path:
-                    # is_public = 'DR' in self._release
-                    # path_release = self._release.lower() if is_public else None
                     sdss_path = Path(release=self._release)
-                    print('sdss_path', sdss_path.release, sdss_path.public, self._release)
                     self.galaxy['image'] = cube.getImage().url
-                    cubelink = sdss_path.url('mangacube', drpver=cube._drpver, plate=cube.plate, ifu=cube.ifu, wave='LOG')
+                    cubelink = sdss_path.url('', full=cube._getFullPath())
                     rsslink = sdss_path.url('mangarss', drpver=cube._drpver, plate=cube.plate, ifu=cube.ifu, wave='LOG')
                     daptype = "{0}-{1}".format(dm.default_bintype, dm.default_template)
-                    #breakpoint()
                     maplink = getDefaultMapPath(release=self._release, plate=cube.plate, ifu=cube.ifu, daptype=daptype, mode='MAPS')
                     mclink = getDefaultMapPath(release=self._release, plate=cube.plate, ifu=cube.ifu, daptype=daptype, mode='LOGCUBE')
                     self.galaxy['links'] = {'cube': cubelink, 'rss': rsslink, 'map': maplink, 'mc': mclink}
-                    print('stuff', self._release, cubelink, rsslink, maplink, mclink)
-                    print('\n')
-                    print('links', self.galaxy['links'])
-                    #breakpoint()
                 else:
                     self.galaxy['image'] = cube.data.image
 
@@ -447,8 +439,6 @@ class Galaxy(BaseWebView):
             self.galaxy['error'] = 'Error: Galaxy ID {0} must either be a Plate-IFU, or MaNGA-Id designation.'.format(galid)
             return render_template("galaxy.html", **self.galaxy)
 
-        print('\n')
-        print('final links', self.galaxy['links'])
         return render_template("galaxy.html", **self.galaxy)
 
     @route('/initdynamic/', methods=['POST'], endpoint='initdynamic')
