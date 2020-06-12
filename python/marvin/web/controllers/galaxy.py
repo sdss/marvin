@@ -781,8 +781,42 @@ def update_maps_cache(*args, **kwargs):
     return key
 
 
+def galaxy_get_cache(*args, **kwargs):
+    ''' Function used to generate the route cache key
+
+    Cache key when using cache.memoize or cache.cached decorator.
+    memoize remembers input methods arguments; cached does not.
+
+    Parameters:
+        args (list):
+            a list of the fx/method route call and object instance (self)
+        kwargs (dict):
+            a dictonary of arguments passed into the method
+    Returns:
+        A string used for the cache key lookup
+    '''
+
+    # get the method and self instance
+    fxn, inst = args
+
+    # parse the form request to extract any parameters
+    reqargs = av.manual_parse(inst, request, use_params='galaxy')
+
+    galid = reqargs.get('galid').replace('-', '_')
+    release = inst._release.lower().replace('-', '')
+
+    # create unique cache key name
+    key = 'getpage_{0}_{1}'.format(release, galid)
+    # append if logged in
+    if inst.galaxy['loggedin']:
+        key = '{0}_loggedin'.format(key)
+
+    return key
+
+
 Galaxy.getSpaxel.make_cache_key = get_spaxel_cache
 Galaxy.init_nsaplot.make_cache_key = get_nsa_cache
 Galaxy.updateMaps.make_cache_key = update_maps_cache
+Galaxy.get.make_cache_key = galaxy_get_cache
 
 Galaxy.register(galaxy)
