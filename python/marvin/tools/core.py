@@ -19,7 +19,7 @@ import marvin
 import marvin.api.api
 from marvin.core import marvin_pickle
 from marvin.core.exceptions import MarvinBreadCrumb, MarvinError, MarvinUserWarning
-from marvin.tools.mixins import MMAMixIn
+from marvin.tools.mixins import MMAMixIn, CacheMixIn
 from marvin.utils.general.maskbit import get_manga_target
 
 
@@ -51,7 +51,7 @@ def kwargsGet(kwargs, key, replacement):
 breadcrumb = MarvinBreadCrumb()
 
 
-class MarvinToolsClass(MMAMixIn):
+class MarvinToolsClass(MMAMixIn, CacheMixIn):
     """Marvin tools main base class.
 
     This super class implements the :ref:`decision tree <marvin-dma>`
@@ -116,6 +116,8 @@ class MarvinToolsClass(MMAMixIn):
         MMAMixIn.__init__(self, input=input, filename=filename, mangaid=mangaid,
                           plateifu=plateifu, mode=mode, data=data, release=release,
                           download=download)
+
+        CacheMixIn.__init__(self)
 
         # drop breadcrumb
         breadcrumb.drop(message='Initializing MarvinTool {0}'.format(self.__class__),

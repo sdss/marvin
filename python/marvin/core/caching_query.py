@@ -122,6 +122,22 @@ class CachingQuery(Query):
         dogpile_region, cache_key = self._get_cache_plus_key()
         dogpile_region.set(cache_key, value)
 
+    def use_cache(self, backend='default'):
+        ''' Adds the cache onto a Query instance
+        
+        Parameters:
+            backend (str):
+                Type of cache backend to use.  Can be 'null', 'default', or 'maps'.
+        
+        Returns:
+            returns a SQLA query instance with caching turned on
+        '''
+        from marvin import marvindb
+        from marvin.db.caching import regions
+        assert backend in list(regions.keys()), 'backend must be a proper cache backend'
+
+        return self.options(FromCache(backend)).options(*marvindb.cache_bits)
+
 
 def query_callable(regions, query_cls=CachingQuery):
     def query(*arg, **kw):

@@ -203,6 +203,16 @@ class TestCube(object):
         assert cube.mangaid == rss.mangaid
         assert cube.release == rss.release
 
+    @pytest.mark.parametrize('mode', [('db'), ('file')])
+    def test_get_available_bintypes(self, galaxy, mode):
+        if mode == 'db':
+            cube = Cube(plateifu=galaxy.plateifu)
+        else:
+            cube = Cube(filename=galaxy.cubepath)
+        bintypes = cube.get_available_bintypes()
+        expbins = galaxy.dap['stellar_sigma'].keys()
+        assert set(bintypes) == set(expbins)
+
 
 class TestWCS(object):
 

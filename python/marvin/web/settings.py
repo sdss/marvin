@@ -11,9 +11,11 @@
 from __future__ import print_function, division, absolute_import
 import os
 import datetime
+import redis
 
 
 class Config(object):
+    FLASK_APP = os.environ.get('FLASK_APP', 'marvin.web.uwsgi_conf_files.app')
     SECRET_KEY = os.environ.get('MARVIN_SECRET', 'secret-key')
     FLASK_SECRET = SECRET_KEY
     APP_DIR = os.path.abspath(os.path.dirname(__file__))  # This directory
@@ -24,7 +26,6 @@ class Config(object):
     ASSETS_DEBUG = False
     DEBUG_TB_ENABLED = False  # Disable Debug toolbar
     DEBUG_TB_INTERCEPT_REDIRECTS = False
-    CACHE_TYPE = 'memcached'  # Can be "memcached", "redis", etc.
     MAIL_SERVER = ''
     MAIL_PORT = 587
     MAIL_USE_SSL = False
@@ -63,9 +64,21 @@ class Config(object):
     RATELIMIT_STRATEGY = 'fixed-window-elastic-expiry'
     RATELIMIT_ENABLED = False
 
+    # Flask-Session settings
+    SESSION_TYPE = 'redis'
+    SESSION_REDIS = redis.from_url(os.environ.get('SESSION_REDIS'))
+    SESSION_KEY_PREFIX = 'session:'
+
+    # Flask-Caching settings
+    CACHE_TYPE = 'redis'  # Can be "memcached", "redis", etc.
+    CACHE_DEFAULT_TIMEOUT = 300
+    CACHE_REDIS_URL = os.environ.get("SESSION_REDIS")
+    CACHE_KEY_PREFIX = 'caching:'
+
 
 class ProdConfig(Config):
     """Production configuration."""
+    FLASK_ENV = os.environ.get('FLASK_ENV', 'production')
     ENV = 'prod'
     DEBUG = False
     SQLALCHEMY_DATABASE_URI = 'postgresql://localhost/example'
@@ -73,13 +86,14 @@ class ProdConfig(Config):
     USE_X_SENDFILE = True
     USE_SENTRY = True
     SENTRY_DSN = os.environ.get('SENTRY_DSN', None)
-    PERMANENT_SESSION_LIFETIME = datetime.timedelta(1)
+    PERMANENT_SESSION_LIFETIME = datetime.timedelta(3600)
     JWT_ACCESS_TOKEN_EXPIRES = datetime.timedelta(300)
     REMEMBER_COOKIE_DOMAIN = '.sdss.org'
 
 
 class DevConfig(Config):
     """Development configuration."""
+    FLASK_ENV = os.environ.get('FLASK_ENV', 'development')
     ENV = 'dev'
     DEBUG = True
     DB_NAME = 'dev.db'
@@ -93,6 +107,7 @@ class DevConfig(Config):
 
 
 class TestConfig(Config):
+    FLASK_ENV = os.environ.get('FLASK_ENV', 'development')
     TESTING = True
     DEBUG = True
     SQLALCHEMY_DATABASE_URI = 'sqlite://'

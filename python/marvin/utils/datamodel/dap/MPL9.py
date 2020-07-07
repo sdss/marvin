@@ -1,6 +1,6 @@
 # !/usr/bin/env python
 # -*- coding: utf-8 -*-
-# 
+#
 # Filename: MPL9.py
 # Project: dap
 # Author: Brian Cherinka
@@ -40,7 +40,7 @@ coo_channel = Channel('r_h_kpc', formats={'string': 'R/(h/kpc)'}, idx=2)
 for t in updated_maps:
     if t.name in ['spx_ellcoo', 'bin_lwellcoo']:
         t.append_channel(coo_channel, at_index=2, unit=u.kpc / u.h)
-        
+
 
 # new emission line channels
 new_channels = [
@@ -68,24 +68,24 @@ new_channels = [
 
 # create new MPL9 channels and reindex
 tmp = emline_channels + new_channels
-idx_list = ['oii_3729', 'h12_3751', 'h11_3771', 'hthe_3798', 'heta_3836', 'neiii_3869', 'hei_3889', 
-            'hzet_3890', 'neiii_3968', 'heps_3971', 'hdel_4102', 'hgam_4341', 'heii_4687', 'hb_4862', 
-            'oiii_4960', 'oiii_5008', 'ni_5199', 'ni_5201', 'hei_5877', 'oi_6302', 'oi_6365', 
-            'nii_6549', 'ha_6564', 'nii_6585', 'sii_6718', 'sii_6732', 'hei_7067', 'ariii_7137', 
+idx_list = ['oii_3729', 'h12_3751', 'h11_3771', 'hthe_3798', 'heta_3836', 'neiii_3869', 'hei_3889',
+            'hzet_3890', 'neiii_3968', 'heps_3971', 'hdel_4102', 'hgam_4341', 'heii_4687', 'hb_4862',
+            'oiii_4960', 'oiii_5008', 'ni_5199', 'ni_5201', 'hei_5877', 'oi_6302', 'oi_6365',
+            'nii_6549', 'ha_6564', 'nii_6585', 'sii_6718', 'sii_6732', 'hei_7067', 'ariii_7137',
             'ariii_7753', 'peta_9017', 'siii_9071', 'pzet_9231', 'siii_9533', 'peps_9548']
 MPL9_emline_channels = reindex_channels(tmp, names=idx_list, starting_idx=1)
 
 # update existing emline properties with new channel list
 for m in updated_maps:
-    if 'emline' in m.name:
+    if 'emline' in m.name and '_fom' not in m.name:
         unit, scale = m[0].unit, m[0].unit.scale
-        params = {'ivar': m[0].ivar, 'mask': m[0].mask, 'formats': m[0].formats, 
+        params = {'ivar': m[0].ivar, 'mask': m[0].mask, 'formats': m[0].formats,
                   'pixmask_flag': m[0].pixmask_flag}
         scale = unit.scale
         oii = oiid_channel if 'd' in m.channels[0].name else oii_channel
         chans = [oii] + MPL9_emline_channels
         m.update_channels(chans, unit=unit, scale=scale, **params)
-        
+
 
 # new properties
 new_properties = [

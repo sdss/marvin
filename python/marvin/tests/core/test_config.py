@@ -208,6 +208,14 @@ class TestConfig(object):
             warnings.warn(msg, MarvinUserWarning)
         assert config.release == exprel
 
+    def test_summary_files(self):
+        config.setDefaultDrpAll()  # need to reset the config
+        drp, dap = config.lookUpVersions()
+        assert config.drpall is not None
+        assert config.dapall is not None
+        assert 'drpall-{0}'.format(drp) in config.drpall
+        assert 'dapall-{0}-{1}'.format(drp, dap) in config.dapall
+
 
 @pytest.mark.usefixtures('setapi')
 class TestSasUrl(object):

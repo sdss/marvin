@@ -16,7 +16,7 @@ import astropy.io.fits
 
 import marvin
 from marvin.core.exceptions import MarvinError
-from marvin.utils.general import get_dapall_file, map_dapall
+from marvin.utils.general import get_dapall_path, map_dapall
 
 
 __all__ = ['DAPallMixIn']
@@ -68,7 +68,7 @@ class DAPallMixIn(object):
 
         daptype = self.bintype.name + '-' + self.template.name
 
-        dapall_path = get_dapall_file(self._drpver, self._dapver)
+        dapall_path = get_dapall_path(self._drpver, self._dapver)
 
         assert dapall_path is not None, 'cannot build DAPall file.'
 
@@ -106,7 +106,7 @@ class DAPallMixIn(object):
             dapdb.File, datadb.PipelineInfo, datadb.PipelineVersion).filter(
                 mdb.datadb.PipelineVersion.version == self._dapver,
                 dapdb.DapAll.plateifu == self.plateifu,
-                dapdb.DapAll.daptype == daptype).first()
+                dapdb.DapAll.daptype == daptype).use_cache().first()
 
         if dapall_row is None:
             raise MarvinError('cannot find a DAPall match for this target in the DB.')

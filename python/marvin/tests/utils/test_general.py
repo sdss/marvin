@@ -34,7 +34,8 @@ from marvin.core.exceptions import MarvinError
 from marvin.utils.general import (convertCoords, get_nsa_data, getWCSFromPng,
                                   _sort_dir, getDapRedux, getDefaultMapPath, target_status,
                                   target_is_observed, downloadList, check_versions,
-                                  get_manga_image)
+                                  get_manga_image, get_drpall_path, get_dapall_path,
+                                  get_drpall_table, get_dapall_table)
 from marvin.utils.datamodel.dap import datamodel
 
 
@@ -344,3 +345,34 @@ class TestGetMangaImage(object):
         img = get_manga_image(drpver=v1, plate=8485, ifu=1901, dir3d=dir3d)
         assert exp in img
 
+
+class TestSummaryFiles(object):
+    drp = 'v2_5_3'
+    dap = '2.3.0'
+
+    @pytest.mark.parametrize('name', [('drpall'), ('dapall')])
+    def test_paths(self, name):
+        if name == 'drpall':
+            path = get_drpall_path(self.drp)
+            assert 'drpall-{0}'.format(self.drp) in path
+        else:
+            path = get_dapall_path(self.drp, self.dap)
+            assert 'dapall-{0}-{1}'.format(self.drp, self.dap) in path
+
+    @pytest.mark.parametrize('name, hdu, expnum', 
+                             [('drpall', 'MANGA', 6779), 
+                              ('drpall', 'MASTAR', 20649), 
+                              ('dapall', 1, 19596)])
+    def test_tables(self, name, hdu, expnum):
+        if name == 'drpall':
+            table = get_drpall_table(self.drp, hdu=hdu)
+            assert 'nsa_z' in table.colnames
+            assert self.drp in set(table['versdrp3'])
+        else:
+            table = get_dapall_table(self.drp, self.dap)
+            assert 'SFR_TOT' in table.colnames
+            assert self.dap in set(table['VERSDAP'])
+        
+        assert len(table) == expnum
+        if hdu == 'MASTAR':
+            assert 'APOGEE lead' in set(table['srvymode'])

@@ -41,6 +41,7 @@ class BaseWebView(FlaskView):
         updateGlobalSession()
 
         self.base['error'] = None
+        self._logged_in = current_session.get('loginready', False)
         self._versions = update_allowed()
         self._endpoint = request.endpoint
         self._drpver, self._dapver, self._release = parseSession()
@@ -72,3 +73,4 @@ class BaseWebView(FlaskView):
                 mydict[key] = '' if isinstance(val, str) else None
         mydict['versions'] = self._versions
         mydict['release'] = self._release
+        mydict['loggedin'] = self._logged_in

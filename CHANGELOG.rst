@@ -1,8 +1,16 @@
 Marvin's Change Log
 ===================
 
-[2.3.7] - unreleased
+[2.4.0] - unreleased
 --------------------
+
+- **Adds** - caching web routes on Plate, Galaxy pages
+- **Adds** - new `use_cache` option to `Cachable Query` class.  Implemented in most marvin database calls.
+- **Adds** - most Marvin Tools now use query caching for database calls
+- **Adds** - a new `CacheMixIn` that adds optional caching to classes utilizing db calls
+- **Adds** - a new `Redis` `dogpile.cache` backend; with new regions for `Maps` and `Modelcubes`
+- **Adds** - new utility functions for DRPall, and DAPall files, `get_xxx_path`, `get_xxx_file`, `get_xxx_table`
+- **Fixes** - Issue :issue:`695` - better web spectra/map error messages; 
 
 [2.3.6] - 2020/04/14
 --------------------

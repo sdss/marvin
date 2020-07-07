@@ -63,13 +63,14 @@ __all__ = ('convertCoords', 'parseIdentifier', 'mangaid2plateifu', 'findClosestV
            'downloadList', 'getSpaxel', 'get_drpall_row', 'getDefaultMapPath',
            'getDapRedux', 'get_nsa_data', '_check_file_parameters',
            'invalidArgs', 'missingArgs', 'getRequiredArgs', 'getKeywordArgs',
-           'isCallableWithArgs', 'map_bins_to_column', '_sort_dir',
-           'get_dapall_file', 'temp_setattr', 'map_dapall', 'turn_off_ion', 'memory_usage',
-           'validate_jwt', 'target_status', 'target_is_observed', 'get_drpall_file',
-           'target_is_mastar', 'get_plates', 'get_manga_image', 'check_versions',
-           'get_drpall_table')
+           'isCallableWithArgs', 'map_bins_to_column', '_sort_dir', 'get_drpall_path',
+           'get_dapall_path', 'temp_setattr', 'map_dapall', 'turn_off_ion', 'memory_usage',
+           'validate_jwt', 'target_status', 'target_is_observed', 'target_is_mastar', 
+           'get_plates', 'get_manga_image', 'check_versions', 'get_drpall_table', 
+           'get_dapall_table', 'get_drpall_file', 'get_dapall_file')
 
 drpTable = {}
+dapTable = {}
 
 
 def validate_jwt(f):
@@ -373,7 +374,7 @@ def mangaid2plateifu(mangaid, mode='auto', drpall=None, drpver=None):
         cubes = marvindb.session.query(marvindb.datadb.Cube).join(
             marvindb.datadb.PipelineInfo, marvindb.datadb.PipelineVersion).filter(
                 marvindb.datadb.Cube.mangaid == mangaid,
-                marvindb.datadb.PipelineVersion.version == drpver).all()
+                marvindb.datadb.PipelineVersion.version == drpver).use_cache().all()
 
         if len(cubes) == 0:
             raise ValueError('no plate-ifus found for mangaid={0}'.format(mangaid))
@@ -644,7 +645,7 @@ def getSpaxelXY(cube, plateifu, x, y):
     mdb = marvin.marvindb
 
     try:
-        spaxel = mdb.session.query(mdb.datadb.Spaxel).filter_by(cube=cube, x=x, y=y).one()
+        spaxel = mdb.session.query(mdb.datadb.Spaxel).filter_by(cube=cube, x=x, y=y).use_cache().one()
     except sqlalchemy.orm.exc.NoResultFound as e:
         raise MarvinError('Could not retrieve spaxel for plate-ifu {0} at position {1},{2}: No Results Found: {3}'.format(plateifu, x, y, e))
     except Exception as e:
@@ -900,7 +901,57 @@ def downloadList(inputlist, dltype='cube', **kwargs):
         rsync_access.commit(limit=limit)
 
 
-def get_drpall_file(drpall=None, drpver=None):
+def _get_summary_file(name, summary_path=None, drpver=None, dapver=None):
+    ''' Check for/download the drpall or dapall file
+
+    Checks for existence of a local summary file for the
+    current release set.  If not found, uses sdss_access
+    to download it.
+
+    Parameters:
+        name (str):
+            The name of the summary file.  Either drpall or dapall
+        summary_path (str):
+            The local path to either the drpall or dapall file
+        drpver (str):
+            The DRP version
+        dapver (str):
+            The DAP version
+    '''
+
+    assert name in ['drpall', 'dapall'], 'name must be either drpall or dapall'
+    from marvin import config
+
+    # check for public release
+    is_public = 'DR' in config.release
+    release = config.release.lower() if is_public else None
+
+    # get drpver and dapver
+    config_drpver, config_dapver = config.lookUpVersions(config.release)
+    drpver = drpver if drpver else config_drpver
+    dapver = dapver if dapver else config_dapver
+
+    if name == 'drpall' and not summary_path:
+        summary_path = get_drpall_path(drpver)
+    elif name == 'dapall' and not summary_path:
+        summary_path = get_dapall_path(drpver, dapver) 
+
+    if not os.path.isfile(summary_path):
+        warnings.warn('{0} file not found. Downloading it.'.format(name), MarvinUserWarning)
+        rsync = Access(label='get_summary_file', public=is_public, release=release)
+        rsync.remote()
+        rsync.add(name, drpver=drpver, dapver=dapver)
+        try:
+            rsync.set_stream()
+        except Exception as e:
+            raise MarvinError('Could not download the {4} file with sdss_access: '
+                              '{0}\nTry manually downloading it for version ({1},{2}) and '
+                              'placing it {3}'.format(e, drpver, dapver, summary_path, name))
+        else:
+            rsync.commit()
+
+
+def get_drpall_file(drpver=None, drpall=None):
     ''' Check for/download the drpall file
 
     Checks for existence of a local drpall file for the
@@ -908,37 +959,30 @@ def get_drpall_file(drpall=None, drpver=None):
     to download it.
 
     Parameters:
-        drpall (str):
-            The local path to the drpall file
         drpver (str):
             The DRP version
+        drpall (str):
+            The local path to either the drpall file
     '''
-    from marvin import config
+    _get_summary_file('drpall', summary_path=drpall, drpver=drpver)
 
-    # check for public release
-    is_public = 'DR' in config.release
-    release = config.release.lower() if is_public else None
 
-    # get drpver
-    config_drpver, __ = config.lookUpVersions()
-    drpver = drpver if drpver else config_drpver
+def get_dapall_file(drpver=None, dapver=None, dapall=None):
+    ''' Check for/download the dapall file
 
-    if not drpall:
-        drpall = config._getDrpAllPath(drpver=drpver)
+    Checks for existence of a local dapall file for the
+    current release set.  If not found, uses sdss_access
+    to download it.
 
-    if not os.path.isfile(drpall):
-        warnings.warn('drpall file not found. Downloading it.', MarvinUserWarning)
-        rsync = Access(label='get_drpall', public=is_public, release=release)
-        rsync.remote()
-        rsync.add('drpall', drpver=drpver)
-        try:
-            rsync.set_stream()
-        except Exception as e:
-            raise MarvinError('Could not download the drpall file with sdss_access: '
-                              '{0}\nTry manually downloading it for version {1} and '
-                              'placing it {2}'.format(e, drpver, drpall))
-        else:
-            rsync.commit()
+    Parameters:
+        drpver (str):
+            The DRP version
+        dapver (str):
+            The DAP version
+        dapall (str):
+            The local path to either the dapall file
+    '''
+    _get_summary_file('dapall', summary_path=dapall, drpver=drpver, dapver=dapver)
 
 
 def get_drpall_row(plateifu, drpver=None, drpall=None):
@@ -1048,7 +1092,7 @@ def get_nsa_data(mangaid, source='nsa', mode='auto', drpver=None, drpall=None):
 
                 nsa_row = session.query(sampledb.NSA).join(sampledb.MangaTargetToNSA,
                                                            sampledb.MangaTarget).filter(
-                    sampledb.MangaTarget.mangaid == mangaid).all()
+                    sampledb.MangaTarget.mangaid == mangaid).use_cache().all()
 
                 if len(nsa_row) == 1:
                     return DotableCaseInsensitive(
@@ -1362,17 +1406,37 @@ def _sort_dir(instance, class_):
     return return_list
 
 
-def get_dapall_file(drpver, dapver):
-    """Returns the path to the DAPall file for ``(drpver, dapver)``."""
-
-    assert Path is not None, 'sdss_access.path.Path is not available.'
-
+def _get_summary_path(name, drpver, dapver=None):
+    ''' Return the path for either the DRP or DAP summary file
+    
+    Parameters:
+        name (str):
+            The name of the summary file, either drpall or dapall
+        drpver (str):
+            The DRP version
+        dapver (str):
+            The DAP version
+    '''
+    assert name in ['drpall', 'dapall'], 'name must be either drpall or dapall'
     release = marvin.config.lookUpRelease(drpver)
     is_public = 'DR' in release
     path_release = release.lower() if is_public else None
     path = Path(public=is_public, release=path_release)
-    dapall_path = path.full('dapall', dapver=dapver, drpver=drpver)
+    all_path = path.full(name, drpver=drpver, dapver=dapver)
+    return all_path
 
+
+def get_drpall_path(drpver):
+    """Returns the path to the DRPall file for ``(drpver, dapver)``."""
+
+    drpall_path = _get_summary_path('drpall', drpver=drpver)
+    return drpall_path
+
+
+def get_dapall_path(drpver, dapver):
+    """Returns the path to the DAPall file for ``(drpver, dapver)``."""
+
+    dapall_path = _get_summary_path('dapall', drpver, dapver)
     return dapall_path
 
 
@@ -1706,13 +1770,50 @@ def get_drpall_table(drpver=None, drpall=None, hdu='MANGA'):
     # check for hdu
     hduext = hdu if check_versions(drpver, 'v2_5_3') else 'MANGA'
     if hdu not in drpTable[drpver]:
-        drpall = drpall if drpall else config._getDrpAllPath(drpver=drpver)
+        drpall = drpall if drpall else get_drpall_path(drpver=drpver)
         data = {hduext: table.Table.read(drpall, hdu=hduext)}
         drpTable[drpver].update(data)
 
     drpall_table = drpTable[drpver][hduext]
 
     return drpall_table
+
+
+def get_dapall_table(drpver=None, dapver=None, dapall=None):
+    ''' Gets the dapall table
+
+    Gets the dapall table either from cache or loads it. For releases
+    of MPL-6 and up.
+
+    Parameters:
+        drpver (str):
+            The DRP release version to load.  Defaults to current marvin release
+        dapall (str):
+            The full path to the dapall table. Defaults to current marvin release.
+
+    Returns:
+        An Astropy Table
+    '''
+
+    from marvin import config
+
+    # get the dapall file
+    get_dapall_file(dapall=dapall, drpver=drpver, dapver=dapver)
+
+    # Loads the dapall table if it was not cached from a previous session.
+    config_drpver, config_dapver = config.lookUpVersions(config.release)
+    drpver = drpver if drpver else config_drpver
+    dapver = dapver if dapver else config_dapver
+
+    # check for dapver
+    if dapver not in dapTable:
+        dapall = dapall if dapall else get_dapall_path(drpver=drpver, dapver=dapver)
+        data = table.Table.read(dapall, hdu=1)
+        dapTable[dapver] = data
+
+    dapall_table = dapTable[dapver]
+
+    return dapall_table
 
 
 def get_plates(drpver=None, drpall=None, release=None):
@@ -1758,7 +1859,7 @@ def check_versions(version1, version2):
     return parse_version(version1) >= parse_version(version2)
 
 
-def get_manga_image(cube=None, drpver=None, plate=None, ifu=None, dir3d=None):
+def get_manga_image(cube=None, drpver=None, plate=None, ifu=None, dir3d=None, local=None, public=None):
     ''' Get a MaNGA IFU optical PNG image
 
     Parameters:
@@ -1772,6 +1873,10 @@ def get_manga_image(cube=None, drpver=None, plate=None, ifu=None, dir3d=None):
             An IFU designation
         dir3d (str):
             The directory for 3d data, either 'stack' or 'mastar'
+        local (bool):
+            If True, return the local file path to the image
+        public (bool):
+            If True, use only DR releases
     Returns:
         A url to an IFU MaNGA image
     '''
@@ -1784,7 +1889,7 @@ def get_manga_image(cube=None, drpver=None, plate=None, ifu=None, dir3d=None):
     assert all([drpver, plate, ifu]), 'drpver, plate, and ifu must be specified'
 
     # create the sdss Path
-    release = marvin.config.lookUpRelease(drpver)
+    release = cube.release if cube else marvin.config.lookUpRelease(drpver, public_only=public)
     is_public = 'DR' in release
     path_release = release.lower() if is_public else None
     path = Path(public=is_public, release=path_release)
@@ -1792,9 +1897,15 @@ def get_manga_image(cube=None, drpver=None, plate=None, ifu=None, dir3d=None):
     # check if MPL-8 or not
     is_MPL8 = check_versions(drpver, 'v2_5_3')
     if is_MPL8:
-        img = path.url('mangaimagenew', drpver=drpver, plate=plate, ifu=ifu)
+        if local:
+            img = path.full('mangaimagenew', drpver=drpver, plate=plate, ifu=ifu)
+        else:
+            img = path.url('mangaimagenew', drpver=drpver, plate=plate, ifu=ifu)
     else:
         assert dir3d is not None, 'dir3d must also be specified'
         assert dir3d in ['stack', 'mastar'], 'dir3d can only be stack or mastar'
-        img = path.url('mangaimage', drpver=drpver, plate=plate, ifu=ifu, dir3d=dir3d)
+        if local:
+            img = path.full('mangaimage', drpver=drpver, plate=plate, ifu=ifu, dir3d=dir3d)
+        else:
+            img = path.url('mangaimage', drpver=drpver, plate=plate, ifu=ifu, dir3d=dir3d)
     return img

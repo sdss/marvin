@@ -16,7 +16,7 @@ from marvin.web.web_utils import updateGlobalSession, check_access, configFeatur
 from marvin.web.jinja_filters import jinjablue
 from marvin.web.error_handlers import errors
 from marvin.web.extensions import jsglue, flags, sentry, limiter, profiler, cache
-from marvin.web.extensions import login_manager, jwt, cors
+from marvin.web.extensions import login_manager, jwt, cors, session, compress
 from marvin.web.settings import ProdConfig, DevConfig, CustomConfig
 # Web Views
 from marvin.web.controllers.index import index
@@ -144,7 +144,7 @@ def register_extensions(app, app_base=None):
     if app.config['RATELIMIT_ENABLED'] is False:
         limiter.enabled = False
 
-    if app.config['USE_SENTRY']:
+    if app.config['USE_SENTRY'] is True:
         sentry.init_app(app)
 
     # Initialize the Flask-Profiler ; see results at localhost:portnumber/app_base/flask-profiler
@@ -160,8 +160,14 @@ def register_extensions(app, app_base=None):
     jwt.init_app(app)
 
     # intialize CORS
-    cors.init_app(app, supports_credentials=True, expose_headers='Authorization', 
+    cors.init_app(app, supports_credentials=True, expose_headers='Authorization',
                   origins=['https://*.sdss.org', 'https://*.sdss.utah.edu', 'http://localhost:*'])
+
+    # initialize the Session
+    session.init_app(app)
+
+    # initialize Compress
+    compress.init_app(app)
 
 
 def register_blueprints(app, url_prefix=None):

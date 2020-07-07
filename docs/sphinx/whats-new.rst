@@ -11,6 +11,22 @@ What's New
 
 This section summarises the most important new features a bugfixes in Marvin. For the complete list of changes check the :ref:`marvin-changelog`.
 
+2.4.0 (March 2020)
+------------------
+- Caching of remote Marvin Tools (cached database queries)
+- Improved web performance
+
+  - Adds caching for routes on plate and galaxy pages
+  - Improved web spaxel/map handling
+
+- Added utility functions, and improved handling, of DRPall and DAPall files.    
+- `Marvin Cube` now has a `get_available_bintypes` method which retrieves the available DAP binning-template schemes available for the given cube.
+- Moving to more semantic versioning (**major.minor.patch**)
+
+  - major release bumps for breaking changes to API
+  - minor release bumps for feature changes and some patches
+  - patch release bumps for bug fixes
+
 2.3.5 (December 2019)
 ---------------------
 

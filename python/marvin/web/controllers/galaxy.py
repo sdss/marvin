@@ -13,14 +13,15 @@ Revision History:
 from __future__ import division, print_function
 
 import os
-
+import functools
 import numpy as np
 from itertools import groupby
 from operator import itemgetter
 from brain.utils.general.general import convertIvarToErr
 from flask import Blueprint, jsonify, render_template, request
-from flask import session as current_session
+from flask import session as current_session, g
 from flask_classful import route
+from astropy.wcs import WCS
 
 import marvin
 from marvin.api.base import arg_validate as av
@@ -31,7 +32,7 @@ from marvin.tools.cube import Cube
 from marvin.utils.datamodel.dap import datamodel
 from marvin.utils.general.general import (_db_row_to_dict, convertImgCoords, getDapRedux,
                                           getDefaultMapPath, parseIdentifier, target_status,
-                                          get_manga_image)
+                                          get_manga_image, convertCoords)
 from marvin.utils.general.maskbit import Maskbit
 from marvin.web.controllers import BaseWebView
 from marvin.web.extensions import cache
@@ -48,7 +49,7 @@ galaxy = Blueprint("galaxy_page", __name__)
 def get_flagged_regions(data, value=None):
     ''' Retrieves bad pixel regions in a spectrum
 
-    Searches an input mask for a given value, looks for 
+    Searches an input mask for a given value, looks for
     regions of consecutive bad values and returns the
     min and max index bound for each consectuive region.
 
@@ -81,6 +82,7 @@ def get_flagged_regions(data, value=None):
 def getWebSpectrum(cube, x, y, xyorig=None, byradec=False):
     ''' Get and format a spectrum for the web '''
     webspec = None
+    badspots = []
     default_bintype = datamodel[cube.release].default_bintype.name
     has_models = cube.data.has_modelspaxels(name=default_bintype) if hasattr(cube.data, 'has_modelspaxels') else False
 
@@ -231,6 +233,7 @@ def make_nsa_dict(nsa, cols=None):
     return nsadict, cols
 
 
+@functools.lru_cache(maxsize=128)
 def get_nsa_dict(name, drpver, makenew=None):
     ''' Gets a NSA dictionary from a pickle or a query '''
     nsapath = os.environ.get('MANGA_SCRATCH_DIR', None)
@@ -256,7 +259,8 @@ def get_nsa_dict(name, drpver, makenew=None):
             join(sampledb.MangaTargetToNSA, sampledb.MangaTarget,
                  marvindb.datadb.Cube, marvindb.datadb.PipelineInfo,
                  marvindb.datadb.PipelineVersion, marvindb.datadb.IFUDesign).\
-            filter(marvindb.datadb.PipelineVersion.version == drpver).options(FromCache(name)).all()
+            filter(marvindb.datadb.PipelineVersion.version == drpver).options(
+                FromCache(name)).options(*marvindb.cache_bits).all()
         nsadict = [(_db_row_to_dict(n[0], remove_columns=['pk', 'catalogue_pk']), n[1]) for n in allnsa]
 
         # write a new NSA pickle object
@@ -315,13 +319,14 @@ class Galaxy(BaseWebView):
     def before_request(self, *args, **kwargs):
         ''' Do these things before a request to any route '''
         super(Galaxy, self).before_request(*args, **kwargs)
-        self.reset_dict(self.galaxy, exclude=['nsachoices', 'nsaplotcols'])
+        self.reset_dict(self.galaxy, exclude=['nsachoices', 'nsaplotcols', 'cube'])
 
     def index(self):
         ''' Main galaxy page '''
         self.galaxy['error'] = 'Not all there are you...  Try adding a plate-IFU or manga-ID to the end of the address.'
         return render_template("galaxy.html", **self.galaxy)
 
+    @cache.memoize(timeout=300)
     def get(self, galid):
         ''' Retrieve info for a given cube '''
 
@@ -355,6 +360,7 @@ class Galaxy(BaseWebView):
             else:
                 dm = datamodel[self._dapver]
                 self.galaxy['cube'] = cube
+                g.cube = cube
                 self.galaxy['daplink'] = getDapRedux(release=self._release)
                 # get SAS url links to cube, rss, maps, image
                 if Path:
@@ -370,6 +376,11 @@ class Galaxy(BaseWebView):
                     self.galaxy['links'] = {'cube': cubelink, 'rss': rsslink, 'map': maplink, 'mc': mclink}
                 else:
                     self.galaxy['image'] = cube.data.image
+
+                infile = get_manga_image(cube, local=True)
+                current_session['imagefile'] = infile
+                current_session['wcs'] = cube.wcs.to_header_string()
+                current_session['cube_shape'] = cube.wcs.array_shape[-1]
 
             # Get the initial spectrum
             if cube:
@@ -403,8 +414,12 @@ class Galaxy(BaseWebView):
                     current_session['bintemp'] = '{0}-{1}'.format(dm.get_bintype(), dm.get_template())
 
                 # get default map quality
-                maps = cube.getMaps(plateifu=cube.plateifu, mode='local', bintype=current_session['bintemp'].split('-')[0])
-                mapqual = ('DAPQUAL', maps.quality_flag.mask, maps.quality_flag.labels)
+                try:
+                    maps = cube.getMaps(plateifu=cube.plateifu, mode='local', bintype=current_session['bintemp'].split('-')[0])
+                except MarvinError:
+                    mapqual = ('DAPQUAL', [], [])
+                else:
+                    mapqual = ('DAPQUAL', maps.quality_flag.mask, maps.quality_flag.labels)
                 self.galaxy['mapquality'] = mapqual
 
                 # TODO - make this general - see also search.py for querystr
@@ -442,7 +457,7 @@ class Galaxy(BaseWebView):
 
         # turning toggle on
         nowebsession = marvin.config._custom_config.get('no_web_session', None)
-        if not nowebsession: 
+        if not nowebsession:
             current_session['toggleon'] = args.get('toggleon')
 
         # get the cube
@@ -463,13 +478,19 @@ class Galaxy(BaseWebView):
         if selected_bintemp and selected_bintemp not in dm.get_bintemps(db_only=True):
             selected_bintemp = '{0}-{1}'.format(dm.get_bintype(), dm.get_template())
 
+        # check that selected bintemp is available for target
+        hasbin = selected_bintemp.split('-')[0] in cube.get_available_bintypes() if selected_bintemp else None
+
         # build the uber map dictionary
         try:
             mapdict = buildMapDict(cube, selected_maps, self._dapver, bintemp=selected_bintemp)
             mapmsg = None
         except Exception as e:
             mapdict = [{'data': None, 'msg': 'Error', 'plotparams': None} for m in dapdefaults]
-            mapmsg = 'Error getting maps: {0}'.format(e)
+            if hasbin:
+                mapmsg = 'Error getting maps: {0}'.format(e)
+            else:
+                mapmsg = 'No maps available for selected bintype {0}. Try a different one.'.format(selected_bintemp)
         else:
             output['mapstatus'] = 1
 
@@ -478,7 +499,7 @@ class Galaxy(BaseWebView):
         else:
             output['specstatus'] = 1
 
-        output['image'] = cube.getImage().url
+        output['image'] = get_manga_image(cube)
         output['spectra'] = webspec
         output['specmsg'] = specmsg
         output['maps'] = mapdict
@@ -501,6 +522,7 @@ class Galaxy(BaseWebView):
         return jsonout
 
     @route('/getspaxel/', methods=['POST'], endpoint='getspaxel')
+    @cache.memoize()
     def getSpaxel(self):
         args = av.manual_parse(self, request, use_params='galaxy', required=['plateifu', 'type'], makemulti=True)
         cubeinputs = {'plateifu': args.get('plateifu'), 'release': self._release}
@@ -519,11 +541,14 @@ class Galaxy(BaseWebView):
                     output = {'specmsg': 'Error: requested pixel coords are outside the image range.', 'status': -1}
                     self.galaxy['error'] = output['specmsg']
                 else:
+                    cube = Cube(**cubeinputs)
+
                     # TODO - generalize image file sas_url to filesystem switch, maybe in sdss_access
-                    infile = os.path.join(os.getenv('MANGA_SPECTRO_REDUX'), args.get('image').split('redux/')[1])
+                    infile = get_manga_image(cube, local=True)
+                    current_session['imagefile'] = infile
+                    #infile = os.path.join(os.getenv('MANGA_SPECTRO_REDUX'), args.get('image').split('redux/')[1])
                     arrcoords = convertImgCoords(mousecoords, infile, to_radec=True)
 
-                    cube = Cube(**cubeinputs)
                     webspec, specmsg, badspots = getWebSpectrum(cube, arrcoords[0], arrcoords[1], byradec=True)
                     if not webspec:
                         self.galaxy['error'] = 'Error: {0}'.format(specmsg)
@@ -559,6 +584,7 @@ class Galaxy(BaseWebView):
         return jsonify(result=output)
 
     @route('/updatemaps/', methods=['POST'], endpoint='updatemaps')
+    @cache.memoize()
     def updateMaps(self):
         args = av.manual_parse(self, request, use_params='galaxy', required=['plateifu', 'bintemp', 'params[]'], makemulti=True)
         #self._drpver, self._dapver, self._release = parseSession()
@@ -589,8 +615,8 @@ class Galaxy(BaseWebView):
                 output = {'mapmsg': None, 'status': 1, 'maps': mapdict}
         return jsonify(result=output)
 
-    @cache.cached(timeout=300, key_prefix='init_nsa')
     @route('/initnsaplot/', methods=['POST'], endpoint='initnsaplot')
+    @cache.memoize()
     def init_nsaplot(self):
         args = av.manual_parse(self, request, use_params='galaxy', required='plateifu')
         #self._drpver, self._dapver, self._release = parseSession()
@@ -637,5 +663,152 @@ class Galaxy(BaseWebView):
                     output = {'nsamsg': None, 'status': 1, 'nsa': nsa, 'nsachoices': nsachoices, 'nsaplotcols': cols}
         return jsonify(result=output)
 
+
+def get_spaxel_cache(*args, **kwargs):
+    ''' Function used to generate the route cache key
+
+    Cache key when using cache.memoize or cache.cached decorator.
+    memoize remembers input methods arguments; cached does not.
+
+    Parameters:
+        args (list):
+            a list of the fx/method route call and object instance (self)
+        kwargs (dict):
+            a dictonary of arguments passed into the method
+    Returns:
+        A string used for the cache key lookup
+    '''
+    # get the method and self instance
+    fxn, inst = args
+
+    # parse the form request to extract any parameters
+    reqargs = av.manual_parse(inst, request, use_params='galaxy', required=['plateifu', 'type'], makemulti=True)
+
+    maptype = reqargs.get('type', None)
+    if maptype == 'optical':
+        mousecoords = reqargs.getlist('mousecoords[]', type=float)
+        infile = current_session['imagefile']
+        radec = convertImgCoords(mousecoords, infile, to_radec=True)
+        ww = WCS(current_session['wcs'])
+        cube_shape = [current_session['cube_shape']] * 2
+        y, x = convertCoords(radec, wcs=ww, shape=cube_shape,
+                             mode='sky', xyorig='lower').T
+        y = y[0]
+        x = x[0]
+    elif maptype == 'heatmap':
+        x = reqargs.get('x', None, type=int)
+        y = reqargs.get('y', None, type=int)
+
+    plateifu = reqargs.get('plateifu').replace('-', '_')
+    release = inst._release.lower().replace('-', '')
+
+    # create unique cache key name
+    key = 'getspaxel_{0}_{1}_{2}_{3}'.format(
+        release, plateifu, x, y)
+
+    return key
+
+
+def get_nsa_cache(*args, **kwargs):
+    ''' Function used to generate the route cache key
+
+    Cache key when using cache.memoize or cache.cached decorator.
+    memoize remembers input methods arguments; cached does not.
+
+    Parameters:
+        args (list):
+            a list of the fx/method route call and object instance (self)
+        kwargs (dict):
+            a dictonary of arguments passed into the method
+    Returns:
+        A string used for the cache key lookup
+    '''
+    # get the method and self instance
+    fxn, inst = args
+
+    # parse the form request to extract any parameters
+    reqargs = av.manual_parse(inst, request, use_params='galaxy', required='plateifu')
+
+    plateifu = reqargs.get('plateifu').replace('-', '_')
+    release = inst._release.lower().replace('-', '')
+
+    # create unique cache key name
+    key = 'getnsa_{0}_{1}'.format(release, plateifu)
+
+    return key
+
+
+def update_maps_cache(*args, **kwargs):
+    ''' Function used to generate the route cache key
+
+    Cache key when using cache.memoize or cache.cached decorator.
+    memoize remembers input methods arguments; cached does not.
+
+    Parameters:
+        args (list):
+            a list of the fx/method route call and object instance (self)
+        kwargs (dict):
+            a dictonary of arguments passed into the method
+    Returns:
+        A string used for the cache key lookup
+    '''
+    # get the method and self instance
+    fxn, inst = args
+
+    # parse the form request to extract any parameters
+    reqargs = av.manual_parse(inst, request, use_params='galaxy', required=[
+                              'plateifu', 'bintemp', 'params[]'], makemulti=True)
+
+    plateifu = reqargs.get('plateifu').replace('-', '_')
+    release = inst._release.lower().replace('-', '')
+
+    bintemp = reqargs.get('bintemp', None, type=str).replace('-', '_')
+    params = reqargs.getlist('params[]', type=str)
+    params.sort()
+    param_string = '_'.join(params).replace(':', '_')
+
+    # create unique cache key name
+    key = 'updatemaps_{0}_{1}_{2}_{3}'.format(release, plateifu, bintemp, param_string)
+
+    return key
+
+
+def galaxy_get_cache(*args, **kwargs):
+    ''' Function used to generate the route cache key
+
+    Cache key when using cache.memoize or cache.cached decorator.
+    memoize remembers input methods arguments; cached does not.
+
+    Parameters:
+        args (list):
+            a list of the fx/method route call and object instance (self)
+        kwargs (dict):
+            a dictonary of arguments passed into the method
+    Returns:
+        A string used for the cache key lookup
+    '''
+
+    # get the method and self instance
+    fxn, inst = args
+
+    # parse the form request to extract any parameters
+    reqargs = av.manual_parse(inst, request, use_params='galaxy')
+
+    galid = reqargs.get('galid').replace('-', '_')
+    release = inst._release.lower().replace('-', '')
+
+    # create unique cache key name
+    key = 'getpage_{0}_{1}'.format(release, galid)
+    # append if logged in
+    if inst.galaxy['loggedin']:
+        key = '{0}_loggedin'.format(key)
+
+    return key
+
+
+Galaxy.getSpaxel.make_cache_key = get_spaxel_cache
+Galaxy.init_nsaplot.make_cache_key = get_nsa_cache
+Galaxy.updateMaps.make_cache_key = update_maps_cache
+Galaxy.get.make_cache_key = galaxy_get_cache
 
 Galaxy.register(galaxy)
