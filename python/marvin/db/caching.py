@@ -1,6 +1,6 @@
 # !/usr/bin/env python
 # -*- coding: utf-8 -*-
-# 
+#
 # Filename: caching.py
 # Project: db
 # Author: Brian Cherinka
@@ -17,6 +17,11 @@ from hashlib import md5
 from dogpile.cache.region import make_region
 import os
 import copy
+
+try:
+    import redis
+except ImportError:
+    redis = None
 
 # DOGPILE CACHING SETUP
 
@@ -46,11 +51,11 @@ def md5_key_mangler(key):
 
 def redis_key_mangler(key):
     ''' Set a redis key mangler
-    
+
     Prefix the cache key for redis caches to distinguish dogpile
     caches in redis from other caches in redis.  See
     https://dogpilecache.sqlalchemy.org/en/latest/recipes.html#prefixing-all-keys-in-redis
-    
+
     '''
     return "marvin:dogpile:" + key
 
@@ -59,7 +64,7 @@ def redis_key_mangler(key):
 cache_type = {
     'null': {'name': 'dogpile.cache.null', 'args': {}},
     'file': {'name': 'dogpile.cache.dbm', 'args': {'filename': dogroot}},
-    'redis': {'name': 'dogpile.cache.redis', 
+    'redis': {'name': 'dogpile.cache.redis',
               'args': {'url': os.environ.get('SESSION_REDIS'),
                        'distributed_lock': True}}
 }
@@ -80,7 +85,7 @@ def make_new_region(name='cache.dbm', backend='file', expiration=3600, redis_exp
             Expiration time in seconds of dogpile cache.  Default is 3600 seconds.
         redis_exp_multiplier (int):
             Integer factor to compute redis cache expiration time from dogpile expiration.
-            Default is 2x the expiration.  
+            Default is 2x the expiration.
     '''
     # select the backend
     cache_backend = copy.deepcopy(cache_type[backend])
@@ -119,8 +124,10 @@ for mpl in config._allowed_releases.keys():
     nsacache = 'nsa_{0}'.format(mpl.lower().replace('-', ''))
     regions[nsacache] = make_new_region(name=nsacache)
 
+backend = 'file' if not redis else 'redis'
+
 # make a maps redis cache
-regions['maps'] = make_new_region(backend='redis')
+regions['maps'] = make_new_region(backend=backend)
 
 # make a modelcube redis cache
-regions['models'] = make_new_region(backend='redis')
+regions['models'] = make_new_region(backend=backend)
