@@ -133,9 +133,6 @@ class Image(MMAMixIn):
         plate, ifu = self.plateifu.split('-')
         dir3d = self._get_image_dir()
 
-        # # use version to toggle old/new images path
-        # isMPL8 = check_versions(self._drpver, 'v2_5_3')
-        # name = 'mangaimagenew' if isMPL8 else 'mangaimage'
         name = 'mangaimage'
 
         return super(Image, self)._getFullPath(name, ifu=ifu, dir3d=dir3d,
@@ -150,9 +147,6 @@ class Image(MMAMixIn):
         plate, ifu = self.plateifu.split('-')
         dir3d = self._get_image_dir()
 
-        # # use version to toggle old/new images path
-        # isMPL8 = check_versions(self._drpver, 'v2_5_3')
-        # name = 'mangaimagenew' if isMPL8 else 'mangaimage'
         name = 'mangaimage'
 
         return super(Image, self).download(name, ifu=ifu, dir3d=dir3d,

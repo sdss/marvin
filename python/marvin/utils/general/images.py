@@ -142,11 +142,8 @@ def getRandomImages(num=10, download=False, mode=None, as_url=None, verbose=None
 
     release = release if release else marvin.config.release
     drpver, __ = marvin.config.lookUpVersions(release=release)
-    # is_public = 'DR' in release
-    # rsync_release = release.lower() if is_public else None
     rsync_access = Access(label='marvin_getrandom', verbose=verbose, release=release)
 
-    #imgname = 'mangaimagenew' if check_versions(drpver, 'v2_5_3') else 'mangaimage'
     imgname = 'mangaimage'
 
     # if mode is auto, set it to remote:
@@ -234,11 +231,8 @@ def getImagesByPlate(plateid, download=False, mode=None, as_url=None, verbose=No
     # setup marvin inputs
     release = release if release else marvin.config.release
     drpver, __ = marvin.config.lookUpVersions(release=release)
-    #dir3d = getDir3d(plateid, mode=mode, release=release)
 
     # setup Rsync Access
-    # is_public = 'DR' in release
-    # rsync_release = release.lower() if is_public else None
     rsync_access = Access(label='marvin_getplate', verbose=verbose, release=release)
 
     # if mode is auto, set it to remote:
@@ -247,7 +241,6 @@ def getImagesByPlate(plateid, download=False, mode=None, as_url=None, verbose=No
                       'local images, set the mode explicitly to local', MarvinUserWarning)
         mode = 'remote'
 
-    #imgname = 'mangaimagenew' if check_versions(drpver, 'v2_5_3') else 'mangaimage'
     imgname = 'mangaimage'
 
     # do a local or remote thing
@@ -344,11 +337,8 @@ def getImagesByList(inputlist, download=False, mode=None, as_url=None, verbose=N
     # setup Rsync Access
     release = release if release else marvin.config.release
     drpver, __ = marvin.config.lookUpVersions(release=release)
-    # is_public = 'DR' in release
-    # rsync_release = release.lower() if is_public else None
     rsync_access = Access(label='marvin_getlist', verbose=verbose, release=release)
 
-    #imgname = 'mangaimagenew' if check_versions(drpver, 'v2_5_3') else 'mangaimage'
     imgname = 'mangaimage'
 
     # if mode is auto, set it to remote:
@@ -440,7 +430,6 @@ def showImage(path=None, plateifu=None, release=None, return_image=True, show_im
     drpver, __ = marvin.config.lookUpVersions(release=release)
     args = [path, plateifu]
     assert any(args), 'A filepath or plateifu must be specified!'
-    #imgname = 'mangaimagenew' if check_versions(drpver, 'v2_5_3') else 'mangaimage'
     imgname = 'mangaimage'
 
     # check path

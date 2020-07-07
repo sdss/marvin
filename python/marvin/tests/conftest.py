@@ -525,9 +525,6 @@ class Galaxy(object):
     def set_filepaths(self, pathtype='full'):
         """Set the paths for cube, maps, etc."""
         self.path = Path()
-        # if check_versions(self.drpver, 'v2_5_3'):
-        #     self.imgpath = self.path.__getattribute__(pathtype)('mangaimagenew', **self.access_kwargs)
-        # else:
         self.imgpath = self.path.__getattribute__(pathtype)('mangaimage', **self.access_kwargs)
         self.cubepath = self.path.__getattribute__(pathtype)('mangacube', **self.access_kwargs)
         self.rsspath = self.path.__getattribute__(pathtype)('mangarss', **self.access_kwargs)

@@ -849,14 +849,7 @@ def downloadList(inputlist, dltype='cube', **kwargs):
     elif dltype == 'mastar':
         name = 'mangamastar'
     elif dltype == 'image':
-        # if check_versions(drpver, 'v2_5_3'):
-        #     name = 'mangaimagenew'
-        # else:
         name = 'mangaimage'
-
-    # # check for public release
-    # is_public = 'DR' in release
-    # rsync_release = release.lower() if is_public else None
 
     # create rsync
     rsync_access = Access(label='marvin_download', verbose=verbose, release=release)
@@ -1893,19 +1886,8 @@ def get_manga_image(cube=None, drpver=None, plate=None, ifu=None, dir3d=None, lo
 
     # create the sdss Path
     release = cube.release if cube else marvin.config.lookUpRelease(drpver, public_only=public)
-    # is_public = 'DR' in release
-    # path_release = release.lower() if is_public else None
     path = Path(release=release)
 
-    # # check if MPL-8 or not
-    # is_MPL8 = check_versions(drpver, 'v2_5_3')
-    # if is_MPL8:
-    #     if local:
-    #         img = path.full('mangaimagenew', drpver=drpver, plate=plate, ifu=ifu)
-    #     else:
-    #         img = path.url('mangaimagenew', drpver=drpver, plate=plate, ifu=ifu)
-    # else:
-    #assert dir3d is not None, 'dir3d must also be specified'
     dir3d = dir3d if dir3d else 'stack'
     assert dir3d in ['stack', 'mastar'], 'dir3d can only be stack or mastar'
     if local:

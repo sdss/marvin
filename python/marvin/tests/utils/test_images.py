@@ -97,7 +97,6 @@ def make_paths(request, rsync, mode, asurl, release):
         gal = Galaxy(plateifu)
         gal.set_params(release=release)
         gal.set_filepaths()
-        #name = 'mangaimagenew' if check_versions(gal.drpver, 'v2_5_3') else 'mangaimage'
         name = 'mangaimage'
         if mode == 'local':
             path = rsync.__getattribute__(rmode)(name, **gal.access_kwargs)
