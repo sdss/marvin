@@ -118,6 +118,15 @@ class TestImage(object):
         assert isinstance(images, list)
         assert images[0].plate == 8485
 
+    def test_imversion(self):
+        im = Image('8485-1901', release='MPL-7')
+        fp = im._getFullPath()
+        assert 'stack' in fp
+
+        im = Image('8485-1901', release='MPL-9')
+        fp = im._getFullPath()
+        assert 'stack' not in fp
+
 
 class TestBundle(object):
 

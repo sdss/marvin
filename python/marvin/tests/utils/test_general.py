@@ -247,7 +247,7 @@ class TestSortDir(object):
 
     @pytest.mark.parametrize('class_, expected',
                              [(Spectrum, ['error', 'masked', 'plot', 'snr', 'ivar', 'mask',
-                                          'wavelength', 'value', 'descale', 'pixmask', 
+                                          'wavelength', 'value', 'descale', 'pixmask',
                                           'pixmask_flag'])])
     def test_sort_dir_spectrum(self, galaxy, class_, expected):
         cube = Cube(plateifu=galaxy.plateifu)
@@ -338,7 +338,7 @@ class TestGetMangaImage(object):
 
     @pytest.mark.parametrize('v1, exp',
                              [('v2_5_3', '8485/images/'),
-                              ('v2_4_3', '8485/stack/images')], 
+                              ('v2_4_3', '8485/stack/images')],
                              ids=['postMPL8', 'preMPL8'])
     def test_image(self, v1, exp):
         dir3d = 'stack' if v1 == 'v2_4_3' else None
@@ -359,9 +359,9 @@ class TestSummaryFiles(object):
             path = get_dapall_path(self.drp, self.dap)
             assert 'dapall-{0}-{1}'.format(self.drp, self.dap) in path
 
-    @pytest.mark.parametrize('name, hdu, expnum', 
-                             [('drpall', 'MANGA', 6779), 
-                              ('drpall', 'MASTAR', 20649), 
+    @pytest.mark.parametrize('name, hdu, expnum',
+                             [('drpall', 'MANGA', 6779),
+                              ('drpall', 'MASTAR', 20649),
                               ('dapall', 1, 19596)])
     def test_tables(self, name, hdu, expnum):
         if name == 'drpall':
@@ -372,7 +372,7 @@ class TestSummaryFiles(object):
             table = get_dapall_table(self.drp, self.dap)
             assert 'SFR_TOT' in table.colnames
             assert self.dap in set(table['VERSDAP'])
-        
+
         assert len(table) == expnum
         if hdu == 'MASTAR':
             assert 'APOGEE lead' in set(table['srvymode'])

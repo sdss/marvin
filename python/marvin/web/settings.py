@@ -67,11 +67,13 @@ class Config(object):
     # Flask-Session settings
     SESSION_TYPE = 'redis'
     SESSION_REDIS = redis.from_url(os.environ.get('SESSION_REDIS'))
+    SESSION_KEY_PREFIX = 'session:'
 
     # Flask-Caching settings
     CACHE_TYPE = 'redis'  # Can be "memcached", "redis", etc.
     CACHE_DEFAULT_TIMEOUT = 300
     CACHE_REDIS_URL = os.environ.get("SESSION_REDIS")
+    CACHE_KEY_PREFIX = 'caching:'
 
 
 class ProdConfig(Config):

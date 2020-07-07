@@ -160,7 +160,7 @@ def register_extensions(app, app_base=None):
     jwt.init_app(app)
 
     # intialize CORS
-    cors.init_app(app, supports_credentials=True, expose_headers='Authorization', 
+    cors.init_app(app, supports_credentials=True, expose_headers='Authorization',
                   origins=['https://*.sdss.org', 'https://*.sdss.utah.edu', 'http://localhost:*'])
 
     # initialize the Session

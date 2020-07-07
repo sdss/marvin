@@ -49,7 +49,7 @@ galaxy = Blueprint("galaxy_page", __name__)
 def get_flagged_regions(data, value=None):
     ''' Retrieves bad pixel regions in a spectrum
 
-    Searches an input mask for a given value, looks for 
+    Searches an input mask for a given value, looks for
     regions of consecutive bad values and returns the
     min and max index bound for each consectuive region.
 
@@ -364,12 +364,10 @@ class Galaxy(BaseWebView):
                 self.galaxy['daplink'] = getDapRedux(release=self._release)
                 # get SAS url links to cube, rss, maps, image
                 if Path:
-                    is_public = 'DR' in self._release
-                    path_release = self._release.lower() if is_public else None
-                    sdss_path = Path(public=is_public, release=path_release)
+                    sdss_path = Path(release=self._release)
                     self.galaxy['image'] = cube.getImage().url
-                    cubelink = sdss_path.url('mangacube', drpver=cube._drpver, plate=cube.plate, ifu=cube.ifu)
-                    rsslink = sdss_path.url('mangarss', drpver=cube._drpver, plate=cube.plate, ifu=cube.ifu)
+                    cubelink = sdss_path.url('', full=cube._getFullPath())
+                    rsslink = sdss_path.url('mangarss', drpver=cube._drpver, plate=cube.plate, ifu=cube.ifu, wave='LOG')
                     daptype = "{0}-{1}".format(dm.default_bintype, dm.default_template)
                     maplink = getDefaultMapPath(release=self._release, plate=cube.plate, ifu=cube.ifu, daptype=daptype, mode='MAPS')
                     mclink = getDefaultMapPath(release=self._release, plate=cube.plate, ifu=cube.ifu, daptype=daptype, mode='LOGCUBE')
@@ -457,7 +455,7 @@ class Galaxy(BaseWebView):
 
         # turning toggle on
         nowebsession = marvin.config._custom_config.get('no_web_session', None)
-        if not nowebsession: 
+        if not nowebsession:
             current_session['toggleon'] = args.get('toggleon')
 
         # get the cube
@@ -666,7 +664,7 @@ class Galaxy(BaseWebView):
 
 def get_spaxel_cache(*args, **kwargs):
     ''' Function used to generate the route cache key
-    
+
     Cache key when using cache.memoize or cache.cached decorator.
     memoize remembers input methods arguments; cached does not.
 
@@ -711,7 +709,7 @@ def get_spaxel_cache(*args, **kwargs):
 
 def get_nsa_cache(*args, **kwargs):
     ''' Function used to generate the route cache key
-    
+
     Cache key when using cache.memoize or cache.cached decorator.
     memoize remembers input methods arguments; cached does not.
 
@@ -740,7 +738,7 @@ def get_nsa_cache(*args, **kwargs):
 
 def update_maps_cache(*args, **kwargs):
     ''' Function used to generate the route cache key
-    
+
     Cache key when using cache.memoize or cache.cached decorator.
     memoize remembers input methods arguments; cached does not.
 
@@ -773,8 +771,42 @@ def update_maps_cache(*args, **kwargs):
     return key
 
 
+def galaxy_get_cache(*args, **kwargs):
+    ''' Function used to generate the route cache key
+
+    Cache key when using cache.memoize or cache.cached decorator.
+    memoize remembers input methods arguments; cached does not.
+
+    Parameters:
+        args (list):
+            a list of the fx/method route call and object instance (self)
+        kwargs (dict):
+            a dictonary of arguments passed into the method
+    Returns:
+        A string used for the cache key lookup
+    '''
+
+    # get the method and self instance
+    fxn, inst = args
+
+    # parse the form request to extract any parameters
+    reqargs = av.manual_parse(inst, request, use_params='galaxy')
+
+    galid = reqargs.get('galid').replace('-', '_')
+    release = inst._release.lower().replace('-', '')
+
+    # create unique cache key name
+    key = 'getpage_{0}_{1}'.format(release, galid)
+    # append if logged in
+    if inst.galaxy['loggedin']:
+        key = '{0}_loggedin'.format(key)
+
+    return key
+
+
 Galaxy.getSpaxel.make_cache_key = get_spaxel_cache
 Galaxy.init_nsaplot.make_cache_key = get_nsa_cache
 Galaxy.updateMaps.make_cache_key = update_maps_cache
+Galaxy.get.make_cache_key = galaxy_get_cache
 
 Galaxy.register(galaxy)
