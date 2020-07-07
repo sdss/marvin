@@ -32,8 +32,6 @@ class VMORPHOVAC(VACMixIn):
     Authors: J. Antonio Vazquez-Mata and Hector Hernandez-Toledo
 
     """
-    # Hiding for DR16; until DR16+ release
-    _hidden = True
 
     # Required parameters
     name = 'visual_morphology'
@@ -75,11 +73,11 @@ class VMORPHOVAC(VACMixIn):
 
     def _get_mosaics(self, path_params):
         ''' Get the mosaic images for SDSS and DESI surveys
-        
+
         Parameters:
             path_params (dict):
                 The sdss_access keyword parameters to define a file path
-        
+
         Returns:
             The SDSS and DESI local image filepaths
         '''
@@ -89,7 +87,7 @@ class VMORPHOVAC(VACMixIn):
 
     def _check_mosaic(self, survey, path_params):
         ''' Get a mosaic image file for a survey path
-        
+
         Checks for local existence of the mosaic image filepath.
         If it does not exists, it downloads it.
 
@@ -98,7 +96,7 @@ class VMORPHOVAC(VACMixIn):
                 The survey to download.  Either sdss or desi
             path_params (dict):
                 The sdss_access keyword parameters to define a file path
-        
+
         Returns:
             The mosaic image file path
         '''
