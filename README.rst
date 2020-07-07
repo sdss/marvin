@@ -71,17 +71,31 @@ Marvin's Bibtex entry to use:
 
 ::
 
-      @misc{brian_cherinka_2018_1146705,
-        author       = {Brian Cherinka and
-                        José Sánchez-Gallego and
-                        Brett Andrews and
-                        Joel Brownstein},
-        title        = {sdss/marvin: Marvin Beta 2.2.0},
-        month        = jan,
-        year         = 2018,
-        doi          = {10.5281/zenodo.1146705},
-        url          = {https://doi.org/10.5281/zenodo.1146705}
-      }
+    @ARTICLE{2019AJ....158...74C,
+           author = {{Cherinka}, Brian and {Andrews}, Brett H. and
+             {S{\'a}nchez-Gallego}, Jos{\'e} and {Brownstein}, Joel and
+             {Argudo-Fern{\'a}ndez}, Mar{\'\i}a and {Blanton}, Michael and
+             {Bundy}, Kevin and {Jones}, Amy and {Masters}, Karen and
+             {Law}, David R. and {Rowlands}, Kate and {Weijmans}, Anne-Marie and
+             {Westfall}, Kyle and {Yan}, Renbin},
+            title = "{Marvin: A Tool Kit for Streamlined Access and Visualization of the SDSS-IV MaNGA Data Set}",
+          journal = {\aj},
+         keywords = {astronomical databases: miscellaneous, methods: data analysis, surveys, Astrophysics - Instrumentation and Methods for Astrophysics, Astrophysics - Astrophysics of Galaxies},
+             year = 2019,
+            month = aug,
+           volume = {158},
+           number = {2},
+              eid = {74},
+            pages = {74},
+              doi = {10.3847/1538-3881/ab2634},
+    archivePrefix = {arXiv},
+           eprint = {1812.03833},
+     primaryClass = {astro-ph.IM},
+           adsurl = {https://ui.adsabs.harvard.edu/abs/2019AJ....158...74C},
+          adsnote = {Provided by the SAO/NASA Astrophysics Data System}
+    }
+
+
 
 License
 -------
