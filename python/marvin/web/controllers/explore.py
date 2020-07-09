@@ -166,14 +166,18 @@ class Explore(BaseWebView):
         self.explore['dapmaps'] = daplist
         self.explore['dapbintemps'] = dm.get_bintemps(db_only=True)
 
-        mapchoice = stuff.get('mapchoice')
-        btchoice = stuff.get('btchoice')
+        targetlist = stuff.get('targetlist', '')
+        mapchoice = stuff.get('mapchoice', '')
+        btchoice = stuff.get('btchoice', '')
+
+        if not targetlist:
+            flash('Must provide a list of targets', 'error')
+            return redirect(url_for(home))
 
         if not mapchoice or not btchoice:
             flash('Must select a map and bintype', 'error')
             return redirect(url_for(home))
 
-        targetlist = stuff.get('targetlist')
         targets = targetlist.split('\r\n')
         self.explore['targetlist'] = targetlist
         self.explore['targets'] = targets
