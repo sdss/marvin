@@ -1,0 +1,12 @@
+{% extends "errors/error.html" %}
+
+{% block error %}
+
+    <div class='errorcode' id='error_gt'>
+        <h1 id='quote'>"It gives me a headache just trying to think down to your level."</h1>
+
+        <h2>{{code}}: {{name}}</h2>
+        <p>You've uploaded something just too big for your own good. No thanks! {{message}}</p>
+    </div>
+{% endblock error %}
+

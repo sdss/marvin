@@ -125,3 +125,12 @@ def gateway_timeout(error):
         return make_error_json(error, name, 504)
     else:
         return make_error_page(app, name, 504, sentry=sentry, exception=error)
+
+
+@errors.app_errorhandler(413)
+def entity_too_large(error):
+    name = 'Request Entity Too Large'
+    if _is_api(request):
+        return make_error_json(error, name, 413)
+    else:
+        return make_error_page(app, name, 413, sentry=sentry, exception=error)

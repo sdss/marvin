@@ -23,6 +23,7 @@ from marvin.web.controllers.index import index
 from marvin.web.controllers.galaxy import galaxy
 from marvin.web.controllers.search import search
 from marvin.web.controllers.plate import plate
+from marvin.web.controllers.explore import explore
 from marvin.web.controllers.images import images
 from marvin.web.controllers.users import users
 # API Views
@@ -177,6 +178,7 @@ def register_blueprints(app, url_prefix=None):
     app.register_blueprint(galaxy, url_prefix=url_prefix)
     app.register_blueprint(search, url_prefix=url_prefix)
     app.register_blueprint(plate, url_prefix=url_prefix)
+    app.register_blueprint(explore, url_prefix=url_prefix)
     app.register_blueprint(images, url_prefix=url_prefix)
     app.register_blueprint(users, url_prefix=url_prefix)
     app.register_blueprint(jinjablue)

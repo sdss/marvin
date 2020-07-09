@@ -94,7 +94,10 @@ params = {'query': {'searchfilter': fields.String(allow_none=True),
                      'mousecoords[]': fields.List(fields.String(), allow_none=True),
                      'bintemp': fields.String(allow_none=True),
                      'params[]': fields.List(fields.String(), allow_none=True)
-                     }
+                     },
+          'explore': {'targetlist': fields.DelimitedList(fields.String(), allow_none=True),
+                      'mapchoice': fields.String(allow_none=True),
+                      'btchoice': fields.String(allow_none=True)}
           }
 
 
