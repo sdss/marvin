@@ -67,14 +67,14 @@ class Explore(BaseWebView):
         self.explore['targetlist'] = ''
         self.explore['uploaded'] = False
         self.explore['targets'] = None
-        self.explore['mapchoice'] = None
+        self.explore['mapchoice'] = 'emline_gflux:ha_6564'
         self.explore['maps'] = None
         self.explore['mapmsgs'] = None
 
     def before_request(self, *args, **kwargs):
         ''' Do these things before a request to any route '''
         super(Explore, self).before_request(*args, **kwargs)
-        self.reset_dict(self.explore, exclude=['uploaded', 'n_targs'])
+        self.reset_dict(self.explore, exclude=['n_targs', 'mapchoice'])
 
     @route('/', methods=['GET', 'POST'])
     def index(self):
