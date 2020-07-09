@@ -13,7 +13,7 @@
 
 from __future__ import print_function, division, absolute_import
 
-from flask import Blueprint, render_template, request, redirect
+from flask import Blueprint, render_template, request, redirect, after_this_request
 from flask import url_for, flash, current_app, session as current_session, g
 from flask_classful import route
 from marvin.core.exceptions import MarvinError
@@ -119,6 +119,13 @@ class Explore(BaseWebView):
         filepath = os.path.join(current_app.config['UPLOAD_FOLDER'], filename)
         fileobj.save(filepath)
 
+        # delete the file after the request
+        @after_this_request
+        def remove_file(response):
+            if os.path.exists(filepath):
+                os.remove(filepath)
+            return response
+
         # bad size
         filesize = os.path.getsize(filepath)
         if filesize > current_app.config['MAX_CONTENT_LENGTH']:
@@ -207,5 +214,6 @@ class Explore(BaseWebView):
         self.explore['mapmsgs'] = mapmsgs
 
         return render_template('explore.html', **self.explore)
+
 
 Explore.register(explore)
