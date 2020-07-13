@@ -192,7 +192,7 @@ class Explore(BaseWebView):
                 cube = Cube(target, release=self._release)
             except MarvinError:
                 mapdict = {'data': None, 'msg': 'Error',
-                            'plotparams': None}
+                           'plotparams': None}
                 mapmsg = 'No cube available'
                 maps.append(mapdict)
                 mapmsgs.append(mapmsg)
