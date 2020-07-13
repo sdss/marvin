@@ -250,13 +250,13 @@ class Plate(MarvinToolsClass, FuzzyList):
 
         _cubes = [None]
         if self.data_origin == 'file':
-            sdss_path = Path()
+            sdss_path = Path(release=self.release)
             if self.dir3d == 'stack':
                 cubes = sdss_path.expand('mangacube', drpver=self._drpver,
-                                         plate=self.plateid, ifu='*')
+                                         plate=self.plateid, ifu='*', wave='LOG')
             else:
                 cubes = sdss_path.expand('mangamastar', drpver=self._drpver,
-                                         plate=self.plateid, ifu='*')
+                                         plate=self.plateid, ifu='*', wave='LOG')
             _cubes = [Cube(filename=cube, mode=self.mode, release=self.release) for cube in cubes]
 
         elif self.data_origin == 'db':
@@ -322,18 +322,18 @@ class Plate(MarvinToolsClass, FuzzyList):
             if not Path:
                 raise MarvinError('sdss_access is not installed')
             else:
-                is_public = 'DR' in self._release
-                path_release = self._release.lower() if is_public else None
-                sdss_path = Path(public=is_public, release=path_release)
+                # is_public = 'DR' in self._release
+                # path_release = self._release.lower() if is_public else None
+                sdss_path = Path(release=self._release)
 
             # try a cube
-            full = sdss_path.full('mangacube', drpver=self._drpver, plate=self.plateid, ifu='*')
+            full = sdss_path.full('mangacube', drpver=self._drpver, plate=self.plateid, ifu='*', wave='LOG')
             cubeexists = sdss_path.any('', full=full)
             if cubeexists:
                 file = sdss_path.one('', full=full)
             else:
                 # try an rss
-                full = sdss_path.full('mangarss', drpver=self._drpver, plate=self.plateid, ifu='*')
+                full = sdss_path.full('mangarss', drpver=self._drpver, plate=self.plateid, ifu='*', wave='LOG')
                 rssexists = sdss_path.any('', full=full)
                 if rssexists:
                     file = sdss_path.one('', full=full)

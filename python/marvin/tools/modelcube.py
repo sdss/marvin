@@ -151,7 +151,7 @@ class ModelCube(MarvinToolsClass, NSAMixIn, DAPallMixIn, GetApertureMixIn):
         plate, ifu = self.plateifu.split('-')
         daptype = '{0}-{1}'.format(self.bintype, self.template)
 
-        return super(ModelCube, self)._getFullPath('mangadap5', ifu=ifu,
+        return super(ModelCube, self)._getFullPath('mangadap', ifu=ifu,
                                                    drpver=self._drpver,
                                                    dapver=self._dapver,
                                                    plate=plate, mode='LOGCUBE',
@@ -166,7 +166,7 @@ class ModelCube(MarvinToolsClass, NSAMixIn, DAPallMixIn, GetApertureMixIn):
         plate, ifu = self.plateifu.split('-')
         daptype = '{0}-{1}'.format(self.bintype, self.template)
 
-        return super(ModelCube, self).download('mangadap5', ifu=ifu,
+        return super(ModelCube, self).download('mangadap', ifu=ifu,
                                                drpver=self._drpver,
                                                dapver=self._dapver,
                                                plate=plate, mode='LOGCUBE',

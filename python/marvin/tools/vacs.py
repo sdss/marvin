@@ -1,6 +1,6 @@
 # !/usr/bin/env python
 # -*- coding: utf-8 -*-
-# 
+#
 # Filename: vacs.py
 # Project: tools
 # Author: Brian Cherinka
@@ -53,7 +53,7 @@ class check_vac_release(object):
         for attr in inspect.getmembers(decorated_class, inspect.isfunction):
             # only decorate public functions
             if attr[0][0] != '_':
-                setattr(decorated_class, attr[0], 
+                setattr(decorated_class, attr[0],
                         check_release(*self.args, **self.kwargs)(getattr(decorated_class, attr[0])))
         return decorated_class
 
@@ -66,7 +66,7 @@ class VACs(VACContainer):
     have been contributed into Marvin.  Currently, this container
     only works with local VACs.  Remote-only access to VACs currently
     does not exist.
-    
+
     Attributes:
         release (str):
             The current MPL/DR version of the loaded VACs
@@ -88,7 +88,7 @@ class VACs(VACContainer):
                     getattr(cls, vac)._data.close()
                 # delete the attribute
                 delattr(cls, vac)
-        
+
     def __new__(cls, *args, **kwargs):
         ''' load relevant VACMixIns upon new class creation '''
         # reset the vacs
@@ -109,7 +109,7 @@ class VACs(VACContainer):
             if sv.summary_file is None:
                 log.info('VAC {0} has no summary file to load.  Skipping.'.format(sv.name))
                 continue
-            
+
             # create the VAC data class
             vacdc = VACDataClass(subvac.name, subvac.description, sv.summary_file)
 
@@ -121,7 +121,7 @@ class VACs(VACContainer):
                     assert hasattr(svmod, method), 'method name must be defined in VAC module file'
                     setattr(vacdc, method, types.MethodType(
                         getattr(svmod, method), vacdc))
-            
+
             # add vac to the container class
             cls._vacs.append(subvac.name)
             setattr(cls, subvac.name, vacdc)
@@ -141,15 +141,15 @@ class VACs(VACContainer):
 
     def check_target(self, target):
         ''' check which VACS a MaNGA target is available in
-        
+
         Checks for the target in each VAC and returns a
         dictionary of VAC names and a boolean indicating
         if the target is in that VAC
-        
+
         Parameters:
             target (str):
                 The name of the target
-        
+
         Returns:
             A dict of booleans
         '''
@@ -161,7 +161,7 @@ class VACs(VACContainer):
 
 class VACDataClass(object):
     ''' A data class for a given VAC
-    
+
     Parameters:
         name (str):
             The name of the VAC
@@ -193,9 +193,9 @@ class VACDataClass(object):
         if not sdss_access.sync.Access:
             raise MarvinError('sdss_access is not installed')
         else:
-            is_public = 'DR' in config.release
-            rsync_release = config.release.lower() if is_public else None
-            self._rsync = sdss_access.sync.Access(public=is_public, release=rsync_release)
+            # is_public = 'DR' in config.release
+            # rsync_release = config.release.lower() if is_public else None
+            self._rsync = sdss_access.sync.Access(release=config.release)
 
     def __repr__(self):
         name = self.name.title().replace('_', '')
@@ -203,7 +203,7 @@ class VACDataClass(object):
             end = ''
         end = '' if not self._data else ', n_hdus={0}'.format(len(self.data))
         return '<{0}Data(description={1}{2})>'.format(name, self.description, end)
-    
+
     @property
     def data(self):
         ''' The VAC FITS data '''
@@ -218,11 +218,11 @@ class VACDataClass(object):
 
     def get_table(self, ext=None):
         ''' Create an Astropy table for a data extension
-        
+
         Parameters:
             ext (int|str):
                 The HDU extension name or number
-        
+
         Returns:
             An Astropy table for the given extension
         '''
@@ -234,7 +234,7 @@ class VACDataClass(object):
         if self.data[ext].is_image:
             log.info('Ext={0} is not a table extension.  Cannot read.'.format(ext))
             return
-            
+
         return Table.read(self._path, ext, format='fits')
 
     def download_vac(self):
@@ -263,15 +263,15 @@ class VACDataClass(object):
 
     def has_target(self, target):
         ''' Checks if a target is contained within the VAC
-        
+
         Parameters:
             target (str):
                 The name of the target
-        
+
         Returns:
             A boolean indicating if the target is in the VAC or not
         '''
-        assert isinstance(target, six.string_types), 'target must be a string' 
+        assert isinstance(target, six.string_types), 'target must be a string'
         targ_type = parseIdentifier(target)
         ttypes = ['plateifu', 'mangaid']
         other = ttypes[ttypes.index(targ_type)-1]
@@ -279,5 +279,5 @@ class VACDataClass(object):
         data = self.data[1].data
         assert targ_type in map(str.lower, data.columns.names), \
             'Identifier "{0}" is not available.  Try a "{1}".'.format(targ_type, other)
-        
+
         return target in data[targ_type]

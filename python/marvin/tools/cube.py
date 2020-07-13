@@ -101,7 +101,7 @@ class Cube(MarvinToolsClass, NSAMixIn, GetApertureMixIn):
         plate, ifu = self.plateifu.split('-')
 
         return super(Cube, self)._getFullPath('mangacube', ifu=ifu,
-                                              drpver=self._drpver, plate=plate)
+                                              drpver=self._drpver, plate=plate, wave='LOG')
 
     def download(self):
         """Downloads the cube using sdss_access - Rsync,"""
@@ -112,7 +112,7 @@ class Cube(MarvinToolsClass, NSAMixIn, GetApertureMixIn):
         plate, ifu = self.plateifu.split('-')
 
         return super(Cube, self).download('mangacube', ifu=ifu,
-                                          drpver=self._drpver, plate=plate)
+                                          drpver=self._drpver, plate=plate, wave='LOG')
 
     def __repr__(self):
         """Representation for Cube."""
@@ -608,7 +608,7 @@ class Cube(MarvinToolsClass, NSAMixIn, GetApertureMixIn):
 
     def get_available_bintypes(self):
         ''' List the available DAP binning schemes for this object
-        
+
             For ``data_origin`` of file or API, uses the local DAPall summary
             file to determine the available bintypes for a given plateifu.
         '''

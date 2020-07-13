@@ -303,14 +303,14 @@ class MMAMixIn(object, six.with_metaclass(abc.ABCMeta)):
     def download(self, pathType=None, **pathParams):
         """Download using sdss_access Rsync"""
 
-        # check for public release
-        is_public = 'DR' in self._release
-        rsync_release = self._release.lower() if is_public else None
+        # # check for public release
+        # is_public = 'DR' in self._release
+        # rsync_release = self._release.lower() if is_public else None
 
         if not Access:
             raise MarvinError('sdss_access is not installed')
         else:
-            access = Access(public=is_public, release=rsync_release)
+            access = Access(release=self._release)
             access.remote()
             access.add(pathType, **pathParams)
             access.set_stream()
@@ -329,14 +329,15 @@ class MMAMixIn(object, six.with_metaclass(abc.ABCMeta)):
 
         """
 
-        # check for public release
-        is_public = 'DR' in self._release
-        path_release = self._release.lower() if is_public else None
+        # # check for public release
+        # is_public = 'DR' in self._release
+        # ismpl = 'MPL' in self._release
+        # path_release = self._release.lower() if is_public or ismpl else None
 
         if not Path:
             raise MarvinMissingDependency('sdss_access is not installed')
         else:
-            path = Path(public=is_public, release=path_release)
+            path = Path(release=self._release)
             try:
                 if url:
                     fullpath = path.url(pathType, **pathParams)
