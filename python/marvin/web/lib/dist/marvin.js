@@ -515,7 +515,7 @@ var Carousel = function () {
  * Created: Thursday, 9th July 2020 10:09:14 am
  * License: BSD 3-clause "New" or "Revised" License
  * Copyright (c) 2020 Brian Cherinka
- * Last Modified: Thursday, 9th July 2020 2:34:54 pm
+ * Last Modified: Friday, 10th July 2020 1:40:00 pm
  * Modified By: Brian Cherinka
  */
 
@@ -2142,6 +2142,9 @@ var HeatMap = function () {
                         theme: { fill: null }
                     }
                 },
+                boost: {
+                    useGPUTranslations: true
+                },
                 xAxis: {
                     title: { text: 'Spaxel X' },
                     minorGridLineWidth: 0,
@@ -2213,6 +2216,7 @@ var HeatMap = function () {
                 series: [{
                     type: "heatmap",
                     data: data,
+                    boostThreshold: 100,
                     dataLabels: { enabled: false },
                     events: {
                         click: function click(event) {
@@ -2621,6 +2625,10 @@ var Scatter = function () {
                     draggable: true,
                     backgroundColor: Highcharts.theme && Highcharts.theme.legendBackgroundColor || '#FFFFFF',
                     borderWidth: 1
+                },
+                boost: {
+                    useGPUTranslations: true,
+                    usePreAllocated: true
                 },
                 plotOptions: {
                     scatter: {

@@ -126,6 +126,10 @@ var Scatter = function () {
                     backgroundColor: Highcharts.theme && Highcharts.theme.legendBackgroundColor || '#FFFFFF',
                     borderWidth: 1
                 },
+                boost: {
+                    useGPUTranslations: true,
+                    usePreAllocated: true
+                },
                 plotOptions: {
                     scatter: {
                         marker: {
