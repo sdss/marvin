@@ -65,8 +65,8 @@ __all__ = ('convertCoords', 'parseIdentifier', 'mangaid2plateifu', 'findClosestV
            'invalidArgs', 'missingArgs', 'getRequiredArgs', 'getKeywordArgs',
            'isCallableWithArgs', 'map_bins_to_column', '_sort_dir', 'get_drpall_path',
            'get_dapall_path', 'temp_setattr', 'map_dapall', 'turn_off_ion', 'memory_usage',
-           'validate_jwt', 'target_status', 'target_is_observed', 'target_is_mastar', 
-           'get_plates', 'get_manga_image', 'check_versions', 'get_drpall_table', 
+           'validate_jwt', 'target_status', 'target_is_observed', 'target_is_mastar',
+           'get_plates', 'get_manga_image', 'check_versions', 'get_drpall_table',
            'get_dapall_table', 'get_drpall_file', 'get_dapall_file')
 
 drpTable = {}
@@ -670,15 +670,16 @@ def getDapRedux(release=None):
     if not Path:
         raise MarvinError('sdss_access is not installed')
     else:
-        is_public = 'DR' in release
-        path_release = release.lower() if is_public else None
-        sdss_path = Path(public=is_public, release=path_release)
+        # is_public = 'DR' in release
+        # path_release = release.lower() if is_public else None
+        sdss_path = Path(release=release)
 
     release = release or marvin.config.release
     drpver, dapver = marvin.config.lookUpVersions(release=release)
-    # hack a url version of MANGA_SPECTRO_ANALYSIS
-    dapdefault = sdss_path.dir('mangadefault', drpver=drpver, dapver=dapver, plate=None, ifu=None)
-    dappath = dapdefault.rsplit('/', 2)[0]
+    ## hack a url version of MANGA_SPECTRO_ANALYSIS
+    #dapdefault = sdss_path.dir('mangadefault', drpver=drpver, dapver=dapver, plate=None, ifu=None)
+    #dappath = dapdefault.rsplit('/', 2)[0]
+    dappath = os.path.join(os.getenv("MANGA_SPECTRO_ANALYSIS"), drpver, dapver)
     dapredux = sdss_path.url('', full=dappath)
     return dapredux
 
@@ -720,16 +721,16 @@ def getDefaultMapPath(**kwargs):
     if not Path:
         raise MarvinError('sdss_access is not installed')
     else:
-        is_public = 'DR' in release
-        path_release = release.lower() if is_public else None
-        sdss_path = Path(public=is_public, release=path_release)
+        # is_public = 'DR' in release
+        # path_release = release.lower() if is_public else None
+        sdss_path = Path(release=release)
 
     # get the sdss_path name by MPL
     # TODO: this is likely to break in future MPL/DRs. Just a heads up.
     if '4' in release:
         name = 'mangadefault'
     else:
-        name = 'mangadap5'
+        name = 'mangadap'
 
     # construct the url link to default maps file
     maplink = sdss_path.url(name, drpver=drpver, dapver=dapver, mpl=release,
@@ -799,6 +800,7 @@ def downloadList(inputlist, dltype='cube', **kwargs):
     n = kwargs.get('n', '*')
     limit = kwargs.get('limit', None)
     test = kwargs.get('test', None)
+    wave = 'LOG'
 
     # check for sdss_access
     if not Access:
@@ -835,29 +837,22 @@ def downloadList(inputlist, dltype='cube', **kwargs):
         if '4' in release:
             name = 'mangamap'
         else:
-            name = 'mangadap5'
+            name = 'mangadap'
             binmode = 'MAPS'
     elif dltype == 'modelcube':
-        name = 'mangadap5'
+        name = 'mangadap'
         binmode = 'LOGCUBE'
     elif dltype == 'dap':
-        name = 'mangadap5'
+        name = 'mangadap'
         binmode = '*'
         daptype = '*'
     elif dltype == 'mastar':
         name = 'mangamastar'
     elif dltype == 'image':
-        if check_versions(drpver, 'v2_5_3'):
-            name = 'mangaimagenew'
-        else:
-            name = 'mangaimage'
-
-    # check for public release
-    is_public = 'DR' in release
-    rsync_release = release.lower() if is_public else None
+        name = 'mangaimage'
 
     # create rsync
-    rsync_access = Access(label='marvin_download', verbose=verbose, public=is_public, release=rsync_release)
+    rsync_access = Access(label='marvin_download', verbose=verbose, release=release)
     rsync_access.remote()
 
     # Add objects
@@ -876,7 +871,8 @@ def downloadList(inputlist, dltype='cube', **kwargs):
             ifu = '*'
 
         rsync_access.add(name, plate=plateid, drpver=drpver, ifu=ifu, dapver=dapver, dir3d=dir3d,
-                         mpl=release, bintype=bintype, n=n, mode=binmode, daptype=daptype)
+                         mpl=release, bintype=bintype, n=n, mode=binmode, daptype=daptype,
+                         wave=wave)
 
     # set the stream
     try:
@@ -922,9 +918,9 @@ def _get_summary_file(name, summary_path=None, drpver=None, dapver=None):
     assert name in ['drpall', 'dapall'], 'name must be either drpall or dapall'
     from marvin import config
 
-    # check for public release
-    is_public = 'DR' in config.release
-    release = config.release.lower() if is_public else None
+    # # check for public release
+    # is_public = 'DR' in config.release
+    # release = config.release.lower() if is_public else None
 
     # get drpver and dapver
     config_drpver, config_dapver = config.lookUpVersions(config.release)
@@ -934,11 +930,11 @@ def _get_summary_file(name, summary_path=None, drpver=None, dapver=None):
     if name == 'drpall' and not summary_path:
         summary_path = get_drpall_path(drpver)
     elif name == 'dapall' and not summary_path:
-        summary_path = get_dapall_path(drpver, dapver) 
+        summary_path = get_dapall_path(drpver, dapver)
 
     if not os.path.isfile(summary_path):
         warnings.warn('{0} file not found. Downloading it.'.format(name), MarvinUserWarning)
-        rsync = Access(label='get_summary_file', public=is_public, release=release)
+        rsync = Access(label='get_summary_file', release=config.release)
         rsync.remote()
         rsync.add(name, drpver=drpver, dapver=dapver)
         try:
@@ -1408,7 +1404,7 @@ def _sort_dir(instance, class_):
 
 def _get_summary_path(name, drpver, dapver=None):
     ''' Return the path for either the DRP or DAP summary file
-    
+
     Parameters:
         name (str):
             The name of the summary file, either drpall or dapall
@@ -1419,9 +1415,9 @@ def _get_summary_path(name, drpver, dapver=None):
     '''
     assert name in ['drpall', 'dapall'], 'name must be either drpall or dapall'
     release = marvin.config.lookUpRelease(drpver)
-    is_public = 'DR' in release
-    path_release = release.lower() if is_public else None
-    path = Path(public=is_public, release=path_release)
+    # is_public = 'DR' in release
+    # path_release = release.lower() if is_public else None
+    path = Path(release=release)
     all_path = path.full(name, drpver=drpver, dapver=dapver)
     return all_path
 
@@ -1890,22 +1886,12 @@ def get_manga_image(cube=None, drpver=None, plate=None, ifu=None, dir3d=None, lo
 
     # create the sdss Path
     release = cube.release if cube else marvin.config.lookUpRelease(drpver, public_only=public)
-    is_public = 'DR' in release
-    path_release = release.lower() if is_public else None
-    path = Path(public=is_public, release=path_release)
+    path = Path(release=release)
 
-    # check if MPL-8 or not
-    is_MPL8 = check_versions(drpver, 'v2_5_3')
-    if is_MPL8:
-        if local:
-            img = path.full('mangaimagenew', drpver=drpver, plate=plate, ifu=ifu)
-        else:
-            img = path.url('mangaimagenew', drpver=drpver, plate=plate, ifu=ifu)
+    dir3d = dir3d if dir3d else 'stack'
+    assert dir3d in ['stack', 'mastar'], 'dir3d can only be stack or mastar'
+    if local:
+        img = path.full('mangaimage', drpver=drpver, plate=plate, ifu=ifu, dir3d=dir3d)
     else:
-        assert dir3d is not None, 'dir3d must also be specified'
-        assert dir3d in ['stack', 'mastar'], 'dir3d can only be stack or mastar'
-        if local:
-            img = path.full('mangaimage', drpver=drpver, plate=plate, ifu=ifu, dir3d=dir3d)
-        else:
-            img = path.url('mangaimage', drpver=drpver, plate=plate, ifu=ifu, dir3d=dir3d)
+        img = path.url('mangaimage', drpver=drpver, plate=plate, ifu=ifu, dir3d=dir3d)
     return img

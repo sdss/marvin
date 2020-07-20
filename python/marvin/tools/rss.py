@@ -124,7 +124,7 @@ class RSS(MarvinToolsClass, NSAMixIn, list):
 
         plate, ifu = self.plateifu.split('-')
 
-        return super(RSS, self)._getFullPath('mangarss', ifu=ifu, drpver=self._drpver, plate=plate)
+        return super(RSS, self)._getFullPath('mangarss', ifu=ifu, drpver=self._drpver, plate=plate, wave='LOG')
 
     def download(self):
         """Downloads the cube using sdss_access - Rsync"""
@@ -134,7 +134,7 @@ class RSS(MarvinToolsClass, NSAMixIn, list):
 
         plate, ifu = self.plateifu.split('-')
 
-        return super(RSS, self).download('mangarss', ifu=ifu, drpver=self._drpver, plate=plate)
+        return super(RSS, self).download('mangarss', ifu=ifu, drpver=self._drpver, plate=plate, wave='LOG')
 
     def getCube(self):
         """Returns the `~marvin.tools.cube.Cube` associated with this RSS."""
