@@ -19,7 +19,7 @@ This section summarises the most important new features a bugfixes in Marvin. Fo
   - Adds caching for routes on plate and galaxy pages
   - Improved web spaxel/map handling
 
-- Added utility functions, and improved handling, of DRPall and DAPall files.    
+- Added utility functions, and improved handling, of DRPall and DAPall files.
 - `Marvin Cube` now has a `get_available_bintypes` method which retrieves the available DAP binning-template schemes available for the given cube.
 - Moving to more semantic versioning (**major.minor.patch**)
 
@@ -27,15 +27,18 @@ This section summarises the most important new features a bugfixes in Marvin. Fo
   - minor release bumps for feature changes and some patches
   - patch release bumps for bug fixes
 
+- Added support for the Visual Morphology VAC
+- Moved to internal use of `tree 3.0.0` and `sdss_access 1.0.0`
+
 2.3.5 (December 2019)
 ---------------------
 
 - Support for :ref:`MPL-9 MaNGA data<datamodel-mpl9>`
-- Enhancements to the web spectrum display 
+- Enhancements to the web spectrum display
 
     - You can now toggle common lines measured by the DAP (annotations placed using global NSA redshift)
     - You can now toggle between rest-frame and observed wavelength (shifted using global NSA redshift)
-    - You can toggle a bad pixel mask. Pixel regions marked as DONOTUSE are now displayed as a red highlighted region. 
+    - You can toggle a bad pixel mask. Pixel regions marked as DONOTUSE are now displayed as a red highlighted region.
 
 - Improved image loading on Image Roulette page
 - "Traditional" spaxel queries have been reimplemented until ongoing improvements can be completed
@@ -52,17 +55,17 @@ Along with plenty of bug fixes, the following things are new
     - Galaxy Zoo: Returns Galaxy Zoo morphologies
     - Firefly: Returns stellar population parameters fitted by FIREFLY
     - MaNGA HI: Returns HI summary data and spectra
-- A new :ref:`Marvin VACs<marvin-vacs>` tool to access the full VAC FITS file.  
+- A new :ref:`Marvin VACs<marvin-vacs>` tool to access the full VAC FITS file.
 - Complete support for Windows.  With an update to `sdss_access`, Marvin now fully works on Windows, using `curl` as the default download service.
 - No more API rate limiting.  This has been removed until further notice.
-- New info popups for "DAP Maps" and "Queries" with links to additional information.  Click the "DAP Maps" and "Learn More' labels with the question marks, on the galaxy and query pages, respectively.   
-- Improved galaxy web memory - the galaxy web page now remembers when you've selected the dynamic MapSpecView, as well your map and bintype selections. Quickly move from galaxy to galaxy without reselecting the same things over and over.  
-- Improved DataModel documentation 
+- New info popups for "DAP Maps" and "Queries" with links to additional information.  Click the "DAP Maps" and "Learn More' labels with the question marks, on the galaxy and query pages, respectively.
+- Improved galaxy web memory - the galaxy web page now remembers when you've selected the dynamic MapSpecView, as well your map and bintype selections. Quickly move from galaxy to galaxy without reselecting the same things over and over.
+- Improved DataModel documentation
 
 2.3.2 (February 2019)
 ---------------------
 
-Support for MPL-8.  MPL-8 includes several changes to the DAP Datamodel.  
+Support for MPL-8.  MPL-8 includes several changes to the DAP Datamodel.
 Please see the :ref:`MPL-8 DataModel<datamodel-mpl8>` and the `MPL-8 TRM <https://trac.sdss.org/wiki/MANGA/TRM/TRM_MPL-8/DAPDataModel>`_ page (SDSS collaboration access required).  In summary, the changes include:
 
 - The stellar template is now `MILESHC-MILESHC`, indicating the template used for the stellar kinematics fitting and the emission-lines, respectively.
@@ -77,16 +80,16 @@ Please see the :ref:`MPL-8 DataModel<datamodel-mpl8>` and the `MPL-8 TRM <https:
     - New `stellar_fom` multi-channel property.  This property contains figure-of-merit metrics for the stellar kinematics.
     - Moved `stellar_cont_fresid` and `stellar_cont_rchi2` into the stellar_fom property.
     - Three new emission-lines: `HeI 3889`, `NI 5199`, `NI 5201`
-    - New `emline_ga` multi-channel property; the amplitude of the fitted Gaussian  
-    - New `emline_ganr` multi-channel property; the amplitude/noise of the fitted Gaussian  
-    - New `emline_fom` multi-channel property; full spectrum figure-of-merits for the emission lines 
-    - New `emline_lfom` multi-channel property; reduced chi-square figure-of-merits for the emission lines 
+    - New `emline_ga` multi-channel property; the amplitude of the fitted Gaussian
+    - New `emline_ganr` multi-channel property; the amplitude/noise of the fitted Gaussian
+    - New `emline_fom` multi-channel property; full spectrum figure-of-merits for the emission lines
+    - New `emline_lfom` multi-channel property; reduced chi-square figure-of-merits for the emission lines
 
 - The DRPall file now has two data extensions, **MANGA**, and **MASTAR**.  The MANGA extension contains all MaNGA-lead galaxy observations.  The MASTAR extension contains all mini-bundles and MaStar (APOGEE-lead) targets of observation.  Marvin currently does not support MaStar observations.
 
 
 2.3.0 (December 2018)
-------------------
+---------------------
 
 .. todo:: Fix link to authentication.
 

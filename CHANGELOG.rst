@@ -1,7 +1,7 @@
 Marvin's Change Log
 ===================
 
-[2.4.0] - unreleased
+[2.4.0] - 2020/07/19
 --------------------
 
 - **Adds** - caching web routes on Plate, Galaxy pages
@@ -10,14 +10,17 @@ Marvin's Change Log
 - **Adds** - a new `CacheMixIn` that adds optional caching to classes utilizing db calls
 - **Adds** - a new `Redis` `dogpile.cache` backend; with new regions for `Maps` and `Modelcubes`
 - **Adds** - new utility functions for DRPall, and DAPall files, `get_xxx_path`, `get_xxx_file`, `get_xxx_table`
-- **Fixes** - Issue :issue:`695` - better web spectra/map error messages; 
+- **Adds** - adds visual morphology VAC for DR16+
+- **Fixes** - Issue :issue:`695` - better web spectra/map error messages;
+- **Changes** - tree and sdss_access submodules to latest 3.0+ and 1.0+ versions
+- **Changes** - path changes to accommodate new tree and sdss_access
 
 [2.3.6] - 2020/04/14
 --------------------
 
 Fixed
 ^^^^^
-- Issue :issue:`700` - pinned webargs package to version <6, networkx package <2.4  
+- Issue :issue:`700` - pinned webargs package to version <6, networkx package <2.4
 
 [2.3.5] - 2019/12/09
 --------------------
@@ -49,7 +52,7 @@ Changed
 
 Fixed
 ^^^^^
-- Bug in session variable controlling DAP bintemps 
+- Bug in session variable controlling DAP bintemps
 
 [2.3.3] - 2019/12/09
 --------------------

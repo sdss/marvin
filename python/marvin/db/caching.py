@@ -124,7 +124,7 @@ for mpl in config._allowed_releases.keys():
     nsacache = 'nsa_{0}'.format(mpl.lower().replace('-', ''))
     regions[nsacache] = make_new_region(name=nsacache)
 
-backend = 'file' if not redis else 'redis'
+backend = 'file' if not redis or not os.environ.get('SESSION_REDIS') else 'redis'
 
 # make a maps redis cache
 regions['maps'] = make_new_region(backend=backend)
