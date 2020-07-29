@@ -539,7 +539,7 @@ class MarvinConfig(object):
         # Flip the mpldict
         verdict = {}
         for key, val in self._allowed_releases.items():
-            if (public_only and 'MPL' in key) or (not public_only and 'DR' in key):
+            if (public_only and 'MPL' in key):
                 continue
             verdict[val[0]] = key
 
