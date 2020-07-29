@@ -23,7 +23,7 @@ def check_request_for_release(request):
     ''' Check Flask request for release information and set it in config
 
     Parameters:
-        request (Flask.Request): 
+        request (Flask.Request):
             Flask Request object
 
     '''
