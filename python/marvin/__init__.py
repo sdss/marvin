@@ -561,7 +561,7 @@ class MarvinConfig(object):
         use localhost.
 
         Parameters:
-            sasmode ({'utah', 'local'}):
+            sasmode ({'utah', 'local', 'mirror'}):
                 the SAS mode to switch to.  Default is Utah
             ngrokid (str):
                 The ngrok id to use when using a 'localhost' sas mode.
@@ -575,7 +575,7 @@ class MarvinConfig(object):
             public (bool):
                 If ``True``, sets the API url to the public domain
         '''
-        assert sasmode in ['utah', 'local'], 'SAS mode can only be utah or local'
+        assert sasmode in ['utah', 'local', 'mirror'], 'SAS mode can only be utah, local, or mirror'
         base = base if base else os.environ.get('MARVIN_BASE', 'marvin')
         test_domain = 'https://lore.sdss.utah.edu/'
         if sasmode == 'local':
@@ -599,17 +599,8 @@ class MarvinConfig(object):
 
             # get a new urlmap (need to do for vetting)
             self._urlmap = None
-            #__ = self.urlmap
-
-            # marvin_base = 'test/{0}/'.format(base) if test else '{0}/'.format(base)
-            # if public:
-            #     base_url = re.sub(r'(dr[0-9]{1,2})', self._release.lower(), bconfig.public_api_url)
-            #     public_api = os.path.join(base_url, marvin_base)
-            #     self.sasurl = public_api
-            #     self._authtype = None
-            # else:
-            #     self.sasurl = os.path.join(bconfig.collab_api_url, marvin_base)
-            #     self._authtype = 'token'
+        elif sasmode == 'mirror':
+            self.sasurl = bconfig.mirror_api_url
 
     def forceDbOff(self):
         ''' Force the database to be turned off '''
@@ -723,6 +714,11 @@ class MarvinConfig(object):
             self.switchSasUrl('utah')
         elif 'DR' in value:
             self.switchSasUrl('utah', public=True)
+
+        # check to use the SAS mirror
+        mirror = self._custom_config.get('use_mirror', None)
+        if mirror:
+            self.switchSasUrl('mirror', public='DR' in value)
 
     def login(self, refresh=None):
         ''' Login with netrc credentials to receive an API token

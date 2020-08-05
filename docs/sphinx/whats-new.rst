@@ -11,6 +11,10 @@ What's New
 
 This section summarises the most important new features a bugfixes in Marvin. For the complete list of changes check the :ref:`marvin-changelog`.
 
+2.4.1 (August 2020)
+-------------------
+- Adds support for switching to the Marvin mirror, `magrathea.sdss.org`, hosted at Johns Hopkins
+
 2.4.0 (March 2020)
 ------------------
 - Caching of remote Marvin Tools (cached database queries)
