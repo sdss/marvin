@@ -19,7 +19,7 @@ from collections import OrderedDict
 from astropy.wcs import FITSFixedWarning
 
 # Set the Marvin version
-__version__ = '2.4.1'
+__version__ = '2.4.2dev'
 
 # Does this so that the implicit module definitions in extern can happen.
 # time - 483 ms
@@ -408,7 +408,7 @@ class MarvinConfig(object):
         ''' Update the allowed releases based on access '''
 
         # define release dictionaries
-        mpldict = {'MPL-9': ('v2_7_1', '2.4.1'),
+        mpldict = {'MPL-9': ('v2_7_1', '2.4.2dev'),
                    'MPL-8': ('v2_5_3', '2.3.0'),
                    'MPL-7': ('v2_4_3', '2.2.1'),
                    'MPL-6': ('v2_3_1', '2.1.3'),
