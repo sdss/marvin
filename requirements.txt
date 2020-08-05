@@ -13,6 +13,7 @@ python-Levenshtein>=0.12.0
 yamlordereddictloader>=0.2.2
 passlib>=1.7.1
 sdsstools>=0.1.5
+tqdm>=4.48
 
 SQLAlchemy>=1.1.15,<1.4
 SQLAlchemy-Utils>=0.32.9
