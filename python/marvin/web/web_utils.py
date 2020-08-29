@@ -74,11 +74,18 @@ def check_access():
     # elif logged_in is True and public_access:
     #     config.access = 'collab'
 
+def get_web_releases():
+    ''' Get the dict of supported web releases '''
+    min_web_release = current_app.config.get('MIN_RELEASE', None)
+    releases = config.get_allowed_releases(min_release=min_web_release)
+    return releases
+
 
 def update_allowed():
     ''' Update the allowed versions shown in the header dropdown '''
+
     logged_in = current_session.get('loginready', None)
-    mpls = list(config._allowed_releases.keys())
+    mpls = list(get_web_releases().keys())
 
     # this is to remove MPLs from the list of web versions when not logged in to the collaboration site
     if not logged_in:
@@ -118,7 +125,7 @@ def updateGlobalSession():
     elif 'release' not in current_session:
         current_session['release'] = config.release
     elif 'release' in current_session:
-        if current_session['release'] not in config._allowed_releases:
+        if current_session['release'] not in get_web_releases():
             current_session['release'] = config.release
 
     # reset the session versions if on public site

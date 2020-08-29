@@ -106,6 +106,7 @@ class File(Base):
                         )).\
                       label('dapqual')
 
+
 class CurrentDefault(Base):
     __tablename__ = 'current_default'
     __table_args__ = {'autoload': True, 'schema': 'mangadapdb'}

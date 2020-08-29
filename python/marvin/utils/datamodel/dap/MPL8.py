@@ -1,6 +1,6 @@
 # !/usr/bin/env python
 # -*- coding: utf-8 -*-
-# 
+#
 # Filename: MPL8.py
 # Project: dap
 # Author: Brian Cherinka
@@ -30,18 +30,18 @@ MILESHC_MILESHC = Template('MILESHC-MILESHC',
 # new figure of merit channels
 fom_channels = [
     Channel('rms', formats={'string': 'RMS of residuals for fitted pixels',
-                            'latex': r'RMS of residuals'}, 
+                            'latex': r'RMS of residuals'},
             description='RMS of the residuals for all fitted pixels in the stellar continuum.',
             unit=u.erg / u.s / (u.cm ** 2) / u.Angstrom / spaxel_unit, scale=1e-17, idx=0),
     Channel('frms', formats={'string': 'RMS of the fractional residuals',
-                             'latex': r'RMS of the fractional residuals'}, 
+                             'latex': r'RMS of the fractional residuals'},
             description='Fractional residuals for the stellar continuum fit.', idx=1),
     Channel('rchi2', formats={'string': 'Stellar continuum reduced chi-square',
                               'latex': r'Stellar\ continuum\ reduced\ \chi^2'},
             description='Reduced chi-square of the stellar continuum fit.', idx=2),
-    Channel('fresid_68th_percentile', db_name='68th_perc_frac_resid', 
+    Channel('fresid_68th_percentile', db_name='68th_perc_frac_resid',
             formats={'string': '68th percentile',
-                     'latex': r'68^{th} percentile'}, 
+                     'latex': r'68^{th} percentile'},
             description='68%% growth of the fractional residuals between the model and data.', idx=3),
     Channel('fresid_99th_percentile', db_name='99th_perc_frac_resid',
             formats={'string': '99th percentile Frac. Residuals',
@@ -212,6 +212,7 @@ MPL8_models = [
 # MPL-8 DapDataModel goes here
 MPL8 = DAPDataModel('2.3.0', aliases=['MPL-8', 'MPL8'],
                     bintypes=[SPX, HYB10, VOR10],
+                    db_only=[HYB10],
                     templates=[MILESHC_MILESHC],
                     properties=MPL8_maps,
                     models=MPL8_models,
