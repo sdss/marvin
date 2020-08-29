@@ -64,6 +64,16 @@ RSS_extensions = [
         description='Array of fiber Y-positions relative to the IFU center'),
 ]
 
+MPL10_datacubes = [
+    DataCube('dispersion', 'LSFPOST', 'WAVE', extension_ivar=None,
+             extension_mask='MASK', unit=u.Angstrom, db_column='disp',
+             scale=1, formats={'string': 'Dispersion'},
+             description='Broadened dispersion solution (1sigma LSF)'),
+    DataCube('dispersion_prepixel', 'LSFPRE', 'WAVE', extension_ivar=None,
+             extension_mask='MASK', unit=u.Angstrom, db_column='predisp',
+             scale=1, formats={'string': 'Dispersion pre-pixel'},
+             description='Broadened pre-pixel dispersion solution (1sigma LSF)')
+]
 
 MPL4 = DRPCubeDataModel('MPL-4', aliases=['MPL4', 'v1_5_1'],
                         datacubes=MPL4_datacubes,
@@ -113,9 +123,14 @@ MPL9 = DRPCubeDataModel('MPL-9', aliases=['MPL9', 'v2_7_1'],
                         bitmasks=get_maskbits('MPL-9'),
                         qual_flag='DRP3QUAL')
 
+MPL10 = DRPCubeDataModel('MPL-10', aliases=['MPL10', 'v3_0_1'],
+                         datacubes=MPL4_datacubes + MPL10_datacubes,
+                         spectra=MPL4_spectra + MPL6_spectra,
+                         bitmasks=get_maskbits('MPL-10'),
+                         qual_flag='DRP3QUAL')
 
 # The DRP Cube Datamodel
-datamodel = DRPCubeDataModelList([MPL4, MPL5, MPL6, MPL7, DR15, MPL8, DR16, MPL9])
+datamodel = DRPCubeDataModelList([MPL4, MPL5, MPL6, MPL7, DR15, MPL8, DR16, MPL9, MPL10])
 
 # Define the RSS Datamodel. Start by copying the Cube datamodel for convenience.
 datamodel_rss = datamodel.copy()

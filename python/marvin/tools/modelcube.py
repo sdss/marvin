@@ -647,6 +647,31 @@ class ModelCube(MarvinToolsClass, NSAMixIn, DAPallMixIn, GetApertureMixIn):
                         unit=model.unit,
                         pixmask_flag=model.pixmask_flag)
 
+    @property
+    def lsf(self):
+        """Returns the pre-pixelized LSF"""
+
+        isMPL10 = check_versions(self._dapver, datamodel['MPL-10'].release)
+        if not isMPL10:
+            raise MarvinError('LSF property only available for MPLs >= 10')
+
+        model = self.datamodel['lsf']
+
+        lsf_array = self._get_extension_data('lsf')
+        if model.has_mask():
+            lsf_mask = self._get_extension_data('lsf', 'mask')
+        else:
+            lsf_mask = None
+
+        return DataCube(lsf_array,
+                        np.array(self._wavelength),
+                        ivar=None,
+                        mask=lsf_mask,
+                        redcorr=self._redcorr,
+                        binid=self.get_binid(model),
+                        unit=model.unit,
+                        pixmask_flag=model.pixmask_flag)
+
     def getCube(self):
         """Returns the associated `~marvin.tools.cube.Cube`."""
 
