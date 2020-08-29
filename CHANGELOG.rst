@@ -1,6 +1,11 @@
 Marvin's Change Log
 ===================
 
+[2.4.1] - 2020/08/05
+--------------------
+- **Adds** - support for using the marvin mirror at magrathea.sdss.org, hosted at Johns Hopkins
+- **Adds** - new `use_mirror` custom config option to automatically set marvin to use the mirror
+
 [2.4.0] - 2020/07/19
 --------------------
 
