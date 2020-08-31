@@ -669,8 +669,19 @@ class Maps(MarvinToolsClass, NSAMixIn, DAPallMixIn, GetApertureMixIn):
         if self.is_binned is False:
             return self
         else:
+            unbinned = self.datamodel.parent.get_unbinned()
+            if self.datamodel.parent.db_only:
+                in_db = unbinned in self.datamodel.parent.db_only
+            else:
+                in_db = unbinned in self.datamodel.parent.bintypes
+
+            if self.mode == 'remote' and not in_db:
+                raise marvin.core.exceptions.MarvinError(
+                    "Bintype {0} for release {1} not available in remote database. Use "
+                    "Marvin's local file access mode instead.".format(unbinned.name, self.release))
+
             return Maps(plateifu=self.plateifu, release=self.release,
-                        bintype=self.datamodel.parent.get_unbinned(),
+                        bintype=unbinned,
                         template=self.template, mode=self.mode)
 
     def get_bpt(self, method='kewley06', snr_min=3, return_figure=True,
