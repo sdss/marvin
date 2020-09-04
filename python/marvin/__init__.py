@@ -577,6 +577,9 @@ class MarvinConfig(object):
         # if minimum release set, filter on drpver >= min release version
         from packaging.version import parse
         if min_release:
+            # adjust MPL-7 to DR15 alias if needed
+            if min_release == 'MPL-7' and min_release not in allowed:
+                min_release = 'DR15'
             min_drpver, __ = self.lookUpVersions(min_release)
             allowed = {k: v for k, v in allowed.items() if parse(
                 v[0]) >= parse(min_drpver)}
