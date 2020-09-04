@@ -29,10 +29,10 @@ To quickly install Marvin, use::
 
   pip install sdss-marvin
 
-If you are using an Anaconda distribution of Python, you may use the following available ``conda`` environment, 
+If you are using an Anaconda distribution of Python, you may use the following available ``conda`` environment,
 `here <https://anaconda.org/SDSS/marvin/files>`_. Once downloaded, set up the virtual environment with::
 
-  conda env create -f marvin_2.3.5.yml.
+  conda env create -f marvin_2.5.0.yml
 
 .. _marvin-install-dev:
 
@@ -77,7 +77,7 @@ For SDSS collaboration members, authentication is required to access proprietary
 Set up your netrc
 ~~~~~~~~~~~~~~~~~
 
-SDSS uses ``.netrc`` authentication to access data content on many domains. To set this up, create and edit a file in your 
+SDSS uses ``.netrc`` authentication to access data content on many domains. To set this up, create and edit a file in your
 home called ``.netrc`` an copy these lines inside::
 
     machine api.sdss.org
@@ -88,7 +88,7 @@ home called ``.netrc`` an copy these lines inside::
        login <username>
        password <password>
 
-and replace ``<username>`` and ``<password>`` with your login credentials. The default SDSS username and password is also 
+and replace ``<username>`` and ``<password>`` with your login credentials. The default SDSS username and password is also
 acceptable for anonymous access.  **Finally, run** ``chmod 600 ~/.netrc`` **to make the file only accessible to your user.**
 
 .. _api-token-auth:
@@ -250,8 +250,8 @@ ongoing discussion if this problem has been solved.
 Lots of Warnings Upon import
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-If you see lots of warnings upon import of marvin, from `/_bootstrap.py` and referencing `numpy.ufunc size changed, 
-may indicate binary incompatibility`, such as 
+If you see lots of warnings upon import of marvin, from `/_bootstrap.py` and referencing `numpy.ufunc size changed,
+may indicate binary incompatibility`, such as
 ::
 
     import marvin
@@ -260,10 +260,10 @@ may indicate binary incompatibility`, such as
     /anaconda3/envs/marvin_public/lib/python3.6/importlib/_bootstrap.py:219: RuntimeWarning: numpy.ufunc size changed, may indicate binary incompatibility. Expected 192 from C header, got 216 from PyObject
       return f(*args, **kwds)
 
-this arises when a Python package that uses Cython is compiled against a different version of numpy than is 
-actually installed.  See 
-`this article <https://stackoverflow.com/questions/40845304/runtimewarning-numpy-dtype-size-changed-may-indicate-binary-incompatibility>`_ 
-for more information.  The consensus is that these warnings are fairly harmless and benign.   
+this arises when a Python package that uses Cython is compiled against a different version of numpy than is
+actually installed.  See
+`this article <https://stackoverflow.com/questions/40845304/runtimewarning-numpy-dtype-size-changed-may-indicate-binary-incompatibility>`_
+for more information.  The consensus is that these warnings are fairly harmless and benign.
 
 Matplotlib backend problems
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
