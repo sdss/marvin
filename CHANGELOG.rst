@@ -1,6 +1,12 @@
 Marvin's Change Log
 ===================
 
+[2.5.0] - 2020/09/04
+--------------------
+- **Adds** - support for MaNGA data release MPL-10
+- **Removes** - web / API support for MPLs 4, 5, 6
+- **Removes** - SPX and VOR10 binning schemese in MPLs 7-10, and DR15-16.
+
 [2.4.1] - 2020/08/05
 --------------------
 - **Adds** - support for using the marvin mirror at magrathea.sdss.org, hosted at Johns Hopkins

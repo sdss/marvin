@@ -6,7 +6,7 @@ from brain.api.base import processRequest
 from marvin.utils.general.general import parseIdentifier
 from marvin.api.base import arg_validate as av
 from marvin.web.controllers import BaseWebView
-from marvin.web.web_utils import setGlobalSession, set_session_versions
+from marvin.web.web_utils import setGlobalSession, set_session_versions, get_web_releases
 from marvin.web.extensions import cache
 
 from brain.utils.general import validate_user, get_db_user
@@ -45,7 +45,7 @@ class Marvin(BaseWebView):
 
     @route('/versions/')
     def get_versions(self):
-        vers = {'sess_vers': current_session['versions'], 'config_vers': list(config._allowed_releases.keys()),
+        vers = {'sess_vers': current_session['versions'], 'config_vers': list(get_web_releases().keys()),
                 'access': config.access, 'release': config.release, 'session_release': current_session['release']}
         return jsonify(result=vers)
 

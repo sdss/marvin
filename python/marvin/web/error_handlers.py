@@ -125,3 +125,12 @@ def gateway_timeout(error):
         return make_error_json(error, name, 504)
     else:
         return make_error_page(app, name, 504, sentry=sentry, exception=error)
+
+
+@errors.app_errorhandler(409)
+def conflict(error):
+    name = 'Conflict'
+    if _is_api(request):
+        return make_error_json(error, name, 409)
+    else:
+        return make_error_page(app, name, 409, sentry=sentry, exception=error)

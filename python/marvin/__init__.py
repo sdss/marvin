@@ -19,7 +19,7 @@ from collections import OrderedDict
 from astropy.wcs import FITSFixedWarning
 
 # Set the Marvin version
-__version__ = '2.4.2dev'
+__version__ = '2.5.0dev'
 
 # Does this so that the implicit module definitions in extern can happen.
 # time - 483 ms
@@ -104,6 +104,9 @@ class MarvinConfig(object):
 
         # Allow DAP queries
         self._allow_DAP_queries = True
+
+        # Minimum web release; also see web.settings.Config.MIN_RELEASE
+        self._min_web_release = 'MPL-7'
 
         # perform some checks
         self._load_defaults()
@@ -408,7 +411,8 @@ class MarvinConfig(object):
         ''' Update the allowed releases based on access '''
 
         # define release dictionaries
-        mpldict = {'MPL-9': ('v2_7_1', '2.4.2dev'),
+        mpldict = {'MPL-10': ('v3_0_1', '3.0.1'),
+                   'MPL-9': ('v2_7_1', '2.4.1'),
                    'MPL-8': ('v2_5_3', '2.3.0'),
                    'MPL-7': ('v2_4_3', '2.2.1'),
                    'MPL-6': ('v2_3_1', '2.1.3'),
@@ -551,6 +555,35 @@ class MarvinConfig(object):
                               'Check for typos.'.format(drpver))
 
         return release
+
+    def get_allowed_releases(self, public=None, min_release=None):
+        ''' Get a dictionary of supported MaNGA releases
+
+        Parameters:
+            public (bool):
+                If True, only return public DR releases
+            min_release (str):
+                Filter out all releases below this version
+
+        Returns:
+            dict: the supported MaNGA releases in Marvin
+        '''
+        allowed = self._allowed_releases.copy()
+
+        # filter on only public DRs
+        if public:
+            allowed = {k: v for k, v in allowed.items() if 'DR' in k}
+
+        # if minimum release set, filter on drpver >= min release version
+        from packaging.version import parse
+        if min_release:
+            # adjust MPL-7 to DR15 alias if needed
+            if min_release == 'MPL-7' and min_release not in allowed:
+                min_release = 'DR15'
+            min_drpver, __ = self.lookUpVersions(min_release)
+            allowed = {k: v for k, v in allowed.items() if parse(
+                v[0]) >= parse(min_drpver)}
+        return allowed
 
     def switchSasUrl(self, sasmode='utah', ngrokid=None, port=5000, test=False,
                      base=None, public=None):
