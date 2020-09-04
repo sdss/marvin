@@ -105,6 +105,9 @@ class MarvinConfig(object):
         # Allow DAP queries
         self._allow_DAP_queries = True
 
+        # Minimum web release; also see web.settings.Config.MIN_RELEASE
+        self._min_web_release = 'MPL-7'
+
         # perform some checks
         self._load_defaults()
         self._check_access()

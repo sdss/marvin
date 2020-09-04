@@ -44,6 +44,22 @@ query_params = None
 PARAM_CACHE = {}
 
 
+def get_allowed_releases():
+    ''' get the supported API / web MaNGA releases '''
+    min_release = getattr(config, '_min_web_release', None)
+    public = config.access == 'public' or os.environ.get(
+        'PUBLIC_SERVER', None) is True
+    allowed_releases = config.get_allowed_releases(
+        public=public, min_release=min_release)
+    return allowed_releases
+
+
+def is_supported_release(release):
+    ''' check a release against the list of supported API releases '''
+    allowed_releases = get_allowed_releases()
+    return release in allowed_releases.keys()
+
+
 class QueryDataModel(object):
     """ A class representing a Query datamodel """
 
@@ -103,6 +119,10 @@ class QueryDataModel(object):
 
         from marvin.api.api import Interaction
         from brain import bconfig
+
+        # if not a supported release, don't try to get params
+        if not is_supported_release(self.release):
+            return
 
         # if not urlmap then exit
         if not config.urlmap:
