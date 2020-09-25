@@ -157,7 +157,7 @@
                                   <input type="checkbox" id='togglelines' aria-pressed="false" data-size='small' data-toggle="toggle" data-on="Toggle Lines Off" data-off="Toggle Lines On" data-onstyle="info" data-offstyle="info" data-width="170" data-height='35'>
                                   {# Toggle Wavelength #}
                                   <input type="checkbox" id='toggleframe' aria-pressed="false" data-size='small' data-toggle="toggle" data-on="Toggle Observed" data-off="Toggle Rest-Frame" data-onstyle="info" data-offstyle="info" data-width="170" data-height='35'>
-                                </div>                
+                                </div>
                             </div>
                             <div class='col-md-6'>
                                 <div class='input-group pull-right btn-group-sm' role="group" aria-label="plothelp">
@@ -165,7 +165,7 @@
                                   <input type="checkbox" id='togglemask' aria-pressed="false" data-size='small' data-toggle="toggle" data-on="Toggle Mask On" data-off="Toggle Mask Off" data-onstyle="info" data-offstyle="info" data-width="170" data-height='35'>
                                   {# Dygraphs help button #}
                                   <button type="button" id="dyghel_btn" class="btn btn-primary" data-toggle="modal" data-target="#dyghelp_modal"><span class="glyphicon glyphicon-question-sign"></span> Graph: How To</button>
-                                </div>                
+                                </div>
                             </div>
                             </div>
 
@@ -189,7 +189,7 @@
                                 <label style="cursor:pointer" id='maphelp' for='setdefaults' class='control-label' data-toggle='modal' data-target='#maphelp_modal'><span class="glyphicon glyphicon-question-sign"></span> DAP Maps</label>
                                 {{maphelp_popup(release, latest_dr)}}
                                 <div class="input-group">
-                                    <select class="selectpicker show-tick" id='dapmapchoices' multiple data-selected-text-format="count" 
+                                    <select class="selectpicker show-tick" id='dapmapchoices' multiple data-selected-text-format="count"
                                     data-header='Select your map properties.' data-live-search="true" data-max-options="6" title='No Maps selected'>
                                         {% for dapmap in dapmaps %}
                                         {% if dapmap in dapmapselect %}
@@ -337,7 +337,10 @@
     $(function() {
         let toggleon = {{toggleon|tojson}};
         let nsadict = {{nsadict|tojson}};
-        let redshift = 'z' in nsadict ? nsadict['z'] : null;
+        let redshift = null;
+        if (nsadict != null) {
+          redshift = ('z' in nsadict) ? nsadict['z'] : null;
+        }
         m.galaxy = new Galaxy(undefined, toggleon, redshift);
         m.galaxy.print();
         m.galaxy.hasNSA({{hasnsa|tojson}});
