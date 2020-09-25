@@ -1,7 +1,7 @@
 Marvin's Change Log
 ===================
 
-[2.5.1] - unreleased
+[2.5.1] - 2020/09/25
 --------------------
 - **Fixes** :issue:`711` - galaxy page bug when NSA dictionary not available prevents flag modals from appearing
 
