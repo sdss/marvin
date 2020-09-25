@@ -341,8 +341,6 @@
         if (nsadict != null) {
           redshift = ('z' in nsadict) ? nsadict['z'] : null;
         }
-        console.log('nsadict', nsadict);
-        console.log('redshift', redshift);
         m.galaxy = new Galaxy(undefined, toggleon, redshift);
         m.galaxy.print();
         m.galaxy.hasNSA({{hasnsa|tojson}});
