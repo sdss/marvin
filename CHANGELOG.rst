@@ -1,6 +1,10 @@
 Marvin's Change Log
 ===================
 
+[2.5.1] - unreleased
+--------------------
+- **Fixes** :issue:`711` - galaxy page bug when NSA dictionary not available prevents flag modals from appearing
+
 [2.5.0] - 2020/09/04
 --------------------
 - **Adds** - support for MaNGA data release MPL-10
