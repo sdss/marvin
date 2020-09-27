@@ -17,9 +17,12 @@ import yaml
 import six
 from collections import OrderedDict
 from astropy.wcs import FITSFixedWarning
+from sdsstools import get_config, get_logger, get_package_version
+
+NAME = 'marvin'
 
 # Set the Marvin version
-__version__ = '2.5.2dev'
+__version__ = get_package_version(path=__file__, package_name=NAME)
 
 # Does this so that the implicit module definitions in extern can happen.
 # time - 483 ms
@@ -29,7 +32,13 @@ from brain.utils.general.general import getDbMachine, merge, get_yaml_loader
 from brain import bconfig
 from brain.core.core import URLMapDict
 from brain.core.exceptions import BrainError
-from brain.core.logger import initLog
+#from brain.core.logger import initLog
+
+# Loads config
+curdir = os.path.dirname(os.path.abspath(__file__))
+cfg_params = get_config(
+    NAME, config_file=os.path.join(curdir, 'data/marvin.yml'))
+
 
 # Defines log dir.
 if 'MARVIN_LOGS_DIR' in os.environ:
@@ -38,7 +47,9 @@ else:
     logFilePath = os.path.realpath(os.path.join(os.path.expanduser('~'), '.marvin', 'marvin.log'))
 
 # Inits the log
-log = initLog(logFilePath)
+#log = initLog(logFilePath)
+log = get_logger(NAME)
+log.start_file_logger(logFilePath)
 
 warnings.simplefilter('once')
 warnings.filterwarnings('ignore', 'Skipped unsupported reflection of expression-based index')
@@ -52,6 +63,9 @@ warnings.filterwarnings('ignore', 'can\'t resolve package(.)+')
 # Ignore DeprecationWarnings that are not Marvin's
 warnings.filterwarnings('ignore', category=DeprecationWarning)
 warnings.filterwarnings('once', category=DeprecationWarning, module='marvin')
+
+# Ignore numpy binary incompatibility runtime warning
+warnings.filterwarnings('ignore', 'numpy.ufunc size changed')
 
 
 # up to here - time: 1 second
@@ -128,19 +142,20 @@ class MarvinConfig(object):
         ~/.marvin/marvin.yml
 
         '''
-        with open(os.path.join(os.path.dirname(__file__), 'data/marvin.yml'), 'r') as f:
-            config = yaml.load(f, Loader=get_yaml_loader())
-        user_config_path = os.path.expanduser('~/.marvin/marvin.yml')
-        if os.path.exists(user_config_path):
-            with open(user_config_path, 'r') as f:
-                config = merge(yaml.load(f, Loader=get_yaml_loader()), config)
+        # with open(os.path.join(os.path.dirname(__file__), 'data/marvin.yml'), 'r') as f:
+        #     config = yaml.load(f, Loader=get_yaml_loader())
+        # user_config_path = os.path.expanduser('~/.marvin/marvin.yml')
+        # if os.path.exists(user_config_path):
+        #     with open(user_config_path, 'r') as f:
+        #         config = merge(yaml.load(f, Loader=get_yaml_loader()), config)
 
-        # update any matching Config values
-        for key, value in config.items():
-            if hasattr(self, key):
-                self.__setattr__(key, value)
+        # # update any matching Config values
+        # for key, value in config.items():
+        #     if hasattr(self, key):
+        #         self.__setattr__(key, value)
 
-        self._custom_config = config
+        # self._custom_config = config
+        self._custom_config = cfg_params
 
     def _checkPaths(self, name):
         ''' Check for the necessary path existence.
