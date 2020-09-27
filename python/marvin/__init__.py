@@ -13,7 +13,7 @@ import re
 import warnings
 import sys
 import contextlib
-import yaml
+#import yaml
 import six
 from collections import OrderedDict
 from astropy.wcs import FITSFixedWarning
@@ -26,7 +26,7 @@ __version__ = get_package_version(path=__file__, package_name=NAME)
 
 # Does this so that the implicit module definitions in extern can happen.
 # time - 483 ms
-from marvin import extern
+#from marvin import extern
 from marvin.core.exceptions import MarvinUserWarning, MarvinError
 from brain.utils.general.general import getDbMachine, merge, get_yaml_loader
 from brain import bconfig
@@ -130,7 +130,7 @@ class MarvinConfig(object):
 
         # setup some paths
         self._plantTree()
-        self._checkSDSSAccess()
+        #self._checkSDSSAccess()
         self._check_manga_dirs()
         self.setDefaultDrpAll()
 
@@ -664,17 +664,17 @@ class MarvinConfig(object):
         if marvindb:
             marvindb.forceDbOn(dbtype=self.db)
 
-    def _addExternal(self, name):
-        ''' Adds an external product into the path '''
-        assert isinstance(name, str), 'name must be a string'
-        externdir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'extern', name)
-        extern_envvar = '{0}_DIR'.format(name.upper())
-        os.environ[extern_envvar] = externdir
-        pypath = os.path.join(externdir, 'python')
-        if os.path.isdir(pypath):
-            sys.path.append(pypath)
-        else:
-            warnings.warn('Python path for external product {0} does not exist'.format(name))
+    # def _addExternal(self, name):
+    #     ''' Adds an external product into the path '''
+    #     assert isinstance(name, str), 'name must be a string'
+    #     externdir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'extern', name)
+    #     extern_envvar = '{0}_DIR'.format(name.upper())
+    #     os.environ[extern_envvar] = externdir
+    #     pypath = os.path.join(externdir, 'python')
+    #     if os.path.isdir(pypath):
+    #         sys.path.append(pypath)
+    #     else:
+    #         warnings.warn('Python path for external product {0} does not exist'.format(name))
 
     def _plantTree(self):
         ''' Sets up the sdss tree product root '''
@@ -684,7 +684,7 @@ class MarvinConfig(object):
         # testing always using the python Tree as override
         # if 'TREE_DIR' not in os.environ:
         # set up tree using marvin's extern package
-        self._addExternal('tree')
+        #self._addExternal('tree')
         try:
             from tree.tree import Tree
         except ImportError:
@@ -692,17 +692,17 @@ class MarvinConfig(object):
         else:
             self._tree = Tree(key='MANGA', config=tree_config)
 
-    def _checkSDSSAccess(self):
-        ''' Checks the client sdss_access setup '''
-        if 'SDSS_ACCESS_DIR' not in os.environ:
-            # set up sdss_access using marvin's extern package
-            self._addExternal('sdss_access')
-            try:
-                from sdss_access.path import Path
-            except ImportError:
-                Path = None
-            else:
-                self._sdss_access_isloaded = True
+    # def _checkSDSSAccess(self):
+    #     ''' Checks the client sdss_access setup '''
+    #     if 'SDSS_ACCESS_DIR' not in os.environ:
+    #         # set up sdss_access using marvin's extern package
+    #         #self._addExternal('sdss_access')
+    #         try:
+    #             from sdss_access.path import Path
+    #         except ImportError:
+    #             Path = None
+    #         else:
+    #             self._sdss_access_isloaded = True
 
     @contextlib.contextmanager
     def _replant_tree(self, value):
