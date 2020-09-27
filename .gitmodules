@@ -1,6 +1,3 @@
-[submodule "python/marvin/extern/wtforms-alchemy"]
-	path = python/marvin/extern/wtforms-alchemy
-	url = https://github.com/sdss/wtforms-alchemy
 [submodule "python/marvin/extern/sqlalchemy-boolean-search"]
 	path = python/marvin/extern/sqlalchemy-boolean-search
 	url = https://github.com/sdss/sqlalchemy-boolean-search
