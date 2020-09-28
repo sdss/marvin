@@ -21,7 +21,7 @@ from astropy import table
 from astropy.io import ascii
 from astropy.wcs import WCS
 from marvin.core.exceptions import MarvinError, MarvinUserWarning
-from marvin.extern import yanny
+from marvin.utils import yanny
 
 if sys.version_info.major == 2:
     from cStringIO import StringIO as stringio
