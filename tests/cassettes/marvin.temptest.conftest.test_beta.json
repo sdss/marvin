@@ -1,0 +1,55 @@
+{
+  "http_interactions": [
+    {
+      "recorded_at": "2018-04-03T15:39:36",
+      "request": {
+        "body": {
+          "encoding": "utf-8",
+          "string": ""
+        },
+        "headers": {
+          "Accept": [
+            "*/*"
+          ],
+          "Accept-Encoding": [
+            "gzip, deflate"
+          ],
+          "Connection": [
+            "keep-alive"
+          ],
+          "User-Agent": [
+            "python-requests/2.18.4"
+          ]
+        },
+        "method": "GET",
+        "uri": "http://localhost:5000/fully/"
+      },
+      "response": {
+        "body": {
+          "encoding": null,
+          "string": "{\n  \"endpoint\": \"Fully:get\", \n  \"full\": \"/fully/?\", \n  \"msg\": \"this is get\", \n  \"path\": \"/fully/\", \n  \"url\": \"http://localhost:5000/fully/\"\n}\n"
+        },
+        "headers": {
+          "Content-Length": [
+            "142"
+          ],
+          "Content-Type": [
+            "application/json"
+          ],
+          "Date": [
+            "Tue, 03 Apr 2018 15:39:36 GMT"
+          ],
+          "Server": [
+            "Werkzeug/0.14.1 Python/2.7.12"
+          ]
+        },
+        "status": {
+          "code": 200,
+          "message": "OK"
+        },
+        "url": "http://localhost:5000/fully/"
+      }
+    }
+  ],
+  "recorded_with": "betamax/0.8.1"
+}

@@ -57,9 +57,11 @@ install:
 - source activate test_env
 - pip install -U pip wheel --quiet
 - pip install --upgrade setuptools --quiet
-- pip install -r requirements_dev.txt --quiet
-- pip install sdss-access --quiet
-- python setup.py install
+- pip install pytest
+- pip install pytest-coverage
+- pip install coveralls
+- pip install codecov
+- pip install .[dev]
 before_script:
 - export PYTHONPATH=$PYTHONPATH:$TRAVIS_BUILD_DIR/python
 - sh -e /etc/init.d/xvfb start
@@ -73,7 +75,9 @@ before_script:
 - "$TRAVIS_BUILD_DIR/bin/check_marvin"
 - echo $MANGA_LOCALHOST
 script:
-- pytest python/marvin/tests --travis-only --cov python/marvin --cov-report html -W
+- pytest tests --travis-only --cov marvin --cov-report html -W
   ignore::DeprecationWarning
 after_success:
 - coveralls
+- codecov
+
