@@ -24,7 +24,6 @@ dev dependencies:
 
     git clone https://github.com/sdss/marvin
     cd marvin
-    git submodule update --init --recursive
     pip install -e .[dev]
 
 What is Marvin?
