@@ -20,7 +20,7 @@ from sdsstools import get_config, get_logger, get_package_version
 NAME = 'marvin'
 
 # Set the Marvin version
-__version__ = get_package_version(path=__file__, package_name=NAME)
+__version__ = get_package_version(path=__file__, package_name='sdss-marvin')
 
 # Does this so that the implicit module definitions in extern can happen.
 # time - 483 ms
