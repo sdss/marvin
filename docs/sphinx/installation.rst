@@ -43,9 +43,7 @@ To develop for marvin, follow these instructions::
 
     git clone https://github.com/sdss/marvin
     cd marvin
-    git submodule update --init --recursive
-    pip install -r requirements_dev.txt
-    python setup.py develop
+    pip install -e .
 
 This will checkout the repository, set up the git submodule dependencies, and install marvin into your python path.  You will only need to run this once.  Afterwards, you can start developing for Marvin.
 
