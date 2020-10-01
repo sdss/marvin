@@ -11,25 +11,30 @@ of Marvin stems from Marvin's Brain.
 import os
 import re
 import warnings
-import sys
 import contextlib
-import yaml
 import six
 from collections import OrderedDict
 from astropy.wcs import FITSFixedWarning
+from sdsstools import get_config, get_logger, get_package_version
+
+NAME = 'marvin'
 
 # Set the Marvin version
-__version__ = '2.5.2dev'
+__version__ = get_package_version(path=__file__, package_name='sdss-marvin')
 
 # Does this so that the implicit module definitions in extern can happen.
 # time - 483 ms
-from marvin import extern
 from marvin.core.exceptions import MarvinUserWarning, MarvinError
-from brain.utils.general.general import getDbMachine, merge, get_yaml_loader
+from brain.utils.general.general import getDbMachine
 from brain import bconfig
 from brain.core.core import URLMapDict
 from brain.core.exceptions import BrainError
-from brain.core.logger import initLog
+
+# Loads config
+curdir = os.path.dirname(os.path.abspath(__file__))
+cfg_params = get_config(
+    NAME, config_file=os.path.join(curdir, 'data/marvin.yml'))
+
 
 # Defines log dir.
 if 'MARVIN_LOGS_DIR' in os.environ:
@@ -38,7 +43,8 @@ else:
     logFilePath = os.path.realpath(os.path.join(os.path.expanduser('~'), '.marvin', 'marvin.log'))
 
 # Inits the log
-log = initLog(logFilePath)
+log = get_logger(NAME)
+log.start_file_logger(logFilePath)
 
 warnings.simplefilter('once')
 warnings.filterwarnings('ignore', 'Skipped unsupported reflection of expression-based index')
@@ -52,6 +58,9 @@ warnings.filterwarnings('ignore', 'can\'t resolve package(.)+')
 # Ignore DeprecationWarnings that are not Marvin's
 warnings.filterwarnings('ignore', category=DeprecationWarning)
 warnings.filterwarnings('once', category=DeprecationWarning, module='marvin')
+
+# Ignore numpy binary incompatibility runtime warning
+warnings.filterwarnings('ignore', 'numpy.ufunc size changed')
 
 
 # up to here - time: 1 second
@@ -116,7 +125,6 @@ class MarvinConfig(object):
 
         # setup some paths
         self._plantTree()
-        self._checkSDSSAccess()
         self._check_manga_dirs()
         self.setDefaultDrpAll()
 
@@ -128,19 +136,7 @@ class MarvinConfig(object):
         ~/.marvin/marvin.yml
 
         '''
-        with open(os.path.join(os.path.dirname(__file__), 'data/marvin.yml'), 'r') as f:
-            config = yaml.load(f, Loader=get_yaml_loader())
-        user_config_path = os.path.expanduser('~/.marvin/marvin.yml')
-        if os.path.exists(user_config_path):
-            with open(user_config_path, 'r') as f:
-                config = merge(yaml.load(f, Loader=get_yaml_loader()), config)
-
-        # update any matching Config values
-        for key, value in config.items():
-            if hasattr(self, key):
-                self.__setattr__(key, value)
-
-        self._custom_config = config
+        self._custom_config = cfg_params
 
     def _checkPaths(self, name):
         ''' Check for the necessary path existence.
@@ -649,45 +645,17 @@ class MarvinConfig(object):
         if marvindb:
             marvindb.forceDbOn(dbtype=self.db)
 
-    def _addExternal(self, name):
-        ''' Adds an external product into the path '''
-        assert isinstance(name, str), 'name must be a string'
-        externdir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'extern', name)
-        extern_envvar = '{0}_DIR'.format(name.upper())
-        os.environ[extern_envvar] = externdir
-        pypath = os.path.join(externdir, 'python')
-        if os.path.isdir(pypath):
-            sys.path.append(pypath)
-        else:
-            warnings.warn('Python path for external product {0} does not exist'.format(name))
-
     def _plantTree(self):
         ''' Sets up the sdss tree product root '''
 
         tree_config = 'sdsswork' if self.access == 'collab' and 'MPL' in self.release else self.release.lower()
 
-        # testing always using the python Tree as override
-        # if 'TREE_DIR' not in os.environ:
-        # set up tree using marvin's extern package
-        self._addExternal('tree')
         try:
             from tree.tree import Tree
         except ImportError:
             self._tree = None
         else:
             self._tree = Tree(key='MANGA', config=tree_config)
-
-    def _checkSDSSAccess(self):
-        ''' Checks the client sdss_access setup '''
-        if 'SDSS_ACCESS_DIR' not in os.environ:
-            # set up sdss_access using marvin's extern package
-            self._addExternal('sdss_access')
-            try:
-                from sdss_access.path import Path
-            except ImportError:
-                Path = None
-            else:
-                self._sdss_access_isloaded = True
 
     @contextlib.contextmanager
     def _replant_tree(self, value):

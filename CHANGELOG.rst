@@ -1,6 +1,16 @@
 Marvin's Change Log
 ===================
 
+[2.5.2] - 2020/10/1
+-------------------
+- Restructuring to simplify setup, dependencies, and tests, for code health.
+- **Adds** - New `setup.py` and `setup.cfg` to simplify installation and dependency requirements
+- **Adds** - New dependencies ``marvin-brain``, ``marvin-wtforms-alchemy``, ``marvin-sqlalchemy-boolean-search``, ``sdss-tree``, and ``sdss-access``.
+- **Changes** - Migrates to ``sdsstools`` for internal logging and config management.
+- **Changes** - Removes all external submodules, which have been converted into pypi releases.
+- **Changes** - Moves tests outside the python package
+- **Fixes** - Issues :issue:`643`, :issue:`644`, :issue:`645`, :issue:`646`
+
 [2.5.1] - 2020/09/25
 --------------------
 - **Fixes** :issue:`711` - galaxy page bug when NSA dictionary not available prevents flag modals from appearing
