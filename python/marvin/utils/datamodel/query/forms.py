@@ -13,6 +13,7 @@ Revision History:
 from __future__ import division, print_function
 
 import re
+import six
 import sys
 import warnings
 from collections import OrderedDict, defaultdict
@@ -181,10 +182,7 @@ class ParamFormLookupDict(dict):
         """Returns the model class column in the WFTForm."""
 
         if not isinstance(keys, (list, tuple)):
-            str_types = [str]
-            if sys.version_info[0] < 3:
-                str_types.append(unicode)
-            if isinstance(keys, tuple(str_types)):
+            if isinstance(keys, six.string_types):
                 keys = [keys]
             else:
                 keys = list(keys)
