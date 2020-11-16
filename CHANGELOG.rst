@@ -1,6 +1,10 @@
 Marvin's Change Log
 ===================
 
+[2.5.3] - 2020/16/1
+-------------------
+- **Changes** - static web images to webp format for better compression and faster load times.
+
 [2.5.2] - 2020/10/1
 -------------------
 - Restructuring to simplify setup, dependencies, and tests, for code health.
