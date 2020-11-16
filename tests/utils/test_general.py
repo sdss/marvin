@@ -255,7 +255,7 @@ class TestSortDir(object):
         spec = spax.flux
 
         dir_ = _sort_dir(spec, class_)
-        dir_public = [it for it in dir_ if it[0] is not '_']
+        dir_public = [it for it in dir_ if it[0] != '_']
         assert set(dir_public) == set(expected)
 
 
