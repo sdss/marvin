@@ -1,5 +1,5 @@
 {% extends "layout.html" %}
-{% from 'macros.html' import galidsearch %}
+{% from 'macros.html' import galidsearch, picture %}
 
 {% block body %}
 
@@ -102,7 +102,7 @@
             <div class="row">
                 <div class="col-sm-3">
                     <div class="team-member">
-                        <img src="{{url_for('static', filename='images/brian.jpg')}}" class="img-responsive img-circle" alt="">
+                        {{picture('brian')}}
                         <h4>Brian Cherinka</h4>
                         <p class="text-muted">Lead Developer</p>
                         <ul class="list-inline social-buttons">
@@ -115,7 +115,7 @@
                 </div>
                 <div class="col-sm-3">
                     <div class="team-member">
-                        <img src="{{url_for('static', filename='images/brett.jpg')}}" class="img-responsive img-circle" alt="">
+                        {{picture('brett')}}
                         <h4>Brett Andrews</h4>
                         <p class="text-muted">Lead Developer</p>
                         <ul class="list-inline social-buttons">
@@ -130,7 +130,7 @@
                 </div>
                 <div class="col-sm-3">
                     <div class="team-member">
-                        <img src="{{url_for('static', filename='images/jose.jpg')}}" class="img-responsive img-circle" alt="">
+                        {{picture('jose')}}
                         <h4>José Sánchez-Gallego</h4>
                         <p class="text-muted">Lead Developer</p>
                         <ul class="list-inline social-buttons">
@@ -143,7 +143,7 @@
                 </div>
                 <div class="col-sm-3">
                     <div class="team-member">
-                        <img src="{{url_for('static', filename='images/joel.jpg')}}" class="img-responsive img-circle" alt="">
+                        {{picture('joel')}}
                         <h4>Joel Brownstein</h4>
                         <p class="text-muted">Lead Developer</p>
                         <ul class="list-inline social-buttons">

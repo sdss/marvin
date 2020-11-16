@@ -44,7 +44,7 @@
 {% macro galidsearch(id) %}
     <form class="navbar-form navbar-left galidsearch" role="form" id='{{id}}' action="{{url_for('index_page.galidselect')}}" method="post">
         <div class='form-group form-inline galids' id='scrollable-dropdown-menu'>
-            <input class='form-control typeahead' type='text' name='galid' placeholder='Plate or ID Designation' id='galid' val='' autocomplete='off' data-provide='typeahead'/>
+            <input class='form-control typeahead' type='text' name='galid' placeholder='Plate or ID Designation' id='galid-{{id}}' val='' autocomplete='off' data-provide='typeahead'/>
         </div>
     </form>
 {% endmacro %}
@@ -329,4 +329,13 @@
         </div>
     </div>
 </div>
+{% endmacro %}
+
+{# macro to load static images for webp with fallback to original format #}
+{% macro picture(name) %}
+<picture>
+  <source srcset="{{url_for('static', filename='images/'+name+'.webp')}}" type="image/webp">
+  <source srcset="{{url_for('static', filename='images/'+name+'.jpg')}}" type="image/jpeg">
+  <img src="{{url_for('static', filename='images/'+name+'.jpg')}}" class="img-responsive img-circle" alt="alt. {{name}}">
+</picture>
 {% endmacro %}
