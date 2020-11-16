@@ -36,15 +36,42 @@
   }
 }
 
-.intro-header {
-    padding-top: 50px; /* If you're making other pages, make sure there is 50px of padding to make sure the navbar doesn't overlap content! */
+// css to load original background image if browser does not support webp
+// see https://css-tricks.com/using-webp-images/
+.no-webp .intro-header {
+    padding-top: 50px;
+    /* If you're making other pages, make sure there is 50px of padding to make sure the navbar doesn't overlap content! */
     padding-bottom: 200px;
     text-align: center;
     color: #f8f8f8;
     background: url('../../static/images/sdss_marvin.png') no-repeat center center;
     background-size: cover;
     background-position: right bottom;
-}
+    }
+
+// css to load webp background image if browser supports it
+.webp .intro-header{
+    padding-top: 50px;
+    /* If you're making other pages, make sure there is 50px of padding to make sure the navbar doesn't overlap content! */
+    padding-bottom: 200px;
+    text-align: center;
+    color: #f8f8f8;
+    background: url('../../static/images/sdss_marvin.webp') no-repeat center center;
+    background-size: cover;
+    background-position: right bottom;
+    }
+
+// css to load original background image if browser has javascript disabled
+.no-js .intro-header {
+    padding-top: 50px;
+    /* If you're making other pages, make sure there is 50px of padding to make sure the navbar doesn't overlap content! */
+    padding-bottom: 200px;
+    text-align: center;
+    color: #f8f8f8;
+    background: url('../../static/images/sdss_marvin.png') no-repeat center center;
+    background-size: cover;
+    background-position: right bottom;
+    }
 
 .intro-message {
     position: relative;

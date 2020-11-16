@@ -9,7 +9,11 @@
     <div class='marvinerror'>
         <div class='row'>
             <div class='col-md-2'>
-                <img id="marvin_img" src="{{url_for('static',filename='images/marvin.png')}}" class="img-responsive">
+                <picture>
+                <source srcset="{{url_for('static', filename='images/marvin.webp')}}" type="image/webp">
+                <source srcset="{{url_for('static', filename='images/marvin.png')}}" type="image/png">
+                <img id="marvin_img" src="{{url_for('static',filename='images/marvin.png')}}" class="img-responsive" alt='marvin error'>
+                </picture>
             </div>
 
             <div class='col-md-6 vert-offset-top-7' id='errortext'>

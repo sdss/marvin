@@ -6080,7 +6080,27 @@ a.list-group-item-danger.active:hover, a.list-group-item-danger.active:focus {
   max-height: 300px;
   overflow-y: auto; }
 
-.intro-header {
+.no-webp .intro-header {
+  padding-top: 50px;
+  /* If you're making other pages, make sure there is 50px of padding to make sure the navbar doesn't overlap content! */
+  padding-bottom: 200px;
+  text-align: center;
+  color: #f8f8f8;
+  background: url("../../static/images/sdss_marvin.png") no-repeat center center;
+  background-size: cover;
+  background-position: right bottom; }
+
+.webp .intro-header {
+  padding-top: 50px;
+  /* If you're making other pages, make sure there is 50px of padding to make sure the navbar doesn't overlap content! */
+  padding-bottom: 200px;
+  text-align: center;
+  color: #f8f8f8;
+  background: url("../../static/images/sdss_marvin.webp") no-repeat center center;
+  background-size: cover;
+  background-position: right bottom; }
+
+.no-js .intro-header {
   padding-top: 50px;
   /* If you're making other pages, make sure there is 50px of padding to make sure the navbar doesn't overlap content! */
   padding-bottom: 200px;
