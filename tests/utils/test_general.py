@@ -242,7 +242,7 @@ class TestSortDir(object):
         ha = maps['emline_gflux_ha_6564']
 
         dir_ = _sort_dir(ha, class_)
-        dir_public = [it for it in dir_ if it[0] is not '_']
+        dir_public = [it for it in dir_ if it[0] != '_']
         assert set(dir_public) == set(expected)
 
     @pytest.mark.parametrize('class_, expected',
