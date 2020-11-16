@@ -39,7 +39,7 @@ The server runs using a uwsgi [master FIFO](https://uwsgi-docs.readthedocs.io/en
 
 # Javascript Development
 
-Marvin javascript code is currently included in html as scripts and stylesheets.  All related javascript code and css is contained in the `web/lib` subdirectory.  To it up for develpment, perform the following:
+Marvin javascript code is currently included in html as scripts and stylesheets.  All related javascript code and css is contained in the `web/lib` subdirectory.  To set it up for development, perform the following:
 
 1. Navigate to the `lib` directory.
 2. Run `npm install` to install the node packages locally.  If you don't have `npm`, get it with [node](https://nodejs.org/en/).
