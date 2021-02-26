@@ -2,7 +2,7 @@
 .. _datamodel-mpl10:
 
 MPL-10
-=====
+======
 
 This datamodel corresponds to the MPL-10 (v3_0_1, 3.0.1) release of MaNGA data.
 
