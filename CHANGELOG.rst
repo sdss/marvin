@@ -1,6 +1,10 @@
 Marvin's Change Log
 ===================
 
+[2.6.0] - unreleased
+--------------------
+- **Adds** - support for MaNGA data release MPL-11
+
 [2.5.3] - 2020/16/1
 -------------------
 - **Changes** - static web images to webp format for better compression and faster load times.

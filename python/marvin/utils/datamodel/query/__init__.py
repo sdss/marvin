@@ -11,9 +11,9 @@
 from __future__ import print_function, division, absolute_import
 
 from .base import QueryDataModelList
-from .MPL import MPL4, MPL5, MPL6, MPL7, DR15, MPL8, DR16, MPL9, MPL10
+from .MPL import MPL4, MPL5, MPL6, MPL7, DR15, MPL8, DR16, MPL9, MPL10, MPL11
 
-mpllist = [MPL4, MPL5, MPL6, MPL7, DR15, MPL8, DR16, MPL9, MPL10]
+mpllist = [MPL4, MPL5, MPL6, MPL7, DR15, MPL8, DR16, MPL9, MPL10, MPL11]
 
 # Defines the list of datamodels.
 datamodel = QueryDataModelList(mpllist)
