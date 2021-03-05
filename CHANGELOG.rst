@@ -1,6 +1,10 @@
 Marvin's Change Log
 ===================
 
+[2.5.4] - 2020/03/5
+-------------------
+- ** Changes** - pinned ``flask-jwt-extended`` package version to ``<4.0``
+
 [2.5.3] - 2020/16/1
 -------------------
 - **Changes** - static web images to webp format for better compression and faster load times.
