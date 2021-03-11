@@ -4,12 +4,12 @@
 Acknowledging and Citing Marvin
 -------------------------------
 
-
-
 In Publications
 ^^^^^^^^^^^^^^^
 
-If you use Marvin (including the `web interface <https://dr15.sdss.org/marvin>`_) for work/research presented in a publication (whether directly, or as a dependency to another package), we ask that you cite the `Marvin paper <http://adsabs.harvard.edu/abs/2019AJ....158...74C>`_ with the following bibtex entry::
+If you use Marvin (including the `web interface <https://dr15.sdss.org/marvin>`_) for work/research presented in a
+publication (whether directly, or as a dependency to another package), we ask that you cite the
+`Marvin paper <http://adsabs.harvard.edu/abs/2019AJ....158...74C>`_ with the following bibtex entry::
 
     @ARTICLE{2019AJ....158...74C,
            author = {{Cherinka}, Brian and {Andrews}, Brett H. and
@@ -35,18 +35,31 @@ If you use Marvin (including the `web interface <https://dr15.sdss.org/marvin>`_
           adsnote = {Provided by the SAO/NASA Astrophysics Data System}
     }
 
-For AAS publications, please see their `software citation guidelines <https://journals.aas.org/policy-statement-on-software/>`_.  If you wish, you can also link to any or all of the following sites:
+For AAS publications, please see their `software citation guidelines <https://journals.aas.org/policy-statement-on-software/>`_.
+If you wish, you can also link to any or all of the following sites:
 
 * Marvin documentation http://sdss-marvin.readthedocs.io/en/stable/,
-* Marvin web interface https://dr15.sdss.org/marvin, or
+* Marvin web interface https://dr16.sdss.org/marvin, or
 * Marvin Zenodo https://zenodo.org/record/596700.
 
 
 In Presentations
 ^^^^^^^^^^^^^^^^
 
-* Please provide a link to the Marvin website: https://dr15.sdss.org/marvin/
+* Please provide a link to the Marvin website: https://dr16.sdss.org/marvin/
 * Please include an installation reference: `pip install sdss-marvin`
 
 
 .. If you are using Marvin as part of a code project (e.g., affiliated packages), a useful way to acknowledge your use of Marvin is with a badge in your README. We suggest this badge:
+
+
+Additional Citations
+--------------------
+
+If you are using any MaNGA data, please see the following sites for citation guidelines on the
+MaNGA Data Analysis Pipeline products, the relevant MaNGA technical papers, as well as the general SDSS
+citation policy guidelines.
+
+- The MaNGA Data Analysis Pipepline: https://sdss-mangadap.readthedocs.io/en/latest/
+- MaNGA Technical Papers: https://www.sdss.org/dr16/manga/manga-technical-papers/
+- Learn more about citing SDSS in general: https://www.sdss.org/collaboration/citing-sdss/
