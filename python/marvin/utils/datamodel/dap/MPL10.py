@@ -29,7 +29,7 @@ MILESHC_MASTARHC2 = Template('MILESHC-MASTARHC2',
 
 # MPL-10 maps
 updated_maps = copy.deepcopy(MPL9_maps)
-remove = ['specindex_bcen', 'specindex_bcnt', 'specindex_rcen', 'specindex_rcnt']
+remove = ['specindex_bcen', 'specindex_bcnt', 'specindex_rcen', 'specindex_rcnt', 'emline_tplsigma']
 updated_maps = [m for m in updated_maps if m.name not in remove]
 
 # new properties
