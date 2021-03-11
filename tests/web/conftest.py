@@ -171,6 +171,9 @@ class Page(object):
     def assert405(self, message=None):
         self.assert_status(405, message)
 
+    def assert409(self, message=None):
+        self.assert_status(409, message)
+
     def assert422(self, message=None):
         self.assert_status(422, message)
 

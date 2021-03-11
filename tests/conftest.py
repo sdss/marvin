@@ -95,7 +95,7 @@ templates_accepted = {'MPL-4': ['MIUSCAT_THIN', 'MILES_THIN'],
                       'MPL-9': ['MILESHC-MASTARHC']}
 
 
-def populate_bintypes_templates(releases):
+def populate_bintypes_templates(releases, onlybin=None):
     ''' Generates bintype and template dictionaries for each release '''
     bintypes = OrderedDict((release, []) for release in releases)
     templates = OrderedDict((release, []) for release in releases)
@@ -104,6 +104,10 @@ def populate_bintypes_templates(releases):
         for bintemp in bintemps:
             bintype = bintemp.split('-')[0]
             template = '-'.join(bintemp.split('-')[1:])
+
+            if onlybin and bintype != onlybin:
+                continue
+
             if release in bintypes_accepted and bintype not in bintypes_accepted[release]:
                 continue
             if release in templates_accepted and template not in templates_accepted[release]:
@@ -115,7 +119,7 @@ def populate_bintypes_templates(releases):
     return bintypes, templates
 
 
-bintypes, templates = populate_bintypes_templates(releases)
+bintypes, templates = populate_bintypes_templates(releases, onlybin='HYB10')
 
 # TODO reduce modes to only local and remote
 modes = ['local', 'remote', 'auto']     # to loop over modes (see mode fixture)
