@@ -407,7 +407,8 @@ class MarvinConfig(object):
         ''' Update the allowed releases based on access '''
 
         # define release dictionaries
-        mpldict = {'MPL-10': ('v3_0_1', '3.0.1'),
+        mpldict = {'MPL-11': ('v3_1_1', '3.1.0'),
+                   'MPL-10': ('v3_0_1', '3.0.1'),
                    'MPL-9': ('v2_7_1', '2.4.1'),
                    'MPL-8': ('v2_5_3', '2.3.0'),
                    'MPL-7': ('v2_4_3', '2.2.1'),

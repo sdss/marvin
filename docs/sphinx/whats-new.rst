@@ -11,6 +11,10 @@ What's New
 
 This section summarises the most important new features a bugfixes in Marvin. For the complete list of changes check the :ref:`marvin-changelog`.
 
+2.6.0 (March 2020)
+------------------
+- Adds support for MaNGA release :ref:`MPL-11 MaNGA data<datamodel-mpl11>`
+
 2.5.0 (September 2020)
 ----------------------
 - Adds support for MaNGA release :ref:`MPL-10 MaNGA data<datamodel-mpl10>`

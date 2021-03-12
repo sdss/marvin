@@ -70,12 +70,15 @@ class ApiPage(Page):
 
     def route_no_valid_params(self, url, noparam, reqtype='get', params=None, errmsg=None):
         self.load_page(reqtype, url, params=params)
-        self.assert422(message='response status should be 422 for invalid params')
-        assert 'validation_errors' in self.json.keys()
-        noparam = [noparam] if not isinstance(noparam, list) else noparam
-        errmsg = [errmsg] if not isinstance(errmsg, list) else errmsg
-        invalid = {p: errmsg for p in noparam}
-        self.assert_dict_contains_subset(invalid, self.json['validation_errors'])
+        if noparam == 'release':
+            self.assert409(message='Error: data release None no longer supported by the Marvin API.')
+        else:
+            self.assert422(message='response status should be 422 for invalid params')
+            assert 'validation_errors' in self.json.keys()
+            noparam = [noparam] if not isinstance(noparam, list) else noparam
+            errmsg = [errmsg] if not isinstance(errmsg, list) else errmsg
+            invalid = {p: errmsg for p in noparam}
+            self.assert_dict_contains_subset(invalid, self.json['validation_errors'])
 
 
 @pytest.fixture()

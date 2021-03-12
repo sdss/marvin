@@ -20,6 +20,7 @@ and corresponding database schema, table, and column name.  All datamodels can b
 By Release
 ----------
 
+* :ref:`datamodel-mpl11`
 * :ref:`datamodel-mpl10`
 * :ref:`datamodel-mpl9`
 * :ref:`datamodel-dr16`

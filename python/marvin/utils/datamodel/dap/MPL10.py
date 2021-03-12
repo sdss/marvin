@@ -24,12 +24,12 @@ from .MPL9 import MPL9_maps, MPL8_specindex_channels
 # update Template for MPL-10
 MILESHC_MASTARHC2 = Template('MILESHC-MASTARHC2',
                              description=('Stellar kinematic templates from the MILES library.  '
-                                          'Stellar continuum template derived from high-res spectra '
-                                          'from the MaStar stellary library, used during emission-line fits.'))
+                                          'Stellar continuum template derived from a hierarchically '
+                                          'clustered set of MaStar templates; used during emission-line fits.'))
 
 # MPL-10 maps
 updated_maps = copy.deepcopy(MPL9_maps)
-remove = ['specindex_bcen', 'specindex_bcnt', 'specindex_rcen', 'specindex_rcnt']
+remove = ['specindex_bcen', 'specindex_bcnt', 'specindex_rcen', 'specindex_rcnt', 'emline_tplsigma']
 updated_maps = [m for m in updated_maps if m.name not in remove]
 
 # new properties
