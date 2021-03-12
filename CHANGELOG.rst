@@ -1,13 +1,13 @@
 Marvin's Change Log
 ===================
 
-[2.6.0] - unreleased
+[2.6.0] - 2021/03/12
 --------------------
 - **Adds** - support for MaNGA data release MPL-11
 - **Adds** - updates to the Marvin documentation on citations
 - **Fixes** - Bug with remote access for removed ``emline_tplsigma`` spaxel property.  Removed from MPL-10, MPL-11 datamodels.
 
-[2.5.4] - 2020/03/5
+[2.5.4] - 2021/03/5
 -------------------
 - ** Changes** - pinned ``flask-jwt-extended`` package version to ``<4.0``
 
