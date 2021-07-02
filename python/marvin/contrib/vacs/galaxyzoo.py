@@ -18,14 +18,22 @@ class GZVAC(VACMixIn):
 
     URL: https://www.sdss.org/dr15/data_access/value-added-catalogs/?vac_id=manga-morphologies-from-galaxy-zoo
 
-    Description: Returns Galaxy Zoo morphology for MaNGA galaxies. 
+    Description DR15: Returns Galaxy Zoo morphology for MaNGA galaxies. 
     The Galaxy Zoo (GZ) data for SDSS galaxies has been split over several iterations of www.galaxyzoo.org, 
     with the MaNGA target galaxies being spread over five different GZ data sets. In this value added catalog 
     we bring all of these galaxies into one single catalog and re-run the debiasing code (Hart et al. 2016) in 
     a consistent manner across the all the galaxies. This catalog includes data from Galaxy Zoo 2 (previously 
     published in Willett et al. 2013) and newer data from Galaxy Zoo 4 (currently unpublished).
 
-    Authors: Coleman Krawczyk, Karen Masters and the rest of the Galaxy Zoo Team.
+    Description DR17: Returns Galaxy Zoo morphology for MaNGA galaxies.
+    We provide new and updated Galaxy Zoo (GZ) data for the final MaNGA galaxies. This has been split over 
+    three files, each corresponding to a separate GZ catalogue. We have `MaNGA_GZD_auto-v1_0_1.fits`, which
+    corresponds to the automated classifications GZ DECaLS, described in Walmsley et al. 2021. There is also 
+    `MaNGA_gzUKIDSS-v1_0_1.fits`, which correponds to GZ:UKIDSS. Finally, we have put the rest of GZ in 
+    `MaNGA_gz-v2_0_1.fits`. For more information, please refer to the datamodels provided.
+
+
+    Authors: Coleman Krawczyk, Karen Masters, Tobias Géron and the rest of the Galaxy Zoo Team.
 
     """
 
@@ -38,11 +46,18 @@ class GZVAC(VACMixIn):
     include = (marvin.tools.cube.Cube, marvin.tools.maps.Maps, marvin.tools.modelcube.ModelCube)
 
     # Required method
-    def set_summary_file(self, release):
-        ''' Sets the path to the GalaxyZoo summary file '''
+    def set_summary_file(self, release,  file):
+        ''' Sets the path to the GalaxyZoo summary file. File argument should either be 
+        "GZD", "GZ_UKIDSS" or "GZ".'''
 
         # define the variables to build a unique path to your VAC file
-        self.path_params = {"ver": self.version[release]}
+        if release == "DR17": # path is more complicated in DR17, as we have three files.
+            files = {"GZD" : "GZD_auto", "GZ_UKIDSS" : "gzUKIDSS", "GZ" : "gz"}
+            version_DR17 = {"GZD" : "v1_0_1", "GZ_UKIDSS" : "v1_0_1", "GZ" : "v2_0_1"}
+            self.path_params = {"file" : files[file], "ver" : version_DR17[file]}
+            
+        else: # if not DR17, simply do based on release
+            self.path_params = {"ver": self.version[release]}
 
         # get_path returns False if the files do not exist locally
         self.summary_file = self.get_path("mangagalaxyzoo", path_params=self.path_params)
