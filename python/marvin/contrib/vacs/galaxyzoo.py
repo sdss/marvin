@@ -46,21 +46,27 @@ class GZVAC(VACMixIn):
     include = (marvin.tools.cube.Cube, marvin.tools.maps.Maps, marvin.tools.modelcube.ModelCube)
 
     # Required method
-    def set_summary_file(self, release,  file):
-        ''' Sets the path to the GalaxyZoo summary file. File argument should either be 
-        "GZD", "GZ_UKIDSS" or "GZ".'''
+    def set_summary_file(self, release):
+        ''' Sets the path to the GalaxyZoo summary file. 
+        self.summary_file and self.path_params are lists for DR17.
+        '''
+
+        self.summary_file = []
+        self.path_params = []
+
 
         # define the variables to build a unique path to your VAC file
         if release == "DR17": # path is more complicated in DR17, as we have three files.
-            files = {"GZD" : "GZD_auto", "GZ_UKIDSS" : "gzUKIDSS", "GZ" : "gz"}
-            version_DR17 = {"GZD" : "v1_0_1", "GZ_UKIDSS" : "v1_0_1", "GZ" : "v2_0_1"}
-            self.path_params = {"file" : files[file], "ver" : version_DR17[file]}
+            files = ['GZD_auto','gzUKIDSS','gz']
+            version_DR17 = {"GZD_auto" : "v1_0_1", "gzUKIDSS" : "v1_0_1", "gz" : "v2_0_1"}
+            for file in files:
+                self.path_params.append({"file" : file, "ver" : version_DR17[file]})
+                # get_path returns False if the files do not exist locally
+                self.summary_file.append(self.get_path("mangagalaxyzoo", path_params=self.path_params[-1]))
             
         else: # if not DR17, simply do based on release
-            self.path_params = {"ver": self.version[release]}
-
-        # get_path returns False if the files do not exist locally
-        self.summary_file = self.get_path("mangagalaxyzoo", path_params=self.path_params)
+            self.path_params.append({"ver": self.version[release]})
+            self.summary_file.append(self.get_path("mangagalaxyzoo", path_params=self.path_params[0]))
 
     # Required method
     def get_target(self, parent_object):
@@ -70,17 +76,41 @@ class GZVAC(VACMixIn):
         mangaid = parent_object.mangaid
 
         # download the vac from the SAS if it does not already exist locally
-        if not self.file_exists(self.summary_file):
-            self.summary_file = self.download_vac("mangagalaxyzoo", path_params=self.path_params)
+        for i in range(len(self.summary_file)):
+            if not self.file_exists(self.summary_file[i]):
+                self.summary_file[i] = self.download_vac("mangagalaxyzoo", path_params=self.path_params[i])
 
-        # Open the file using fits.getdata for extension 1
-        data = astropy.io.fits.getdata(self.summary_file, 1)
+        # Open the file(s) using fits.getdata for extension 1
+        data = []
+        for i in range(len(self.summary_file)):
+            data.append(astropy.io.fits.getdata(self.summary_file[i], 1))
 
         # Return selected line(s)
+
+        result = []
+        for i in range(len(self.summary_file)):
+            indata = mangaid in data[i]["mangaid"]
+            if not indata:
+                result.append(np.nan)
+            else:
+                idx = data[i]["mangaid"] == mangaid
+                result.append(data[i][idx])
+
+        if len(result) == 1: #To make sure output stays the same if versions is < DR17
+            return result[0]
+        else:
+            return result #For DR17, return list with classifications of all three files
+
+            
+
+        """
         indata = mangaid in data["mangaid"]
         if not indata:
             return "No Galaxy Zoo data exists for {0}".format(mangaid)
 
         idx = data["mangaid"] == mangaid
         return data[idx]
+        """
+
+
 
