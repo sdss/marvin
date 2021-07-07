@@ -129,7 +129,7 @@ MPL10 = DRPCubeDataModel('MPL-10', aliases=['MPL10', 'v3_0_1'],
                          bitmasks=get_maskbits('MPL-10'),
                          qual_flag='DRP3QUAL')
 
-MPL11 = DRPCubeDataModel('MPL-11', aliases=['MPL11', 'v3_1_1'],
+MPL11 = DRPCubeDataModel('MPL-11', aliases=['MPL11', 'v3_1_1', 'DR17'],
                          datacubes=MPL4_datacubes + MPL10_datacubes,
                          spectra=MPL4_spectra + MPL6_spectra,
                          bitmasks=get_maskbits('MPL-11'),
