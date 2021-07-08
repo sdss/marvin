@@ -180,11 +180,14 @@ class GZ3DVAC(VACMixIn):
             self.stars_summary_file = self.download_vac('mangagz3dstars', path_params=self.path_params)
 
         summary_table = Table.read(self.summary_file, hdu=1)
-        idx = summary_table['MANGAID'] == mangaid
-        if idx.sum() > 0:
-            filename = summary_table[idx]['file_name'][0]
+        # Table adds extra spaces to short strings, these need to be stripped off
+        gz3d_mangaids = np.array([mid.strip() for mid in summary_table['MANGAID']])
 
-            self.path_params.update('file_name', filename)
+        idx = gz3d_mangaids == mangaid
+        if idx.sum() > 0:
+            file_name = summary_table[idx]['file_name'][0].strip()
+
+            self.path_params.update(file_name=file_name)
             self.gz3d_filename = self.get_path('mangagz3d', path_params=self.path_params)
 
             if not self.file_exists(self.gz3d_filename):
