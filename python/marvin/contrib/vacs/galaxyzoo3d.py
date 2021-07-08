@@ -13,6 +13,7 @@ from astropy.io import fits
 from astropy.wcs import WCS
 from astropy.table import Table
 from scipy.interpolate import RectBivariateSpline
+from scipy.spatial import distance_matrix
 from marvin.tools.quantities.spectrum import Spectrum
 from marvin import log
 
@@ -57,95 +58,6 @@ class Suppressor(object):
 
     def write(self, x):
         pass
-
-
-# subclass Spectrum to add basic opperations
-# such as +, -, *, /, that handel ivar and bit masks correctly
-class SpectrumStacker(Spectrum):
-    def inside_ifu(self):
-        return not any((2**0) & self.mask)
-
-    def _checkUnits(self, s):
-        if self.unit != s.unit:
-            raise ValueError('Units must match')
-
-    def _checkWavelength(self, s):
-        if all(self.wavelength != s.wavelength):
-            raise ValueError('Wavelength must match')
-
-    def _ivar_sum(self, s):
-        var1 = 1.0 / self.ivar
-        var2 = 1.0 / s.ivar
-        # var_new = var1 + var2 + roh*sqrt(var1)*sqrt(var2)
-        # roh = exp(-0.5 * (distance_between_spaxels/1.92)**2)
-        # distance in units of spaxels
-        return 1 / (var1 + var2)
-
-    def __add__(self, s):
-        self._checkUnits(s)
-        self._checkWavelength(s)
-        flux = self.value + s.value
-        ivar = self._ivar_sum(s)
-        mask = np.bitwise_or(self.mask, s.mask)
-        kwargs = {
-            'unit': self.unit,
-            'wavelength': self.wavelength,
-            'wavelength_unit': self.wavelength.unit,
-            'ivar': ivar,
-            'mask': mask
-        }
-        return SpectrumStacker(flux, **kwargs)
-
-    def __radd__(self, s):
-        if s == 0:
-            return self
-        else:
-            return self.__add__(s)
-
-    def __sub__(self, s):
-        self._checkUnits(s)
-        self._checkWavelength(s)
-        flux = self.value - s.value
-        ivar = self._ivar_sum(s)
-        mask = np.bitwise_or(self.mask, s.mask)
-        kwargs = {
-            'unit': self.unit,
-            'wavelength': self.wavelength,
-            'wavelength_unit': self.wavelength.unit,
-            'ivar': ivar,
-            'mask': mask
-        }
-        return SpectrumStacker(flux, **kwargs)
-
-    def __mul__(self, n):
-        flux = self.value * n
-        ivar = self.ivar / (n**2)
-        kwargs = {
-            'unit': self.unit,
-            'wavelength': self.wavelength,
-            'wavelength_unit': self.wavelength.unit,
-            'ivar': ivar,
-            'mask': self.mask
-        }
-        return SpectrumStacker(flux, **kwargs)
-
-    def __rmul__(self, s):
-        return self.__mul__(s)
-
-    def __div__(self, n):
-        flux = self.value / np.float(n)
-        ivar = self.ivar * (n**2)
-        kwargs = {
-            'unit': self.unit,
-            'wavelength': self.wavelength,
-            'wavelength_unit': self.wavelength.unit,
-            'ivar': ivar,
-            'mask': self.mask
-        }
-        return SpectrumStacker(flux, **kwargs)
-
-    def __truediv__(self, n):
-        return self.__div__(n)
 
 
 class GZ3DVAC(VACMixIn):
@@ -320,8 +232,8 @@ class GZ3DTarget(object):
         return [(v_line_x, v_line_y), (h_line_x, h_line_y)]
 
     def _get_spaxel_mask(self, mask, grid_size=None):
-        # assues a 0.5 arcsec grid centered on the ifu's ra and dec
-        # use a Bivariate spline approximation to resample maks to the spaxel grid
+        # assumes a 0.5 arcsec grid centered on the ifu's ra and dec
+        # use a Bivariate spline approximation to resample mask to the spaxel grid
         xx = np.arange(mask.shape[1])
         yy = np.arange(mask.shape[0])
         s = RectBivariateSpline(xx, yy, mask)
@@ -348,18 +260,55 @@ class GZ3DTarget(object):
         mdx = np.where(mask > 0)
         if len(mdx[0] > 0):
             weights = mask[mdx]
-            spaxels = self.cube[mdx]
-            spectra = [s.flux.copy() for s in spaxels]
-            for s in spectra:
-                s.__class__ = SpectrumStacker
+            spaxel_index = np.array(mdx.nonzero()).T
+
+            spectra = [s.flux.copy() for s in self.cube[mdx.nonzero()]]
+
+            # only keep spectra inside the IFU
+            in_ifu = np.array([not any(2**0 & s.mask) for s in spectra])
+            if in_ifu.sum() == 0:
+                return None
+
+            spectra = [spectra[i] for i in in_ifu.nonzero()[0]]
+            spaxel_index = spaxel_index[in_ifu]
+            weights = weights[in_ifu]
+            weights_total = weights.sum()
+
             if len(spectra) == 1:
                 return spectra[0]
-            else:
-                weighted_spectra_in_ifu = [s * w for s, w in zip(spectra, weights) if s.inside_ifu()]
-                weights_in_ifu = [w for s, w in zip(spectra, weights) if s.inside_ifu()]
-                return sum(weighted_spectra_in_ifu) / sum(weights_in_ifu)
-        else:
-            return None
+
+            # we need to handle covariance between spaxels when calculating
+            # uncertainties. We follow Westfall et al. 2019's method based in
+            # distance between spaxels
+
+            d = distance_matrix(spaxel_index, spaxel_index) / 1.92
+            roh = np.exp(-0.5 * d**2)
+
+            flux = np.array([sp.value for sp in spectra])
+            # the weighted mean
+            mean = (flux * weights[:, None]).sum(axis=0) / weights_total
+
+            sigma = np.array([sp.error.value for sp in spectra])
+            sigma_weights = weights[:, None] * sigma
+            sigma_outer = sigma_weights[None, :, :] * sigma_weights[:, None, :]
+            roh_sigma = roh[:, :, None] * sigma_outer
+            ivar = (weights_total**2) / roh_sigma.sum(axis=(0, 1))
+
+            mask = spectra[0].mask
+            for sp in spectra[1:]:
+                mask |= sp.mask
+
+            return Spectrum(
+                mean,
+                unit=spectra[0].unit,
+                wavelength=spectra[0].wavelength,
+                wavelength_unit=spectra[0].wavelength.unit,
+                pixmask_flag=spectra[0].pixmask_flag,
+                ivar=ivar,
+                mask=mask
+            )
+
+        return None
 
     def get_mean_spectra(self, inv=False):
         self.make_all_spaxel_masks()
