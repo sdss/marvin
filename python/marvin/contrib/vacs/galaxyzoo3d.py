@@ -76,6 +76,9 @@ class SpectrumStacker(Spectrum):
     def _ivar_sum(self, s):
         var1 = 1.0 / self.ivar
         var2 = 1.0 / s.ivar
+        # var_new = var1 + var2 + roh*sqrt(var1)*sqrt(var2)
+        # roh = exp(-0.5 * (distance_between_spaxels/1.92)**2)
+        # distance in units of spaxels
         return 1 / (var1 + var2)
 
     def __add__(self, s):
