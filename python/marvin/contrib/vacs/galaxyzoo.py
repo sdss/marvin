@@ -90,7 +90,7 @@ class GZVAC(VACMixIn):
 
         # Return selected line(s)
         result = {}
-        keys = ['gz_auto','gz_ukidds', 'gz']
+        keys = ['gz_auto','gz_ukidss', 'gz']
 
         for i in range(len(self.summary_file)):
             indata = mangaid in data[i]["mangaid"]
