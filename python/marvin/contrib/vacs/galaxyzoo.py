@@ -40,7 +40,7 @@ class GZVAC(VACMixIn):
     # Required parameters
     name = "galaxyzoo"
     description = "Returns Galaxy Zoo morphology"
-    version = {"MPL-7": "v1_0_1", "MPL-8": "v1_0_1", "DR15": "v1_0_1", "DR16": "v1_0_1"}
+    version = {"MPL-7": "v1_0_1", "MPL-8": "v1_0_1", "DR15": "v1_0_1", "DR16": "v1_0_1", "MPL-11" : "NaN", "DR17" : "NaN"}
 
     # optional Marvin Tools to attach your vac to
     include = (marvin.tools.cube.Cube, marvin.tools.maps.Maps, marvin.tools.modelcube.ModelCube)
@@ -56,17 +56,20 @@ class GZVAC(VACMixIn):
 
 
         # define the variables to build a unique path to your VAC file
-        if release == "DR17": # path is more complicated in DR17, as we have three files.
+        if release == "DR17" or release == "MPL-11": # path is more complicated in DR17, as we have three files.
             files = ['GZD_auto','gzUKIDSS','gz']
             version_DR17 = {"GZD_auto" : "v1_0_1", "gzUKIDSS" : "v1_0_1", "gz" : "v2_0_1"}
             for file in files:
                 self.path_params.append({"file" : file, "ver" : version_DR17[file]})
                 # get_path returns False if the files do not exist locally
                 self.summary_file.append(self.get_path("mangagalaxyzoo", path_params=self.path_params[-1]))
-            
-        else: # if not DR17, simply do based on release
+
+        else: # if not DR17 or MPL-11, simply do based on release as before
             self.path_params.append({"ver": self.version[release]})
             self.summary_file.append(self.get_path("mangagalaxyzoo", path_params=self.path_params[0]))
+
+
+
 
     # Required method
     def get_target(self, parent_object):
@@ -86,31 +89,21 @@ class GZVAC(VACMixIn):
             data.append(astropy.io.fits.getdata(self.summary_file[i], 1))
 
         # Return selected line(s)
+        result = {}
+        keys = ['gz_auto','gz_ukidds', 'gz']
 
-        result = []
         for i in range(len(self.summary_file)):
             indata = mangaid in data[i]["mangaid"]
             if not indata:
-                result.append(np.nan)
+                pass # passes instead of adding an empty key-value pair.
+                #result[keys[i]] = 0
             else:
                 idx = data[i]["mangaid"] == mangaid
-                result.append(data[i][idx])
+                result[keys[i]] = data[i][idx]
 
-        if len(result) == 1: #To make sure output stays the same if versions is < DR17
-            return result[0]
+        if len(self.summary_file) == 1: #To make sure output stays the same if versions is < DR17
+            return list(result.values())[0]
         else:
-            return result #For DR17, return list with classifications of all three files
-
-            
-
-        """
-        indata = mangaid in data["mangaid"]
-        if not indata:
-            return "No Galaxy Zoo data exists for {0}".format(mangaid)
-
-        idx = data["mangaid"] == mangaid
-        return data[idx]
-        """
-
+            return result #For DR17, return dict with classifications of all three files
 
 
