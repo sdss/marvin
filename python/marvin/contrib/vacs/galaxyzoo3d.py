@@ -111,6 +111,25 @@ def plot_alpha_bar(color, grid, ticks=[]):
     return ax_bar, cb
 
 
+def plot_alpha_scatter(x, y, mask, color, ax, snr=None, sf_mask=None, value=True, **kwargs):
+    idx = mask > 0
+    if value:
+        idx = idx & (y.value > 0)
+    if (value) and (snr is not None):
+        idx = idx & (y.snr > snr)
+    if sf_mask is not None:
+        idx = idx & sf_mask
+    c = mpl.colors.to_rgb(color)
+    c_a = np.array([c + (i, ) for i in mask[idx] / 15])
+    c_a[c_a > 1] = 1
+    if idx.sum() > 0:
+        if value:
+            return ax.scatter(x[idx], y.value[idx], c=c_a, edgecolor=c_a, **kwargs)
+        else:
+            return ax.scatter(x[idx], y[idx], c=c_a, edgecolor=c_a, **kwargs)
+    return None
+
+
 class Suppressor(object):
     # A class to mute the output of a function
     def __enter__(self):
@@ -290,6 +309,7 @@ class GZ3DTarget(object):
         self.log_nii_ha = None
         self.log_sii_ha = None
         self.log_oi_ha = None
+        self._get_bpt()
         self.dis = None
 
     def _process_images(self):
@@ -506,7 +526,7 @@ class GZ3DTarget(object):
             if self.mean_not_center is not None:
                 self.mean_not_center = self._stack_spectra('center_mask_spaxel', inv=True)
 
-    def get_bpt(self, snr_min=3, oi_sf=False):
+    def _get_bpt(self, snr_min=3, oi_sf=False):
         # Gets the necessary emission line maps
         oiii = bpt.get_masked(self.maps, 'oiii_5008', snr=bpt.get_snr(snr_min, 'oiii'))
         nii = bpt.get_masked(self.maps, 'nii_6585', snr=bpt.get_snr(snr_min, 'nii'))
@@ -649,6 +669,56 @@ class GZ3DTarget(object):
         cb_center.set_label('Count')
 
         return fig
+
+    def plot_bpt_boundary(self, ax, bpt_kind):
+        if bpt_kind == 'log_nii_ha':
+            xx_sf_nii = np.linspace(-1.281, 0.045, int(1e4))
+            xx_comp_nii = np.linspace(-2, 0.4, int(1e4))
+            ax.plot(xx_sf_nii, bpt.kewley_sf_nii(xx_sf_nii), 'k--', zorder=90)
+            ax.plot(xx_comp_nii, bpt.kewley_comp_nii(xx_comp_nii), 'k-', zorder=90)
+            ax.set_xlim(-2, 0.5)
+            ax.set_ylim(-1.5, 1.3)
+            ax.set_xlabel(r'log([NII]/H$\alpha$)')
+            ax.set_ylabel(r'log([OIII]/H$\beta$)')
+        elif bpt_kind == 'log_sii_ha':
+            xx_sf_sii = np.linspace(-2, 0.315, int(1e4))
+            xx_agn_sii = np.array([-0.308, 1.0])
+            ax.plot(xx_sf_sii, bpt.kewley_sf_sii(xx_sf_sii), 'k-', zorder=90)
+            ax.plot(xx_agn_sii, bpt.kewley_agn_sii(xx_agn_sii), 'k-', zorder=90)
+            ax.set_xlim(-1.5, 0.5)
+            ax.set_ylim(-1.5, 1.3)
+            ax.set_xlabel(r'log([SII]/H$\alpha$)')
+            ax.set_ylabel(r'log([OIII]/H$\beta$)')
+        elif bpt_kind == 'log_oi_ha':
+            xx_sf_oi = np.linspace(-2.5, -0.7, int(1e4))
+            xx_agn_oi = np.array([-1.12, 0.5])
+            ax.plot(xx_sf_oi, bpt.kewley_sf_oi(xx_sf_oi), 'k-', zorder=90)
+            ax.plot(xx_agn_oi, bpt.kewley_agn_oi(xx_agn_oi), 'k-', zorder=90)
+            ax.set_xlim(-2.5, 0.0)
+            ax.set_ylim(-1.5, 1.3)
+            ax.set_xlabel(r'log([OI]/H$\alpha$)')
+            ax.set_ylabel(r'log([OIII]/H$\beta$)')
+        else:
+            raise AttributeError('bpt_kind must be one of "log_nii_ha", "log_sii_ha", or "log_oi_ha", {0} was given'.format(bpt_kind))
+
+    def plot_bpt(self, ax=None, colors=['C1', 'C0', 'C3', 'C2'], bpt_kind='log_nii_ha', **kwargs):
+        if bpt_kind not in ["log_nii_ha", "log_sii_ha", "log_oi_ha"]:
+            raise AttributeError('bpt_kind must be one of "log_nii_ha", "log_sii_ha", or "log_oi_ha", {0} was given'.format(bpt_kind))
+        y = self.log_oiii_hb
+        x = getattr(self, bpt_kind)
+        mdx = ~(y.mask | x.mask)
+        if ax is None:
+            fig = plt.figure()
+            ax = fig.fig.add_subplot(111)
+        s = kwargs.pop('s', 8)
+        odx = mdx & (self.other_mask_spaxel > 0)
+        ax.scatter(x[odx], y[odx], c='#c5c5c5', edgecolor='#c5c5c5', s=s, label='Other', **kwargs)
+        plot_alpha_scatter(x, y, self.spiral_mask_spaxel, colors[1], ax, s=s, sf_mask=mdx, snr=None, value=False, label='Spiral', **kwargs)
+        plot_alpha_scatter(x, y, self.bar_mask_spaxel, colors[0], ax, s=s, sf_mask=mdx, snr=None, value=False, label='Bar', **kwargs)
+        plot_alpha_scatter(x, y, self.star_mask_spaxel, colors[2], ax, s=s, sf_mask=mdx, snr=None, value=False, label='Star', **kwargs)
+        plot_alpha_scatter(x, y, self.center_mask_spaxel, colors[3], ax, s=s, sf_mask=mdx, snr=None, value=False, label='Center', **kwargs)
+        self.plot_bpt_boundary(ax, bpt_kind)
+        return ax
 
     def __str__(self):
         return '\n'.join([
