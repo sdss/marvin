@@ -130,19 +130,6 @@ def plot_alpha_scatter(x, y, mask, color, ax, snr=None, sf_mask=None, value=True
     return None
 
 
-class Suppressor(object):
-    # A class to mute the output of a function
-    def __enter__(self):
-        self.stdout = sys.stdout
-        sys.stdout = self
-
-    def __exit__(self, type, value, traceback):
-        sys.stdout = self.stdout
-
-    def write(self, x):
-        pass
-
-
 class GZ3DVAC(VACMixIn):
     '''Provides access to the Galaxy Zoo 3D spaxel masks.
 
@@ -447,9 +434,9 @@ class GZ3DTarget(object):
         mdx = np.where(mask > 0)
         if len(mdx[0] > 0):
             weights = mask[mdx]
-            spaxel_index = np.array(mdx.nonzero()).T
+            spaxel_index = np.array(mdx).T
 
-            spectra = [s.flux.copy() for s in self.cube[mdx.nonzero()]]
+            spectra = [s.flux for s in self.cube[mdx]]
 
             # only keep spectra inside the IFU
             in_ifu = np.array([not any(2**0 & s.mask) for s in spectra])
@@ -464,26 +451,23 @@ class GZ3DTarget(object):
             if len(spectra) == 1:
                 return spectra[0]
 
-            # we need to handle covariance between spaxels when calculating
-            # uncertainties. We follow Westfall et al. 2019's method based in
-            # distance between spaxels
-
-            d = distance_matrix(spaxel_index, spaxel_index) / 1.92
-            roh = np.exp(-0.5 * d**2)
-
             flux = np.array([sp.value for sp in spectra])
             # the weighted mean
             mean = (flux * weights[:, None]).sum(axis=0) / weights_total
 
-            sigma = np.array([sp.error.value for sp in spectra])
-            sigma_weights = weights[:, None] * sigma
-            sigma_outer = sigma_weights[None, :, :] * sigma_weights[:, None, :]
-            roh_sigma = roh[:, :, None] * sigma_outer
-            ivar = (weights_total**2) / roh_sigma.sum(axis=(0, 1))
+            # we need to handle covariance between spaxels when calculating
+            # uncertainties. We follow Westfall et al. 2019's method based in
+            # distance between spaxels
+            d = distance_matrix(spaxel_index, spaxel_index) / 1.92
+            roh = np.exp(-0.5 * d**2)
 
-            mask = spectra[0].mask
-            for sp in spectra[1:]:
-                mask |= sp.mask
+            # only work with value where roh > 0.003
+            xx, yy = np.where(roh > 0.003)
+            sigma = np.array([sp.error.value for sp in spectra])
+            running_sum = np.zeros_like(sigma[0])
+            for idx, jdx in zip(xx, yy):
+                running_sum += roh[idx, jdx] * weights[idx] * weights[jdx] * sigma[idx] * sigma[jdx]
+            ivar = (weights_total**2) / running_sum
 
             return Spectrum(
                 mean,
@@ -491,8 +475,7 @@ class GZ3DTarget(object):
                 wavelength=spectra[0].wavelength,
                 wavelength_unit=spectra[0].wavelength.unit,
                 pixmask_flag=spectra[0].pixmask_flag,
-                ivar=ivar,
-                mask=mask
+                ivar=ivar
             )
 
         return None
@@ -507,23 +490,33 @@ class GZ3DTarget(object):
                 If true this function will also calculate the mean spectra
                 for each inverted mask.  Useful if you want to make difference
                 spectra (e.g. <spiral> - <not spiral>).
-        
+
         Attributes:
             mean_bar (marvin.tools.quantities.spectrum):
-                average 
+                average spectra inside the bar mask
+            mean_spiral (marvin.tools.quantities.spectrum):
+                average spectra inside the spiral mask
+            mean_center (marvin.tools.quantities.spectrum):
+                average spectra inside the center mask
+            mean_not_bar (marvin.tools.quantities.spectrum):
+                average spectra outside the bar mask
+            mean_not_spiral (marvin.tools.quantities.spectrum):
+                average spectra outside the spiral mask
+            mean_not_center (marvin.tools.quantities.spectrum):
+                average spectra outside the center mask
         '''
-        if self.mean_bar is not None:
+        if self.mean_bar is None:
             self.mean_bar = self._stack_spectra('bar_mask_spaxel')
-        if self.mean_spiral is not None:
+        if self.mean_spiral is None:
             self.mean_spiral = self._stack_spectra('spiral_mask_spaxel')
-        if self.mean_center is not None:
+        if self.mean_center is None:
             self.mean_center = self._stack_spectra('center_mask_spaxel')
         if inv:
-            if self.mean_not_bar is not None:
+            if self.mean_not_bar is None:
                 self.mean_not_bar = self._stack_spectra('bar_mask_spaxel', inv=True)
-            if self.mean_not_spiral is not None:
+            if self.mean_not_spiral is None:
                 self.mean_not_spiral = self._stack_spectra('spiral_mask_spaxel', inv=True)
-            if self.mean_not_center is not None:
+            if self.mean_not_center is None:
                 self.mean_not_center = self._stack_spectra('center_mask_spaxel', inv=True)
 
     def _get_bpt(self, snr_min=3, oi_sf=False):
@@ -605,11 +598,15 @@ class GZ3DTarget(object):
         color_grid=None,
         hex=True,
         hex_color='C4',
-        show_image=False
+        show_image=False,
+        subplot_spec=None
     ):
-        fig = plt.figure()
-        # image axis
-        gs = gridspec.GridSpec(1, 2, width_ratios=[0.9, 0.1], wspace=0.01)
+        if subplot_spec is None:
+            fig = plt.figure()
+            # image axis
+            gs = gridspec.GridSpec(1, 2, width_ratios=[0.9, 0.1], wspace=0.01)
+        else:
+            gs = gridspec.GridSpecFromSubplotSpec(1, 2, width_ratios=[0.9, 0.1], wspace=0.01, subplot_spec=subplot_spec)
 
         # color bar axis
         gs_color_bars = gridspec.GridSpecFromSubplotSpec(1, 4, wspace=0, subplot_spec=gs[1])
@@ -668,9 +665,9 @@ class GZ3DTarget(object):
         cb_center.set_ticklabels(tick_labels)
         cb_center.set_label('Count')
 
-        return fig
+        return gs
 
-    def plot_bpt_boundary(self, ax, bpt_kind):
+    def _plot_bpt_boundary(self, ax, bpt_kind):
         if bpt_kind == 'log_nii_ha':
             xx_sf_nii = np.linspace(-1.281, 0.045, int(1e4))
             xx_comp_nii = np.linspace(-2, 0.4, int(1e4))
@@ -717,7 +714,7 @@ class GZ3DTarget(object):
         plot_alpha_scatter(x, y, self.bar_mask_spaxel, colors[0], ax, s=s, sf_mask=mdx, snr=None, value=False, label='Bar', **kwargs)
         plot_alpha_scatter(x, y, self.star_mask_spaxel, colors[2], ax, s=s, sf_mask=mdx, snr=None, value=False, label='Star', **kwargs)
         plot_alpha_scatter(x, y, self.center_mask_spaxel, colors[3], ax, s=s, sf_mask=mdx, snr=None, value=False, label='Center', **kwargs)
-        self.plot_bpt_boundary(ax, bpt_kind)
+        self._plot_bpt_boundary(ax, bpt_kind)
         return ax
 
     def __str__(self):
