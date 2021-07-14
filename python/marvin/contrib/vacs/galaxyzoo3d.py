@@ -484,10 +484,10 @@ class GZ3DTarget(object):
     def get_spaxel_grid(self, grid_size=None):
         '''Return the data needed to plot the spaxel grid over the GZ3D image'''
         grid_x, grid_y = self._get_spaxel_grid_xy(include_edges=True, grid_size=grid_size)
-        v_line_x = np.vstack(grid_x, grid_x)
+        v_line_x = np.vstack([grid_x, grid_x])
         v_line_y = np.array([[grid_y[0]], [grid_y[-1]]])
         h_line_x = np.array([[grid_x[0]], [grid_x[-1]]])
-        h_line_y = np.vstack(grid_y, grid_y)
+        h_line_y = np.vstack([grid_y, grid_y])
         return [(v_line_x, v_line_y), (h_line_x, h_line_y)]
 
     def _get_spaxel_mask(self, mask, grid_size=None):
@@ -659,10 +659,10 @@ class GZ3DTarget(object):
             ax.coords.grid(color=color_grid, alpha=0.5, linestyle='solid', lw=1.5)
         for coord in [ra, dec]:
             # set the tick formats
-            coord.set_major_formatter('d.dd')
+            coord.set_major_formatter('d.ddd')
             coord.display_minor_ticks(True)
 
-    def plot_image(self, ax=None, color_grid=None, correct_hex=True, hex_color='C4'):
+    def plot_image(self, ax=None, color_grid=None, correct_hex=True, hex_color='C7'):
         if (ax is None):
             fig = plt.figure()
             ax = fig.add_subplot(111, projection=self.wcs)
@@ -677,12 +677,13 @@ class GZ3DTarget(object):
 
     def plot_masks(
         self,
-        colors=['C1', 'C0', 'C3', 'C2'],
+        colors=['C1', 'C0', 'C4', 'C2'],
         color_grid=None,
         hex=True,
-        hex_color='C4',
+        hex_color='C7',
         show_image=False,
-        subplot_spec=None
+        subplot_spec=None,
+        spaxel_masks=False
     ):
         if subplot_spec is None:
             fig = plt.figure()
@@ -695,18 +696,18 @@ class GZ3DTarget(object):
         gs_color_bars = gridspec.GridSpecFromSubplotSpec(1, 4, wspace=0, subplot_spec=gs[1])
 
         # alpha overlay all masks with correct colors
-        if show_image:
-            all_masks = alpha_maps(
-                [self.bar_mask, self.spiral_mask, self.star_mask, self.center_mask],
-                colors,
-                background_image=self.image / 255
-            )
+        if spaxel_masks:
+            mask_list = [self.bar_mask_spaxel, self.spiral_mask_spaxel, self.star_mask_spaxel, self.center_mask_spaxel]
+            ax1 = plt.subplot(gs[0], projection=self.maps.wcs)
         else:
-            all_masks = alpha_maps(
-                [self.bar_mask, self.spiral_mask, self.star_mask, self.center_mask],
-                colors
-            )
-        ax1 = plt.subplot(gs[0], projection=self.wcs)
+            mask_list = [self.bar_mask, self.spiral_mask, self.star_mask, self.center_mask]
+            ax1 = plt.subplot(gs[0], projection=self.wcs)
+
+        if (show_image) and (not spaxel_masks):
+            all_masks = alpha_maps(mask_list, colors, background_image=self.image / 255)
+        else:
+            all_masks = alpha_maps(mask_list, colors)
+
         self._set_up_axes(ax1, color_grid=color_grid)
         ax1.imshow(all_masks)
 
@@ -715,14 +716,15 @@ class GZ3DTarget(object):
             ax1.add_patch(self.get_hexagon(correct_hex=True, edgecolor=hex_color))
 
         # plot center and star ellipses to better define ellipse shape
-        center_ellipse = self.get_center_ellipse_list()
-        for e, count in zip(center_ellipse, self.center_clusters['count']):
-            e.set_edgecolor(make_alpha_color(count, colors[3]))
-            ax1.add_artist(e)
-        star_ellipse = self.get_star_ellipse_list()
-        for e, count in zip(star_ellipse, self.star_clusters['count']):
-            e.set_edgecolor(make_alpha_color(count, colors[2]))
-            ax1.add_artist(e)
+        if (not spaxel_masks):
+            center_ellipse = self.get_center_ellipse_list()
+            for e, count in zip(center_ellipse, self.center_clusters['count']):
+                e.set_edgecolor(make_alpha_color(count, colors[3]))
+                ax1.add_artist(e)
+            star_ellipse = self.get_star_ellipse_list()
+            for e, count in zip(star_ellipse, self.star_clusters['count']):
+                e.set_edgecolor(make_alpha_color(count, colors[2]))
+                ax1.add_artist(e)
 
         # make the legend
         bar_patch = mpl.patches.Patch(color=colors[0], label='Bar')
