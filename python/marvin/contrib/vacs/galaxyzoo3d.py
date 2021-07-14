@@ -381,6 +381,7 @@ class GZ3DTarget(object):
         self.log_oi_ha = None
         self._get_bpt()
         self.dis = None
+        self.close()
 
     def _process_images(self):
         # read in images
@@ -783,7 +784,7 @@ class GZ3DTarget(object):
         else:
             raise AttributeError('bpt_kind must be one of "log_nii_ha", "log_sii_ha", or "log_oi_ha", {0} was given'.format(bpt_kind))
 
-    def plot_bpt(self, ax=None, colors=['C1', 'C0', 'C3', 'C2'], bpt_kind='log_nii_ha', **kwargs):
+    def plot_bpt(self, ax=None, colors=['C1', 'C0', 'C4', 'C2'], bpt_kind='log_nii_ha', **kwargs):
         if bpt_kind not in ["log_nii_ha", "log_sii_ha", "log_oi_ha"]:
             raise AttributeError('bpt_kind must be one of "log_nii_ha", "log_sii_ha", or "log_oi_ha", {0} was given'.format(bpt_kind))
         y = self.log_oiii_hb
@@ -791,7 +792,7 @@ class GZ3DTarget(object):
         mdx = ~(y.mask | x.mask)
         if ax is None:
             fig = plt.figure()
-            ax = fig.fig.add_subplot(111)
+            ax = fig.add_subplot(111)
         s = kwargs.pop('s', 8)
         odx = mdx & (self.other_mask_spaxel > 0)
         ax.scatter(x[odx], y[odx], c='#c5c5c5', edgecolor='#c5c5c5', s=s, label='Other', **kwargs)
@@ -800,6 +801,49 @@ class GZ3DTarget(object):
         plot_alpha_scatter(x, y, self.star_mask_spaxel, colors[2], ax, s=s, sf_mask=mdx, snr=None, value=False, label='Star', **kwargs)
         plot_alpha_scatter(x, y, self.center_mask_spaxel, colors[3], ax, s=s, sf_mask=mdx, snr=None, value=False, label='Center', **kwargs)
         self._plot_bpt_boundary(ax, bpt_kind)
+        return ax
+
+    def polar_plot(self, x_unit='theta', ax=None, colors=['C1', 'C0', 'C4', 'C2'], key='specindex_dn4000', ylabel=r'D_{n}4000', snr=3, sf_only=False, **kwargs):
+        title = []
+        s = kwargs.pop('s', 8)
+        if ax is None:
+            fig = plt.figure()
+            ax = fig.add_subplot(111)
+        if x_unit.lower() == 'theta':
+            x = self.maps.spx_ellcoo_elliptical_azimuth.value
+            ax.set_xticks([0, 90, 180, 270, 360])
+            ax.set_xlabel(r'$\theta$')
+        elif x_unit.lower() == 'radius':
+            r = self.maps.spx_ellcoo_elliptical_radius.value
+            r_50 = self.maps.nsa['elpetro_th50_r']
+            x = r / r_50
+            ax.set_xlabel(r'R / R$_{50}$')
+        else:
+            raise AttributeError('x_unit must be either `theta` or `radius`, {0} was given'.format(x_unit))
+        line = self.maps[key]
+        # other spaxel masks
+        odx = (self.other_mask_spaxel > 0) & (line.value > 0)
+        if snr is not None:
+            title.append('S/N > {0}'.format(snr))
+            odx = odx & (line.snr > snr)
+        sf_mask = None
+        if sf_only:
+            # star forming only
+            sf_mask = self.sf_mask
+            title.append('star forming only')
+            odx = odx & sf_mask
+        #  plot scatter points
+        ax.scatter(x[odx], line.value[odx], c='#c5c5c5', edgecolor='#c5c5c5', s=s, **kwargs)
+        plot_alpha_scatter(x, line, self.spiral_mask_spaxel, colors[1], ax, s=s, snr=snr, sf_mask=sf_mask)
+        plot_alpha_scatter(x, line, self.bar_mask_spaxel, colors[0], ax, s=s, snr=snr, sf_mask=sf_mask)
+        plot_alpha_scatter(x, line, self.star_mask_spaxel, colors[2], ax, s=s, snr=snr, sf_mask=sf_mask)
+        plot_alpha_scatter(x, line, self.center_mask_spaxel, colors[3], ax, s=s, snr=snr, sf_mask=sf_mask)
+        if len(title) > 0:
+            ax.set_title(','.join(title))
+        if line.unit.to_string() != '':
+            ax.set_ylabel('$\\mathrm{{{}}}\\,[${}$]$'.format(ylabel, line.unit.to_string('latex')))
+        else:
+            ax.set_ylabel('$\\mathrm{{{}}}$'.format(ylabel))
         return ax
 
     def __str__(self):
