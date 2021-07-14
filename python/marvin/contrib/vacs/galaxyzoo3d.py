@@ -27,6 +27,19 @@ spaxel_grid = {7: 24, 19: 34, 37: 44, 61: 54, 91: 64, 127: 74}
 
 
 def convert_json(table, column_name):
+    '''Unpacks the JSON column of a table
+
+    Paramters:
+        table (astropy.table.Table):
+            An astropy table
+        column_name (str):
+            The name of the column made up of JSON strings
+
+    The input table is updated in place by appending `_string` to
+    the end of the JSON column name and adding a new column with
+    `_list` on the end with the list representation of the same
+    column.
+    '''
     # this unpacks the json column of a table
     new_col = [json.loads(i) for i in table[column_name]]
     table.rename_column(column_name, '{0}_string'.format(column_name))
@@ -34,6 +47,21 @@ def convert_json(table, column_name):
 
 
 def non_blank(table, *column_name):
+    '''Count how many non-blank classifications are in the given columns
+    of the input table.
+
+    Paramters:
+        table (astropy.table.Table):
+            An astropy table with Zooniverse classifications
+        column_name(s) (str):
+            One or multiple column names
+
+    Returns:
+        non_blank (int):
+            The total number of non-blank classifications across *all*
+            input column names (combined with "logical or" in a single
+            row).
+    '''
     for cdx, c in enumerate(column_name):
         if cdx == 0:
             non_blank = np.array([len(i) > 0 for i in table[c]])
@@ -43,6 +71,24 @@ def non_blank(table, *column_name):
 
 
 def cov_to_ellipse(cov, pos, nstd=1, **kwargs):
+    '''Create a covariance ellipse given an covariance matrix and postion
+
+    Paramters:
+        cov (numpy.array):
+            2x2 covariance matrix
+        pos (numpy.array):
+            1x2 center position of the ellipse
+
+    Keywords:
+        nstd (int):
+            Number of standard deviations to make the output ellipse (Default=1)
+        kwargs:
+            All other keywords are passed to matplotlib.patches.Ellipse
+
+    Returns:
+        ellipse (matplotlib.patches.Ellipse):
+            matplotlib ellipse patch object
+    '''
     eigvec, eigval, V = sl.svd(cov, full_matrices=False)
     # the angle the first eigenvector makes with the x-axis
     theta = np.degrees(np.arctan2(eigvec[1, 0], eigvec[0, 0]))
@@ -55,6 +101,21 @@ def cov_to_ellipse(cov, pos, nstd=1, **kwargs):
 def alpha_overlay(C_a, a_a, C_b, a_b=None):
     '''Take a base color (C_a), an alpha map (a_a), background image (C_b), and optional
     background alpha map (a_b) and overlay them.
+
+    Paramters:
+        C_a (numpy.array):
+            1x3 RGB array for the base color to be overlayed
+        a_a (numpy.array):
+            nxm array of alpha values for each postion on an image
+        C_b (numpy.array):
+            1x3 RGB array for the background color or nxmx3 RGB array
+            for a background image
+        a_b (numpy.array):
+            nxm array of alpha values for the background color/image
+
+    Returns:
+        c_out (numpy.array):
+            nxmx3 RGB array containing the alpha overlayed image.
     '''
     if a_b is None:
         a_b = np.ones(a_a.shape)
@@ -65,8 +126,29 @@ def alpha_overlay(C_a, a_a, C_b, a_b=None):
 
 
 def alpha_maps(maps, colors=None, vmin=0, vmax=15, background_image=None):
-    # Take a list of color masks and base color values
-    # and make an alpha-mask overlay image.
+    '''Take a list of color masks and base color values
+    and make an alpha-mask overlay image.
+
+    Parameters:
+        maps (list):
+            List of masks to use as alpha maps
+
+    Keywords:
+        colors (list):
+            What matplotlib color to use for each of the input maps
+            (defaults to standard MPL color cycle)
+        vmin (int):
+            Value in the maps at or below this value will be 100% transparent
+        vmax (int):
+            Value in the maps at or above this value will be 100% opaque
+        background_image (numpy.array):
+            RGB array to use as the background image (default solid white)
+
+    Returns:
+        overlay (numpy.array):
+            RGB array with each map overlayed on each other with alpha
+            transparency.
+    '''
     norm = mpl.colors.Normalize(vmin=vmin, vmax=vmax, clip=True)
     iter_cycle = iter(mpl.rcParams['axes.prop_cycle'])
     for mdx, m in enumerate(maps):
@@ -112,6 +194,7 @@ def plot_alpha_bar(color, grid, ticks=[]):
 
 
 def plot_alpha_scatter(x, y, mask, color, ax, snr=None, sf_mask=None, value=True, **kwargs):
+    '''Make a scatter plot where each x-y point has and alpha transparency set by the mask array'''
     idx = mask > 0
     if value:
         idx = idx & (y.value > 0)
