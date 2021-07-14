@@ -425,11 +425,11 @@ class GZ3DTarget(object):
         '''Return the center of the IFU in image coordinates'''
         return self.wcs.wcs_world2pix(np.array([[self.metadata['ra'][0], self.metadata['dec'][0]]]), 1)[0]
 
-    def get_hexagon(self, correct_hex=False, edgecolor='magenta'):
+    def get_hexagon(self, correct_hex=True, edgecolor='magenta'):
         '''Get the IFU hexagon in image as a matplotlib polygon for plotting
 
         Paramters:
-            correct_hex (bool, default=False):
+            correct_hex (bool, default=True):
                 If True it returns the correct IFU hexagon, if False it returns the hexagon shown
                 to the GZ3D volunteers (this was slightly too small due to a bug when producing the
                 original images for the project).
@@ -447,11 +447,10 @@ class GZ3DTarget(object):
             # the radius for mpl is from the center to each vertex, not center to side
             r = LUT[self.ifu_size] * diameter / 2
         else:
-            # <TODO> this is no longer the "false" hexagon!!!
-            # this was me being wrong about all the hexagon params
-            # these hexagons are about 0.7 times too small (2 * np.sqrt(3) / 5 to be exact)
+            # this was me being wrong about the hexagon params forgetting about the space between fibers
             diameter = 2.0 / 0.099
-            r = LUT[self.ifu_size] * diameter * np.sqrt(3) / 4
+            # The factor of 1.1 was to try (and fail) to account for the space between fibers :(
+            r = 1.1 * LUT[self.ifu_size] * diameter / 2
         c = self.center_in_pix()
         return patches.RegularPolygon(c, 6, r, fill=False, orientation=np.deg2rad(30), edgecolor=edgecolor, linewidth=0.8)
 
