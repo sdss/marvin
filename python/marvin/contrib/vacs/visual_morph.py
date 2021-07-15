@@ -36,7 +36,7 @@ class VMORPHOVAC(VACMixIn):
     # Required parameters
     name = 'visual_morphology'
     description = 'Returns visual morphology data'
-    version = {'DR16': '1.0.1'}
+    version = {'MPL-7': '1.0.1', 'MPL-11': '2.0.1', 'DR16': '1.0.1', 'DR17': '2.0.1'}
 
     # optional Marvin Tools to attach your vac to
     include = (marvin.tools.cube.Cube, marvin.tools.maps.Maps)
@@ -62,38 +62,22 @@ class VMORPHOVAC(VACMixIn):
         if not self.file_exists(self.summary_file):
             self.summary_file = self.download_vac('mangaVmorpho', path_params=self.path_params)
 
-        # get path to ancillary VAC files for SDSS/DESI mosaic images
-        self.update_path_params({'plateifu': plateifu, 'survey': '*'})
-        sdss_mos, desi_mos = self._get_mosaics(self.path_params)
+        # get path to ancillary VAC files for mosaic images
+        self.update_path_params({'plateifu': plateifu})
+        desi_mos = self._get_mosaics(self.path_params)
 
         # create container for more complex return data
-        vmdata = VizMorphTarget(plateifu, vacfile=self.summary_file, sdss=sdss_mos, desi=desi_mos)
+        vmdata = VizMorphTarget(plateifu, vacfile=self.summary_file, desi=desi_mos)
 
         return vmdata
 
     def _get_mosaics(self, path_params):
-        ''' Get the mosaic images for SDSS and DESI surveys
-
-        Parameters:
-            path_params (dict):
-                The sdss_access keyword parameters to define a file path
-
-        Returns:
-            The SDSS and DESI local image filepaths
-        '''
-        sdss_mosaic = self._check_mosaic('sdss', path_params)
-        desi_mosaic = self._check_mosaic('desi', path_params)
-        return sdss_mosaic, desi_mosaic
-
-    def _check_mosaic(self, survey, path_params):
-        ''' Get a mosaic image file for a survey path
+        ''' Get a mosaic image file for an image path
 
         Checks for local existence of the mosaic image filepath.
         If it does not exists, it downloads it.
 
         Parameters:
-            survey (str):
-                The survey to download.  Either sdss or desi
             path_params (dict):
                 The sdss_access keyword parameters to define a file path
 
@@ -101,14 +85,11 @@ class VMORPHOVAC(VACMixIn):
             The mosaic image file path
         '''
         # get the path for the given survey
-        path_params['survey'] = survey
         mosaic = self.get_path('mangaVmorphoImgs', path_params=path_params)
-        # download the mosaic file (downloads both surveys at once)
+        # download the mosaic file
         if not self.file_exists(mosaic):
-            pp = path_params.copy()
-            pp['survey'] = '*'
-            mosaics = self.download_vac('mangaVmorphoImgs', path_params=pp)
-        # get the path again for the single survey
+            mosaics = self.download_vac('mangaVmorphoImgs', path_params=path_params)
+        # get the path again for the mosaic
         mosaic = self.get_path('mangaVmorphoImgs', path_params=path_params)
         return mosaic
 
@@ -119,17 +100,15 @@ class VizMorphTarget(VACTarget):
     This class handles data from both the Visual Morphology summary file and the
     individual image files.  Row data from the summary file for the given target
     is returned via the `data` property.  Images can be displayed via
-    the the `show_mosaic` method.
+    the `show_mosaic()` method.
 
     Parameters:
         targetid (str):
             The plateifu or mangaid designation
         vacfile (str):
             The path of the VAC summary file
-        sdss (str):
-            The path to the SDSS image mosaic
         desi (str):
-            The path to the DESI image mosaic
+            The path to the image mosaic
 
     Attributes:
         data:
@@ -138,31 +117,24 @@ class VizMorphTarget(VACTarget):
             The target identifier
     '''
 
-    def __init__(self, targetid, vacfile, sdss=None, desi=None):
+    def __init__(self, targetid, vacfile, desi=None):
         super(VizMorphTarget, self).__init__(targetid, vacfile)
-        self._sdss_img = sdss
         self._desi_img = desi
 
-    def show_mosaic(self, survey=None):
+    def show_mosaic(self):
         ''' Show the mosaic image for the given survey
 
         Displays the mosaic image of visual morphology classification
-        for the given survey as a Matplotlib Figure/Axis object.
-
-        Parameters:
-            survey (str):
-                The survey name.  Can be either "sdss" or "desi".
+        as a Matplotlib Figure/Axis object.
 
         Returns:
             A matplotlib axis object
         '''
 
-        assert survey in ['sdss', 'desi'], 'Must specify either survey: sdss or desi'
-
-        impath = self._sdss_img if survey == 'sdss' else self._desi_img
+        impath = self._desi_img
         imdata = mpimg.imread(impath)
-        fig, ax = plt.subplots()
+        fig, ax = plt.subplots(figsize = (20,5))
         ax.imshow(imdata)
-        title = '{0} Mosaic'.format(survey.upper())
+        title = 'Mosaic'
         fig.suptitle(title)
         return ax
