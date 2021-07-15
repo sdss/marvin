@@ -103,7 +103,7 @@ class GZVAC(VACMixIn):
                 idx = data[i]["mangaid"] == mangaid
                 result[keys[i]] = data[i][idx]
 
-        if len(self.summary_file) == 1: #To make sure output stays the same if versions is < DR17
+        if len(self.summary_file) == 1: #To make sure output stays the same if version is < DR17
             return list(result.values())[0]
         else:
             return result #For DR17, return dict with classifications of all three files
