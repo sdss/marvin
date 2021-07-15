@@ -29,8 +29,9 @@ class GZVAC(VACMixIn):
     We provide new and updated Galaxy Zoo (GZ) data for the final MaNGA galaxies. This has been split over 
     three files, each corresponding to a separate GZ catalogue. We have `MaNGA_GZD_auto-v1_0_1.fits`, which
     corresponds to the automated classifications GZ DECaLS, described in Walmsley et al. 2021. There is also 
-    `MaNGA_gzUKIDSS-v1_0_1.fits`, which correponds to GZ:UKIDSS. Finally, we have put the rest of GZ in 
-    `MaNGA_gz-v2_0_1.fits`. For more information, please refer to the datamodels provided.
+    `MaNGA_gzUKIDSS-v1_0_1.fits`, which correponds to GZ:UKIDSS. Finally, we have put the rest of GZ 
+    (so not including GZ DECaLS and GZ:UKIDSS) in `MaNGA_gz-v2_0_1.fits`. For more information, please 
+    refer to the datamodels provided.
 
 
     Authors: Coleman Krawczyk, Karen Masters, Tobias Géron and the rest of the Galaxy Zoo Team.
@@ -56,20 +57,21 @@ class GZVAC(VACMixIn):
 
 
         # define the variables to build a unique path to your VAC file
-        if release == "DR17" or release == "MPL-11": # path is more complicated in DR17, as we have three files.
+        if release == "DR17" or release == "MPL-11": # path is more complicated in DR17, as we have three files. 
+
             files = ['GZD_auto','gzUKIDSS','gz']
             version_DR17 = {"GZD_auto" : "v1_0_1", "gzUKIDSS" : "v1_0_1", "gz" : "v2_0_1"}
             for file in files:
-                self.path_params.append({"file" : file, "ver" : version_DR17[file]})
+                params = {"file" : file, "ver" : version_DR17[file]}
+                self.path_params.append(params)
+                
                 # get_path returns False if the files do not exist locally
-                self.summary_file.append(self.get_path("mangagalaxyzoo", path_params=self.path_params[-1]))
+                self.summary_file.append(self.get_path("mangagalaxyzoo", path_params=params))
+
 
         else: # if not DR17 or MPL-11, simply do based on release as before
             self.path_params.append({"ver": self.version[release]})
             self.summary_file.append(self.get_path("mangagalaxyzoo", path_params=self.path_params[0]))
-
-
-
 
     # Required method
     def get_target(self, parent_object):
@@ -82,7 +84,7 @@ class GZVAC(VACMixIn):
         for i in range(len(self.summary_file)):
             if not self.file_exists(self.summary_file[i]):
                 self.summary_file[i] = self.download_vac("mangagalaxyzoo", path_params=self.path_params[i])
-
+                
         # Open the file(s) using fits.getdata for extension 1
         data = []
         for i in range(len(self.summary_file)):
@@ -96,7 +98,7 @@ class GZVAC(VACMixIn):
             indata = mangaid in data[i]["mangaid"]
             if not indata:
                 pass # passes instead of adding an empty key-value pair.
-                #result[keys[i]] = 0
+
             else:
                 idx = data[i]["mangaid"] == mangaid
                 result[keys[i]] = data[i][idx]
