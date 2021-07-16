@@ -652,15 +652,16 @@ class GZ3DTarget(object):
         # add axis labels
         ra.set_axislabel('RA')
         dec.set_axislabel('Dec')
-        # rotate tick labels on dec
-        dec.ticklabels.set_rotation(90)
+        ra.set_major_formatter('d.ddd')
+        ra.ticklabels.set_rotation(90)
+        ra.ticklabels.set_rotation_mode('anchor')
+        ra.ticklabels.set_pad(15)
+        dec.set_major_formatter('d.ddd')
+        ra.display_minor_ticks(True)
+        dec.display_minor_ticks(True)
         # add a coordinate grid to the image
         if color_grid is not None:
             ax.coords.grid(color=color_grid, alpha=0.5, linestyle='solid', lw=1.5)
-        for coord in [ra, dec]:
-            # set the tick formats
-            coord.set_major_formatter('d.ddd')
-            coord.display_minor_ticks(True)
 
     def plot_image(self, ax=None, color_grid=None, correct_hex=True, hex_color='C7'):
         if (ax is None):
