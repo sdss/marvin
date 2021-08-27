@@ -33,7 +33,7 @@ class GEMAVAC(VACMixIn):
     # Required parameters
     name = 'gema'
     description = 'Returns GEMA table data'
-    version = {'MPL-7': '1.0.1', 'DR15': '1.0.1', 'DR16': '1.0.1'}
+    version = {'MPL-7': '1.0.1', 'DR15': '1.0.1', 'DR16': '1.0.1', 'DR17': '2.0.2'}
 
     # optional Marvin Tools to attach your vac to
     include = (marvin.tools.cube.Cube, marvin.tools.maps.Maps, marvin.tools.modelcube.ModelCube)
