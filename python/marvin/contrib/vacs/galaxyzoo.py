@@ -16,23 +16,21 @@ class GZVAC(VACMixIn):
 
     VAC name: MaNGA Morphologies from Galaxy Zoo
 
-    URL: https://www.sdss.org/dr15/data_access/value-added-catalogs/?vac_id=manga-morphologies-from-galaxy-zoo
+    URL: https://www.sdss.org/dr17/data_access/value-added-catalogs/?vac_id=manga-morphologies-from-galaxy-zoo
 
-    Description DR15: Returns Galaxy Zoo morphology for MaNGA galaxies. 
+    Description Returns Galaxy Zoo morphology for MaNGA galaxies. 
     The Galaxy Zoo (GZ) data for SDSS galaxies has been split over several iterations of www.galaxyzoo.org, 
-    with the MaNGA target galaxies being spread over five different GZ data sets. In this value added catalog 
-    we bring all of these galaxies into one single catalog and re-run the debiasing code (Hart et al. 2016) in 
+    with the MaNGA target galaxies being spread over five different GZ data sets. In this value added catalog,
+    for DR15, we bring all of these galaxies into one single catalog and re-run the debiasing code (Hart et al. 2016) in 
     a consistent manner across the all the galaxies. This catalog includes data from Galaxy Zoo 2 (previously 
     published in Willett et al. 2013) and newer data from Galaxy Zoo 4 (currently unpublished).
 
-    Description DR17: Returns Galaxy Zoo morphology for MaNGA galaxies.
-    We provide new and updated Galaxy Zoo (GZ) data for the final MaNGA galaxies. This has been split over 
+    For DR17, we provide new and updated Galaxy Zoo (GZ) data for the final MaNGA galaxies. This has been split over 
     three files, each corresponding to a separate GZ catalogue. We have `MaNGA_GZD_auto-v1_0_1.fits`, which
     corresponds to the automated classifications GZ DECaLS, described in Walmsley et al. 2021. There is also 
     `MaNGA_gzUKIDSS-v1_0_1.fits`, which correponds to GZ:UKIDSS. Finally, we have put the rest of GZ 
     (so not including GZ DECaLS and GZ:UKIDSS) in `MaNGA_gz-v2_0_1.fits`. For more information, please 
     refer to the datamodels provided.
-
 
     Authors: Coleman Krawczyk, Karen Masters, Tobias Géron and the rest of the Galaxy Zoo Team.
 
@@ -41,35 +39,37 @@ class GZVAC(VACMixIn):
     # Required parameters
     name = "galaxyzoo"
     description = "Returns Galaxy Zoo morphology"
-    version = {"MPL-7": "v1_0_1", "MPL-8": "v1_0_1", "DR15": "v1_0_1", "DR16": "v1_0_1", "MPL-11" : "NaN", "DR17" : "NaN"}
+    version = {"MPL-7": "v1_0_1", "MPL-8": "v1_0_1", "DR15": "v1_0_1", "DR16": "v1_0_1", 
+               "MPL-11" : None, "DR17" : None}
 
     # optional Marvin Tools to attach your vac to
     include = (marvin.tools.cube.Cube, marvin.tools.maps.Maps, marvin.tools.modelcube.ModelCube)
 
     # Required method
     def set_summary_file(self, release):
-        ''' Sets the path to the GalaxyZoo summary file. 
-        self.summary_file and self.path_params are lists for DR17.
+        ''' Sets the path to the GalaxyZoo summary file.
+        
+        Sets the paths to the GalaxyZoom summary file(s).  For DR15 this is a single summary file,
+        while for DR17, this has been split into three files, so ``self.summary_file`` and 
+        ``self.path_params`` return lists for DR17.
         '''
 
         self.summary_file = []
         self.path_params = []
 
-
         # define the variables to build a unique path to your VAC file
-        if release == "DR17" or release == "MPL-11": # path is more complicated in DR17, as we have three files. 
-
-            files = ['GZD_auto','gzUKIDSS','gz']
-            version_DR17 = {"GZD_auto" : "v1_0_1", "gzUKIDSS" : "v1_0_1", "gz" : "v2_0_1"}
+        if release in ["DR17", "MPL-11"]:  
+            # for DR17, path is more complicated as we have three files.
+            files = ['GZD_auto', 'gzUKIDSS', 'gz']
+            version_DR17 = {"GZD_auto": "v1_0_1", "gzUKIDSS": "v1_0_1", "gz": "v2_0_1"}
             for file in files:
                 params = {"file" : file, "ver" : version_DR17[file]}
                 self.path_params.append(params)
                 
                 # get_path returns False if the files do not exist locally
                 self.summary_file.append(self.get_path("mangagalaxyzoo", path_params=params))
-
-
-        else: # if not DR17 or MPL-11, simply do based on release as before
+        else: 
+            # for other releases prior to DR17, simply do based on release as before
             self.path_params.append({"ver": self.version[release]})
             self.summary_file.append(self.get_path("mangagalaxyzoo", path_params=self.path_params[0]))
 
@@ -103,9 +103,12 @@ class GZVAC(VACMixIn):
                 idx = data[i]["mangaid"] == mangaid
                 result[keys[i]] = data[i][idx]
 
-        if len(self.summary_file) == 1: #To make sure output stays the same if version is < DR17
+        # return the result
+        if len(self.summary_file) == 1:
+            # to make sure output stays the same if version is < DR17
             return list(result.values())[0]
         else:
-            return result #For DR17, return dict with classifications of all three files
+            # for DR17, return dict with classifications of all three files
+            return result 
 
 
