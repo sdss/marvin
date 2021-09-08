@@ -16,6 +16,12 @@ import matplotlib.pyplot as plt
 from marvin import log, config
 from .base import VACMixIn, VACTarget
 
+class CallableDict(dict):
+    def __getitem__(self, key):
+        val = super().__getitem__(key)
+        if callable(val):
+            return val()
+        return val
 
 class FIREFLYVAC(VACMixIn):
     """Provides access to the MaNGA-FIREFLY VAC.
@@ -26,14 +32,14 @@ class FIREFLYVAC(VACMixIn):
 
     Description: Returns integrated and resolved stellar population parameters fitted by FIREFLY
 
-    Authors: Jianhui Lian, Daniel Thomas, Claudia Maraston, and Lewis Hill
+    Authors: Justus Neumann, Jianhui Lian, Daniel Thomas, Claudia Maraston, and Lewis Hill
 
     """
 
     # Required parameters
     name = 'firefly'
     description = 'Returns stellar population parameters fitted by FIREFLY'
-    version = {'DR15': 'v1_1_2', 'DR16': 'v1_1_2'}
+    version = {'DR15': 'v1_1_2', 'DR16': 'v1_1_2','DR17':'v3_1_1'}
 
     # optional Marvin Tools to attach your vac to
     include = (marvin.tools.cube.Cube, marvin.tools.maps.Maps, marvin.tools.modelcube.ModelCube)
@@ -45,10 +51,20 @@ class FIREFLYVAC(VACMixIn):
         # define the variables to build a unique path to your VAC file
         # look up the MaNGA drpver from the release
         drpver, dapver = config.lookUpVersions(release)
-        self.path_params = {'ver': self.version[release], 'drpver': drpver}
+		
+        self.path_params = []
+        if release=='DR17':
+            
+            self.path_params.append({'ver': self.version[release], 'drpver': drpver, 'models':'miles'})
+            self.path_params.append({'ver': self.version[release], 'drpver': drpver, 'models':'mastar'})
+			
+            self.summary_file = [self.get_path('mangaffly', path_params=self.path_params[i]) for i in [0,1]]
+			
+        else:
+            self.path_params.append({'ver': self.version[release], 'drpver': drpver})
 
-        # get_path returns False if the files do not exist locally
-        self.summary_file = self.get_path('mangaffly', path_params=self.path_params)
+            # get_path returns False if the files do not exist locally
+            self.summary_file.append(self.get_path('mangaffly', path_params=self.path_params))
 
     # Required method
     def get_target(self, parent_object):
@@ -58,15 +74,30 @@ class FIREFLYVAC(VACMixIn):
         plateifu = parent_object.plateifu
         imagesz = int(parent_object.header['NAXIS1'])
 
-        # download the vac from the SAS if it does not already exist locally
-        if not self.file_exists(self.summary_file):
-            log.info('Warning: This file is ~6 GB.  It may take awhile to download')
-            self.summary_file = self.download_vac('mangaffly', path_params=self.path_params)
+        if len(self.summary_file)==1:   # for data releases <DR17
+            # download the vac from the SAS if it does not already exist locally
+            if not self.file_exists(self.summary_file):
+                log.info('Warning: This file is ~6 GB.  It may take awhile to download')
+                self.summary_file = self.download_vac('mangaffly', path_params=self.path_params)
+                
+            # create container for more complex return data.
+            ffly = FFlyTarget(plateifu, vacfile=self.summary_file,imagesz=imagesz)
+            return ffly
 
-        # create container for more complex return data.
-        ffly = FFlyTarget(plateifu, vacfile=self.summary_file, imagesz=imagesz)
+        # for DR17 return dictionary; vacfile is only downloaded when key is selected
+        ffly = CallableDict({
+			"miles":lambda: self.prepare_container(plateifu, imagesz, 0),
+			"mastar":lambda: self.prepare_container(plateifu, imagesz, 1)
+            })
 
         return ffly
+    
+    def prepare_container(self,plateifu,imagesz,n):
+        if not self.file_exists(self.summary_file[n]):
+            log.info('Warning: This file is ~6 GB.  It may take awhile to download')
+            self.summary_file[n] = self.download_vac('mangaffly', path_params=self.path_params[n])
+        container = FFlyTarget(plateifu, vacfile=self.summary_file[n], imagesz=imagesz)
+        return container
 
 
 class FFlyTarget(VACTarget):
@@ -77,7 +108,7 @@ class FFlyTarget(VACTarget):
     parameters are available via the `stellar_pops` and `stellar_gradients` methods, respectively.
     2-d maps from the Firefly data can be produced via the `plot_map` method.
 
-    TODO: fix e(b-v) and signal_noise in plot_maps
+    TODO: 
 
     Parameters:
         targetid (str):
@@ -98,9 +129,9 @@ class FFlyTarget(VACTarget):
         super(FFlyTarget, self).__init__(targetid, vacfile)
         self._image_sz = imagesz
         self._parameters = ['lw_age', 'mw_age', 'lw_z', 'mw_z']
-
         # select the index of the targetid from the main VAC extension
         self._idx = self._get_data(ext='GALAXY_INFO')['plateifu'] == targetid
+        
 
     def stellar_pops(self, parameter=None):
         ''' Returns the global stellar population properties
@@ -160,7 +191,7 @@ class FFlyTarget(VACTarget):
         ''' Extract and create a 2d map '''
 
         params = self._parameters + [
-            'e(b-v)',
+            'e(b_v)',
             'stellar_mass',
             'surface_mass_density',
             'signal_noise',
@@ -169,10 +200,12 @@ class FFlyTarget(VACTarget):
             params)
 
         # get the required arrays
-        binid = self._get_data(ext='SPATIAL_BINID')[self._idx].reshape(
-            76, 76)
+        binid = self._get_data(ext='SPATIAL_BINID')[self._idx].squeeze(axis=0)
         bin1d = self._get_data(ext='SPATIAL_INFO')[self._idx, :, 0][0]
-        prop = self._get_data(ext=parameter + '_voronoi')[self._idx, :, 0][0]
+        try:
+            prop = self._get_data(ext=parameter + '_voronoi')[self._idx, :, 0][0]
+        except:
+            prop = self._get_data(ext=parameter + '_voronoi')[self._idx, :][0]
         image_sz = self._image_sz
 
         # make a base map and reshape to a 1d array
@@ -244,7 +277,7 @@ class FFlyTarget(VACTarget):
         ''' List the parameters available for plotting '''
 
         params = self._parameters + [
-            'e(b-v)',
+            'e(b_v)',
             'stellar_mass',
             'surface_mass_density',
             'signal_noise',
