@@ -37,7 +37,7 @@ class VMORPHOVAC(VACMixIn):
     # Required parameters
     name = 'visual_morphology'
     description = 'Returns visual morphology data'
-    version = {'DR16': '1.0.1', 'DR17': '2.0.1'}
+    version = {'DR16': '1.0.1', 'DR17': '2.0.1', 'MPL-11': '2.0.1'}
 
     # optional Marvin Tools to attach your vac to
     include = (marvin.tools.cube.Cube, marvin.tools.maps.Maps)
@@ -66,20 +66,20 @@ class VMORPHOVAC(VACMixIn):
         if not self.file_exists(self.summary_file):
             self.summary_file = self.download_vac('mangaVmorpho', path_params=self.path_params)
 
-        # get path to ancillary VAC files for DR16 SDSS/DESI mosaic images
+        # get path to ancillary VAC files 
         if parent_object.release == 'DR16':
+            # for DR16 SDSS/DESI mosaic images
             self.update_path_params({'plateifu': plateifu, 'survey': '*'})
             sdss_mos, desi_mos= self._get_mosaics(self.path_params)
 
-        # create container for more complex return data
+            # create container for more complex return data
             vmdata = VizMorphTarget(plateifu, vacfile=self.summary_file, sdss=sdss_mos, desi=desi_mos)
-            
-        # get path to ancillary VAC files for DR17 combined mosaic images
-        if parent_object.release == 'DR17':
+        elif parent_object.release in ['DR17', 'MPL-11']:
+            # for DR17 combined mosaic images
             self.update_path_params({'plateifu': plateifu})
-            mos_mos = self._check_mosaic('mos',self.path_params)
+            mos_mos = self._check_mosaic('mos', self.path_params)
 
-        # create container for more complex return data
+            # create container for more complex return data
             vmdata = VizMorphTarget(plateifu, vacfile=self.summary_file, mos=mos_mos)
             
         return vmdata
@@ -113,24 +113,15 @@ class VMORPHOVAC(VACMixIn):
         Returns:
             The mosaic image file path
         '''
-        # get the path for the given survey
-        if survey == 'mos':
-            mosaic = self.get_path('mangaVmorphoImgs2', path_params=path_params)
-            # download the mosaic file (downloads both surveys at once)
-            if not self.file_exists(mosaic):
-                mosaics = self.download_vac('mangaVmorphoImgs2', path_params=path_params)
-            # get the path again for the single survey
-            mosaic = self.get_path('mangaVmorphoImgs2', path_params=path_params)
-        else:
-            path_params['survey'] = survey
-            mosaic = self.get_path('mangaVmorphoImgs', path_params=path_params)
-            # download the mosaic file (downloads both surveys at once)
-            if not self.file_exists(mosaic):
-                pp = path_params.copy()
-                pp['survey'] = '*'
-                mosaics = self.download_vac('mangaVmorphoImgs', path_params=pp)
-            # get the path again for the single survey
-            mosaic = self.get_path('mangaVmorphoImgs', path_params=path_params)
+        path_params['survey'] = survey
+        mosaic = self.get_path('mangaVmorphoImgs', path_params=path_params)
+        # download the mosaic file (downloads both surveys at once)
+        if not self.file_exists(mosaic):
+            pp = path_params.copy()
+            pp['survey'] = '*'
+            mosaics = self.download_vac('mangaVmorphoImgs', path_params=pp)
+        # get the path again for the single survey
+        mosaic = self.get_path('mangaVmorphoImgs', path_params=path_params)
         return mosaic
 
 
