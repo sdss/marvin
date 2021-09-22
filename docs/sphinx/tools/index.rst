@@ -68,6 +68,8 @@ The following sections explain how to use the tools in detail. They assume that 
     utils/plotting
     analysis_tools
 
+    context
+
 
 .. _visual-guide:
 

@@ -67,36 +67,6 @@ The default `Maps` bintype is `HYB10`, where the stellar continuum analysis of s
 
 Currently, the only template available is `GAU-MILESHC`, which is selected by default.
 
-Maps as context-managers
-^^^^^^^^^^^^^^^^^^^^^^^^^
-
-Note that like other marvin tools, a `~marvin.tools.maps.Maps acts as a means of accessing an underlying data-file. When `data_origin == 'file'`, unless you delete the specific `~marvin.tools.maps.Maps` instance, the underlying file-handler will remain active. Therefore, if you expect to be creating many maps objects (by looping through a list of galaxies, for instance), you may create more open files than your system can handle. By using a Maps as a context manager, the underlying data file is closed precisely when it is no longer relevant.
-
-.. code-block:: python
-    
-    >>> with Maps(filename='/Users/username/manga/spectro/analysis/2_4_3/2.2.1/HYB10-GAU-MILESHC/8485/1901/manga-8485-1901-MAPS-HYB10-GAU-MILESHC.fits.gz') as maps:
-    ....    # can access contents of file inside context
-    ....    maps.data.info()
-    No.    Name      Ver    Type      Cards   Dimensions   Format
-      0  PRIMARY       1 PrimaryHDU     146   ()      
-      1  SPX_SKYCOO    1 ImageHDU        43   (34, 34, 2)   float32   
-    ...  
-     49  SPECINDEX_MASK    1 ImageHDU        89   (34, 34, 46)   int32   
-     50  SPECINDEX_CORR    1 ImageHDU        86   (34, 34, 46)   float32 
-
-    # once context ceases to be active, the file is closed, and data are inaccessible
-    >>> maps.emline_gflux_ha_6564
-    ValueError: I/O operation on closed file
-
-While this can be inconvenient when acting on a single Maps, it can save you from having to manually close files when working with many Maps instances in sequence, such as when computing dust-corrections.
-
-.. code-block:: python
-    
-    >>> for plateifu in plateifus:
-    ....    with Maps(plateifu) as maps:
-    ....        dustcorr_hdulist = fit_dustcorr_balmer(maps)
-    ....        dustcorr_hdulist.writeto(dustcorr_destination)
-
 .. _marvin-maps-basic:
 
 Basic Attributes
