@@ -231,7 +231,7 @@ class Maps(MarvinToolsClass, NSAMixIn, DAPallMixIn, GetApertureMixIn):
             daptype = '{0}-{1}'.format(self.bintype.name, self.template.name)
             params = dict(drpver=self._drpver, dapver=self._dapver,
                           plate=plate, ifu=ifu, mode='MAPS', daptype=daptype,
-                          path_type='mangadap5')
+                          path_type='mangadap')
 
         return params
 
@@ -436,7 +436,7 @@ class Maps(MarvinToolsClass, NSAMixIn, DAPallMixIn, GetApertureMixIn):
 
                         if table not in _db_rows:
                             _db_rows[table] = mdb.session.query(table).filter(
-                                table.file_pk == self.data.pk, table.x == x, table.y == y).one()
+                                table.file_pk == self.data.pk, table.x == x, table.y == y).use_cache(self.cache_region).one()
 
                         colname = dm.db_column(ext=None if key == 'value' else key)
                         data[key] = getattr(_db_rows[table], colname)
@@ -669,8 +669,19 @@ class Maps(MarvinToolsClass, NSAMixIn, DAPallMixIn, GetApertureMixIn):
         if self.is_binned is False:
             return self
         else:
+            unbinned = self.datamodel.parent.get_unbinned()
+            if self.datamodel.parent.db_only:
+                in_db = unbinned in self.datamodel.parent.db_only
+            else:
+                in_db = unbinned in self.datamodel.parent.bintypes
+
+            if self.mode == 'remote' and not in_db:
+                raise marvin.core.exceptions.MarvinError(
+                    "Bintype {0} for release {1} not available in remote database. Use "
+                    "Marvin's local file access mode instead.".format(unbinned.name, self.release))
+
             return Maps(plateifu=self.plateifu, release=self.release,
-                        bintype=self.datamodel.parent.get_unbinned(),
+                        bintype=unbinned,
                         template=self.template, mode=self.mode)
 
     def get_bpt(self, method='kewley06', snr_min=3, return_figure=True,

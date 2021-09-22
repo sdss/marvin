@@ -15,8 +15,9 @@ from marvin import config, log
 from marvin.web.web_utils import updateGlobalSession, check_access, configFeatures
 from marvin.web.jinja_filters import jinjablue
 from marvin.web.error_handlers import errors
-from marvin.web.extensions import jsglue, flags, sentry, limiter, profiler, cache, login_manager, jwt
-from marvin.web.settings import ProdConfig, DevConfig, CustomConfig
+from marvin.web.extensions import jsglue, flags, sentry, limiter, profiler, cache
+from marvin.web.extensions import login_manager, jwt, cors, session, compress
+from marvin.web.settings import ProdConfig, DevConfig, CustomConfig, DockerConfig
 # Web Views
 from marvin.web.controllers.index import index
 from marvin.web.controllers.galaxy import galaxy
@@ -75,6 +76,9 @@ def create_app(debug=False, local=False, object_config=None):
         if app.debug or local:
             app.logger.info('Loading Development Config!')
             object_config = type('Config', (DevConfig, CustomConfig), dict())
+        elif config.db and config.db == 'jhu':
+            app.logger.info('Loading Docker Config!')
+            object_config = type('Config', (DockerConfig, CustomConfig), dict())
         else:
             app.logger.info('Loading Production Config!')
             object_config = type('Config', (ProdConfig, CustomConfig), dict())
@@ -143,7 +147,7 @@ def register_extensions(app, app_base=None):
     if app.config['RATELIMIT_ENABLED'] is False:
         limiter.enabled = False
 
-    if app.config['USE_SENTRY']:
+    if app.config['USE_SENTRY'] is True:
         sentry.init_app(app)
 
     # Initialize the Flask-Profiler ; see results at localhost:portnumber/app_base/flask-profiler
@@ -157,6 +161,16 @@ def register_extensions(app, app_base=None):
     login_manager.init_app(app)
     login_manager.session_protection = "strong"
     jwt.init_app(app)
+
+    # intialize CORS
+    cors.init_app(app, supports_credentials=True, expose_headers='Authorization',
+                  origins=['https://*.sdss.org', 'https://*.sdss.utah.edu', 'http://localhost:*'])
+
+    # initialize the Session
+    session.init_app(app)
+
+    # initialize Compress
+    compress.init_app(app)
 
 
 def register_blueprints(app, url_prefix=None):

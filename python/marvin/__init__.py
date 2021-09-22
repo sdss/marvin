@@ -11,34 +11,40 @@ of Marvin stems from Marvin's Brain.
 import os
 import re
 import warnings
-import sys
 import contextlib
-import yaml
 import six
 from collections import OrderedDict
 from astropy.wcs import FITSFixedWarning
+from sdsstools import get_config, get_logger, get_package_version
+
+NAME = 'marvin'
 
 # Set the Marvin version
-__version__ = '2.3.3dev'
+__version__ = get_package_version(path=__file__, package_name='sdss-marvin')
 
 # Does this so that the implicit module definitions in extern can happen.
 # time - 483 ms
-from marvin import extern
 from marvin.core.exceptions import MarvinUserWarning, MarvinError
-from brain.utils.general.general import getDbMachine, merge, get_yaml_loader
+from brain.utils.general.general import getDbMachine
 from brain import bconfig
 from brain.core.core import URLMapDict
 from brain.core.exceptions import BrainError
-from brain.core.logger import initLog
+
+# Loads config
+curdir = os.path.dirname(os.path.abspath(__file__))
+cfg_params = get_config(
+    NAME, config_file=os.path.join(curdir, 'data/marvin.yml'))
+
 
 # Defines log dir.
 if 'MARVIN_LOGS_DIR' in os.environ:
     logFilePath = os.path.join(os.path.realpath(os.environ['MARVIN_LOGS_DIR']), 'marvin.log')
 else:
-    logFilePath = os.path.realpath(os.path.join(os.environ['HOME'], '.marvin', 'marvin.log'))
+    logFilePath = os.path.realpath(os.path.join(os.path.expanduser('~'), '.marvin', 'marvin.log'))
 
 # Inits the log
-log = initLog(logFilePath)
+log = get_logger(NAME)
+log.start_file_logger(logFilePath)
 
 warnings.simplefilter('once')
 warnings.filterwarnings('ignore', 'Skipped unsupported reflection of expression-based index')
@@ -52,6 +58,9 @@ warnings.filterwarnings('ignore', 'can\'t resolve package(.)+')
 # Ignore DeprecationWarnings that are not Marvin's
 warnings.filterwarnings('ignore', category=DeprecationWarning)
 warnings.filterwarnings('once', category=DeprecationWarning, module='marvin')
+
+# Ignore numpy binary incompatibility runtime warning
+warnings.filterwarnings('ignore', 'numpy.ufunc size changed')
 
 
 # up to here - time: 1 second
@@ -88,6 +97,7 @@ class MarvinConfig(object):
 
         self._custom_config = None
         self._drpall = None
+        self._dapall = None
         self._inapp = False
 
         self._urlmap = None
@@ -102,7 +112,10 @@ class MarvinConfig(object):
         self._allowed_releases = {}
 
         # Allow DAP queries
-        self._allow_DAP_queries = False
+        self._allow_DAP_queries = True
+
+        # Minimum web release; also see web.settings.Config.MIN_RELEASE
+        self._min_web_release = 'MPL-7'
 
         # perform some checks
         self._load_defaults()
@@ -112,7 +125,6 @@ class MarvinConfig(object):
 
         # setup some paths
         self._plantTree()
-        self._checkSDSSAccess()
         self._check_manga_dirs()
         self.setDefaultDrpAll()
 
@@ -124,19 +136,7 @@ class MarvinConfig(object):
         ~/.marvin/marvin.yml
 
         '''
-        with open(os.path.join(os.path.dirname(__file__), 'data/marvin.yml'), 'r') as f:
-            config = yaml.load(f, Loader=get_yaml_loader())
-        user_config_path = os.path.expanduser('~/.marvin/marvin.yml')
-        if os.path.exists(user_config_path):
-            with open(user_config_path, 'r') as f:
-                config = merge(yaml.load(f, Loader=get_yaml_loader()), config)
-
-        # update any matching Config values
-        for key, value in config.items():
-            if hasattr(self, key):
-                self.__setattr__(key, value)
-
-        self._custom_config = config
+        self._custom_config = cfg_params
 
     def _checkPaths(self, name):
         ''' Check for the necessary path existence.
@@ -209,7 +209,7 @@ class MarvinConfig(object):
         self._checkPaths('MANGA_SPECTRO_REDUX')
         self._checkPaths('MANGA_SPECTRO_ANALYSIS')
 
-    def setDefaultDrpAll(self, drpver=None):
+    def setDefaultDrpAll(self, drpver=None, dapver=None):
         """Tries to set the default location of drpall.
 
         Sets the drpall attribute to the location of your DRPall file, based on the
@@ -221,18 +221,33 @@ class MarvinConfig(object):
                 The DRP version to set.  Defaults to the version corresponding to config.release.
         """
 
-        if not drpver:
-            drpver, __ = self.lookUpVersions(self.release)
+        if not drpver or not dapver:
+            drpver, dapver = self.lookUpVersions(self.release)
         self.drpall = self._getDrpAllPath(drpver)
+        self.dapall = self._getDapAllPath(drpver, dapver)
+
+    def _get_default_path(self, name, drpver, dapver=None):
+        ''' Return a default path to a summary file '''
+        assert name in ['drpall', 'dapall'], 'name must be either drpall or dapall'
+        envvar = 'MANGA_SPECTRO_REDUX' if name == 'drpall' else 'MANGA_SPECTRO_ANALYSIS'
+        version = drpver if name == 'drpall' else dapver
+        if name == 'drpall':
+            path = os.path.join(str(drpver), 'drpall-{0}.fits'.format(version))
+        elif name == 'dapall':
+            path = os.path.join(str(drpver), str(dapver), 'dapall-{0}-{1}.fits'.format(drpver, dapver))
+
+        if envvar in os.environ and version:
+            return os.path.join(os.environ[envvar], path)
+        else:
+            raise MarvinError('Must have the {0} environment variable set'.format(envvar))
 
     def _getDrpAllPath(self, drpver):
         """Returns the default path for drpall, give a certain ``drpver``."""
+        return self._get_default_path('drpall', drpver)
 
-        if 'MANGA_SPECTRO_REDUX' in os.environ and drpver:
-            return os.path.join(os.environ['MANGA_SPECTRO_REDUX'], str(drpver),
-                                'drpall-{0}.fits'.format(drpver))
-        else:
-            raise MarvinError('Must have the MANGA_SPECTRO_REDUX environment variable set')
+    def _getDapAllPath(self, drpver, dapver):
+        """Returns the default path for dapall, give a certain ``drpver, dapver``."""
+        return self._get_default_path('dapall', drpver, dapver=dapver)
 
 ############ Brain Config overrides ############
 # These are configuration parameter defined in Brain.bconfig. We need
@@ -270,9 +285,12 @@ class MarvinConfig(object):
         with self._replant_tree(value) as val:
             self._release = val
 
+        drpver, dapver = self.lookUpVersions(value)
         if 'MANGA_SPECTRO_REDUX' in os.environ:
-            drpver, __ = self.lookUpVersions(value)
             self.drpall = self._getDrpAllPath(drpver)
+
+        if 'MANGA_SPECTRO_ANALYSIS' in os.environ:
+            self.dapall = self._getDapAllPath(drpver, dapver)
 
     @property
     def access(self):
@@ -368,6 +386,19 @@ class MarvinConfig(object):
             warnings.warn('path {0} cannot be found. Setting drpall to None.'
                           .format(value), MarvinUserWarning)
 
+    @property
+    def dapall(self):
+        return self._dapall
+
+    @dapall.setter
+    def dapall(self, value):
+        if os.path.exists(value):
+            self._dapall = value
+        else:
+            self._dapall = None
+            warnings.warn('path {0} cannot be found. Setting dapall to None.'
+                          .format(value), MarvinUserWarning)
+
     def _setDbConfig(self):
         ''' Set the db configuration '''
         self.db = getDbMachine()
@@ -376,7 +407,10 @@ class MarvinConfig(object):
         ''' Update the allowed releases based on access '''
 
         # define release dictionaries
-        mpldict = {'MPL-8': ('v2_5_3', '2.3.0'),
+        mpldict = {'MPL-11': ('v3_1_1', '3.1.0'),
+                   'MPL-10': ('v3_0_1', '3.0.1'),
+                   'MPL-9': ('v2_7_1', '2.4.1'),
+                   'MPL-8': ('v2_5_3', '2.3.0'),
                    'MPL-7': ('v2_4_3', '2.2.1'),
                    'MPL-6': ('v2_3_1', '2.1.3'),
                    'MPL-5': ('v2_0_1', '2.0.2'),
@@ -397,11 +431,14 @@ class MarvinConfig(object):
         relsorted = sorted(self._allowed_releases.items(), key=lambda p: p[1][0], reverse=True)
         self._allowed_releases = OrderedDict(relsorted)
 
-    def _get_latest_release(self, mpl_only=None):
+    def _get_latest_release(self, mpl_only=None, dr_only=None):
         ''' Get the latest release from allowed list '''
 
         if mpl_only:
-            return [r for r in list(self._allowed_releases) if 'MPL' in r][0]
+            return max([r for r in list(self._allowed_releases) if 'MPL' in r], key=lambda t: int(t.split('-')[-1]))
+
+        if dr_only:
+            return max([r for r in list(self._allowed_releases) if 'DR' in r], key=lambda t: int(t[2:]))
 
         return list(self._allowed_releases)[0]
 
@@ -487,19 +524,25 @@ class MarvinConfig(object):
 
         return drpver, dapver
 
-    def lookUpRelease(self, drpver):
+    def lookUpRelease(self, drpver, public_only=None):
         """Retrieve the release version for a given DRP version
 
         Parameters:
             drpver (str):
                 The DRP version to use
+            public_only (bool):
+                If True, uses only DR releases
         Returns:
             release (str):
                 The release version according to the input DRP version
         """
 
         # Flip the mpldict
-        verdict = {val[0]: key for key, val in self._allowed_releases.items()}
+        verdict = {}
+        for key, val in self._allowed_releases.items():
+            if (public_only and 'MPL' in key):
+                continue
+            verdict[val[0]] = key
 
         try:
             release = verdict[drpver]
@@ -510,6 +553,35 @@ class MarvinConfig(object):
 
         return release
 
+    def get_allowed_releases(self, public=None, min_release=None):
+        ''' Get a dictionary of supported MaNGA releases
+
+        Parameters:
+            public (bool):
+                If True, only return public DR releases
+            min_release (str):
+                Filter out all releases below this version
+
+        Returns:
+            dict: the supported MaNGA releases in Marvin
+        '''
+        allowed = self._allowed_releases.copy()
+
+        # filter on only public DRs
+        if public:
+            allowed = {k: v for k, v in allowed.items() if 'DR' in k}
+
+        # if minimum release set, filter on drpver >= min release version
+        from packaging.version import parse
+        if min_release:
+            # adjust MPL-7 to DR15 alias if needed
+            if min_release == 'MPL-7' and min_release not in allowed:
+                min_release = 'DR15'
+            min_drpver, __ = self.lookUpVersions(min_release)
+            allowed = {k: v for k, v in allowed.items() if parse(
+                v[0]) >= parse(min_drpver)}
+        return allowed
+
     def switchSasUrl(self, sasmode='utah', ngrokid=None, port=5000, test=False,
                      base=None, public=None):
         ''' Switches the API SAS url config attribute
@@ -519,7 +591,7 @@ class MarvinConfig(object):
         use localhost.
 
         Parameters:
-            sasmode ({'utah', 'local'}):
+            sasmode ({'utah', 'local', 'mirror'}):
                 the SAS mode to switch to.  Default is Utah
             ngrokid (str):
                 The ngrok id to use when using a 'localhost' sas mode.
@@ -533,7 +605,7 @@ class MarvinConfig(object):
             public (bool):
                 If ``True``, sets the API url to the public domain
         '''
-        assert sasmode in ['utah', 'local'], 'SAS mode can only be utah or local'
+        assert sasmode in ['utah', 'local', 'mirror'], 'SAS mode can only be utah, local, or mirror'
         base = base if base else os.environ.get('MARVIN_BASE', 'marvin')
         test_domain = 'https://lore.sdss.utah.edu/'
         if sasmode == 'local':
@@ -557,17 +629,8 @@ class MarvinConfig(object):
 
             # get a new urlmap (need to do for vetting)
             self._urlmap = None
-            #__ = self.urlmap
-
-            # marvin_base = 'test/{0}/'.format(base) if test else '{0}/'.format(base)
-            # if public:
-            #     base_url = re.sub(r'(dr[0-9]{1,2})', self._release.lower(), bconfig.public_api_url)
-            #     public_api = os.path.join(base_url, marvin_base)
-            #     self.sasurl = public_api
-            #     self._authtype = None
-            # else:
-            #     self.sasurl = os.path.join(bconfig.collab_api_url, marvin_base)
-            #     self._authtype = 'token'
+        elif sasmode == 'mirror':
+            self.sasurl = bconfig.mirror_api_url
 
     def forceDbOff(self):
         ''' Force the database to be turned off '''
@@ -583,45 +646,17 @@ class MarvinConfig(object):
         if marvindb:
             marvindb.forceDbOn(dbtype=self.db)
 
-    def _addExternal(self, name):
-        ''' Adds an external product into the path '''
-        assert isinstance(name, str), 'name must be a string'
-        externdir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'extern', name)
-        extern_envvar = '{0}_DIR'.format(name.upper())
-        os.environ[extern_envvar] = externdir
-        pypath = os.path.join(externdir, 'python')
-        if os.path.isdir(pypath):
-            sys.path.append(pypath)
-        else:
-            warnings.warn('Python path for external product {0} does not exist'.format(name))
-
     def _plantTree(self):
         ''' Sets up the sdss tree product root '''
 
         tree_config = 'sdsswork' if self.access == 'collab' and 'MPL' in self.release else self.release.lower()
 
-        # testing always using the python Tree as override
-        # if 'TREE_DIR' not in os.environ:
-        # set up tree using marvin's extern package
-        self._addExternal('tree')
         try:
             from tree.tree import Tree
         except ImportError:
             self._tree = None
         else:
             self._tree = Tree(key='MANGA', config=tree_config)
-
-    def _checkSDSSAccess(self):
-        ''' Checks the client sdss_access setup '''
-        if 'SDSS_ACCESS_DIR' not in os.environ:
-            # set up sdss_access using marvin's extern package
-            self._addExternal('sdss_access')
-            try:
-                from sdss_access.path import Path
-            except ImportError:
-                Path = None
-            else:
-                self._sdss_access_isloaded = True
 
     @contextlib.contextmanager
     def _replant_tree(self, value):
@@ -681,6 +716,11 @@ class MarvinConfig(object):
             self.switchSasUrl('utah')
         elif 'DR' in value:
             self.switchSasUrl('utah', public=True)
+
+        # check to use the SAS mirror
+        mirror = self._custom_config.get('use_mirror', None)
+        if mirror:
+            self.switchSasUrl('mirror', public='DR' in value)
 
     def login(self, refresh=None):
         ''' Login with netrc credentials to receive an API token

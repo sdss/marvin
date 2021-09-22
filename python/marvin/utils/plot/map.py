@@ -512,7 +512,7 @@ def plot(*args, **kwargs):
 
         fig, cb = colorbar._draw_colorbar(fig, mappable=p, ax=ax, **cb_kws)
 
-        if title is not '':
+        if title != '':
             ax.set_title(label=title)
 
     # restore previous matplotlib rc parameters (as of matplotlib 2.0.2 this

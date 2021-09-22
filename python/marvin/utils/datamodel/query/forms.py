@@ -13,6 +13,7 @@ Revision History:
 from __future__ import division, print_function
 
 import re
+import six
 import sys
 import warnings
 from collections import OrderedDict, defaultdict
@@ -181,10 +182,7 @@ class ParamFormLookupDict(dict):
         """Returns the model class column in the WFTForm."""
 
         if not isinstance(keys, (list, tuple)):
-            str_types = [str]
-            if sys.version_info[0] < 3:
-                str_types.append(unicode)
-            if isinstance(keys, tuple(str_types)):
+            if isinstance(keys, six.string_types):
                 keys = [keys]
             else:
                 keys = list(keys)
@@ -371,7 +369,9 @@ class ValidOperand(object):
 class SearchForm(Form):
     ''' Main Search Level WTForm for Marvin '''
 
-    searchbox = StringField("<a target='_blank' href='https://sdss-marvin.readthedocs.io/en/stable/query/query/query_using.html'>Input Search Filter</a>",
+    url = ("<a target='_blank' data-toggle='tooltip' title='Click to read more about Queries' "
+           "href='https://sdss-marvin.readthedocs.io/en/stable/query/query/query_using.html'>Input Search Filter</a>")
+    searchbox = StringField(url,
                             [validators.Length(min=3, message='Input must have at least 3 characters'),
                              validators.DataRequired(message='Input filter string required'),
                              ValidOperand('[<>=betweenradial]', message='Input must contain a valid operand.')])

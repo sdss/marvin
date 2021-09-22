@@ -26,7 +26,7 @@ import marvin.utils.general.general
 from marvin.core.exceptions import MarvinError, MarvinUserWarning
 from marvin.tools.quantities import DataCube, Spectrum
 from marvin.utils.datamodel.drp import datamodel
-from marvin.utils.general import FuzzyDict, get_nsa_data, gunzip
+from marvin.utils.general import FuzzyDict, get_nsa_data, gunzip, get_dapall_table
 
 from .core import MarvinToolsClass
 from .mixins import GetApertureMixIn, NSAMixIn
@@ -101,7 +101,7 @@ class Cube(MarvinToolsClass, NSAMixIn, GetApertureMixIn):
         plate, ifu = self.plateifu.split('-')
 
         return super(Cube, self)._getFullPath('mangacube', ifu=ifu,
-                                              drpver=self._drpver, plate=plate)
+                                              drpver=self._drpver, plate=plate, wave='LOG')
 
     def download(self):
         """Downloads the cube using sdss_access - Rsync,"""
@@ -112,7 +112,7 @@ class Cube(MarvinToolsClass, NSAMixIn, GetApertureMixIn):
         plate, ifu = self.plateifu.split('-')
 
         return super(Cube, self).download('mangacube', ifu=ifu,
-                                          drpver=self._drpver, plate=plate)
+                                          drpver=self._drpver, plate=plate, wave='LOG')
 
     def __repr__(self):
         """Representation for Cube."""
@@ -213,7 +213,7 @@ class Cube(MarvinToolsClass, NSAMixIn, GetApertureMixIn):
                         datadb.PipelineInfo, datadb.PipelineVersion, datadb.IFUDesign).filter(
                             mdb.datadb.PipelineVersion.version == self._drpver,
                             datadb.Cube.plate == int(plate),
-                            datadb.IFUDesign.name == ifu).one()
+                            datadb.IFUDesign.name == ifu).use_cache(self.cache_region).one()
                 except sqlalchemy.orm.exc.MultipleResultsFound as ee:
                     raise MarvinError('Could not retrieve cube for plate-ifu {0}: '
                                       'Multiple Results Found: {1}'.format(self.plateifu, ee))
@@ -466,7 +466,7 @@ class Cube(MarvinToolsClass, NSAMixIn, GetApertureMixIn):
                             if 'datacubes' not in _db_rows:
                                 _db_rows['datacubes'] = session.query(datadb.Spaxel).filter(
                                     datadb.Spaxel.cube == self.data,
-                                    datadb.Spaxel.x == x, datadb.Spaxel.y == y).one()
+                                    datadb.Spaxel.x == x, datadb.Spaxel.y == y).use_cache(self.cache_region).one()
 
                             spaxel_data = getattr(_db_rows['datacubes'], colname)
 
@@ -474,7 +474,7 @@ class Cube(MarvinToolsClass, NSAMixIn, GetApertureMixIn):
 
                             if 'spectra' not in _db_rows:
                                 _db_rows['spectra'] = session.query(datadb.Cube).filter(
-                                    datadb.Cube.pk == self.data.pk).one()
+                                    datadb.Cube.pk == self.data.pk).use_cache(self.cache_region).one()
 
                             spaxel_data = getattr(_db_rows['spectra'], colname, None)
 
@@ -605,3 +605,28 @@ class Cube(MarvinToolsClass, NSAMixIn, GetApertureMixIn):
         maps = marvin.tools.maps.Maps(**kwargs)
 
         return maps
+
+    def get_available_bintypes(self):
+        ''' List the available DAP binning schemes for this object
+
+            For ``data_origin`` of file or API, uses the local DAPall summary
+            file to determine the available bintypes for a given plateifu.
+        '''
+
+        if self.data_origin == 'file' or self.data_origin == 'api':
+            daptable = get_dapall_table(drpver=self._drpver, dapver=self._dapver)
+            locs = (daptable['PLATEIFU'] == self.plateifu) & (daptable['DAPDONE'] == True)
+            return daptable[locs]['BINKEY'].tolist()
+        elif self.data_origin == 'db':
+            session = marvin.marvindb.session
+            datadb = marvin.marvindb.datadb
+            dapdb = marvin.marvindb.dapdb
+
+            query = session.query(dapdb.BinType.name).join(
+                    dapdb.Structure, dapdb.File, datadb.PipelineInfo,
+                    datadb.PipelineVersion).filter(
+                        datadb.PipelineVersion.version == self._dapver,
+                        dapdb.File.filename.ilike('%{0}%MAPS%'.format(self.plateifu)))
+            bintypes = [i[0] for i in query]
+            return bintypes
+

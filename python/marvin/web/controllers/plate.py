@@ -21,6 +21,7 @@ from marvin.utils.general import getImagesByPlate
 from marvin.web.controllers import BaseWebView
 from marvin.web.web_utils import buildImageDict
 from marvin.api.base import arg_validate as av
+from marvin.web.extensions import cache
 
 plate = Blueprint("plate_page", __name__)
 
@@ -44,11 +45,13 @@ class Plate(BaseWebView):
 
         return render_template('plate.html', **self.plate)
 
+    @cache.memoize()
     def get(self, plateid):
         ''' Retrieve info for a given plate id '''
 
         # validate the input
         args = av.manual_parse(self, request)
+
         self.plate['plateid'] = args.get('plateid')
         pinputs = {'plate': plateid, 'mode': 'local', 'nocubes': True, 'release': self._release}
         try:
@@ -83,5 +86,34 @@ class Plate(BaseWebView):
 
         return render_template('plate.html', **self.plate)
 
+
+def get_plate_cache(*args, **kwargs):
+    ''' Function used to generate the route cache key
+
+    Cache key when using cache.memoize or cache.cached decorator.
+    memoize remembers input methods arguments; cached does not.
+
+    Parameters:
+        args (list):
+            a list of the fx/method route call and object instance (self)
+        kwargs (dict):
+            a dictonary of arguments passed into the method
+    Returns:
+        A string used for the cache key lookup
+    '''
+    # get the plateid from the keyword argument
+    plateid = kwargs.get('plateid')
+    # get the Plate method and self instance
+    fxn, inst = args
+
+    # create unique cache key name
+    key = 'getplate_{0}_{1}'.format(plateid, inst._release.lower().replace('-', ''))
+    # append if logged in
+    if inst.plate['loggedin']:
+        key = '{0}_loggedin'.format(key)
+    return key
+
+
+Plate.get.make_cache_key = get_plate_cache
 
 Plate.register(plate)

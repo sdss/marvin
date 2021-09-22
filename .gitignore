@@ -21,6 +21,7 @@ python/marvin/web/controllers/__pycache__
 python/marvin/web/templates/__pycache__
 
 docs/sphinx/_build
+docs/*.graffle
 etc/node_modules
 etc/.netrc
 python/marvin/web/lib/.sass-cache

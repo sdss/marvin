@@ -6,8 +6,8 @@
 # @Filename: map.py
 # @License: BSD 3-clause (http://www.opensource.org/licenses/BSD-3-Clause)
 #
-# @Last modified by: José Sánchez-Gallego (gallegoj@uw.edu)
-# @Last modified time: 2018-08-12 04:50:45
+# @Last modified by:   andrews
+# @Last modified time: 2019-11-22 11:11:71
 
 
 from __future__ import absolute_import, division, print_function
@@ -28,6 +28,7 @@ import marvin.utils.general
 import marvin.utils.plot.map
 from marvin.utils.datamodel.dap.base import Property
 from marvin.utils.general.general import add_doc
+from marvin.tools.mixins.caching import CacheMixIn
 
 from .base_quantity import QuantityMixIn
 
@@ -277,26 +278,29 @@ class Map(units.Quantity, QuantityMixIn):
         table = getattr(mdb.dapdb, prop.model)
 
         fullname_value = prop.db_column()
-        value = mdb.session.query(getattr(table, fullname_value)).filter(
-            table.file_pk == maps.data.pk).order_by(table.spaxel_index).all()
+        props = [getattr(table, fullname_value)]
+        if prop.ivar:
+            fullname_ivar = prop.db_column(ext='ivar')
+            props.append(getattr(table, fullname_ivar))
+        if prop.mask:
+            fullname_mask = prop.db_column(ext='mask')
+            props.append(getattr(table, fullname_mask))
 
-        shape = (int(np.sqrt(len(value))), int(np.sqrt(len(value))))
-        value = np.array(value).reshape(shape).T
+        n_props = len(props)
 
         ivar = None
         mask = None
+        tmp = mdb.session.query(*props).filter(table.file_pk == maps.data.pk).use_cache(
+            maps.cache_region).order_by(table.spaxel_index).all()
 
+        shape = (int(np.sqrt(len(tmp))), int(np.sqrt(len(tmp))), n_props)
+        newtmp = np.array(tmp).reshape(shape).T
+        value = newtmp[0, :, :]
         if prop.ivar:
-            fullname_ivar = prop.db_column(ext='ivar')
-            ivar = mdb.session.query(getattr(table, fullname_ivar)).filter(
-                table.file_pk == maps.data.pk).order_by(table.spaxel_index).all()
-            ivar = np.array(ivar).reshape(shape).T
-
+            ivar = newtmp[1, :, :]
         if prop.mask:
-            fullname_mask = prop.db_column(ext='mask')
-            mask = mdb.session.query(getattr(table, fullname_mask)).filter(
-                table.file_pk == maps.data.pk).order_by(table.spaxel_index).all()
-            mask = np.array(mask).reshape(shape).T
+            mask = newtmp[2, :, :]
+            mask = mask.astype(int)
 
         return value, ivar, mask
 
@@ -438,14 +442,14 @@ class Map(units.Quantity, QuantityMixIn):
 
         return unit12
 
-    def _arith(self, term2, op):
+    def _arith(self, term2, op, reflexive=False):
         if isinstance(term2, (Map, EnhancedMap)):
             map_out = self._map_arith(term2, op)
         else:
-            map_out = self._scalar_arith(term2, op)
+            map_out = self._scalar_arith(term2, op, reflexive)
         return map_out
 
-    def _scalar_arith(self, scalar, op):
+    def _scalar_arith(self, scalar, op, reflexive):
         """Do map arithmetic and correctly handle map attributes."""
 
         ops = {'+': operator.add, '-': operator.sub, '*': operator.mul, '/': operator.truediv}
@@ -453,8 +457,14 @@ class Map(units.Quantity, QuantityMixIn):
         ivar_func = {'+': lambda ivar, c: ivar, '-': lambda ivar, c: ivar,
                      '*': lambda ivar, c: ivar / c**2, '/': lambda ivar, c: ivar * c**2}
 
+        if not reflexive:
+            args_value = (self.value, scalar)
+        else:
+            args_value = (scalar, self.value)
+            ivar_func['/'] = lambda ivar, c: ivar
+
         with np.errstate(divide='ignore', invalid='ignore'):
-            map_value = ops[op](self.value, scalar)
+            map_value = ops[op](*args_value)
 
         map1_ivar = self.ivar if self.ivar is not None else np.zeros(self.shape)
         map_ivar = ivar_func[op](map1_ivar, scalar)
@@ -516,6 +526,26 @@ class Map(units.Quantity, QuantityMixIn):
     def __truediv__(self, map2):
         """Divide two maps."""
         return self.__div__(map2)
+
+    def __radd__(self, other):
+        """Reflexive add."""
+        return self._arith(other, '+', reflexive=True)
+
+    def __rsub__(self, other):
+        """Reflexive subtract."""
+        return self._arith(other, '-', reflexive=True)
+
+    def __rmul__(self, other):
+        """Reflexive multiply."""
+        return self._arith(other, '*', reflexive=True)
+
+    def __rdiv__(self, other):
+        """Reflexive divide."""
+        return self._arith(other, '/', reflexive=True)
+
+    def __rtruediv__(self, other):
+        """Reflexive divide."""
+        return self.__rdiv__(other)
 
     def __pow__(self, power):
         """Raise map to power.

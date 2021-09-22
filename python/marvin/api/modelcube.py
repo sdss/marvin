@@ -66,11 +66,11 @@ def _get_model_cube(name, use_file=False, release=None, **kwargs):
 
                 daptype = '{0}-{1}'.format(bintype, template)
 
-                filename = Path().full('mangadap5', ifu=ifu,
-                                       drpver=drpver,
-                                       dapver=dapver,
-                                       plate=plate, mode='LOGCUBE',
-                                       daptype=daptype)
+                filename = Path(release=release).full('mangadap', ifu=ifu,
+                                                      drpver=drpver,
+                                                      dapver=dapver,
+                                                      plate=plate, mode='LOGCUBE',
+                                                      daptype=daptype)
                 assert os.path.exists(filename), 'file not found.'
             else:
                 raise MarvinError('cannot create path for MaNGA cube.')

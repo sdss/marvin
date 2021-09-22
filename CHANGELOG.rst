@@ -1,20 +1,127 @@
 Marvin's Change Log
 ===================
 
-[2.3.3] - unreleased
+[2.6.1] - unreleased
+--------------------
+- Issue :issue:`680` - Basic context manager functionality for ``marvin.tools.core.MarvinToolsClass``, and relevant documentation for ``Cube`` and ``Maps``. Users can automate closing file handlers when in ``file`` mode, by using ``with`` syntax, alleviating some issues with looping through lists of galaxies.
+- ``marvin.tools.core.MarvinToolsClass.close`` method is a self-contained way of closing the underlying data file. It is now called by ``marvin.tools.core.MarvinToolsClass.__del__`` and ``marvin.tools.core.MarvinToolsClass.__exit__``. ``marvin.tools.core.MarvinToolsClass.source_is_fits_hdulist_file`` evaluates whether the object is accessing a FITS HDUList.
+
+
+[2.6.0] - 2021/03/12
+--------------------
+- **Adds** - support for MaNGA data release MPL-11
+- **Adds** - updates to the Marvin documentation on citations
+- **Fixes** - Bug with remote access for removed ``emline_tplsigma`` spaxel property.  Removed from MPL-10, MPL-11 datamodels.
+
+[2.5.4] - 2021/03/5
+-------------------
+- ** Changes** - pinned ``flask-jwt-extended`` package version to ``<4.0``
+
+[2.5.3] - 2020/16/1
+-------------------
+- **Changes** - static web images to webp format for better compression and faster load times.
+
+[2.5.2] - 2020/10/1
+-------------------
+- Restructuring to simplify setup, dependencies, and tests, for code health.
+- **Adds** - New `setup.py` and `setup.cfg` to simplify installation and dependency requirements
+- **Adds** - New dependencies ``marvin-brain``, ``marvin-wtforms-alchemy``, ``marvin-sqlalchemy-boolean-search``, ``sdss-tree``, and ``sdss-access``.
+- **Changes** - Migrates to ``sdsstools`` for internal logging and config management.
+- **Changes** - Removes all external submodules, which have been converted into pypi releases.
+- **Changes** - Moves tests outside the python package
+- **Fixes** - Issues :issue:`643`, :issue:`644`, :issue:`645`, :issue:`646`
+
+[2.5.1] - 2020/09/25
+--------------------
+- **Fixes** :issue:`711` - galaxy page bug when NSA dictionary not available prevents flag modals from appearing
+
+[2.5.0] - 2020/09/04
+--------------------
+- **Adds** - support for MaNGA data release MPL-10
+- **Removes** - web / API support for MPLs 4, 5, 6
+- **Removes** - SPX and VOR10 binning schemese in MPLs 7-10, and DR15-16.
+
+[2.4.1] - 2020/08/05
+--------------------
+- **Adds** - support for using the marvin mirror at magrathea.sdss.org, hosted at Johns Hopkins
+- **Adds** - new `use_mirror` custom config option to automatically set marvin to use the mirror
+
+[2.4.0] - 2020/07/19
+--------------------
+
+- **Adds** - caching web routes on Plate, Galaxy pages
+- **Adds** - new `use_cache` option to `Cachable Query` class.  Implemented in most marvin database calls.
+- **Adds** - most Marvin Tools now use query caching for database calls
+- **Adds** - a new `CacheMixIn` that adds optional caching to classes utilizing db calls
+- **Adds** - a new `Redis` `dogpile.cache` backend; with new regions for `Maps` and `Modelcubes`
+- **Adds** - new utility functions for DRPall, and DAPall files, `get_xxx_path`, `get_xxx_file`, `get_xxx_table`
+- **Adds** - adds visual morphology VAC for DR16+
+- **Fixes** - Issue :issue:`695` - better web spectra/map error messages;
+- **Changes** - tree and sdss_access submodules to latest 3.0+ and 1.0+ versions
+- **Changes** - path changes to accommodate new tree and sdss_access
+
+[2.3.6] - 2020/04/14
+--------------------
+
+Fixed
+^^^^^
+- Issue :issue:`700` - pinned webargs package to version <6, networkx package <2.4
+
+[2.3.5] - 2019/12/09
+--------------------
+
+Added
+^^^^^
+- Support for MPL-9 MaNGA data
+- Issue :issue:`648` - Option to toggle common lines from the DAP in web spectrum viewer
+- Issue :issue:`112` - Option to toggle between rest-frame and observed wavelength in web spectrum viewer
+- Issue :issue:`679` - Option to toggle on DONOTUSE pixel region masks in web spectrum viewer
+- master-fifo file to uwsgi base config ini file
+- adds an alert to authenticate when no static image detected
+
+Changed
+^^^^^^^
+- updated datamodels to include MPL-9 changes
+- turned off API rate limiting globally
+- turned back on old spaxel query method
+- switched random image web page to use improved `get_random_images` function
+- changing galaxy page static image grab to use `cube.getImage().url`
+
+
+[2.3.4] - 2019/12/09
+--------------------
+
+Changed
+^^^^^^^
+- Added explicit python path in uwsgi prod.ini file
+
+Fixed
+^^^^^
+- Bug in session variable controlling DAP bintemps
+
+[2.3.3] - 2019/12/09
 --------------------
 
 Added
 ^^^^^
 - Support for DR16.  Updated datamodels and docs. 
-- Issue :issue:`680` - Basic context manager functionality for ``marvin.tools.core.MarvinToolsClass``, and relevant documentation for ``Cube`` and ``Maps``. Users can automate closing file handlers when in ``file`` mode, by using ``with`` syntax, alleviating some issues with looping through lists of galaxies.
-- ``marvin.tools.core.MarvinToolsClass.close`` method is a self-contained way of closing the underlying data file. It is now called by ``marvin.tools.core.MarvinToolsClass.__del__`` and ``marvin.tools.core.MarvinToolsClass.__exit__``. ``marvin.tools.core.MarvinToolsClass.source_is_fits_hdulist_file`` evaluates whether the object is accessing a FITS HDUList.
+- Added Galaxy Zoo VAC
+- Added GEMA VAC
+- Added Firefly VAC
+- Added Visual Morphology VAC
+- Merged :pr:`678`, richer support for VACs
+- Merged :pr:`652`, richer support for Windows
+- Merged :pr:`677`, updated documentation on issues with fuzzy string matching
+- Merged :pr:`687`, fixes map arithmetic with reflexive operators
 
 Changed
 ^^^^^^^
 - all yaml.load uses new Loader to accommodate old and new yaml spec;
 - updated Runtime Issues documentation to include section on numpy.ufunc binary warnings
 - added to reprs for some db ModelClasses
+- all `sdss_access.sync.RsyncAccess` has been converted to `sdss_access.sync.Access` to allow for Linux/Windows switching
+- updates citation to Marvin paper
+- DAP Maps label on galaxy page now contains a pop up of links for more info
 
 Fixed
 ^^^^^
@@ -22,7 +129,12 @@ Fixed
 - Issue :issue:`655` - added yaml loader to remove yaml warnings for 5.1 spec
 - Fixed bug when server tries to access NSA on cube when none exists and triggers remote authentication issue
 - Issue :issue:`664` - Fixed link to MaNGA's Getting Started in docs.
-
+- Issue :issue:`686` - added reflexive operators to EnhancedMap
+- Issue :issue:`689` - added link to CSV file of Firefly stellar mass measurements needed for the Spatially-Resolved Mass-Metallicity Relation Tutorial
+- Issue :issue:`682` - adds info links next to DAP Maps selection on galaxy page
+- Issue :issue:`581` - makes MapSpecView button a session variable
+- Issuu :issue:`208` - makes map selections session variable
+- Issue :issue:`171` - fix y-min to 0 for spectrum web view
 
 [2.3.2] - 2019/02/27
 --------------------

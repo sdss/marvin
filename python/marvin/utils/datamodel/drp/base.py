@@ -342,6 +342,9 @@ class DataCube(object):
         db_table (str):
             The DB table in which the datacube is stored. Defaults to
             ``spaxel``.
+        db_column (str):
+            An alternate DB column in which the datacube is stored. If none, defaults to
+            the FITS extension name.
         unit (astropy unit or None):
             The unit for this datacube.
         scale (float):
@@ -359,7 +362,7 @@ class DataCube(object):
 
     def __init__(self, name, extension_name, extension_wave=None,
                  extension_ivar=None, extension_mask=None, db_table='spaxel',
-                 unit=u.dimensionless_unscaled, scale=1, formats={},
+                 db_column=None, unit=u.dimensionless_unscaled, scale=1, formats={},
                  pixmask_flag='MANGA_DRP3PIXMASK', description=''):
 
         self.name = name
@@ -372,6 +375,7 @@ class DataCube(object):
         self.pixmask_flag = pixmask_flag
 
         self.db_table = db_table
+        self._db_column = db_column
 
         self._parent = None
 
@@ -394,6 +398,7 @@ class DataCube(object):
         copy_of_self = self.copy()
         copy_of_self.__class__ = RSS
         copy_of_self.parent = new_parent
+        copy_of_self.db_table = 'rssfiber'
 
         return copy_of_self
 
@@ -445,8 +450,14 @@ class DataCube(object):
             return self._extension_mask
 
     def db_column(self, ext=None):
-        """Returns the name of the DB column containing this datacube."""
+        """Returns the name of the DB column containing this datacube.
 
+        If ``db_column`` is passed in as input to the ``DataCube`` datamodel, returns
+        the given name.  Otherwise returns the name of the FITS extension.
+        """
+
+        if self._db_column:
+            return self._db_column
         return self.fits_extension(ext=ext).lower()
 
     def __repr__(self):

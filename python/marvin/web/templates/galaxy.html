@@ -1,13 +1,14 @@
 {% extends "layout.html" %}
-{% from 'macros.html' import download, panellist, infopopup, nsatable, nsascatter, dygraph_popup %}
+{% from 'macros.html' import download, panellist, infopopup, nsatable, nsascatter, dygraph_popup, maphelp_popup %}
 
 <!-- Galaxy CSS Sources -->
 {% block csshead %}
     <link rel='preconnect stylesheet' href='//cdnjs.cloudflare.com/ajax/libs/ol3/3.14.2/ol.min.css'>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/dygraph/2.1.0/dygraph.min.css" integrity="sha256-NmfeKHX4FgSrBzL2BhPhzy41cHgzNYIEZyLyqf2/B30=" crossorigin="anonymous" />
 {% endblock csshead %}
 <!-- Galaxy JS Sources-->
 {% block jshead %}
-    <script rel='preconnect' src="//cdnjs.cloudflare.com/ajax/libs/dygraph/1.1.1/dygraph-combined.js"></script>
+    <script rel'preconnect' src="https://cdnjs.cloudflare.com/ajax/libs/dygraph/2.1.0/dygraph.min.js" integrity="sha256-XT58qJPKCsRBRq+MIcNDQ7dVh0GAa1k2r24w62z0Olk=" crossorigin="anonymous"></script>
     <script rel='preconnect' src="//cdnjs.cloudflare.com/ajax/libs/ol3/3.14.2/ol.min.js"></script>
     <script rel='preconnect' src="https://code.highcharts.com/highcharts.js"></script>
     <script rel='preconnect' src="https://code.highcharts.com/highcharts-more.js"></script>
@@ -48,6 +49,7 @@
                                 <tr><th>DAP Output</th><td colspan='2' align='center'><a target='_blank' data-toggle="tooltip" title="{{daplink|default('None')}}" href='{{daplink|default("#")}}'>DAP URL</a></td></tr>
                             </tbody>
                         </table>
+                        <h6 id='noimagealert' class="alert alert-danger" role="alert" style="display: none">Don't see images below? Authenticate <a target='_blank' href='https://data.sdss.org/sas/mangawork/manga/'>here</a> and reload.</h6>
                     </div>
                     <!-- Cube Quality Flags -->
                     {# Cube Quality Flags #}
@@ -146,13 +148,28 @@
                         </div>
                         <div class='col-md-8'>
                             <div id='graphdiv' style="width:100%;"></div>
-                            <!-- This div is for dygraphs help popup-->
-                            <div>
-                              {# Dygraphs help button #}
-                              <button type="button" id="dyghel_btn" class="btn btn-primary btn-sm pull-right" data-toggle="modal" data-target="#dyghelp_modal"><span class="glyphicon glyphicon-question-sign"></span> Graph: Zoom, Pan, Values</button>
-                              <!-- Modal popup-->
-                              {{dygraph_popup()}}
+
+                            <!-- This div is for dygraphs buttons -->
+                            <div class='row'>
+                            <div class='col-md-6'>
+                                <div class='input-group pull-left btn-group-sm' role="group" aria-label="plothelp">
+                                  {# Toggle lines #}
+                                  <input type="checkbox" id='togglelines' aria-pressed="false" data-size='small' data-toggle="toggle" data-on="Toggle Lines Off" data-off="Toggle Lines On" data-onstyle="info" data-offstyle="info" data-width="170" data-height='35'>
+                                  {# Toggle Wavelength #}
+                                  <input type="checkbox" id='toggleframe' aria-pressed="false" data-size='small' data-toggle="toggle" data-on="Toggle Observed" data-off="Toggle Rest-Frame" data-onstyle="info" data-offstyle="info" data-width="170" data-height='35'>
+                                </div>
                             </div>
+                            <div class='col-md-6'>
+                                <div class='input-group pull-right btn-group-sm' role="group" aria-label="plothelp">
+                                  {# Toggle Mask #}
+                                  <input type="checkbox" id='togglemask' aria-pressed="false" data-size='small' data-toggle="toggle" data-on="Toggle Mask On" data-off="Toggle Mask Off" data-onstyle="info" data-offstyle="info" data-width="170" data-height='35'>
+                                  {# Dygraphs help button #}
+                                  <button type="button" id="dyghel_btn" class="btn btn-primary" data-toggle="modal" data-target="#dyghelp_modal"><span class="glyphicon glyphicon-question-sign"></span> Graph: How To</button>
+                                </div>
+                            </div>
+                            </div>
+
+                            <!-- This div is for error message -->
                             <div class='row'>
                                 <div class='col-md-5 col-md-offset-1'>
                                     {% if error %}
@@ -169,9 +186,11 @@
                         <div class='row'>
                             <form class="form-inline" id='dapmapform' method='POST' role='form' action="#">
                               <div class="form-group col-md-6 col-md-offset-2">
-                                <label for='setdefaults' class='control-label'>DAP Maps:</label>
+                                <label style="cursor:pointer" id='maphelp' for='setdefaults' class='control-label' data-toggle='modal' data-target='#maphelp_modal'><span class="glyphicon glyphicon-question-sign"></span> DAP Maps</label>
+                                {{maphelp_popup(release, latest_dr)}}
                                 <div class="input-group">
-                                    <select class="selectpicker show-tick" id='dapmapchoices' multiple data-selected-text-format="count" data-live-search="true" data-max-options="6" title='No Maps selected'>
+                                    <select class="selectpicker show-tick" id='dapmapchoices' multiple data-selected-text-format="count"
+                                    data-header='Select your map properties.' data-live-search="true" data-max-options="6" title='No Maps selected'>
                                         {% for dapmap in dapmaps %}
                                         {% if dapmap in dapmapselect %}
                                         <option selected >{{dapmap}}</option>
@@ -180,7 +199,7 @@
                                         {% endif %}
                                         {% endfor %}
                                     </select>
-                                    <select class="selectpicker show-tick" id='dapbtchoices'>
+                                    <select class="selectpicker show-tick" id='dapbtchoices' data-header='Select a bintype'>
                                         {% for bt in dapbintemps %}
                                             {% if bt == session.bintemp %}
                                             <option selected >{{bt}}</option>
@@ -197,6 +216,22 @@
                                       <div class='infopop' id='marvinmaps'>
                                       {{infopopup('Use maps in Python', 'Marvin Maps - start iPython', mapstr, 'marvinmaps', 'success', 'left')}}
                                       </div>
+                                </div>
+
+                                <!-- Map Quality Flags -->
+                                {# Map Quality Flags #}
+                                <div class='col-md-2 flagalert'>
+                                    {% set qualstatus = (mapquality|qaclass)[0] %}
+                                    {% set qualmsg = (mapquality|qaclass)[1] %}
+                                      <div class="panel panel-{{qualstatus}}" id='panel_qualityflag'>
+                                          <div class="panel-heading">
+                                              <h3 class="panel-title">Map Quality: {{qualmsg}}</h3>
+                                          </div>
+                                          <div class='panel-body'>
+                                            Bit: {{mapquality[1]}} <a tabindex='0' role="button" class='btn btn-{{qualstatus}} btn-xs flagpopover qualpopovers pull-right' id='mapqualitypopover' data-placement='left' data-trigger='hover' data-toggle="popover" title="Quality Flags">Flags</a>
+                                          </div>
+                                      </div>
+                                      {{panellist('Quality Flags', mapquality[2], 'dapquality')}}
                                 </div>
                             </form>
                         </div>
@@ -290,6 +325,9 @@
 
 </div> {# end of singlegalaxydiv #}
 
+<!-- Dygraph Modal popup-->
+{{dygraph_popup()}}
+
 {% endblock body %}
 
 <!-- JS Code -->
@@ -297,10 +335,29 @@
 <script type='application/javascript'>
     var galaxy = {};
     $(function() {
-        var toggleon = {{toggleon|tojson}};
-        m.galaxy = new Galaxy(undefined, toggleon);
+        let toggleon = {{toggleon|tojson}};
+        let nsadict = {{nsadict|tojson}};
+        let redshift = null;
+        if (nsadict != null) {
+          redshift = ('z' in nsadict) ? nsadict['z'] : null;
+        }
+        m.galaxy = new Galaxy(undefined, toggleon, redshift);
         m.galaxy.print();
         m.galaxy.hasNSA({{hasnsa|tojson}});
+
+        // if toggleon is set then initialize the mapspec view
+        if (toggleon === 'true') {
+          m.galaxy.togglediv.bootstrapToggle('toggle');
+        }
+
+        // disable the rest-frame toggle if no redshift
+        if (redshift === null) {
+          $('#toggleframe').bootstrapToggle('disable');
+          $('#togglelines').bootstrapToggle('disable');
+        }
+
+        // show or hide the image alert;
+        $('#staticimage').prop('height') <= 50 ? $('#noimagealert').show() : $('#noimagealert').hide();
     });
 </script>
 {% endblock code %}

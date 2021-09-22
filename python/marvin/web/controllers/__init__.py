@@ -10,13 +10,12 @@
 
 from __future__ import print_function, division, absolute_import
 from flask_classful import FlaskView
-from flask import request, current_app
-from marvin.web.web_utils import parseSession, update_allowed, updateGlobalSession, check_access
+from flask import request, current_app, session as current_session
+from marvin.web.web_utils import parseSession, update_allowed, updateGlobalSession
+from marvin.web.web_utils import check_access, check_request_for_release
 import marvin
-from brain.api.general import BrainGeneralRequestsView
 from brain.utils.general import build_routemap
 from marvin.api.base import arg_validate as av
-import json
 
 
 class BaseWebView(FlaskView):
@@ -33,11 +32,16 @@ class BaseWebView(FlaskView):
     def before_request(self, *args, **kwargs):
         ''' this runs before every single request '''
 
+        # check Flask request for release info but only when no session
+        if 'release' not in current_session:
+            check_request_for_release(request)
+
         # check login/access status and update global session
         check_access()
         updateGlobalSession()
 
         self.base['error'] = None
+        self._logged_in = current_session.get('loginready', False)
         self._versions = update_allowed()
         self._endpoint = request.endpoint
         self._drpver, self._dapver, self._release = parseSession()
@@ -69,3 +73,4 @@ class BaseWebView(FlaskView):
                 mydict[key] = '' if isinstance(val, str) else None
         mydict['versions'] = self._versions
         mydict['release'] = self._release
+        mydict['loggedin'] = self._logged_in

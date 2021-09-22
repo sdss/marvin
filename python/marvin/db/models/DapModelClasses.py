@@ -106,6 +106,7 @@ class File(Base):
                         )).\
                       label('dapqual')
 
+
 class CurrentDefault(Base):
     __tablename__ = 'current_default'
     __table_args__ = {'autoload': True, 'schema': 'mangadapdb'}
@@ -398,6 +399,17 @@ if 'testtable' in db.engine.table_names('mangadapdb'):
         def __repr__(self):
             return ('<TestTable pk={0}, file={1}>'.format(self.pk, self.file_pk))
 
+if 'cleanspaxeltest' in db.engine.table_names('mangadapdb'):
+    class CleanSpaxelTest(Base):
+        __tablename__ = 'cleanspaxeltest'
+        __table_args__ = {'autoload': True, 'schema': 'mangadapdb'}
+
+        pk = Column(Integer, primary_key=True)
+        file = relationship(File, backref="cleanspaxeltest")
+
+        def __repr__(self):
+            return ('<CleanSpaxelTest pk={0}, file={1}, val={2}>'.format(self.pk, self.file_pk, self.value))
+
 # -----
 # Buld Relationships
 # -----
@@ -454,6 +466,7 @@ except RuntimeError as error:
     print('DapModelClasses, Error during configure_mapper: {0}'.format(error))
 
 dap_cache = RelationshipCache(File.cube).\
+               and_(RelationshipCache(File.pipelineinfo)).\
                and_(RelationshipCache(File.filetype)).\
                and_(RelationshipCache(File.structure)).\
                and_(RelationshipCache(ModelCube.file)).\

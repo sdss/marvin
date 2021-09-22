@@ -56,14 +56,24 @@ MPL6_spectra = [
 ]
 
 RSS_extensions = [
-    RSS('xpos', 'XPOS', extension_wave='WAVE', unit=u.arcsec,
+    RSS('xpos', 'XPOS', extension_wave='WAVE', unit=u.arcsec, db_table='rssfiber',
         formats={'string': 'Fiber X-positions from the IFU center'},
         description='Array of fiber X-positions relative to the IFU center'),
-    RSS('ypos', 'YPOS', extension_wave='WAVE', unit=u.arcsec,
+    RSS('ypos', 'YPOS', extension_wave='WAVE', unit=u.arcsec, db_table='rssfiber',
         formats={'string': 'Fiber Y-positions from the IFU center'},
         description='Array of fiber Y-positions relative to the IFU center'),
 ]
 
+MPL10_datacubes = [
+    DataCube('dispersion', 'LSFPOST', 'WAVE', extension_ivar=None,
+             extension_mask='MASK', unit=u.Angstrom, db_column='disp',
+             scale=1, formats={'string': 'Dispersion'},
+             description='Broadened dispersion solution (1sigma LSF)'),
+    DataCube('dispersion_prepixel', 'LSFPRE', 'WAVE', extension_ivar=None,
+             extension_mask='MASK', unit=u.Angstrom, db_column='predisp',
+             scale=1, formats={'string': 'Dispersion pre-pixel'},
+             description='Broadened pre-pixel dispersion solution (1sigma LSF)')
+]
 
 MPL4 = DRPCubeDataModel('MPL-4', aliases=['MPL4', 'v1_5_1'],
                         datacubes=MPL4_datacubes,
@@ -107,8 +117,26 @@ DR16 = DRPCubeDataModel('DR16', aliases=['DR15', 'v2_4_3'],
                         bitmasks=get_maskbits('MPL-7'),
                         qual_flag='DRP3QUAL')
 
+MPL9 = DRPCubeDataModel('MPL-9', aliases=['MPL9', 'v2_7_1'],
+                        datacubes=MPL4_datacubes + MPL6_datacubes,
+                        spectra=MPL4_spectra + MPL6_spectra,
+                        bitmasks=get_maskbits('MPL-9'),
+                        qual_flag='DRP3QUAL')
+
+MPL10 = DRPCubeDataModel('MPL-10', aliases=['MPL10', 'v3_0_1'],
+                         datacubes=MPL4_datacubes + MPL10_datacubes,
+                         spectra=MPL4_spectra + MPL6_spectra,
+                         bitmasks=get_maskbits('MPL-10'),
+                         qual_flag='DRP3QUAL')
+
+MPL11 = DRPCubeDataModel('MPL-11', aliases=['MPL11', 'v3_1_1'],
+                         datacubes=MPL4_datacubes + MPL10_datacubes,
+                         spectra=MPL4_spectra + MPL6_spectra,
+                         bitmasks=get_maskbits('MPL-11'),
+                         qual_flag='DRP3QUAL')
+
 # The DRP Cube Datamodel
-datamodel = DRPCubeDataModelList([MPL4, MPL5, MPL6, MPL7, DR15, MPL8, DR16])
+datamodel = DRPCubeDataModelList([MPL4, MPL5, MPL6, MPL7, DR15, MPL8, DR16, MPL9, MPL10, MPL11])
 
 # Define the RSS Datamodel. Start by copying the Cube datamodel for convenience.
 datamodel_rss = datamodel.copy()
@@ -120,3 +148,5 @@ for release in datamodel_rss:
     flux = datamodel_rss[release].rss.flux
     flux.description = 'Row-stacked spectra from all exposures for the target'
     flux.unit = flux.unit * spaxel_unit / fiber_unit
+
+    locals()

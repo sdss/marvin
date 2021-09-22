@@ -959,8 +959,13 @@ see the error message below for details.
 
 
 data_cache = RelationshipCache(Cube.target).\
+               and_(RelationshipCache(Cube.pipelineInfo)).\
                and_(RelationshipCache(Cube.ifu)).\
                and_(RelationshipCache(Cube.spaxels)).\
                and_(RelationshipCache(Cube.wavelength)).\
+               and_(RelationshipCache(Cube.wcs)).\
+               and_(RelationshipCache(Cube.shape)).\
+               and_(RelationshipCache(Cube.obsinfo)).\
                and_(RelationshipCache(IFUDesign.fibers)).\
+               and_(RelationshipCache(PipelineInfo.version)).\
                and_(RelationshipCache(Cube.rssfibers))

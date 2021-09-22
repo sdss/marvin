@@ -81,3 +81,18 @@ MPL8 = QueryDataModel(release='MPL-8', groups=groups(),
 # DR16
 
 DR16 = QueryDataModel(release='DR16', groups=groups(), aliases=['DR15', 'v2_4_3', '2.2.0'], exclude=EX6, dapdm=datamodel['DR16'])
+
+# MPL-9
+
+MPL9 = QueryDataModel(release='MPL-9', groups=groups(),
+                      aliases=['MPL9', 'v2_7_1', '2.4.1'], exclude=EX6, dapdm=datamodel['MPL-9'])
+
+# MPL-10
+
+MPL10 = QueryDataModel(release='MPL-10', groups=groups(),
+                       aliases=['MPL10', 'v3_0_1', '3.0.1'], exclude=EX6, dapdm=datamodel['MPL-10'])
+
+# MPL-11
+
+MPL11 = QueryDataModel(release='MPL-11', groups=groups(),
+                       aliases=['MPL11', 'v3_1_1', '3.1.0'], exclude=EX6, dapdm=datamodel['MPL-11'])

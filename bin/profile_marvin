@@ -11,11 +11,8 @@ Navigate the site as usual.  All requests get profiled and output in the termina
 
 '''
 
-from flask import Flask
-from werkzeug.contrib.profiler import ProfilerMiddleware, MergeStream
+from werkzeug.middleware.profiler import ProfilerMiddleware
 from marvin.web import create_app
-import os
-import sys
 import argparse
 
 # --------------------------
@@ -30,20 +27,8 @@ args = parser.parse_args()
 
 app = create_app(debug=True)
 
-# Make file stream
-try:
-    saslogs = os.getenv('MARVIN_LOGS_DIR')
-except:
-    saslogs = None
-if saslogs:
-    logpath = os.path.join(saslogs, 'profile.log')
-    file = open(logpath, 'w')
-    stream = MergeStream(sys.stdout, file)
-else:
-    stream = None
-
 app.config['PROFILE'] = True
-app.wsgi_app = ProfilerMiddleware(app.wsgi_app, restrictions=[30], stream=stream)
+app.wsgi_app = ProfilerMiddleware(app.wsgi_app, restrictions=[30])
 app.run(debug=True, port=args.port)
 
 
