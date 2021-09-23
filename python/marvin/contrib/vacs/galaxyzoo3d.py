@@ -240,6 +240,7 @@ class GZ3DVAC(VACMixIn):
         self.stars_summary_file = self.get_path('mangagz3dstars', path_params=self.path_params)
 
     def get_target(self, parent_object):
+        '''Find the GZ3D data based on the manga ID'''
         mangaid = parent_object.mangaid
 
         if parent_object.__class__ == marvin.tools.cube.Cube:
@@ -352,6 +353,7 @@ class GZ3DTarget(object):
             A mask for spaxel not contained in any of the other spaxel masks
     '''
     def __init__(self, filename, cube, maps):
+        '''Set useful paramters and process the GZ3D masks'''
         # get the subject id from the filename
         self.subject_id = filename.split('/')[-1].split('_')[-1].split('.')[0]
         # read in the fits file
@@ -384,6 +386,7 @@ class GZ3DTarget(object):
         self.close()
 
     def _process_images(self):
+        '''Extract the data from the fits file and give it useful names'''
         # read in images
         self.image = self.hdulist[0].data
         self.center_mask = self.hdulist[1].data
@@ -392,6 +395,7 @@ class GZ3DTarget(object):
         self.bar_mask = self.hdulist[4].data
 
     def _process_clusters(self):
+        '''Format the cluster tables form the fits file as Astropy tables and count the number of rows'''
         # read in center clusters
         self.center_clusters = Table(self.hdulist[6].data)
         self.num_centers = len(self.center_clusters)
@@ -400,6 +404,7 @@ class GZ3DTarget(object):
         self.num_stars = len(self.star_clusters)
 
     def _process_clusters_classifications(self):
+        '''Format the Zooniverse point classifications as Astropy tables and count the number of unique non-blank classifications'''
         # read in center and star classifications
         self.center_star_classifications = Table(self.hdulist[8].data)
         self.num_center_star_classifications = len(self.center_star_classifications)
@@ -408,6 +413,7 @@ class GZ3DTarget(object):
         self.num_center_star_classifications_non_blank = non_blank(self.center_star_classifications, 'center_points_list', 'star_points_list')
 
     def _process_spiral_classifications(self):
+        '''Format the Zooniverse spiral arm classifications as Astropy tables and count the number of unique non-blank classifications'''
         # read in spiral classifications
         self.spiral_classifications = Table(self.hdulist[9].data)
         self.num_spiral_classifications = len(self.spiral_classifications)
@@ -415,6 +421,7 @@ class GZ3DTarget(object):
         self.num_spiral_classifications_non_blank = non_blank(self.spiral_classifications, 'spiral_paths_list')
 
     def _process_bar_classifications(self):
+        '''Format the Zooniverse bar classifications as Astropy tables and count the number of unique non-blank classifications'''
         # read in bar classifications
         self.bar_classifications = Table(self.hdulist[10].data)
         self.num_bar_classifications = len(self.bar_classifications)
@@ -455,6 +462,7 @@ class GZ3DTarget(object):
         return patches.RegularPolygon(c, 6, r, fill=False, orientation=np.deg2rad(30), edgecolor=edgecolor, linewidth=0.8)
 
     def _get_ellipse_list(self, table):
+        '''Convert table of x, y, var_x, var_y, var_x_y into matplotlib ellipse objects (one for each row)'''
         ellip_list = []
         for idx in range(len(table)):
             pos = np.array([table['x'][idx], table['y'][idx]])
@@ -471,6 +479,7 @@ class GZ3DTarget(object):
         return self._get_ellipse_list(self.star_clusters)
 
     def _get_spaxel_grid_xy(self, include_edges=False, grid_size=None):
+        '''Find the spaxel grid (in image coordinates) for the images in the fits file'''
         if grid_size is None:
             grid_size = self.cube.data['FLUX'].data.shape[1:]
         one_grid = 0.5 / 0.099
@@ -491,6 +500,7 @@ class GZ3DTarget(object):
         return [(v_line_x, v_line_y), (h_line_x, h_line_y)]
 
     def _get_spaxel_mask(self, mask, grid_size=None):
+        '''Resample GZ3D masks onto the spaxel grid using a Bivariate spline resampling'''
         # assumes a 0.5 arcsec grid centered on the ifu's ra and dec
         # use a Bivariate spline approximation to resample mask to the spaxel grid
         xx = np.arange(mask.shape[1])
@@ -504,6 +514,7 @@ class GZ3DTarget(object):
         return s_mask
 
     def _process_all_spaxel_masks(self, grid_size=None):
+        '''Process all GZ3D masks onto the MaNGA spaxel grid and give them useful names'''
         self.center_mask_spaxel = self._get_spaxel_mask(self.center_mask, grid_size=grid_size)
         self.star_mask_spaxel = self._get_spaxel_mask(self.star_mask, grid_size=grid_size)
         self.spiral_mask_spaxel = self._get_spaxel_mask(self.spiral_mask, grid_size=grid_size)
@@ -511,6 +522,7 @@ class GZ3DTarget(object):
         self.other_mask_spaxel = (self.spiral_mask_spaxel == 0) & (self.bar_mask_spaxel == 0) & (self.center_mask_spaxel == 0)
 
     def _stack_spectra(self, mask_name, inv=False):
+        '''Stack multiple spectra withing a spaxel mask following Westfall et al. 2019 for covariance correction factors'''
         mask = getattr(self, mask_name)
         if inv:
             mask = mask.max() - mask
@@ -603,6 +615,7 @@ class GZ3DTarget(object):
                 self.mean_not_center = self._stack_spectra('center_mask_spaxel', inv=True)
 
     def _get_bpt(self, snr_min=3, oi_sf=False):
+        '''Use the `bpt` module to grab the information needed to make BPT plots color coded by the GZ3D masks'''
         # Gets the necessary emission line maps
         oiii = bpt.get_masked(self.maps, 'oiii_5008', snr=bpt.get_snr(snr_min, 'oiii'))
         nii = bpt.get_masked(self.maps, 'nii_6585', snr=bpt.get_snr(snr_min, 'nii'))
@@ -623,6 +636,7 @@ class GZ3DTarget(object):
             self.sf_mask = sf_mask_nii & sf_mask_sii
 
     def bpt_in_mask(self, mask_name, bpt_name, factor=1.2):
+        '''A spaxel mask where there is valid BPT data'''
         self.get_distance()
         mask = getattr(self, mask_name)
         bpt_data = getattr(self, bpt_name)
@@ -635,6 +649,7 @@ class GZ3DTarget(object):
         return bpt_data[mdx][order], self.log_oiii_hb[mdx][order], self.dis[mdx][order] / dis_max
 
     def get_distance(self):
+        '''Find the radial distance between each spaxel and the center of the galaxy'''
         if self.dis is None:
             cdx = np.unravel_index(self.center_mask_spaxel.argmax(), self.center_mask_spaxel.shape)
             self.dis = np.zeros_like(self.center_mask_spaxel)
@@ -647,6 +662,7 @@ class GZ3DTarget(object):
         self.hdulist.close()
 
     def _set_up_axes(self, ax, color_grid=None):
+        '''Helper function to set RA and DEC ticks on plots'''
         ra = ax.coords['ra']
         dec = ax.coords['dec']
         # add axis labels
@@ -754,6 +770,7 @@ class GZ3DTarget(object):
         return gs
 
     def _plot_bpt_boundary(self, ax, bpt_kind):
+        '''Plot the BPT boundary lines'''
         if bpt_kind == 'log_nii_ha':
             xx_sf_nii = np.linspace(-1.281, 0.045, int(1e4))
             xx_comp_nii = np.linspace(-2, 0.4, int(1e4))
@@ -847,6 +864,7 @@ class GZ3DTarget(object):
         return ax
 
     def __str__(self):
+        '''A useful summary of the data in the GZ3D fits file'''
         return '\n'.join([
             'Subject info:',
             '    subject id: {0}'.format(self.subject_id),
