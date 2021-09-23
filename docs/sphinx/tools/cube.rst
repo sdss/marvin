@@ -30,7 +30,6 @@ However you can also initialize a `~marvin.tools.cube.Cube` without the keyword 
     cube = Cube('8485-1901')
     <Marvin Cube (plateifu='8485-1901', mode='local', data_origin='db')>
 
-
 .. _marvin-cube-basic:
 
 Basic Attributes

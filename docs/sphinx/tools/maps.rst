@@ -67,7 +67,6 @@ The default `Maps` bintype is `HYB10`, where the stellar continuum analysis of s
 
 Currently, the only template available is `GAU-MILESHC`, which is selected by default.
 
-
 .. _marvin-maps-basic:
 
 Basic Attributes
