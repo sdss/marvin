@@ -114,10 +114,10 @@ CREATE TABLE mangadatadb.obsinfo (pk serial PRIMARY KEY NOT NULL, cube_pk intege
 -- 	nsa_amivar_el_z double precision,nsa_extinction_F double precision,nsa_extinction_N double precision,nsa_extinction_u double precision,
 -- 	nsa_extinction_g double precision,nsa_extinction_r double precision,nsa_extinction_i double precision,nsa_extinction_z double precision);
 
-CREATE TABLE mangadatadb.wcs (pk serial PRIMARY KEY NOT NULL, cube_pk INTEGER, ctype3 TEXT, crpix3 INTEGER, crval3 numeric, cd3_3 numeric,
-	cunit3 TEXT, crpix1 numeric, crpix2 numeric, crval1 numeric, crval2 numeric, cd1_1 numeric, cd2_2 numeric, ctype1 TEXT, ctype2 TEXT,
-	cunit1 TEXT, cunit2 TEXT, hduclass TEXT, hduclas1 TEXT, hduclas2 TEXT, errdata TEXT, qualdata TEXT, extname TEXT, naxis1 integer,
-	naxis2 integer, naxis3 integer);
+CREATE TABLE mangadatadb.wcs (pk serial PRIMARY KEY NOT NULL, cube_pk INTEGER, ctype3 TEXT, crpix3 INTEGER, crval3 double precision, 
+    cd3_3 double precision, cunit3 TEXT, crpix1 integer, crpix2 integer, crval1 double precision, crval2 double precision, 
+    cd1_1 double precision, cd2_2 double precision, ctype1 TEXT, ctype2 TEXT, cunit1 TEXT, cunit2 TEXT, hduclass TEXT, hduclas1 TEXT, 
+    hduclas2 TEXT, errdata TEXT, qualdata TEXT, extname TEXT, naxis1 integer, naxis2 integer, naxis3 integer);
 
 CREATE TABLE mangadatadb.cube_shape (pk serial PRIMARY KEY NOT NULL, size INTEGER, total INTEGER, indices integer[][]);
 
