@@ -59,7 +59,9 @@ class FIREFLYVAC(VACMixIn):
             self.path_params.append({'ver': self.version[release], 'drpver': drpver, 'models':'mastar'})
 			
             self.summary_file = [self.get_path('mangaffly', path_params=self.path_params[i]) for i in [0,1]]
-			
+            
+            # specify a special data container for the general VAC tools
+            self.data_container = dict(zip(['miles', 'mastar'], self.summary_file))
         else:
             self.path_params.append({'ver': self.version[release], 'drpver': drpver})
 
