@@ -17,6 +17,10 @@ from marvin import log, config
 from .base import VACMixIn, VACTarget
 
 class CallableDict(dict):
+    """ Creates dictionary object with keys that can be called without using round brackets.
+    Enables to execute functions inside the dictionary object implicitly.
+    """
+    
     def __getitem__(self, key):
         val = super().__getitem__(key)
         if callable(val):
@@ -66,7 +70,7 @@ class FIREFLYVAC(VACMixIn):
             self.path_params.append({'ver': self.version[release], 'drpver': drpver})
 
             # get_path returns False if the files do not exist locally
-            self.summary_file.append(self.get_path('mangaffly', path_params=self.path_params))
+            self.summary_file = self.get_path('mangaffly', path_params=self.path_params[0])
 
     # Required method
     def get_target(self, parent_object):
@@ -76,7 +80,7 @@ class FIREFLYVAC(VACMixIn):
         plateifu = parent_object.plateifu
         imagesz = int(parent_object.header['NAXIS1'])
 
-        if len(self.summary_file)==1:   # for data releases <DR17
+        if not isinstance(self.summary_file,list)==1:   # for data releases <DR17
             # download the vac from the SAS if it does not already exist locally
             if not self.file_exists(self.summary_file):
                 log.info('Warning: This file is ~6 GB.  It may take awhile to download')
@@ -95,6 +99,9 @@ class FIREFLYVAC(VACMixIn):
         return ffly
     
     def prepare_container(self,plateifu,imagesz,n):
+        ''' Auxillary method for get_target(), used only for DR17.
+        VAC access is transfered to this method to assure that vacfile is only downloaded when key is selected.'''
+        
         if not self.file_exists(self.summary_file[n]):
             log.info('Warning: This file is ~6 GB.  It may take awhile to download')
             self.summary_file[n] = self.download_vac('mangaffly', path_params=self.path_params[n])
