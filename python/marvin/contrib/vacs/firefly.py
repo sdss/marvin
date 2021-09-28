@@ -80,7 +80,7 @@ class FIREFLYVAC(VACMixIn):
         plateifu = parent_object.plateifu
         imagesz = int(parent_object.header['NAXIS1'])
 
-        if not isinstance(self.summary_file,list)==1:   # for data releases <DR17
+        if not isinstance(self.summary_file,list):   # for data releases <DR17
             # download the vac from the SAS if it does not already exist locally
             if not self.file_exists(self.summary_file):
                 log.info('Warning: This file is ~6 GB.  It may take awhile to download')
