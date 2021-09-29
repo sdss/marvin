@@ -87,25 +87,25 @@ class FIREFLYVAC(VACMixIn):
                 self.summary_file = self.download_vac('mangaffly', path_params=self.path_params)
                 
             # create container for more complex return data.
-            ffly = FFlyTarget(plateifu, vacfile=self.summary_file,imagesz=imagesz)
+            ffly = FFlyTarget(plateifu, vacfile=self.summary_file,imagesz=imagesz,release=parent_object.release)
             return ffly
 
         # for DR17 return dictionary; vacfile is only downloaded when key is selected
         ffly = CallableDict({
-			"miles":lambda: self.prepare_container(plateifu, imagesz, 0),
-			"mastar":lambda: self.prepare_container(plateifu, imagesz, 1)
+			"miles":lambda: self.prepare_container(plateifu, imagesz, 0, parent_object.release),
+			"mastar":lambda: self.prepare_container(plateifu, imagesz, 1, parent_object.release)
             })
 
         return ffly
     
-    def prepare_container(self,plateifu,imagesz,n):
+    def prepare_container(self,plateifu,imagesz,n,release):
         ''' Auxillary method for get_target(), used only for DR17.
         VAC access is transfered to this method to assure that vacfile is only downloaded when key is selected.'''
         
         if not self.file_exists(self.summary_file[n]):
             log.info('Warning: This file is ~6 GB.  It may take awhile to download')
             self.summary_file[n] = self.download_vac('mangaffly', path_params=self.path_params[n])
-        container = FFlyTarget(plateifu, vacfile=self.summary_file[n], imagesz=imagesz)
+        container = FFlyTarget(plateifu, vacfile=self.summary_file[n], imagesz=imagesz,release=release)
         return container
 
 
@@ -134,12 +134,13 @@ class FFlyTarget(VACTarget):
             The target identifier
     '''
 
-    def __init__(self, targetid, vacfile, imagesz=None):
+    def __init__(self, targetid, vacfile, imagesz=None,release='DR17'):
         super(FFlyTarget, self).__init__(targetid, vacfile)
         self._image_sz = imagesz
         self._parameters = ['lw_age', 'mw_age', 'lw_z', 'mw_z']
         # select the index of the targetid from the main VAC extension
         self._idx = self._get_data(ext='GALAXY_INFO')['plateifu'] == targetid
+        self.release = release
         
 
     def stellar_pops(self, parameter=None):
@@ -262,6 +263,11 @@ class FFlyTarget(VACTarget):
 
         # create the 2d map
         maps = self._make_map(parameter=parameter)
+        
+        # Correcting a minor bug in the DR15/DR16 VAC file: all S/N values are shifted by -9999. Adding +9999 to correct.
+        # (maps elements with no data are set to -99 in the _make_map method) 
+        if (parameter=='signal_noise') and (self.release!='DR17'):
+            maps[maps!=-99]+=9999
 
         # only show the spaxels with non-empty values
         mask = (maps < -10) if not mask else mask
