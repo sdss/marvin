@@ -18,6 +18,7 @@ from marvin.tools.quantities.spectrum import Spectrum
 from marvin.utils.general.general import get_drpall_table
 from marvin.utils.plot.scatter import plot as scatplot
 from marvin.tools.vacs import VACs
+from marvin import log
 
 from .base import VACMixIn, VACTarget
 
@@ -146,7 +147,8 @@ class HIVAC(VACMixIn):
 
             program = choose_program(par1,par2)
 
-        print('Using data from program: ',program)
+        log.info('Using data from '.format(program))
+        #print('Using data from program: ',program)
             
         # get path to ancillary VAC file for target HI spectra
         self.update_path_params({'plateifu': plateifu})
