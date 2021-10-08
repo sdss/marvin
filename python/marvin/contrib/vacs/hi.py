@@ -17,10 +17,67 @@ import marvin.tools
 from marvin.tools.quantities.spectrum import Spectrum
 from marvin.utils.general.general import get_drpall_table
 from marvin.utils.plot.scatter import plot as scatplot
+from marvin.tools.vacs import VACs
+from marvin import log
 
 from .base import VACMixIn, VACTarget
 
+def choose_best_spectrum(par1, par2, conf_thresh=0.1):
+    '''choose optimal HI spectrum based on the following criteria:
+    (1) If both detected and unconfused, choose highest SNR
+    (2) If both detected and both confused, choose lower confusion prob.
+    (3) If both detected and one confused, choose non-confused
+    (4) If one non-confused detection and one non-detection, go with detection
+    (5) If one confused detetion and one non-detection, go with non-detection
+    (6) If niether detected, choose lowest rms
 
+    par1 and par2 are dictionaries with the following parameters:
+    program - gbt or alfalfa
+    snr - integrated SNR
+    rms - rms noise level
+    conf_prob - confusion probability
+
+    conf_thresh = maximum confusion probability below which we classify
+    the object as essentially unconfused. Default to 0.1 following
+    (Stark+21)
+
+    '''
+
+    programs = [par1['program'],par2['program']]
+    sel_high_snr = np.argmax([par1['snr'],par2['snr']])
+    sel_low_rms = np.argmin([par1['rms'],par2['rms']])
+    sel_low_conf = np.argmin([par1['conf_prob'],par2['conf_prob']])
+    
+
+     #both detected
+    if (par1['snr'] > 0) & (par2['snr'] > 0):
+        if (par1['conf_prob'] <= conf_thresh) & (par2['conf_prob'] <= conf_thresh):
+            pick = sel_high_snr
+        elif (par1['conf_prob'] <= conf_thresh) & (par2['conf_prob'] > conf_thresh):
+            pick = 0
+        elif (par1['conf_prob'] > conf_thresh) & (par2['conf_prob'] <= conf_thresh):
+             pick = 1
+        elif (par1['conf_prob'] > conf_thresh) & (par2['conf_prob'] > conf_thresh):
+            pick = sel_low_conf
+
+    #both nondetected
+    elif (par1['snr'] <= 0) & (par2['snr'] <= 0):
+        pick = sel_low_rms
+
+    #one detected
+    elif (par1['snr'] > 0) & (par2['snr'] <= 0):
+        if par1['conf_prob'] < conf_thresh:
+            pick=0
+        else:
+            pick=1
+    elif (par1['snr'] <= 0) & (par2['snr'] > 0):
+        if par2['conf_prob'] < conf_thresh:
+            pick=1
+        else:
+            pick=0
+
+    return programs[pick]
+            
 class HIVAC(VACMixIn):
     """Provides access to the MaNGA-HI VAC.
 
@@ -37,7 +94,9 @@ class HIVAC(VACMixIn):
     # Required parameters
     name = 'HI'
     description = 'Returns HI summary data and spectra'
-    version = {'MPL-7': 'v1_0_1', 'DR15': 'v1_0_1', 'DR16': 'v1_0_2'}
+    #version = {'MPL-7': 'v1_0_1', 'DR15': 'v1_0_1', 'DR16': 'v1_0_2', 'DR17': 'v2_0_1'}
+    version = {'MPL-7': 'v1_0_1', 'DR15': 'v1_0_1', 'DR16': 'v1_0_2', 'DR17': 'v2_0_1', 'MPL-11': 'v2_0_1'}
+
 
     # optional Marvin Tools to attach your vac to
     include = (marvin.tools.cube.Cube, marvin.tools.maps.Maps, marvin.tools.modelcube.ModelCube)
@@ -55,21 +114,91 @@ class HIVAC(VACMixIn):
         # get_path returns False if the files do not exist locally
         self.summary_file = self.get_path("mangahisum", path_params=self.path_params)
 
+    def set_program(self,plateifu):
+        print('does this work?')
+        # download the vac from the SAS if it does not already exist locally
+        if not self.file_exists(self.summary_file):
+            self.summary_file = self.download_vac('mangahisum', path_params=self.path_params)
+
+        #find all entries in summary file with this plate-ifu. I need the full summary file here. Find best entry between GBT/ALFALFA based on dept and confusion. Then update self.path_params['program'] with alfalfa or gbt.
+        
+        #summary = VACs.HI.get_table()
+        summary = VACs().HI.data[1].data
+        galinfo = summary[summary['plateifu'] == plateifu]
+        if len(galinfo) == 1:
+            if galinfo['session']=='ALFALFA':
+                program = 'alfalfa'
+            else:
+                program = 'gbt'
+        else:
+            par1={'program':'gbt','snr':0.,'rms':galinfo[0]['rms'],'conf_prob':galinfo[0]['conf_prob']}
+            par2={'program':'gbt','snr':0.,'rms':galinfo[1]['rms'],'conf_prob':galinfo[1]['conf_prob']}
+            if galinfo[0]['session']=='ALFALFA':
+                par1['program']='alfalfa'
+            if galinfo[1]['session']=='ALFALFA':
+                par2['program']='alfalfa'
+            if galinfo[0]['fhi'] > 0:
+                par1['snr'] = galinfo[0]['fhi']/galinfo[0]['efhi']
+            if galinfo[1]['fhi'] > 0:
+                par2['snr'] = galinfo[1]['fhi']/galinfo[1]['efhi']
+
+            program = choose_best_spectrum(par1,par2)
+
+        log.info('Using data from {0}'.format(program))
+        #print('Using data from program: ',program)
+            
+        # get path to ancillary VAC file for target HI spectra
+        self.update_path_params({'program':program})
+        
     # Required method
     def get_target(self, parent_object):
         ''' Accesses VAC data for a specific target from a Marvin Tool object '''
 
         # get any parameters you need from the parent object
         plateifu = parent_object.plateifu
-
-        # download the vac from the SAS if it does not already exist locally
-        if not self.file_exists(self.summary_file):
-            self.summary_file = self.download_vac('mangahisum', path_params=self.path_params)
-
-        # get path to ancillary VAC file for target HI spectra
         self.update_path_params({'plateifu': plateifu})
-        specfile = self.get_path('mangahispectra', path_params=self.path_params)
 
+        print(parent_object.release)
+        
+        if parent_object.release in ['DR17', 'MPL-11']:
+            print('is dr17')
+            self.set_program(plateifu)
+            # # download the vac from the SAS if it does not already exist locally
+            # if not self.file_exists(self.summary_file):
+            #     self.summary_file = self.download_vac('mangahisum', path_params=self.path_params)
+    
+            # #find all entries in summary file with this plate-ifu. I need the full summary file here. Find best entry between GBT/ALFALFA based on dept and confusion. Then update self.path_params['program'] with alfalfa or gbt.
+            
+            # #summary = VACs.HI.get_table()
+            # summary = VACs().HI.data[1].data
+            # galinfo = summary[summary['plateifu'] == plateifu]
+            # if len(galinfo) == 1:
+            #     if galinfo['session']=='ALFALFA':
+            #         program = 'alfalfa'
+            #     else:
+            #         program = 'gbt'
+            # else:
+            #     par1={'program':'gbt','snr':0.,'rms':galinfo[0]['rms'],'conf_prob':galinfo[0]['conf_prob']}
+            #     par2={'program':'gbt','snr':0.,'rms':galinfo[1]['rms'],'conf_prob':galinfo[1]['conf_prob']}
+            #     if galinfo[0]['session']=='ALFALFA':
+            #         par1['program']='alfalfa'
+            #     if galinfo[1]['session']=='ALFALFA':
+            #         par2['program']='alfalfa'
+            #     if galinfo[0]['fhi'] > 0:
+            #         par1['snr'] = galinfo[0]['fhi']/galinfo[0]['efhi']
+            #     if galinfo[1]['fhi'] > 0:
+            #         par2['snr'] = galinfo[1]['fhi']/galinfo[1]['efhi']
+    
+            #     program = choose_program(par1,par2)
+    
+            # log.info('Using data from '.format(program))
+            # #print('Using data from program: ',program)
+                
+            # # get path to ancillary VAC file for target HI spectra
+            # self.update_path_params({'program':program})
+        specfile = self.get_path('mangahispectra', path_params=self.path_params)
+        print(specfile)
+        
         # create container for more complex return data
         hidata = HITarget(plateifu, vacfile=self.summary_file, specfile=specfile)
 
@@ -114,13 +243,13 @@ class HITarget(VACTarget):
         if self._specfile:
             if not self._specdata:
                 self._specdata = self._get_data(self._specfile)
-
+                
             vel = self._specdata['VHI'][0]
             flux = self._specdata['FHI'][0]
             spec = Spectrum(flux, unit=u.Jy, wavelength=vel,
                             wavelength_unit=u.km / u.s)
             ax = spec.plot(
-                ylabel='HI\ Flux', xlabel='Velocity', title=self.targetid, ytrim='minmax'
+                ylabel='HI\ Flux\ Density', xlabel='Velocity', title=self.targetid, ytrim='minmax'
             )
             return ax
         return None
