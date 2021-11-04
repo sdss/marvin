@@ -1722,6 +1722,9 @@ CREATE INDEX CONCURRENTLY pipelineinfo_pk_idx ON mangadatadb.cube using BTREE(pi
 CREATE INDEX CONCURRENTLY ifudesign_pk_idx ON mangadatadb.cube using BTREE(ifudesign_pk);
 CREATE INDEX CONCURRENTLY manga_target_pk_idx ON mangadatadb.cube using BTREE(manga_target_pk);
 CREATE INDEX CONCURRENTLY cube_shape_pk_idx ON mangadatadb.cube using BTREE(cube_shape_pk);
+CREATE INDEX CONCURRENTLY ON mangadatadb.cube USING btree (pipeline_info_pk, pk);
+CREATE INDEX CONCURRENTLY ON mangadatadb.cube USING btree (pipeline_info_pk, manga_target_pk, pk);
+CREATE INDEX CONCURRENTLY ON mangadatadb.cube USING btree (pipeline_info_pk, ifudesign_pk, pk, manga_target_pk);
 CREATE INDEX CONCURRENTLY rssfib_cube_pk_idx ON mangadatadb.rssfiber using BTREE(cube_pk);
 CREATE INDEX CONCURRENTLY fibers_pk_idx ON mangadatadb.rssfiber using BTREE(fibers_pk);
 CREATE INDEX CONCURRENTLY spaxel_cube_pk_idx ON mangadatadb.spaxel using BTREE(cube_pk);
@@ -1733,6 +1736,9 @@ CREATE INDEX CONCURRENTLY obsinfo_cube_pk_idx ON mangadatadb.obsinfo using BTREE
 CREATE INDEX CONCURRENTLY fitshead_cube_pk_idx ON mangadatadb.fits_header_value using BTREE(cube_pk);
 CREATE INDEX CONCURRENTLY fits_header_keyword_pk_idx ON mangadatadb.fits_header_value using BTREE(fits_header_keyword_pk);
 CREATE INDEX CONCURRENTLY pipeline_version_pk_idx ON mangadatadb.pipeline_info using BTREE(pipeline_version_pk);
+CREATE INDEX CONCURRENTLY ON mangasampledb.manga_target_to_nsa USING btree (manga_target_pk, nsa_pk);
+CREATE INDEX CONCURRENTLY ON mangadatadb.pipeline_version USING btree (version, pk);
+CREATE INDEX CONCURRENTLY ON mangadatadb.pipeline_info USING btree (pk, pipeline_version_pk);
 
 /* Functions related to MaNGA Data DB */
 SET search_path TO functions;

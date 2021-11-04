@@ -244,6 +244,7 @@ ALTER TABLE ONLY mangadapdb.spaxelprop11
     ON UPDATE CASCADE ON DELETE CASCADE;
 
 CREATE INDEX CONCURRENTLY cube_pk_idx ON mangadapdb.file using BTREE(cube_pk);
+CREATE INDEX CONCURRENTLY ON mangadapdb.file USING btree (pipeline_info_pk, cube_pk, pk);
 CREATE INDEX CONCURRENTLY pipeline_info_pk_idx ON mangadapdb.file using BTREE(pipeline_info_pk);
 CREATE INDEX CONCURRENTLY extname_pk_idx ON mangadapdb.hdu using BTREE(extname_pk);
 CREATE INDEX CONCURRENTLY exttype_pk_idx ON mangadapdb.hdu using BTREE(exttype_pk);
@@ -252,6 +253,9 @@ CREATE INDEX CONCURRENTLY hdu_pk_idx ON mangadapdb.hdu_to_header_value using BTR
 CREATE INDEX CONCURRENTLY header_value_pk_idx ON mangadapdb.hdu_to_header_value using BTREE(header_value_pk);
 CREATE INDEX CONCURRENTLY header_keyword_pk_idx ON mangadapdb.header_value using BTREE(header_keyword_pk);
 CREATE INDEX CONCURRENTLY id_idx ON mangadapdb.binid using BTREE(id);
+CREATE INDEX CONCURRENTLY ON mangadapdb.structure USING btree (pk, bintype_pk, template_kin_pk);
+CREATE INDEX CONCURRENTLY ON mangadapdb.file USING btree (pipeline_info_pk, cube_pk, pk, structure_pk);
+CREATE INDEX CONCURRENTLY ON mangadapdb.file USING btree (pk, pipeline_info_pk);
 
 CREATE INDEX CONCURRENTLY binid_idx ON mangadapdb.spaxelprop using BTREE(binid);
 CREATE INDEX CONCURRENTLY file_pk_idx ON mangadapdb.spaxelprop using BTREE(file_pk);
