@@ -106,16 +106,16 @@ def alpha_overlay(C_a, a_a, C_b, a_b=None):
         C_a (numpy.array):
             1x3 RGB array for the base color to be overlayed
         a_a (numpy.array):
-            nxm array of alpha values for each postion on an image
+            NxM array of alpha values for each postion on an image
         C_b (numpy.array):
-            1x3 RGB array for the background color or nxmx3 RGB array
+            1x3 RGB array for the background color or NxMx3 RGB array
             for a background image
         a_b (numpy.array):
-            nxm array of alpha values for the background color/image
+            NxM array of alpha values for the background color/image
 
     Returns:
         c_out (numpy.array):
-            nxmx3 RGB array containing the alpha overlayed image.
+            NxMx3 RGB array containing the alpha overlayed image.
     '''
     if a_b is None:
         a_b = np.ones(a_a.shape)
@@ -168,8 +168,25 @@ def alpha_maps(maps, colors=None, vmin=0, vmax=15, background_image=None):
 
 
 def make_alpha_bar(color, vmin=-1, vmax=15):
-    '''make a matplotlib color bar for a alpha mask of a single color
-    vmin of -1 to make lables line up correctly
+    '''Make a matplotlib color bar for a alpha mask of a single color
+
+    Parameters:
+        color (string):
+            A matplotlib color (any format matplotlib accepts)
+
+    Keywords:
+        vmin (int):
+            The minimum value for the colorbar. Default value is -1
+            to ensure the labels show up correctly when used with
+            plot_alpha_bar.
+        vmax (int):
+            The maximum value for the colorbar. Default value is 15.
+
+    Returns:
+        colormap (mpl.colors.ListedColormap):
+            The colormap for the colorbar
+        norm (mpl.colors.Normalize):
+            The normalization for the color bar
     '''
     norm = mpl.colors.Normalize(vmin=vmin, vmax=vmax, clip=True)
     a_a = norm(range(vmin, vmax))
@@ -179,13 +196,50 @@ def make_alpha_bar(color, vmin=-1, vmax=15):
 
 
 def make_alpha_color(count, color, vmin=1, vmax=15):
-    '''get the alpha-color for a given value'''
+    '''Give a matplotlib color and alpha channel proportional to
+    the input count value.
+
+    Parameters:
+        count (int):
+            The count value used to select an alpha value
+        color (string):
+            A matplotlib color (any format matplotlib accepts)
+
+    Keywords:
+        vmin (int):
+            The count value to be associated with transparent.
+            Default is 1.
+        vmax (int):
+            The count value to be associated with opaque. Default
+            is 15.
+
+    Returns:
+        alpha_color (tuple):
+            An rgba tuple for the new alpha color
+    '''
     norm = mpl.colors.Normalize(vmin=vmin, vmax=vmax, clip=True)
     return mpl.colors.to_rgb(color) + (norm(count), )
 
 
 def plot_alpha_bar(color, grid, ticks=[]):
-    '''plot the alpha color bar'''
+    '''Display and alpha colorbar on a plot grid.
+
+    Parameters:
+        color (string):
+            A matplotlib color (any format matplotlib accepts)
+        grid (matplotlib.gridspec.SubplotSpec):
+            A gridspec subplot specification to place the color bar in
+
+    Keywords:
+        ticks (list):
+            A list of tick value for the colorbar
+
+    Returns:
+        ax_bar (matplotlib.axes.Axes):
+            Matplotlib axis object for the colorbar
+        colorbar (mpl.colorbar.ColorbarBase):
+            Matplotlib colorbar object
+    '''
     bar, norm = make_alpha_bar(color)
     ax_bar = plt.subplot(grid)
     cb = mpl.colorbar.ColorbarBase(ax_bar, cmap=bar, norm=norm, orientation='vertical', ticks=ticks)
@@ -194,7 +248,42 @@ def plot_alpha_bar(color, grid, ticks=[]):
 
 
 def plot_alpha_scatter(x, y, mask, color, ax, snr=None, sf_mask=None, value=True, **kwargs):
-    '''Make a scatter plot where each x-y point has and alpha transparency set by the mask array'''
+    '''Make a scatter plot where each x-y point has and alpha transparency
+    set by the values in a count mask array.
+
+    Parmeters:
+        x (numpy.array):
+            1-D numpy array with x-values to be plotted
+        y (numpy.array or spectral line object from a Marvin Maps cube):
+            1-D numpy array with y-values to be plotted
+        mask (numpy.array):
+            1-D numpy array with mask array containing the "count" value for each
+            (x,y) data point
+        color (string):
+            A matplotlib color (any format matplotlib accepts) used for the
+            base color of the data points
+        ax (matplotlib.axes.Axes):
+            The maplotlib axes to use for the plot
+
+    Keywords:
+        snr (float):
+            Minimum signal to noise ratio to use as a cutoff for the y-values.
+            Defaults to `None`. Only used if `value=True`
+        sf_mask (numpy.array):
+            1-D numpy array with A star formation region mask that is 1 when there
+            is star formation in a spaxel and 0 otherwise. If passed in only spxels
+            where this mask is 1 will be plotted.
+        value (bool):
+            If True y is a spectral line object from a Marvin Maps cube, otherwise
+            y is assumed to be regular np.array object.
+        **kwargs:
+            All other keywords are passed forward to matplotlib's scatter plot
+            function.
+
+    Returns:
+        scatter (matplotlib.collections.PathCollection):
+            A maplotlib scatter plot object
+    '''
     idx = mask > 0
     if value:
         idx = idx & (y.value > 0)
@@ -216,7 +305,7 @@ def plot_alpha_scatter(x, y, mask, color, ax, snr=None, sf_mask=None, value=True
 class GZ3DVAC(VACMixIn):
     '''Provides access to the Galaxy Zoo 3D spaxel masks.
 
-    VAC name: <look this up>
+    VAC name: Galaxy Zoo 3D spaxel masks
 
     URL: <look this up>
 
