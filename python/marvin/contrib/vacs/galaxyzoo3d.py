@@ -769,6 +769,27 @@ class GZ3DTarget(object):
             ax.coords.grid(color=color_grid, alpha=0.5, linestyle='solid', lw=1.5)
 
     def plot_image(self, ax=None, color_grid=None, correct_hex=True, hex_color='C7'):
+        '''Plot original GZ3D image that was shown to volunteers.
+
+        Keywords:
+            ax (matplotlib.axes.Axes):
+                Matplotlib axis object. This axis must have a WCS projection set e.g.
+                `ax = fig.add_subplot(111, projection=data.wcs)`. If not provided a new
+                figure and axis will be created with the correct projection.
+            color_grid (string):
+                A matplotlib color to use for the RA-DEC grid lines. Default `None`.
+            correct_hex (bool):
+                If set to true the correct MaNGA hexagon will be plotted on top of the
+                galaxy cutout (the hexagon in the image shown to the volunteers was slightly
+                too small due to a bug when producing the original images for the project).
+            hex_color (string):
+                A matplotlib color to use for the correct MaNGA hexagon if `correct_hex` is
+                True.  Default is `'C7'`.
+
+        Returns:
+            ax (matplotlib.axes.Axes):
+                The matplotlib axis object for the resulting plot.
+        '''
         if (ax is None):
             fig = plt.figure()
             ax = fig.add_subplot(111, projection=self.wcs)
@@ -791,6 +812,30 @@ class GZ3DTarget(object):
         subplot_spec=None,
         spaxel_masks=False
     ):
+        '''Plot GZ3D masks
+
+        Keywords:
+            colors (list):
+                A list of matplotlib colors to use for each of the masks. The order of the list is:
+                [Bar, Spiral, Forground Stars, Galaxy Center(s)]. Default value is
+                `['C1', 'C0', 'C4', 'C2']`.
+            color_grid (string):
+                A matplotlib color to use for the RA-DEC grid lines. Default `None`.
+            hex (bool):
+                If `True` plot the MaNGA hexagon. Default value is `True`.
+            hex_color (string):
+                A matplotlib color to use for the correct MaNGA hexagon if `correct_hex` is
+                True.  Default is `'C7'`.
+            show_image (bool):
+                If `True` plot the original galaxy image behind the masks. Default is `False`.
+            subplot_spec (matplotlib.gridspec.SubplotSpec):
+                A gridspec subplot specification for this plot. If `None` is provided a new
+                figure will be created.
+            spaxel_masks (bool):
+                If `True` use the masks projected on to the MaNGA spaxel grid, other wise
+                plot them on the pixel grid of the GZ3D image shown to the volunteers. Default
+                value is `False`.
+        '''
         if subplot_spec is None:
             fig = plt.figure()
             # image axis
@@ -890,7 +935,33 @@ class GZ3DTarget(object):
         else:
             raise AttributeError('bpt_kind must be one of "log_nii_ha", "log_sii_ha", or "log_oi_ha", {0} was given'.format(bpt_kind))
 
-    def plot_bpt(self, ax=None, colors=['C1', 'C0', 'C4', 'C2'], bpt_kind='log_nii_ha', **kwargs):
+    def plot_bpt(
+        self,
+        ax=None,
+        colors=['C1', 'C0', 'C4', 'C2'],
+        bpt_kind='log_nii_ha',
+        **kwargs
+    ):
+        '''Plot a BPT diagram for a galaxy that colors the data points based on the GZ3D masks
+
+        Keywords:
+            ax (matplotlib.axes.Axes):
+                The matplotlib axis object to use for the plot. If `None` is provided a new
+                figure and axis is created for the plot.
+            colors (list):
+                A list of matplotlib colors to use for each of the masks. The order of the list is:
+                [Bar, Spiral, Forground Stars, Galaxy Center(s)]. Default value is
+                `['C1', 'C0', 'C4', 'C2']`.
+            bpt_kind (string):
+                The kind of BPT plot to make. This can be one of three values `'log_nii_ha'` (default),
+                `'log_sii_ha'`, or `'log_oi_ha'`.
+            kwargs:
+                All other keywords are pass forward to matplotlib's scatter plot function.
+
+        Returns:
+            ax (matplotlib.axes.Axes):
+                The matplotlib axis object for the resulting plot.
+        '''
         if bpt_kind not in ["log_nii_ha", "log_sii_ha", "log_oi_ha"]:
             raise AttributeError('bpt_kind must be one of "log_nii_ha", "log_sii_ha", or "log_oi_ha", {0} was given'.format(bpt_kind))
         y = self.log_oiii_hb
@@ -909,7 +980,42 @@ class GZ3DTarget(object):
         self._plot_bpt_boundary(ax, bpt_kind)
         return ax
 
-    def polar_plot(self, x_unit='theta', ax=None, colors=['C1', 'C0', 'C4', 'C2'], key='specindex_dn4000', ylabel=r'D_{n}4000', snr=3, sf_only=False, **kwargs):
+    def polar_plot(
+        self,
+        x_unit='theta',
+        ax=None,
+        colors=['C1', 'C0', 'C4', 'C2'],
+        key='specindex_dn4000',
+        ylabel=r'D_{n}4000',
+        snr=3,
+        sf_only=False,
+        **kwargs
+    ):
+        '''Make a plot of a MaNGA Map value vs. R or theta with the points color coded by
+        what GZ3D mask they belong to.
+
+        x_unit (string):
+            What x-value to plot against. Either `'theta'` (default) or `'radius'`.
+        ax (matplotlib.axes.Axes):
+                The matplotlib axis object to use for the plot. If `None` is provided a new
+                figure and axis is created for the plot.
+        colors (list):
+            A list of matplotlib colors to use for each of the masks. The order of the list is:
+            [Bar, Spiral, Forground Stars, Galaxy Center(s)]. Default value is
+            `['C1', 'C0', 'C4', 'C2']`.
+        key (string):
+            Name of the MaNGA Map attribute to plot. The default value is `'specindex_dn4000'`.
+        snr (float):
+            The minimum signal to noise cutoff to use for the plot. The default value is `3`.
+        sf_only (bool):
+            If `True` only plot spaxes that are star forming. The default value is `False`.
+        kwargs:
+            All other keywords are pass forward to matplotlib's scatter plot function.
+
+        Returns:
+            ax (matplotlib.axes.Axes):
+                The matplotlib axis object for the resulting plot.
+        '''
         title = []
         s = kwargs.pop('s', 8)
         if ax is None:
