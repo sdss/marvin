@@ -305,11 +305,15 @@ def plot_alpha_scatter(x, y, mask, color, ax, snr=None, sf_mask=None, value=True
 class GZ3DVAC(VACMixIn):
     '''Provides access to the Galaxy Zoo 3D spaxel masks.
 
-    VAC name: Galaxy Zoo 3D spaxel masks
+    VAC name: Galaxy Zoo: 3D
 
     URL: <look this up>
 
-    Description: <look this up>
+    Description: Galaxy Zoo: 3D (GZ: 3D) made use of a project on the Zooniverse platform to
+        crowdsource spaxel masks locating galaxy centers, foreground stars, bars and spirals
+        in the SDSS images of MaNGA target galaxies. These masks (available for use within Marvin)
+        can be used to pick out spectra, or map quantities associated with the different
+        structures. See Masters et al. 2021 for more information, advice on useage and examples.
 
     Authors: Coleman Krawczyk, Karen Masters and the rest of the Galaxy Zoo 3D Team.
     '''
@@ -723,19 +727,6 @@ class GZ3DTarget(object):
             self.sf_mask = sf_mask_nii & sf_mask_sii & sf_mask_oi
         else:
             self.sf_mask = sf_mask_nii & sf_mask_sii
-
-    def bpt_in_mask(self, mask_name, bpt_name, factor=1.2):
-        '''A spaxel mask where there is valid BPT data'''
-        self.get_distance()
-        mask = getattr(self, mask_name)
-        bpt_data = getattr(self, bpt_name)
-        outside = self.log_oiii_hb.mask | bpt_data.mask
-        mdx = np.where((mask > 0) & (~outside))
-        order = np.argsort(self.dis[mdx])
-        dis_max = 1
-        if (~outside).sum() > 0:
-            dis_max = self.dis[~outside].max() * factor
-        return bpt_data[mdx][order], self.log_oiii_hb[mdx][order], self.dis[mdx][order] / dis_max
 
     def get_distance(self):
         '''Find the radial distance between each spaxel and the center of the galaxy'''
