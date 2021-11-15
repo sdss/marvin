@@ -449,21 +449,8 @@ class GZ3DTarget(object):
         '''Set useful paramters and process the GZ3D masks'''
         # get the subject id from the filename
         self.subject_id = filename.split('/')[-1].split('_')[-1].split('.')[0]
-        # read in the fits file
-        self.hdulist = fits.open(filename)
-        # grab the wcs
-        self.wcs = WCS(self.hdulist[1].header)
-        self._process_images()
-        # read in metadata
-        self.metadata = Table(self.hdulist[5].data)
-        self.ifu_size = int(self.metadata['IFUDESIGNSIZE'][0])
-        self._process_clusters()
-        self._process_clusters_classifications()
-        self._process_spiral_classifications()
-        self._process_bar_classifications()
         self.cube = cube
         self.maps = maps
-        self._process_all_spaxel_masks()
         self.mean_bar = None
         self.mean_spiral = None
         self.mean_center = None
@@ -474,9 +461,23 @@ class GZ3DTarget(object):
         self.log_nii_ha = None
         self.log_sii_ha = None
         self.log_oi_ha = None
-        self._get_bpt()
         self.dis = None
-        self.close()
+        # read in the fits file
+
+        with fits.open(filename) as hdulist:
+            self.hdulist = hdulist
+            # grab the wcs
+            self.wcs = WCS(self.hdulist[1].header)
+            self._process_images()
+            # read in metadata
+            self.metadata = Table(self.hdulist[5].data)
+            self.ifu_size = int(self.metadata['IFUDESIGNSIZE'][0])
+            self._process_clusters()
+            self._process_clusters_classifications()
+            self._process_spiral_classifications()
+            self._process_bar_classifications()
+            self._process_all_spaxel_masks()
+            self._get_bpt()
 
     def _process_images(self):
         '''Extract the data from the fits file and give it useful names'''
@@ -736,10 +737,6 @@ class GZ3DTarget(object):
             for yy in range(self.dis.shape[0]):
                 for xx in range(self.dis.shape[1]):
                     self.dis[yy, xx] = np.linalg.norm([yy - cdx[0], xx - cdx[1]])
-
-    def close(self):
-        '''Close the fits file'''
-        self.hdulist.close()
 
     def _set_up_axes(self, ax, color_grid=None):
         '''Helper function to set RA and DEC ticks on plots'''
