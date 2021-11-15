@@ -1005,6 +1005,9 @@ class GZ3DTarget(object):
             `['C1', 'C0', 'C4', 'C2']`.
         key (string):
             Name of the MaNGA Map attribute to plot. The default value is `'specindex_dn4000'`.
+        ylabel (string):
+            The `ylabel` to use for the plot (units will automatically be added to the label
+            based on the map being used).
         snr (float):
             The minimum signal to noise cutoff to use for the plot. The default value is `3`.
         sf_only (bool):
