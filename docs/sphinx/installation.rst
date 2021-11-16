@@ -211,6 +211,17 @@ Install and Runtime Issues
     or have questions that should be addressed here, please
     `submit an issue <https://github.com/sdss/marvin/issues/new>`_.
 
+Uwsgi package installation failure
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+For Python versions 3.8 and above, the ``uwsgi`` package fails to compile during standard `pip` 
+installation.  Alternatively, before installing Marvin, you can install the ``uwsgi`` package using
+conda with::
+
+  conda install -c conda-forge uwsgi
+
+Afterwards installaton, marvin should install successfully.
+
 Pip Failure with Python-Memcache
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
