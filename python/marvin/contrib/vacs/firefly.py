@@ -43,7 +43,7 @@ class FIREFLYVAC(VACMixIn):
     # Required parameters
     name = 'firefly'
     description = 'Returns stellar population parameters fitted by FIREFLY'
-    version = {'DR15': 'v1_1_2', 'DR16': 'v1_1_2','DR17':'v3_1_1'}
+    version = {'DR15': 'v1_1_2', 'DR16': 'v1_1_2','DR17':'v3_1_1', 'MPL-11': 'v3_1_1'}
 
     # optional Marvin Tools to attach your vac to
     include = (marvin.tools.cube.Cube, marvin.tools.maps.Maps, marvin.tools.modelcube.ModelCube)
@@ -57,7 +57,7 @@ class FIREFLYVAC(VACMixIn):
         drpver, dapver = config.lookUpVersions(release)
 		
         self.path_params = []
-        if release=='DR17':
+        if release in ['DR17', 'MPL-11']:
             
             self.path_params.append({'ver': self.version[release], 'drpver': drpver, 'models':'miles'})
             self.path_params.append({'ver': self.version[release], 'drpver': drpver, 'models':'mastar'})

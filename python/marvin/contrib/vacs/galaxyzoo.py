@@ -68,6 +68,7 @@ class GZVAC(VACMixIn):
                 
                 # get_path returns False if the files do not exist locally
                 self.summary_file.append(self.get_path("mangagalaxyzoo", path_params=params))
+            self.data_container = dict(zip(files, self.summary_file))
         else: 
             # for other releases prior to DR17, simply do based on release as before
             self.path_params.append({"ver": self.version[release]})

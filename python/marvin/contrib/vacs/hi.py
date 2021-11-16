@@ -17,7 +17,6 @@ import marvin.tools
 from marvin.tools.quantities.spectrum import Spectrum
 from marvin.utils.general.general import get_drpall_table
 from marvin.utils.plot.scatter import plot as scatplot
-from marvin.tools.vacs import VACs
 from marvin import log
 
 from .base import VACMixIn, VACTarget
@@ -94,7 +93,6 @@ class HIVAC(VACMixIn):
     # Required parameters
     name = 'HI'
     description = 'Returns HI summary data and spectra'
-    #version = {'MPL-7': 'v1_0_1', 'DR15': 'v1_0_1', 'DR16': 'v1_0_2', 'DR17': 'v2_0_1'}
     version = {'MPL-7': 'v1_0_1', 'DR15': 'v1_0_1', 'DR16': 'v1_0_2', 'DR17': 'v2_0_1', 'MPL-11': 'v2_0_1'}
 
 
@@ -115,28 +113,29 @@ class HIVAC(VACMixIn):
         self.summary_file = self.get_path("mangahisum", path_params=self.path_params)
 
     def set_program(self,plateifu):
-        print('does this work?')
         # download the vac from the SAS if it does not already exist locally
         if not self.file_exists(self.summary_file):
             self.summary_file = self.download_vac('mangahisum', path_params=self.path_params)
 
-        #find all entries in summary file with this plate-ifu. I need the full summary file here. Find best entry between GBT/ALFALFA based on dept and confusion. Then update self.path_params['program'] with alfalfa or gbt.
+        # Find all entries in summary file with this plate-ifu. 
+        # Need the full summary file data. 
+        # Find best entry between GBT/ALFALFA based on dept and confusion. 
+        # Then update self.path_params['program'] with alfalfa or gbt.
         
-        #summary = VACs.HI.get_table()
-        summary = VACs().HI.data[1].data
+        summary = HITarget(plateifu, vacfile=self.summary_file)._data
         galinfo = summary[summary['plateifu'] == plateifu]
-        if len(galinfo) == 1:
-            if galinfo['session']=='ALFALFA':
-                program = 'alfalfa'
-            else:
-                program = 'gbt'
+        if len(galinfo) == 1 and galinfo['session']=='ALFALFA':
+            program = 'alfalfa'
+        elif len(galinfo) in [0, 1]:
+            # if no entry found or session is GBT, default program to gbt
+            program = 'gbt'
         else:
-            par1={'program':'gbt','snr':0.,'rms':galinfo[0]['rms'],'conf_prob':galinfo[0]['conf_prob']}
-            par2={'program':'gbt','snr':0.,'rms':galinfo[1]['rms'],'conf_prob':galinfo[1]['conf_prob']}
+            par1 = {'program': 'gbt','snr': 0.,'rms': galinfo[0]['rms'], 'conf_prob': galinfo[0]['conf_prob']}
+            par2 = {'program': 'gbt','snr': 0.,'rms': galinfo[1]['rms'], 'conf_prob': galinfo[1]['conf_prob']}
             if galinfo[0]['session']=='ALFALFA':
-                par1['program']='alfalfa'
+                par1['program'] = 'alfalfa'
             if galinfo[1]['session']=='ALFALFA':
-                par2['program']='alfalfa'
+                par2['program'] = 'alfalfa'
             if galinfo[0]['fhi'] > 0:
                 par1['snr'] = galinfo[0]['fhi']/galinfo[0]['efhi']
             if galinfo[1]['fhi'] > 0:
@@ -144,8 +143,7 @@ class HIVAC(VACMixIn):
 
             program = choose_best_spectrum(par1,par2)
 
-        log.info('Using data from {0}'.format(program))
-        #print('Using data from program: ',program)
+        log.info('Using HI data from {0}'.format(program))
             
         # get path to ancillary VAC file for target HI spectra
         self.update_path_params({'program':program})
@@ -158,46 +156,11 @@ class HIVAC(VACMixIn):
         plateifu = parent_object.plateifu
         self.update_path_params({'plateifu': plateifu})
 
-        print(parent_object.release)
         
         if parent_object.release in ['DR17', 'MPL-11']:
-            print('is dr17')
             self.set_program(plateifu)
-            # # download the vac from the SAS if it does not already exist locally
-            # if not self.file_exists(self.summary_file):
-            #     self.summary_file = self.download_vac('mangahisum', path_params=self.path_params)
-    
-            # #find all entries in summary file with this plate-ifu. I need the full summary file here. Find best entry between GBT/ALFALFA based on dept and confusion. Then update self.path_params['program'] with alfalfa or gbt.
-            
-            # #summary = VACs.HI.get_table()
-            # summary = VACs().HI.data[1].data
-            # galinfo = summary[summary['plateifu'] == plateifu]
-            # if len(galinfo) == 1:
-            #     if galinfo['session']=='ALFALFA':
-            #         program = 'alfalfa'
-            #     else:
-            #         program = 'gbt'
-            # else:
-            #     par1={'program':'gbt','snr':0.,'rms':galinfo[0]['rms'],'conf_prob':galinfo[0]['conf_prob']}
-            #     par2={'program':'gbt','snr':0.,'rms':galinfo[1]['rms'],'conf_prob':galinfo[1]['conf_prob']}
-            #     if galinfo[0]['session']=='ALFALFA':
-            #         par1['program']='alfalfa'
-            #     if galinfo[1]['session']=='ALFALFA':
-            #         par2['program']='alfalfa'
-            #     if galinfo[0]['fhi'] > 0:
-            #         par1['snr'] = galinfo[0]['fhi']/galinfo[0]['efhi']
-            #     if galinfo[1]['fhi'] > 0:
-            #         par2['snr'] = galinfo[1]['fhi']/galinfo[1]['efhi']
-    
-            #     program = choose_program(par1,par2)
-    
-            # log.info('Using data from '.format(program))
-            # #print('Using data from program: ',program)
-                
-            # # get path to ancillary VAC file for target HI spectra
-            # self.update_path_params({'program':program})
+
         specfile = self.get_path('mangahispectra', path_params=self.path_params)
-        print(specfile)
         
         # create container for more complex return data
         hidata = HITarget(plateifu, vacfile=self.summary_file, specfile=specfile)

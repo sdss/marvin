@@ -84,8 +84,9 @@ class VACs(VACContainer):
         if hasattr(cls, '_vacs'):
             for vac in cls._vacs:
                 # close the HDU file resource
-                if getattr(cls, vac)._data:
-                    getattr(cls, vac)._data.close()
+                vv = getattr(cls, vac)
+                if hasattr(vv, '_data') and getattr(vv, '_data') is not None:
+                    vv._data.close()
                 # delete the attribute
                 delattr(cls, vac)
 
@@ -111,14 +112,14 @@ class VACs(VACContainer):
                 continue
 
             # create the VAC data class
-            if type(sv.summary_file) is list:
+            if isinstance(sv.summary_file, list):
                 # return a list of data classes if multiple summary files are provided
                 if sv.data_container and type(sv.data_container) is dict:
                     # use any data container if provided
                     vacdc = {k: VACDataClass(subvac.name, subvac.description, v) for k, v in sv.data_container.items()}
                 else:
                     vacdc = [VACDataClass(subvac.name, subvac.description, s) for s in sv.summary_file]
-            elif type(sv.summary_file) is str:
+            elif isinstance(sv.summary_file, str):
                 vacdc = VACDataClass(subvac.name, subvac.description, sv.summary_file)
 
             # add any custom methods to the VAC
