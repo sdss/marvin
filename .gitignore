@@ -1,3 +1,4 @@
+__pycache__
 /__pycache__
 bin/__pycache__
 .cache
@@ -88,6 +89,7 @@ python/marvin/web/static/images/logs
 python/marvin/web/static/logs
 python/marvin/web/templates/logs
 python/marvin/web/uwsgi_conf_files/logs
+python/sdss_marvin.egg-info
 .ropeproject
 
 **/htmlcov
