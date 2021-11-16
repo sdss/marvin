@@ -37,9 +37,14 @@ Firefly
    :members:
    :show-inheritance:
 
-.. skipping this for DR16; add for DR16+
-.. Visual Morphology
-.. ^^^^^^^^^^^^^^^^^
-.. .. automodule:: marvin.contrib.vacs.visual_morph
-..    :members:
-..    :show-inheritance:
+Visual Morphology
+^^^^^^^^^^^^^^^^^
+.. automodule:: marvin.contrib.vacs.visual_morph
+   :members:
+   :show-inheritance:
+
+Galaxy Zoo 3D
+^^^^^^^^^^^^^
+.. automodule:: marvin.contrib.vacs.galaxyzoo3d
+   :members:
+   :show-inheritance:
