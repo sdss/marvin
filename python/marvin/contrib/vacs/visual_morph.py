@@ -23,8 +23,8 @@ class VMORPHOVAC(VACMixIn):
 
     VAC name: manga_visual_morpho
 
-    URL: https://data.sdss.org/datamodel/files/MANGA_MORPHOLOGY/visual_morpho/manga_Vmorpho.html
-
+    URL: https://www.sdss.org/dr17/data_access/value-added-catalogs/?vac_id=manga-visual-morphologies-from-sdss-and-desi-images
+    
     Description: A new morphology catalogue is presented in this VAC, based on a pure visual
     morphological classification. This catalogue contains the T-Type morphology, visual
     attributes (barred, edge-on, tidal debris) and the CAS parameters (Concentration, Asymmetry

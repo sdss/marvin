@@ -83,7 +83,7 @@ class HIVAC(VACMixIn):
 
     VAC name: HI
 
-    URL: link
+    URL: https://www.sdss.org/dr17/data_access/value-added-catalogs/?vac_id=hi-manga-data-release-1
 
     Description: Returns HI summary data and spectra
 

@@ -22,7 +22,7 @@ class GEMAVAC(VACMixIn):
 
     VAC name: GEMA
 
-    URL: https://www.sdss.org/dr15/data_access/value-added-catalogs/?vac_id=gema-vac-galaxy-environment-for-manga-value-added-catalog
+    URL: https://www.sdss.org/dr17/data_access/value-added-catalogs/?vac_id=gema-vac:-galaxy-environment-for-manga-value-added-catalog
 
     Description: The GEMA VAC contains many different quantifications of the local and the large-scale environments for MaNGA galaxies. Please visit the DATAMODEL at https://data.sdss.org/datamodel/files/MANGA_GEMA/GEMA_VER to see the description of each table composing the catalogue.
 

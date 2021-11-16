@@ -17,7 +17,7 @@ class GZVAC(VACMixIn):
     VAC name: MaNGA Morphologies from Galaxy Zoo
 
     URL: https://www.sdss.org/dr17/data_access/value-added-catalogs/?vac_id=manga-morphologies-from-galaxy-zoo
-
+    
     Description Returns Galaxy Zoo morphology for MaNGA galaxies. 
     The Galaxy Zoo (GZ) data for SDSS galaxies has been split over several iterations of www.galaxyzoo.org, 
     with the MaNGA target galaxies being spread over five different GZ data sets. In this value added catalog,

@@ -32,7 +32,7 @@ class FIREFLYVAC(VACMixIn):
 
     VAC name: FIREFLY
 
-    URL: https://www.sdss.org/dr15/manga/manga-data/manga-firefly-value-added-catalog/
+    URL: https://www.sdss.org/dr17/manga/manga-data/manga-firefly-value-added-catalog/
 
     Description: Returns integrated and resolved stellar population parameters fitted by FIREFLY
 
