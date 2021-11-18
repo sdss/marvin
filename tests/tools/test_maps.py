@@ -191,6 +191,26 @@ class TestMaps(object):
         assert map_ratio.ivar == pytest.approx(map_arith.ivar, nan_ok=True)
         assert map_ratio.mask == pytest.approx(map_arith.mask, nan_ok=True)
 
+    def test_use_as_context_manager(self, galaxy, exporigin):
+
+        if exporigin == 'file':
+            # if origin is a file, test whether ValueError is raised
+            # when file access is attempted outside context
+            with pytest.raises(ValueError) as excinfo:
+                with Maps(**self._get_maps_kwargs(galaxy, exporigin)) as maps:
+                    pass
+
+                access_attempt = maps[1].data
+
+            assert 'closed file' in excinfo.value
+        else:
+            # for other origins, test that context-manager fails
+            with pytest.raises(MarvinError) as excinfo:
+                with Maps(**self._get_maps_kwargs(galaxy, exporigin)) as maps:
+                    pass
+
+            assert 'to use Tools as a context-manager' in excinfo.value
+
 
 class TestMaskbit(object):
 
