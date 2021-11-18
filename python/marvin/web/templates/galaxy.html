@@ -58,7 +58,7 @@
                         {% set qualmsg = (quality|qaclass)[1] %}
                           <div class="panel panel-{{qualstatus}}" id='panel_qualityflag'>
                               <div class="panel-heading">
-                                  <h3 class="panel-title">Cube Quality: {{qualmsg}}</h3>
+                                  <h3 class="panel-title" data-toggle="tooltip" data-placement="top" title="The overall DRP cube data quality bitmask.  Hover on Flags for labels.">Cube Quality: {{qualmsg}}</h3>
                               </div>
                               <div class='panel-body'>
                                 Bit: {{quality[1]}} <a tabindex='0' role="button" class='btn btn-{{qualstatus}} btn-xs flagpopover qualpopovers pull-right' id='qualitypopover' data-trigger='hover' data-toggle="popover" title="Quality Flags">Flags</a>
@@ -74,7 +74,7 @@
                     <div class='col-md-2 flagalert'>
                           <div class="panel panel-info" id='panel_targetflag'>
                               <div class="panel-heading">
-                                  <h3 class="panel-title">MaNGA Target</h3>
+                                  <h3 class="panel-title" data-toggle="tooltip" data-placement="top" title="The MaNGA target bitmask.  Hover on Flags for labels.">MaNGA Target</h3>
                               </div>
                               <div class='panel-body'>
                                 {% for bit in mngtarget.bits %}
@@ -93,7 +93,7 @@
                           {#<button class='btn btn-primary btn-danger' id='toggleinteract' type='button' data-toggle='button' aria-pressed="false" autocomplete='off' data-complete-text='<i class="fa fa-check fa-fw" aria-hidden="true"></i>Map/SpecView On'><i class="fa fa-close fa-fw" aria-hidden="true"></i>Map/SpecView Off</button>#}
 
                           <div class='input-group' id='toggle-grp'>
-                          <input type="checkbox" id='toggleinteract' aria-pressed="false" data-toggle="toggle" data-on="Map/SpecView On" data-off="Map/SpecView Off" data-onstyle="success" data-offstyle="danger" data-width="170">
+                          <input type="checkbox" id='toggleinteract' aria-pressed="false" data-toggle="toggle" data-on="Map/SpecView On" data-off="Map/SpecView Off" data-onstyle="success" data-offstyle="danger" data-width="170" data-toggle="tooltip" data-placement="top" title="Toggle the interactive spaxel/map view.">
                           <span class="input-group-addon info" style="display: none;" id="toggle-load"><i class='fa fa-circle-o-notch fa-spin fa-fw'></i>Loading...</span>
                           </div>
                           </div>
@@ -225,7 +225,7 @@
                                     {% set qualmsg = (mapquality|qaclass)[1] %}
                                       <div class="panel panel-{{qualstatus}}" id='panel_qualityflag'>
                                           <div class="panel-heading">
-                                              <h3 class="panel-title">Map Quality: {{qualmsg}}</h3>
+                                              <h3 class="panel-title" data-toggle="tooltip" data-placement="top" title="The overall DAP maps quality bitmask.  Hover on Flags for labels.">Map Quality: {{qualmsg}}</h3>
                                           </div>
                                           <div class='panel-body'>
                                             Bit: {{mapquality[1]}} <a tabindex='0' role="button" class='btn btn-{{qualstatus}} btn-xs flagpopover qualpopovers pull-right' id='mapqualitypopover' data-placement='left' data-trigger='hover' data-toggle="popover" title="Quality Flags">Flags</a>
