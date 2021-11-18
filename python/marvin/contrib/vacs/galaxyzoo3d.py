@@ -307,7 +307,7 @@ class GZ3DVAC(VACMixIn):
 
     VAC name: Galaxy Zoo: 3D
 
-    URL: <look this up>
+    URL: https://www.sdss.org/dr17/data_access/value-added-catalogs/?vac_id=galaxy-zoo-3d
 
     Description: Galaxy Zoo: 3D (GZ: 3D) made use of a project on the Zooniverse platform to
         crowdsource spaxel masks locating galaxy centers, foreground stars, bars and spirals
