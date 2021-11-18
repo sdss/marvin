@@ -1036,11 +1036,11 @@ class GZ3DTarget(object):
             title.append('star forming only')
             odx = odx & sf_mask
         #  plot scatter points
-        ax.scatter(x[odx], line.value[odx], c='#c5c5c5', edgecolor='#c5c5c5', s=s, **kwargs)
-        plot_alpha_scatter(x, line, self.spiral_mask_spaxel, colors[1], ax, s=s, snr=snr, sf_mask=sf_mask)
-        plot_alpha_scatter(x, line, self.bar_mask_spaxel, colors[0], ax, s=s, snr=snr, sf_mask=sf_mask)
-        plot_alpha_scatter(x, line, self.star_mask_spaxel, colors[2], ax, s=s, snr=snr, sf_mask=sf_mask)
-        plot_alpha_scatter(x, line, self.center_mask_spaxel, colors[3], ax, s=s, snr=snr, sf_mask=sf_mask)
+        ax.scatter(x[odx], line.value[odx], c='#c5c5c5', edgecolor='#c5c5c5', s=s, **kwargs, label='Other')
+        plot_alpha_scatter(x, line, self.spiral_mask_spaxel, colors[1], ax, s=s, snr=snr, sf_mask=sf_mask, label='Spiral')
+        plot_alpha_scatter(x, line, self.bar_mask_spaxel, colors[0], ax, s=s, snr=snr, sf_mask=sf_mask, label='Bar')
+        plot_alpha_scatter(x, line, self.star_mask_spaxel, colors[2], ax, s=s, snr=snr, sf_mask=sf_mask, label='Star')
+        plot_alpha_scatter(x, line, self.center_mask_spaxel, colors[3], ax, s=s, snr=snr, sf_mask=sf_mask, label='Center')
         if len(title) > 0:
             ax.set_title(','.join(title))
         if line.unit.to_string() != '':
