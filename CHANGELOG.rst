@@ -5,7 +5,7 @@ Marvin's Change Log
 --------------------
 - Issue :issue:`680` - Basic context manager functionality for ``marvin.tools.core.MarvinToolsClass``, and relevant documentation for ``Cube`` and ``Maps``. Users can automate closing file handlers when in ``file`` mode, by using ``with`` syntax, alleviating some issues with looping through lists of galaxies.
 - ``marvin.tools.core.MarvinToolsClass.close`` method is a self-contained way of closing the underlying data file. It is now called by ``marvin.tools.core.MarvinToolsClass.__del__`` and ``marvin.tools.core.MarvinToolsClass.__exit__``. ``marvin.tools.core.MarvinToolsClass.source_is_fits_hdulist_file`` evaluates whether the object is accessing a FITS HDUList.
-
+- Updated the manga database connection info for JHU
 
 [2.6.0] - 2021/03/12
 --------------------
