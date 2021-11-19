@@ -1012,7 +1012,8 @@ maskbits MANGA_DRP2QUAL 15 NOGUIDER " No guider data available"
 maskbits MANGA_DRP2QUAL 16 NOSPEC1 " No data from spec1"
 maskbits MANGA_DRP2QUAL 17 NOSPEC2 " No data from spec2"
 maskbits MANGA_DRP2QUAL 18 BLOWTORCH " Blowtorch artifact detected"
-maskbits MANGA_DRP2QUAL 19 BLOWTORCHFAIL " Blowtorch artifact severe and uncorrectable"
+maskbits MANGA_DRP2QUAL 19 RETIRED2 " Bit retired from use"
+maskbits MANGA_DRP2QUAL 20 SEVEREBT " Severe blowtorch artifact"
 
 # DRP-3d quality flag bitmask
 masktype MANGA_DRP3QUAL 64 "Mask bits for MaNGA DRP-3d quality flags"
@@ -1029,6 +1030,8 @@ maskbits MANGA_DRP3QUAL  9 BADPSF " PSF estimate may be bad"
 maskbits MANGA_DRP3QUAL 10 MANYDEAD " Many dead fibers"
 maskbits MANGA_DRP3QUAL 11 RETIRED2 " Bit retired, moved into MASTAR_QUAL instead"
 maskbits MANGA_DRP3QUAL 12 BLOWTORCH " Blowtorch artifact in one or more frames"
+maskbits MANGA_DRP3QUAL 13 SEVEREBT " Severe blowtorch artifact"
+maskbits MANGA_DRP3QUAL 14 UNUSUAL " Cube slightly unusual in some way but good for most science"
 maskbits MANGA_DRP3QUAL 30 CRITICAL " Critical failure in one or more frames"
 
 # MaStar quality flag bitmask
@@ -1045,6 +1048,9 @@ maskbits MASTAR_QUAL  8 EMLINE " Spectrum contain emission lines"
 maskbits MASTAR_QUAL  9 LOWSN  " Per-MJD Spectrum has median S/N <= 15"
 maskbits MASTAR_QUAL 10 MULTIFIBER " Composite spectrum combined from multiple fibers"
 maskbits MASTAR_QUAL 11 BLOWTORCH " Blowtorch artifact in one or more frames"
+maskbits MASTAR_QUAL 12 SEVEREBT " Severe blowtorch artifact"
+maskbits MASTAR_QUAL 13 UPTURNRISK " Risk of having a red-upturn"
+maskbits MASTAR_QUAL 14 UPTURNMANUAL "Red upturn identified by visual inspection"
 maskbits MASTAR_QUAL 30 CRITICAL " Critical failure in one or more frames"
 
 # The following mask bits are for the 2D MANGA pipeline

@@ -58,14 +58,15 @@ def clean(ctx):
 
 
 @task(clean)
-def deploy(ctx):
+def deploy(ctx, repo=None):
     ''' Deploy to pypi '''
     print('Deploying to Pypi!')
-    ctx.run("python setup.py --noweb sdist bdist_wheel --universal")
-    # pre-registration is deprecated for new pypi releases [~July 2017]
-    # ctx.run("twine register dist/sdss-marvin-*.tar.gz")
-    # ctx.run("twine register dist/sdss_marvin-*-none-any.whl")
-    ctx.run("twine upload dist/*")
+    rstr = ''
+    if repo:
+        rstr = '-r {0}'.format(repo)
+    ctx.run("python setup.py sdist bdist_wheel --universal")
+    ctx.run("twine upload {0} dist/*".format(rstr))
+
 
 
 @task

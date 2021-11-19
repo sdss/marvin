@@ -91,3 +91,8 @@ MPL9 = QueryDataModel(release='MPL-9', groups=groups(),
 
 MPL10 = QueryDataModel(release='MPL-10', groups=groups(),
                        aliases=['MPL10', 'v3_0_1', '3.0.1'], exclude=EX6, dapdm=datamodel['MPL-10'])
+
+# MPL-11
+
+MPL11 = QueryDataModel(release='MPL-11', groups=groups(),
+                       aliases=['MPL11', 'v3_1_1', '3.1.0'], exclude=EX6, dapdm=datamodel['MPL-11'])

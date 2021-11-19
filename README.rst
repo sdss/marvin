@@ -17,16 +17,14 @@ To painlessly install Marvin:
     pip install sdss-marvin
 
 If you would like to contribute to Marvin's development, you can clone
-this git repo, pip install the dependencies, update the submodules, and
-then setup with ``python setup.py install``:
+this git repo, and run pip install in editable mode which will install all the
+dev dependencies:
 
 ::
 
     git clone https://github.com/sdss/marvin
     cd marvin
-    git submodule update --init --recursive
-    pip install -r requirements_dev.txt
-    python setup.py develop
+    pip install -e .[dev]
 
 What is Marvin?
 ---------------

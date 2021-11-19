@@ -140,6 +140,7 @@ MPL9_maps = updated_maps + new_properties
 # MPL-9 DapDataModel goes here
 MPL9 = DAPDataModel('2.4.1', aliases=['MPL-9', 'MPL9'],
                     bintypes=[SPX, HYB10, VOR10],
+                    db_only=[HYB10],
                     templates=[MILESHC_MASTARHC],
                     properties=MPL9_maps,
                     models=MPL8_models,

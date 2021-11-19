@@ -66,7 +66,8 @@ class Config(object):
 
     # Flask-Session settings
     SESSION_TYPE = 'redis'
-    SESSION_REDIS = redis.from_url(os.environ.get('SESSION_REDIS'))
+    SESSION_REDIS = redis.from_url(os.environ.get('SESSION_REDIS')
+                                   ) if SESSION_TYPE == 'redis' and 'SESSION_REDIS' in os.environ else None
     SESSION_KEY_PREFIX = 'session:'
 
     # Flask-Caching settings
@@ -74,6 +75,9 @@ class Config(object):
     CACHE_DEFAULT_TIMEOUT = 300
     CACHE_REDIS_URL = os.environ.get("SESSION_REDIS")
     CACHE_KEY_PREFIX = 'caching:'
+
+    # Minimum Supported MPL/DR
+    MIN_RELEASE = 'MPL-7'
 
 
 class ProdConfig(Config):
@@ -104,6 +108,24 @@ class DevConfig(Config):
     ASSETS_DEBUG = True  # Don't bundle/minify static assets
     CACHE_TYPE = 'simple'  # Can be "memcached", "redis", etc.
     RATELIMIT_ENABLED = False
+
+
+class DockerConfig(Config):
+    """Docker configuration."""
+    FLASK_ENV = os.environ.get('FLASK_ENV', 'production')
+    ENV = 'prod'
+    DEBUG = False
+    SQLALCHEMY_DATABASE_URI = 'postgresql://localhost/example'
+    DEBUG_TB_ENABLED = False  # Disable Debug toolbar
+    USE_X_SENDFILE = True
+    USE_SENTRY = True
+    SENTRY_DSN = os.environ.get('SENTRY_DSN', None)
+    PERMANENT_SESSION_LIFETIME = datetime.timedelta(3600)
+    JWT_ACCESS_TOKEN_EXPIRES = datetime.timedelta(300)
+    REMEMBER_COOKIE_DOMAIN = '.sdss.org'
+    SESSION_TYPE = 'filesystem'
+    CACHE_TYPE = 'null'
+    USE_PROFILER = False
 
 
 class TestConfig(Config):

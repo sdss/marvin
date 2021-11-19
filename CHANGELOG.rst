@@ -1,6 +1,51 @@
 Marvin's Change Log
 ===================
 
+[2.6.1] - 2021/11/18
+--------------------
+- Issue :issue:`680` - Basic context manager functionality for ``marvin.tools.core.MarvinToolsClass``, and relevant documentation for ``Cube`` and ``Maps``. Users can automate closing file handlers when in ``file`` mode, by using ``with`` syntax, alleviating some issues with looping through lists of galaxies.
+- ``marvin.tools.core.MarvinToolsClass.close`` method is a self-contained way of closing the underlying data file. It is now called by ``marvin.tools.core.MarvinToolsClass.__del__`` and ``marvin.tools.core.MarvinToolsClass.__exit__``. ``marvin.tools.core.MarvinToolsClass.source_is_fits_hdulist_file`` evaluates whether the object is accessing a FITS HDUList.
+- Updated the manga database connection info for JHU
+
+[2.6.0] - 2021/03/12
+--------------------
+- **Adds** - support for MaNGA data release MPL-11
+- **Adds** - updates to the Marvin documentation on citations
+- **Fixes** - Bug with remote access for removed ``emline_tplsigma`` spaxel property.  Removed from MPL-10, MPL-11 datamodels.
+
+[2.5.4] - 2021/03/5
+-------------------
+- ** Changes** - pinned ``flask-jwt-extended`` package version to ``<4.0``
+
+[2.5.3] - 2020/16/1
+-------------------
+- **Changes** - static web images to webp format for better compression and faster load times.
+
+[2.5.2] - 2020/10/1
+-------------------
+- Restructuring to simplify setup, dependencies, and tests, for code health.
+- **Adds** - New `setup.py` and `setup.cfg` to simplify installation and dependency requirements
+- **Adds** - New dependencies ``marvin-brain``, ``marvin-wtforms-alchemy``, ``marvin-sqlalchemy-boolean-search``, ``sdss-tree``, and ``sdss-access``.
+- **Changes** - Migrates to ``sdsstools`` for internal logging and config management.
+- **Changes** - Removes all external submodules, which have been converted into pypi releases.
+- **Changes** - Moves tests outside the python package
+- **Fixes** - Issues :issue:`643`, :issue:`644`, :issue:`645`, :issue:`646`
+
+[2.5.1] - 2020/09/25
+--------------------
+- **Fixes** :issue:`711` - galaxy page bug when NSA dictionary not available prevents flag modals from appearing
+
+[2.5.0] - 2020/09/04
+--------------------
+- **Adds** - support for MaNGA data release MPL-10
+- **Removes** - web / API support for MPLs 4, 5, 6
+- **Removes** - SPX and VOR10 binning schemese in MPLs 7-10, and DR15-16.
+
+[2.4.1] - 2020/08/05
+--------------------
+- **Adds** - support for using the marvin mirror at magrathea.sdss.org, hosted at Johns Hopkins
+- **Adds** - new `use_mirror` custom config option to automatically set marvin to use the mirror
+
 [2.4.0] - 2020/07/19
 --------------------
 
@@ -59,7 +104,7 @@ Fixed
 
 Added
 ^^^^^
-- Support for DR16.  Updated datamodels and docs.
+- Support for DR16.  Updated datamodels and docs. 
 - Added Galaxy Zoo VAC
 - Added GEMA VAC
 - Added Firefly VAC

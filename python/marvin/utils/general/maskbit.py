@@ -16,7 +16,7 @@ import numpy as np
 import pandas as pd
 
 import marvin
-from marvin.extern.yanny import yanny
+from marvin.utils.yanny import yanny
 
 
 # Stores the maskbits yanny file structure so that we don't need to open it more than once.

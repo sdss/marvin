@@ -12,6 +12,8 @@ Tutorials
 * `Basics of Marvin Results <notebooks/Marvin_Results.ipynb>`_  (:download:`Jupyter notebook <notebooks/Marvin_Results.ipynb>`)
 * :doc:`Sample Selection in Marvin <sample-selection>`
 * :doc:`Science Exercises using Marvin <exercises>`
+* `VAC - MaNGA Visual Morphology <notebooks/VAC_MVM_Marvin_tutorial.ipynb>`_ (:download:`Jupyter notebook <notebooks/VAC_MVM_Marvin_tutorial.ipynb>`)
+
 
 
 .. toctree::
@@ -27,3 +29,4 @@ Tutorials
    Marvin Results <notebooks/Marvin_Results.ipynb>
    Sample Selection in Marvin <sample-selection>
    Science Exercises using Marvin <exercises>
+   VAC - Manga Visual Morphology <notebooks/VAC_MVM_Marvin_tutorial.ipynb>

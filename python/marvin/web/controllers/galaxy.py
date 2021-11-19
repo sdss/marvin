@@ -279,7 +279,7 @@ def remove_nans(datadict):
         if key != 'plateifu':
             naninds = np.where(np.isnan(vals))[0]
             allnans = np.append(allnans, naninds)
-    allnans = list(set(allnans))
+    allnans = list(set(allnans.astype(np.int)))
     # delete those targets from all items in the dictionary
     for key, vals in datadict.items():
         datadict[key] = np.delete(np.asarray(vals), allnans).tolist()

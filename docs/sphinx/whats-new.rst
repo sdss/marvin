@@ -11,6 +11,42 @@ What's New
 
 This section summarises the most important new features a bugfixes in Marvin. For the complete list of changes check the :ref:`marvin-changelog`.
 
+2.6.1 (unreleased)
+------------------
+- Support for using Tools as context managers, allowing efficient access and closure of file handlers. This will make workflows relying on looping through lists of galaxies and performing similar actions less error-prone.
+
+2.6.0 (March 2020)
+------------------
+- Adds support for MaNGA release :ref:`MPL-11 MaNGA data<datamodel-mpl11>`
+
+2.5.0 (September 2020)
+----------------------
+- Adds support for MaNGA release :ref:`MPL-10 MaNGA data<datamodel-mpl10>`
+- Removes support in the web and API (remote access) for MPLs 4, 5, and 6.
+- Removes support for DAP SPX and VOR10 binning schemes in the web and API access.  Only the HYB10 binning scheme is available over the web/API.
+- Note on deprecated support for MPLs and DAP binning schemes in the web/API:
+
+  - MPLs 4, 5 and 6 are still supported via local file mode
+  - Alternate DAP binning schemes (SPX, VOR10) are still supported via local file mode
+
+- MPL-10 datamodel changes, compared to MPL-9:
+
+  - DRP cubes/rss files
+
+    - Extension `DISP/PREDISP` has been renamed to `LSFPOST/LSFPRE` in FITS files
+    - Marvin MPL-10 Cube/RSS datamodels retain the `dispersion/dispersion_prepixel` nomenclature for backwards compatibility.
+
+  - DAP maps/modelcube files
+
+    - Removed MAPS extensions `SPECINDEX_BCEN`, `SPECINDEX_BCNT`, `SPECINDEX_RCEN`, `SPECINDEX_RCNT`
+    - Added MAPS extensions `SPECINDEX_BF`, `SPECINDEX_BF_CORR`, `SPECINDEX_BF_MODEL`, `SPECINDEX_WGT`, `SPECINDEX_WGT_CORR`, `SPECINDEX_WGT_MODEL`
+    - Added ModelCube (LOGCUBE) `LSF` extension.
+
+
+2.4.1 (August 2020)
+-------------------
+- Adds support for switching to the Marvin mirror, `magrathea.sdss.org`, hosted at Johns Hopkins
+
 2.4.0 (March 2020)
 ------------------
 - Caching of remote Marvin Tools (cached database queries)

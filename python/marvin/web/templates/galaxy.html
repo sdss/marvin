@@ -338,7 +338,10 @@
     $(function() {
         let toggleon = {{toggleon|tojson}};
         let nsadict = {{nsadict|tojson}};
-        let redshift = 'z' in nsadict ? nsadict['z'] : null;
+        let redshift = null;
+        if (nsadict != null) {
+          redshift = ('z' in nsadict) ? nsadict['z'] : null;
+        }
         m.galaxy = new Galaxy(undefined, toggleon, redshift);
         m.galaxy.print();
         m.galaxy.hasNSA({{hasnsa|tojson}});

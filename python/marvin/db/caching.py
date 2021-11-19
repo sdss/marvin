@@ -66,7 +66,8 @@ cache_type = {
     'file': {'name': 'dogpile.cache.dbm', 'args': {'filename': dogroot}},
     'redis': {'name': 'dogpile.cache.redis',
               'args': {'url': os.environ.get('SESSION_REDIS'),
-                       'distributed_lock': True}}
+                       'distributed_lock': True, 'lock_sleep': 1,
+                       'lock_timeout': 5}}
 }
 
 

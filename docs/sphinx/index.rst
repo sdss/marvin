@@ -18,7 +18,7 @@ Marvin Documentation
 
 Marvin is a tool specifically designed to visualise and analyse `MaNGA <https://www.sdss.org/manga>`_ data. It is developed and maintained by the MaNGA team. Marvin allows you to:
 
-* Access reduced MaNGA datacubes local, remotely, or via a `web interface <https://dr15.sdss.org/marvin>`_.
+* Access reduced MaNGA datacubes local, remotely, or via a `web interface <https://dr16.sdss.org/marvin>`_.
 * Access and visualise data analysis products.
 * Perform powerful queries on data and metadata.
 * Abstract the datamodel and forget where the data actually lives.
@@ -26,7 +26,7 @@ Marvin is a tool specifically designed to visualise and analyse `MaNGA <https://
 
 .. To install marvin simply run ``pip install sdss-marvin``. More details and known problem with installation can be found :ref:`here <marvin-installation>`.
 
-.. note:: This documentation assumes that you are familiar with MaNGA data and its acronyms. If that is not your case, consider reading `this <https://www.sdss.org/dr15/manga/getting-started/>`_.
+.. note:: This documentation assumes that you are familiar with MaNGA data and its acronyms. If that is not your case, consider reading `this <https://www.sdss.org/dr16/manga/getting-started/>`_.
 
 .. warning:: Marvin 2.x is the last version that will support Python 2.
   Marvin 3 and following will require Python 3.6+.
@@ -37,6 +37,7 @@ At a Glance
 
 If you are new to Marvin check the following links before diving into the full documentation:
 
+* New to MaNGA?  Read the intro on the `SDSS MaNGA survey <https://www.sdss.org/surveys/manga/>`_.
 * :doc:`installation`
 * :doc:`What's new in Marvin? <whats-new>`
 * The :doc:`Getting Started <getting-started>` is your quick start guide to Marvin.

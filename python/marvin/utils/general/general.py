@@ -295,7 +295,7 @@ def convertCoords(coords, mode='sky', wcs=None, xyorig='center', shape=None):
             raise MarvinError('some indices are out of limits.'
                               '``xyorig`` is currently set to "{0}". '
                               'Try setting ``xyorig`` to "{1}".'
-                              .format(xyorig, 'center' if xyorig is 'lower' else 'lower'))
+                              .format(xyorig, 'center' if xyorig == 'lower' else 'lower'))
 
     return cubeCoords
 

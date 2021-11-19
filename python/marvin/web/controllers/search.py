@@ -204,7 +204,7 @@ class Search(BaseWebView):
         defaults = args.pop('defaults', None)
         # do query
         try:
-            q, res = doQuery(search_filter=searchvalue, release=self._release, 
+            q, res = doQuery(search_filter=searchvalue, release=self._release,
                              return_params=returnparams, default_params=defaults, **args)
         except Exception as e:
             errmsg = 'Error generating webtable: {0}'.format(e)

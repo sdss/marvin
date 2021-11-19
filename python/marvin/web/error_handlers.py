@@ -134,3 +134,12 @@ def entity_too_large(error):
         return make_error_json(error, name, 413)
     else:
         return make_error_page(app, name, 413, sentry=sentry, exception=error)
+
+
+@errors.app_errorhandler(409)
+def conflict(error):
+    name = 'Conflict'
+    if _is_api(request):
+        return make_error_json(error, name, 409)
+    else:
+        return make_error_page(app, name, 409, sentry=sentry, exception=error)

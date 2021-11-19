@@ -703,6 +703,17 @@ class ModelCube(MarvinToolsClass, NSAMixIn, DAPallMixIn, GetApertureMixIn):
         if not self.is_binned:
             return self
         else:
+            unbinned = self.datamodel.parent.get_unbinned()
+            if self.datamodel.parent.db_only:
+                in_db = unbinned in self.datamodel.parent.db_only
+            else:
+                in_db = unbinned in self.datamodel.parent.bintypes
+
+            if self.mode == 'remote' and not in_db:
+                raise marvin.core.exceptions.MarvinError(
+                    "Bintype {0} for release {1} not available in remote database. Use "
+                    "Marvin's local file access mode instead.".format(unbinned.name, self.release))
+
             return ModelCube(plateifu=self.plateifu, release=self.release,
                              bintype=self.datamodel.parent.get_unbinned(),
                              template=self.template,
