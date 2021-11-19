@@ -8,7 +8,7 @@ check_access: False
 use_token: ''
 
 # use the Sentry error logging
-use_sentry: True
+use_sentry: False
 
 # add a message to submit a new Github Issue on all MarvinErrors
 add_github_message: True
