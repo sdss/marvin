@@ -58,7 +58,10 @@
                     {% endfor %}
                 </select>
             </div>
-            <button type="submit" id='getmapbut' class="btn btn-primary {{'disabled' if not targetlist|safe or not mapchoice}}">Get Maps</button>
+            <button type="submit" id='getmapbut' class="btn btn-primary {{'disabled' if not targetlist|safe or not mapchoice}}" data-loading-text="Loading...">Get Maps</button>
+            <div class="spinner-border" role="status">
+                <span class="sr-only">Loading...</span>
+            </div>
         </form>
 
         </div>
@@ -94,6 +97,7 @@
 <script rel='preconnect' src="https://code.highcharts.com/modules/boost.js"></script>
 <script rel='preconnect' src="https://highcharts.github.io/pattern-fill/pattern-fill-v2.js"></script>
 <script rel='preconnect' src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/3.6.0/math.min.js"></script>
+<script rel='preconnect' src="https://unpkg.com/paralleljs@1.1.0/lib/parallel.js"></script>
 
 <script type='application/javascript'>
 let maps = null;
@@ -112,13 +116,19 @@ $(function() {
     explore.print();
 
     $('#mapchoice').selectpicker('refresh');
-
+    console.log($('#explorediv').find("#exmaps").children("div"));
+    console.log($('#explorediv').find("#exmaps").children("div").find("div"));
     // initialize the maps
     maps = {{maps|tojson}};
+    console.log('have targets');
     if (maps != null) {
         let mapmsgs = {{mapmsgs|tojson}};
         maps = {{maps|tojson}};
         explore.initHeatmap(maps, mapmsgs);
+        //explore.parallelHeatmaps(maps, mapmsgs);
+        console.log('running promise');
+        //explore.promise(maps, mapmsgs);
+        //explore.uppercaseItems();
     }
 });
 </script>

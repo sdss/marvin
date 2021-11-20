@@ -237,7 +237,7 @@ class MarvinToolsClass(MMAMixIn, CacheMixIn):
         return source_is_file and data_from_hdulist
 
     def close(self):
-        if self.source_is_fits_hdulist:
+        if self.source_is_fits_hdulist_file:
             try:
                 self.data.close()
             except Exception as ee:

@@ -142,7 +142,14 @@ class Explore(BaseWebView):
                 flash('Targets not valid format of plateifu or mangaid', 'error')
                 return redirect(url_for(home))
 
-            flash('Targets succefully uploaded', 'info')
+            # check number of targets
+            n_targets = len(targets)
+            msg = 'Targets succefully uploaded.'
+            # if n_targets > 50:
+            #     targets = targets[:50]
+            #     msg += ' Only a limit of 50 targets allowed.'
+
+            flash(msg, 'info')
             targetlist = '&#10;'.join(targets)
 
             dm = datamodel[self._dapver]
@@ -156,8 +163,10 @@ class Explore(BaseWebView):
 
     @route('/maps/', methods=['GET', 'POST'], endpoint='maps')
     def get_maps(self):
+        import datetime
+        st = datetime.datetime.now()
         stuff = processRequest(request)
-
+        print('getting maps', st)
         home = 'explore_page.Explore:index'
 
         dm = datamodel[self._dapver]
@@ -216,7 +225,10 @@ class Explore(BaseWebView):
                 mapmsgs.append(mapmsg)
         self.explore['maps'] = maps
         self.explore['mapmsgs'] = mapmsgs
-
+        
+        et = datetime.datetime.now()
+        print('ending maps', et)
+        print('td', (et - st).total_seconds())
         return render_template('explore.html', **self.explore)
 
 
