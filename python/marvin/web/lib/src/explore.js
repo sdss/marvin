@@ -129,7 +129,7 @@ class Explore {
         //mapdiv.empty();
         //console.log('test', target, mapdiv);
 
-        fetch('http://localhost:5000/marvin/explore/webmap/', data)
+        fetch(Flask.url_for('explore_page.webmap'), data)
         .then((response) => response.json())
         .then((data) => {
             //console.log('json', data.result);

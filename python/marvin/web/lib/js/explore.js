@@ -165,7 +165,7 @@ var Explore = function () {
             //mapdiv.empty();
             //console.log('test', target, mapdiv);
 
-            fetch('http://localhost:5000/marvin/explore/webmap/', data).then(function (response) {
+            fetch(Flask.url_for('explore_page.webmap'), data).then(function (response) {
                 return response.json();
             }).then(function (data) {
                 //console.log('json', data.result);
