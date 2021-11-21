@@ -14,7 +14,7 @@
 from __future__ import print_function, division, absolute_import
 
 from flask import Blueprint, render_template, request, redirect, after_this_request
-from flask import url_for, flash, current_app, session as current_session, g
+from flask import url_for, flash, current_app, session as current_session, jsonify
 from flask_classful import route
 from marvin.core.exceptions import MarvinError
 from marvin.web.controllers import BaseWebView
@@ -70,6 +70,7 @@ class Explore(BaseWebView):
         self.explore['mapchoice'] = 'emline_gflux:ha_6564'
         self.explore['maps'] = None
         self.explore['mapmsgs'] = None
+        self.explore['mapsloading'] = False
 
     def before_request(self, *args, **kwargs):
         ''' Do these things before a request to any route '''
@@ -193,6 +194,15 @@ class Explore(BaseWebView):
         self.explore['n_targs'] = len(targets)
         self.explore['mapchoice'] = mapchoice
 
+        self.explore['maps'] = True
+        self.explore['mapmsgs'] = 'go'
+        self.explore['mapsloading'] = True
+
+        et = datetime.datetime.now()
+        print('ending maps', et)
+        print('td', (et - st).total_seconds())
+        return render_template('explore.html', **self.explore)
+    
         # build the uber map dictionary
         maps = []
         mapmsgs = []
@@ -225,11 +235,58 @@ class Explore(BaseWebView):
                 mapmsgs.append(mapmsg)
         self.explore['maps'] = maps
         self.explore['mapmsgs'] = mapmsgs
-        
+        self.explore['mapsloading'] = True
+
         et = datetime.datetime.now()
         print('ending maps', et)
         print('td', (et - st).total_seconds())
         return render_template('explore.html', **self.explore)
 
+    @route('/webmap/', methods=['POST'], endpoint='webmap')
+    #@cache.memoize()
+    def updateMaps(self):
+        #args = av.manual_parse(self, request, use_params='galaxy', required=['plateifu', 'bintemp', 'params[]'], makemulti=True)
+        stuff = processRequest(request)
+        mapchoice = stuff.get('mapchoice', '')
+        btchoice = stuff.get('btchoice', '')
+        target = stuff.get('target', '')
+
+        output = {'maps': None, 'msg': None}
+
+        #print('here', target, mapchoice, btchoice)
+
+        try:
+            cube = Cube(target, release=self._release)
+        except MarvinError:
+            mapdict = {'data': None, 'msg': 'Error',
+                        'plotparams': None}
+            mapmsg = 'No cube available'
+            output['maps'] = mapdict
+            output['msg'] = mapmsg
+            return jsonify(result=output)
+
+        hasbin = btchoice.split('-')[0] in cube.get_available_bintypes() if btchoice else None
+
+        #print('here', hasbin, cube, self._dapver)
+
+        try:
+            mapdict = buildMapDict(cube, [mapchoice], self._dapver, bintemp=btchoice)
+            mapmsg = None
+        except Exception as e:
+            mapdict = {'data': None, 'msg': 'Error', 'plotparams': None}
+            if hasbin:
+                mapmsg = 'Error getting maps: {0}'.format(e)
+            else:
+                mapmsg = 'No maps available for selected bintype {0}. Try a different one.'.format(
+                    btchoice)
+            output['maps'] = mapdict
+            output['msg'] = mapmsg
+            return jsonify(result=output)
+        else:
+            self.explore['mapstatus'] = 1
+            output['maps'] = mapdict[0]
+            output['msg'] = mapmsg
+            return jsonify(result=output)
+        
 
 Explore.register(explore)

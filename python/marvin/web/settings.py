@@ -57,7 +57,8 @@ class Config(object):
             "/marvin/jsglue.js",
             "/marvin/static/.*",
             "/marvin/lib/.*",
-            "/marvin/getgalidlist/"
+            "/marvin/getgalidlist/",
+            "/marvin/explore/webmap/"
         ]
     }
     # RATELIMIT_DEFAULT = '10/hour;100/day;2000 per year'

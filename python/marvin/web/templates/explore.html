@@ -16,20 +16,17 @@
 
         <form role='form' action="{{url_for('explore_page.upload')}}" method='post' enctype="multipart/form-data">
             <div class="form-group">
-                <label for="targetinput">Upload a List of Targets:</label>
+                <label for="targetinput">Upload a List of Targets: <small>(limit of 50)</small></label>
                 <input type="file" name='file' id="targetinput" aria-describedby='inputgroupfile'>
                 <button type="submit" class="btn btn-sm btn-primary">Upload File</button>
             </div>
         </form>
 
-        <form role='form' action="{{url_for('explore_page.maps')}}" method='POST'>
+        <form id='mapform' role='form' action="#" method='POST'>
             <div class='form-group'>
                 <label for='targetlist'>Loaded Targets: {{n_targs}} </label>
                 <textarea id='targetlist' name='targetlist' class="form-control" readonly rows="3"
                     placeholder='No targets loaded...'>{{targetlist|safe}}</textarea>
-                {# {% if error %}
-                    <p class='alert alert-danger'><strong>Error:</strong> {{ error }}</p>
-                {% endif %} #}
                 {% for category, message in get_flashed_messages(with_categories=True) %}
                     <p class="error alert alert-{{'danger' if category == 'error' else 'info'}}"><strong>{{category|title}}:</strong> {{ message }}</p>
                 {% endfor %}
@@ -47,8 +44,8 @@
                     {% endfor %}
                 </select>
 
-                <label for="btchoicee">Select a Binning Scheme:</label>
-                <select class="selectpicker show-tick form-control" name='btchoice' id='btchoicee' data-header='Select a bintype'>
+                <label for="btchoice">Select a Binning Scheme:</label>
+                <select class="selectpicker show-tick form-control" name='btchoice' id='btchoice' data-header='Select a bintype'>
                     {% for bt in dapbintemps %}
                         {% if bt == session.bintemp %}
                         <option selected >{{bt}}</option>
@@ -58,17 +55,14 @@
                     {% endfor %}
                 </select>
             </div>
-            <button type="submit" id='getmapbut' class="btn btn-primary {{'disabled' if not targetlist|safe or not mapchoice}}" data-loading-text="Loading...">Get Maps</button>
-            <div class="spinner-border" role="status">
-                <span class="sr-only">Loading...</span>
-            </div>
+            <button type="button" id='getmapbut' class="btn btn-primary {{'disabled' if not targetlist|safe or not mapchoice or mapsloading}}" data-loading-text="Loading..." >Get Maps</button>
         </form>
 
         </div>
 
         <div class='col-md-10' id='explorediv'>
 
-            {% if maps %}
+            {% if targets %}
             <div class='row text-center' id='exmaps'>
                 {% for target in targets %}
                 <div class='col-md-4'>
@@ -110,25 +104,37 @@ $('#mapchoice').on('changed.bs.select', function (e, clickedIndex, newValue, old
     }
 });
 
+//onClick="this.form.submit(); this.disabled=true; this.value='Sending…'; "
+//  $('#getmapbut').on('click', function () {
+    //var $btn = $(this).button('loading');
+    //$('#mapform').submit();
+    // business logic...
+    //$btn.button('reset')
+//  })
+
 $(function() {
     let targets = {{targets|tojson}};
     let explore = new Explore(targets);
     explore.print();
 
     $('#mapchoice').selectpicker('refresh');
-    console.log($('#explorediv').find("#exmaps").children("div"));
-    console.log($('#explorediv').find("#exmaps").children("div").find("div"));
+    //console.log($('#explorediv').find("#exmaps").children("div"));
+    //console.log($('#explorediv').find("#exmaps").children("div").find("div"));
     // initialize the maps
-    maps = {{maps|tojson}};
+    //maps = {{maps|tojson}};
     console.log('have targets');
     if (maps != null) {
-        let mapmsgs = {{mapmsgs|tojson}};
-        maps = {{maps|tojson}};
-        explore.initHeatmap(maps, mapmsgs);
+        //$('#getmapbut').addClass('disabled');
+        //$('#getmapbut').button('loading');
+        //let mapmsgs = {{mapmsgs|tojson}};
+        //maps = {{maps|tojson}};
+        //explore.initHeatmap(maps, mapmsgs);
         //explore.parallelHeatmaps(maps, mapmsgs);
-        console.log('running promise');
+        //console.log('running promise');
+        //explore.testall(targets);
         //explore.promise(maps, mapmsgs);
         //explore.uppercaseItems();
+        //$('#getmapbut').removeClass('disabled');
     }
 });
 </script>
