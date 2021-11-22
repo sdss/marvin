@@ -237,15 +237,12 @@ class MarvinToolsClass(MMAMixIn, CacheMixIn):
         return source_is_file and data_from_hdulist
 
     def close(self):
-        if self.source_is_fits_hdulist:
+        if self.source_is_fits_hdulist_file:
             try:
                 self.data.close()
             except Exception as ee:
                 warnings.warn('failed to close FITS instance: {0}'.format(ee), MarvinUserWarning)
-        else:
-            warnings.warn(
-                'data-origin {0} ({1}) not closeable'.format(self.data_origin, self.data.__class__),
-                MarvinUserWarning)
+
 
     def __del__(self):
         """Destructor for closing FITS files."""
