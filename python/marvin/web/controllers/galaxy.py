@@ -399,6 +399,7 @@ class Galaxy(BaseWebView):
                     hasnsa = cube.nsa is not None
                 except Exception:
                     hasnsa = False
+                    self.galaxy['nsadict'] = {}
 
                 # make the nsa dictionary
                 self.galaxy['hasnsa'] = hasnsa
