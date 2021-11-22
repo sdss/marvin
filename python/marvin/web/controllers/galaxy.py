@@ -315,6 +315,7 @@ class Galaxy(BaseWebView):
         self.galaxy['nsaplotcols'] = ['z', 'elpetro_logmass', 'sersic_n', 'elpetro_absmag_i', 'elpetro_absmag_g_r',
                                       'elpetro_th50_r', 'elpetro_absmag_u_r', 'elpetro_absmag_i_z', 'elpetro_ba',
                                       'elpetro_phi', 'elpetro_mtol_i', 'elpetro_th90_r']
+        self.galaxy['nsadict'] = {}
 
     def before_request(self, *args, **kwargs):
         ''' Do these things before a request to any route '''
@@ -399,7 +400,6 @@ class Galaxy(BaseWebView):
                     hasnsa = cube.nsa is not None
                 except Exception:
                     hasnsa = False
-                    self.galaxy['nsadict'] = {}
 
                 # make the nsa dictionary
                 self.galaxy['hasnsa'] = hasnsa
