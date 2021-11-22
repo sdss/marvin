@@ -107,7 +107,7 @@ class MarvinConfig(object):
 
         self.vermode = None
         self.download = False
-        self.use_sentry = True
+        self.use_sentry = False
         self.add_github_message = True
         self._allowed_releases = {}
 
@@ -416,7 +416,8 @@ class MarvinConfig(object):
                    'MPL-5': ('v2_0_1', '2.0.2'),
                    'MPL-4': ('v1_5_1', '1.1.1')}
 
-        drdict = {'DR15': ('v2_4_3', '2.2.1'),
+        drdict = {'DR17': ('v3_1_1', '3.1.0'),
+                  'DR15': ('v2_4_3', '2.2.1'),
                   'DR16': ('v2_4_3', '2.2.1')}
 
         # set the allowed releases based on access
@@ -575,8 +576,8 @@ class MarvinConfig(object):
         from packaging.version import parse
         if min_release:
             # adjust MPL-7 to DR15 alias if needed
-            if min_release == 'MPL-7' and min_release not in allowed:
-                min_release = 'DR15'
+            if min_release in ('MPL-7', 'MPL-11') and min_release not in allowed:
+                min_release = 'DR15' if min_release == 'MPL-7' else 'DR17'
             min_drpver, __ = self.lookUpVersions(min_release)
             allowed = {k: v for k, v in allowed.items() if parse(
                 v[0]) >= parse(min_drpver)}

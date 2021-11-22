@@ -32,7 +32,7 @@ MPL11_models = copy.deepcopy(MPL10_models)
 
 
 # MPL-11 DapDataModel goes here
-MPL11 = DAPDataModel('3.1.0', aliases=['MPL-11', 'MPL11'],
+MPL11 = DAPDataModel('3.1.0', aliases=['MPL-11', 'MPL11', 'DR17'],
                      bintypes=[SPX, HYB10, VOR10],
                      db_only=[HYB10],
                      templates=[MILESHC_MASTARHC2, MILESHC_MASTARSSP],

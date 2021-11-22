@@ -89,7 +89,7 @@ class ProdConfig(Config):
     SQLALCHEMY_DATABASE_URI = 'postgresql://localhost/example'
     DEBUG_TB_ENABLED = False  # Disable Debug toolbar
     USE_X_SENDFILE = True
-    USE_SENTRY = True
+    USE_SENTRY = False
     SENTRY_DSN = os.environ.get('SENTRY_DSN', None)
     PERMANENT_SESSION_LIFETIME = datetime.timedelta(3600)
     JWT_ACCESS_TOKEN_EXPIRES = datetime.timedelta(300)
@@ -119,7 +119,7 @@ class DockerConfig(Config):
     SQLALCHEMY_DATABASE_URI = 'postgresql://localhost/example'
     DEBUG_TB_ENABLED = False  # Disable Debug toolbar
     USE_X_SENDFILE = True
-    USE_SENTRY = True
+    USE_SENTRY = False
     SENTRY_DSN = os.environ.get('SENTRY_DSN', None)
     PERMANENT_SESSION_LIFETIME = datetime.timedelta(3600)
     JWT_ACCESS_TOKEN_EXPIRES = datetime.timedelta(300)
@@ -148,4 +148,4 @@ class CustomConfig(object):
     os.environ['SAS_ANALYSIS'] = 'sas/mangawork/manga/spectro/analysis'
     os.environ['SAS_SANDBOX'] = 'sas/mangawork/manga/sandbox'
     release = os.environ.get('MARVIN_RELEASE', 'mangawork')
-    os.environ['SAS_PREFIX'] = 'marvin' if release == 'mangawork' else 'dr15/marvin'
+    os.environ['SAS_PREFIX'] = 'marvin' if release == 'mangawork' else 'dr17/marvin'

@@ -22,7 +22,7 @@ class GEMAVAC(VACMixIn):
 
     VAC name: GEMA
 
-    URL: https://www.sdss.org/dr15/data_access/value-added-catalogs/?vac_id=gema-vac-galaxy-environment-for-manga-value-added-catalog
+    URL: https://www.sdss.org/dr17/data_access/value-added-catalogs/?vac_id=gema-vac:-galaxy-environment-for-manga-value-added-catalog
 
     Description: The GEMA VAC contains many different quantifications of the local and the large-scale environments for MaNGA galaxies. Please visit the DATAMODEL at https://data.sdss.org/datamodel/files/MANGA_GEMA/GEMA_VER to see the description of each table composing the catalogue.
 
@@ -33,7 +33,8 @@ class GEMAVAC(VACMixIn):
     # Required parameters
     name = 'gema'
     description = 'Returns GEMA table data'
-    version = {'MPL-7': '1.0.1', 'DR15': '1.0.1', 'DR16': '1.0.1'}
+    version = {'MPL-7': '1.0.1', 'DR15': '1.0.1', 'DR16': '1.0.1', 'DR17': '2.0.2', 
+               'MPL-11': '2.0.2'}
 
     # optional Marvin Tools to attach your vac to
     include = (marvin.tools.cube.Cube, marvin.tools.maps.Maps, marvin.tools.modelcube.ModelCube)

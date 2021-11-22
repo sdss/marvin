@@ -16,7 +16,7 @@
 Marvin Documentation
 ====================
 
-Marvin is a tool specifically designed to visualise and analyse `MaNGA <https://www.sdss.org/manga>`_ data. It is developed and maintained by the MaNGA team. Marvin allows you to:
+Marvin is a tool specifically designed to visualise and analyse `MaNGA <https://www.sdss.org/surveys/manga/>`_ data. It is developed and maintained by the MaNGA team. Marvin allows you to:
 
 * Access reduced MaNGA datacubes local, remotely, or via a `web interface <https://dr16.sdss.org/marvin>`_.
 * Access and visualise data analysis products.

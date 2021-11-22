@@ -242,10 +242,7 @@ class MarvinToolsClass(MMAMixIn, CacheMixIn):
                 self.data.close()
             except Exception as ee:
                 warnings.warn('failed to close FITS instance: {0}'.format(ee), MarvinUserWarning)
-        else:
-            warnings.warn(
-                'data-origin {0} ({1}) not closeable'.format(self.data_origin, self.data.__class__),
-                MarvinUserWarning)
+
 
     def __del__(self):
         """Destructor for closing FITS files."""

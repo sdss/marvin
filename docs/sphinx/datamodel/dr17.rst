@@ -1,0 +1,76 @@
+
+.. _datamodel-dr17:
+
+DR17
+====
+
+This datamodel corresponds to the DR17 release of MaNGA data.
+
+
+DataModels
+----------
+
+* :ref:`DRP<dr17drp>`
+* :ref:`DAP<dr17dap>`
+* :ref:`Query<dr17query>`
+* :ref:`Maskbits<dr17masks>`
+* :ref:`VACs<dr17vacs>`
+
+.. _dr17drp:
+
+.. datamodel:: marvin.utils.datamodel.drp.MPL:MPL11
+   :prog: DRP DataModel
+   :spectra:
+   :datacubes:
+   :rss:
+   :description: Here describes the DRP datamodels for spectra, datacubes, and rss properties.  Each table displays relevant information such as property name, a description and units, as well as which FITS extension the property corresponds to.  Each table can be scrolled horizonally for additional info.
+
+.. _dr17dap:
+
+.. datamodel:: marvin.utils.datamodel.dap:MPL11
+   :prog: DAP DataModel
+   :title: DR17 DataModel
+   :bintypes:
+   :templates:
+   :models:
+   :properties:
+   :description: Here describes the DAP datamodels for bintypes, templates, models, and map properties.  Each table displays relevant information such as property name, a description and units, as well as which FITS extension the property corresponds to.  Each table can be scrolled horizonally for additional info.
+
+.. _dr17query:
+
+.. datamodel:: marvin.utils.datamodel.query:MPL11
+   :prog: Query DataModel
+   :title: DR17 DataModel
+   :parameters:
+   :description: Here describes the datamodel for all queryable parameters.  Each table displays relevant information such as the full query name and the group it belongs to. The "full query name" is what is input in all query search filters and return parameters.  The table can be scrolled horizonally for additional info.
+
+
+.. _dr17masks:
+
+Maskbits
+--------
+
+.. datamodel:: marvin.utils.datamodel.dap:MPL11
+   :prog: DRP Maskbits
+   :bitmasks:
+   :bittype: DRP
+
+.. datamodel:: marvin.utils.datamodel.dap:MPL11
+   :prog: DAP Maskbits
+   :bitmasks:
+   :bittype: DAP
+
+.. datamodel:: marvin.utils.datamodel.dap:MPL11
+   :prog: Targeting Maskbits
+   :bitmasks:
+   :bittype: Target
+
+.. _dr17vacs:
+
+VACs
+----
+
+.. datamodel:: marvin.utils.datamodel.vacs:datamodel
+   :prog: Available VACs
+   :vac: dr17
+   :description: A list of the contributed VACs available in this data release.
