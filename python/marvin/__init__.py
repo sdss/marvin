@@ -107,7 +107,7 @@ class MarvinConfig(object):
 
         self.vermode = None
         self.download = False
-        self.use_sentry = True
+        self.use_sentry = False
         self.add_github_message = True
         self._allowed_releases = {}
 
