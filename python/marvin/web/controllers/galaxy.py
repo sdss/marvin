@@ -393,8 +393,14 @@ class Galaxy(BaseWebView):
                                             'labels': [it.labels for it in cube.target_flags if len(it.labels) > 0],
                                             'names': [''.join(('MNGTARG', it.name[-1])) for it in cube.target_flags if it.mask != 0]}
 
+                # check if the cube has any nsa data
+                # catch general exceptions
+                try:
+                    hasnsa = cube.nsa is not None
+                except Exception:
+                    hasnsa = False
+
                 # make the nsa dictionary
-                hasnsa = cube.nsa is not None
                 self.galaxy['hasnsa'] = hasnsa
                 if hasnsa:
                     cols = self.galaxy.get('nsaplotcols')
