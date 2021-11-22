@@ -4,6 +4,7 @@ Marvin's Change Log
 [2.6.2] - unreleased
 --------------------
 - Fixing bug in core Marvin Tools `close` method, for use as contextmanager
+- Fixing bug in web galaxy template when no nsa data available; so pages do not crash
 
 [2.6.1] - 2021/11/18
 --------------------
