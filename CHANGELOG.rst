@@ -1,6 +1,10 @@
 Marvin's Change Log
 ===================
 
+[2.6.2] - unreleased
+--------------------
+- Fixing bug in core Marvin Tools `close` method, for use as contextmanager
+
 [2.6.1] - 2021/11/18
 --------------------
 - Issue :issue:`680` - Basic context manager functionality for ``marvin.tools.core.MarvinToolsClass``, and relevant documentation for ``Cube`` and ``Maps``. Users can automate closing file handlers when in ``file`` mode, by using ``with`` syntax, alleviating some issues with looping through lists of galaxies.
