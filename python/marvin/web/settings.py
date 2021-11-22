@@ -147,4 +147,4 @@ class CustomConfig(object):
     os.environ['SAS_ANALYSIS'] = 'sas/mangawork/manga/spectro/analysis'
     os.environ['SAS_SANDBOX'] = 'sas/mangawork/manga/sandbox'
     release = os.environ.get('MARVIN_RELEASE', 'mangawork')
-    os.environ['SAS_PREFIX'] = 'marvin' if release == 'mangawork' else 'dr15/marvin'
+    os.environ['SAS_PREFIX'] = 'marvin' if release == 'mangawork' else 'dr17/marvin'

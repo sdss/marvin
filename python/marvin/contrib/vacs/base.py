@@ -93,6 +93,10 @@ class VACMixIn(object, six.with_metaclass(abc.ABCMeta)):
     # The name and description of the VAC.
     name = None
     description = None
+    
+    # custom data container for VAC data in summary file(s)
+    # used by tools.vacs.VACs
+    data_container = None
 
     def __init__(self):
 

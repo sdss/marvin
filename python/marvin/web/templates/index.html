@@ -17,7 +17,7 @@
                         <hr class="intro-divider">
                         <div class='row maingaliddiv' id='maingalidsearch'>
                             <div class='col-md-12 col-md-offset-4 col-sm-offset-3'>
-                                {{galidsearch('mainform')}}
+                                {{galidsearch('mainform', tip="right")}}
                             </div>
                         </div>
                         <hr class="intro-divider">
@@ -26,7 +26,7 @@
                                 <a class="btn btn-default btn-lg" onclick='m.utils.scrollTo("#about")'><i class="fa fa-info fa-fw" aria-hidden="true"></i> <span class="network-name">About</span></a>
                             </li>
                             <li id='image_link'>
-                                <a href="{{url_for('images_page.Random:index')}}" class="btn btn-default btn-lg"><i class="fa fa-camera-retro fa-fw" aria-hidden="true"></i> <span class="network-name">Image Roulette</span></a>
+                                <a href="{{url_for('images_page.Random:index')}}" class="btn btn-default btn-lg" data-toggle="tooltip" data-placement="top" title="Explore a random selection of MaNGA galaxies"><i class="fa fa-camera-retro fa-fw" aria-hidden="true"></i> <span class="network-name">Image Roulette</span></a>
                             </li>
                             <li>
                                 <a href="http://sdss-marvin.readthedocs.io/en/stable/" target='_blank' class="btn btn-default btn-lg"><i class="fa fa-question-circle-o fa-fw" aria-hidden="true"></i> <span class="network-name">Help</span></a>

@@ -10,7 +10,8 @@
     `Anaconda <https://www.continuum.io/downloads>`_,
     `Miniconda <http://conda.pydata.org/miniconda.html>`_, or
     `homebrew <http://brew.sh/>`_. After installing one of these distribution,
-    make sure you are actually using it by running ``which python`` and ``which pip``.
+    make sure you are actually using it by running ``which python`` and ``which pip``.  These 
+    commands should print a path to the Python and pip executables within your virtual environment.
 
 |
 
@@ -25,7 +26,7 @@ Installation
 Quick Install
 -------------
 
-To quickly install Marvin, use::
+To install Marvin, use::
 
   pip install sdss-marvin
 
@@ -34,10 +35,13 @@ If you are using an Anaconda distribution of Python, you may use the following a
 
   conda env create -f marvin_2.6.0.yml
 
+For troubleshooting installation issues, please see :ref:`marvin-install-issues` or the 
+`Marvin Github Issues <https://github.com/sdss/marvin/issues>`_ page.
+
 .. _marvin-install-dev:
 
-Developers Installation
------------------------
+Developer's Installation
+------------------------
 
 To develop for marvin, follow these instructions::
 
@@ -45,7 +49,10 @@ To develop for marvin, follow these instructions::
     cd marvin
     pip install -e .
 
-This will checkout the repository, set up the git submodule dependencies, and install marvin into your python path.  You will only need to run this once.  Afterwards, you can start developing for Marvin.
+Use this installation for development and testing, i.e. if you wish to fix bugs or add new 
+features.  This will checkout the repository, install marvin into your python path using pip's
+editable mode.  Afterwards, you can start developing for Marvin, without having to re-install it
+every time your code changes.
 
 .. _marvin-install-auth:
 
@@ -55,12 +62,25 @@ Access and Authentication
 Public Access
 ^^^^^^^^^^^^^
 
-By default Marvin is set up to run in `public` access mode, with the latest SDSS public data release, e.g. DR15.  You can check your access from within an ``iPython`` terminal by typing::
+By default Marvin is set up to run in `public` access mode, with the latest SDSS public data 
+release, e.g. DR15.  You can check your access from within an ``iPython`` terminal.
+
+In your terminal, run:
+
+.. code-block:: console
+
+  $ ipython
+
+Within your ipython session, type:
+
+.. code-block:: python
 
   from marvin import config
   config.access
 
-A ``config.access`` of **public** means you are set up for public access only.  In this mode, you only have access to publically available data.  A ``config.access`` of **collab** indicates you are set up for SDSS collaboration proprietary data access.
+A ``config.access`` of **public** means you are set up for public access only.  In this mode, 
+you only have access to publically available data.  A ``config.access`` of **collab** indicates you 
+are set up for SDSS collaboration proprietary data access.
 
 
 .. _sdss-collaboration-access:
@@ -68,15 +88,17 @@ A ``config.access`` of **public** means you are set up for public access only.  
 SDSS Collaboration Access
 ^^^^^^^^^^^^^^^^^^^^^^^^^
 
-For SDSS collaboration members, authentication is required to access proprietary collaboration data, and Marvin must have ``config.access`` set to **collab**.  See :ref:`more here <marvin-access>`. To set up authentication for Marvin, you must perform the following
+For SDSS collaboration members, authentication is required to access proprietary collaboration 
+data, and Marvin must have ``config.access`` set to **collab**.  See :ref:`more here <marvin-access>`. 
+To set up authentication for Marvin, you must perform the following:
 
 .. _setup-netrc:
 
 Set up your netrc
 ~~~~~~~~~~~~~~~~~
 
-SDSS uses ``.netrc`` authentication to access data content on many domains. To set this up, create and edit a file in your
-home called ``.netrc`` an copy these lines inside::
+SDSS uses ``.netrc`` authentication to access data content on many domains. To set this up, create 
+and edit a file in your home called ``.netrc`` and copy these lines inside::
 
     machine api.sdss.org
        login <username>
@@ -86,15 +108,20 @@ home called ``.netrc`` an copy these lines inside::
        login <username>
        password <password>
 
-and replace ``<username>`` and ``<password>`` with your login credentials. The default SDSS username and password is also
-acceptable for anonymous access.  **Finally, run** ``chmod 600 ~/.netrc`` **to make the file only accessible to your user.**
+and replace ``<username>`` and ``<password>`` with your login credentials. The default SDSS 
+username and password is also acceptable for anonymous access.  
+**Finally, run** ``chmod 600 ~/.netrc`` **to make the file only accessible to the user.**
 
 .. _api-token-auth:
 
 API Token Authentication
 ~~~~~~~~~~~~~~~~~~~~~~~~
 
-Marvin requires token authentication to grant access and use of its API.  Marvin uses the standard `JSON Web Tokens <https://jwt.io/introduction/>`_ for token authentication.  To receive a valid token, you must :ref:`login <marvin-api-login>` with your valid SDSS credentials, via the ``.netrc``.  With your ``netrc`` access in place, you will receive a valid API token.  Tokens remain valid for 300 days.::
+Marvin requires token authentication to grant access and use of its API.  Marvin uses the 
+standard `JSON Web Tokens <https://jwt.io/introduction/>`_ for token authentication.  To 
+receive a valid token, you must :ref:`login <marvin-api-login>` with your valid SDSS 
+credentials, via the ``.netrc``.  With your ``netrc`` access in place, you will receive a valid 
+API token.  Tokens remain valid for 300 days.::
 
   # login to receive a token
   config.login()
@@ -102,18 +129,26 @@ Marvin requires token authentication to grant access and use of its API.  Marvin
   # see token
   config.token
 
+You will need a token every time you start a new python session.  To change this, follow the steps in
+:ref:`auto-login`.
 
 .. _auto-login:
 
 Automatically Logging In
 ~~~~~~~~~~~~~~~~~~~~~~~~
 
-As the default mode of marvin is **public**, you will need to authenticate and change to **collab** access inside every new ``iPython`` session.  To simplify this process, marvin can be configured to automatically perform the access and authentication checks.  To configure marvin, you must set up a :ref:`custom marvin configuration file <marvin_custom_yaml>`.  Inside a ``~/.marvin/marvin.yml`` file, set the following lines::
+As the default mode of marvin is **public**, you will need to authenticate and change to 
+**collab** access inside every new ``iPython`` session.  To simplify this process, marvin can 
+be configured to automatically perform the access and authentication checks.  To configure marvin, 
+you must set up a :ref:`custom marvin configuration file <marvin_custom_yaml>`.  Inside a 
+``~/.marvin/marvin.yml`` file, set the following lines::
 
   check_access: True
   use_token: [token]
 
-You can replace **[token]** with your authenticated API JSON token (without any string quotes).  Upon import of marvin, Marvin will check for valid credentials and automatically set up your collaboration access.
+You can replace **[token]** with your authenticated API JSON token (without any string quotes).  
+Upon import of marvin, Marvin will check for valid credentials and automatically set up your 
+collaboration access.
 
 .. _marvin-environment:
 
@@ -121,10 +156,10 @@ Marvin Environment
 ------------------
 
 Marvin requires a certain environment structure to access and (optionally) download data.  By default,
-marvin will look for data files in a directory structure that mirrors the
+``marvin`` will look for data files in a directory structure that mirrors the
 `Science Archive Server <https://data.sdss.org/sas>`_. :ref:`Data downloaded via marvin <marvin-download-objects>` will
 also be stored according to that structure. The root of this directory structure is
-defined by the environment variable  ``$SAS_BASE_DIR``. For example, if marvin needs
+defined by the environment variable  ``$SAS_BASE_DIR``. For example, if ``marvin`` needs
 to use the ``drpall`` file for DR15, it will try to find it in
 ``$SAS_BASE_DIR/dr15/manga/spectro/redux/v2_4_3/drpall-v2_4_3.fits``.
 
@@ -159,13 +194,11 @@ Marvin depends on three pieces of SDSS-wide software:
 * `tree <https://github.com/sdss/tree>`_: defines the structure of the Science Archive Sever, relative paths to data products, etc.
 * `sdss_access <https://github.com/sdss/sdss_access>`_: tools for efficiently accessing data files, rsyncing data, etc.
 
-For convenience, marvin includes these products as external libraries. This means that
-you most likely do not need to worry about any of these products. However, with the exception of the **tree** product,
-if any of these libraries are already installed in your system (i.e., you have defined
-``$MARVIN_BRAIN_DIR``, or ``$SDSS_ACCESS_DIR``), marvin will use the system
-wide products instead of its own versions. This is useful for development but note that
-it can also lead to confusions about what version marvin is using.
-
+For convenience, Marvin includes these products as external libraries, and you should not need 
+to worry about them. However, if any of these libraries, except the **tree** product, 
+are already installed in your system (i.e., you have defined ``$MARVIN_BRAIN_DIR``, or 
+``$SDSS_ACCESS_DIR``), Marvin will use the system wide products instead of its own versions. This is 
+useful for development but note that it can lead to confusion about what version Marvin is using.
 
 .. _marvin-install-issues:
 
@@ -176,7 +209,18 @@ Install and Runtime Issues
 
     We can use your help to expand this section. If you have encountered an issue
     or have questions that should be addressed here, please
-    `submit and issue <https://github.com/sdss/marvin/issues/new>`_.
+    `submit an issue <https://github.com/sdss/marvin/issues/new>`_.
+
+Uwsgi package installation failure
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+For Python versions 3.8 and above, the ``uwsgi`` package fails to compile during standard `pip` 
+installation.  Alternatively, before installing Marvin, you can install the ``uwsgi`` package using
+conda with::
+
+  conda install -c conda-forge uwsgi
+
+Afterwards installaton, marvin should install successfully.
 
 Pip Failure with Python-Memcache
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -192,8 +236,10 @@ To upgrade an existing Marvin installation, run::
 
   pip install -U sdss-marvin
 
-By default, ``pip`` will update any underlying package on which marvin depends. If you want to prevent that you can upgrade marvin with ``pip install -U --no-deps sdss-marvin``. This could, however, make marvin to not work correctly. Instead, you can try ``pip install -U --upgrade-strategy only-if-needed sdss-marvin``, which will upgrade a dependency only if needed.
-
+By default, ``pip`` will update any underlying package on which marvin depends. If you want to 
+prevent that you can upgrade marvin with ``pip install -U --no-deps sdss-marvin``. This could, 
+however, make marvin not work correctly. Instead, you can try ``pip install -U --upgrade-strategy only-if-needed sdss-marvin``, 
+which will upgrade a dependency only if needed.
 
 
 Permissions Error
@@ -210,21 +256,22 @@ than the Anaconda one, e.g. `/lib/python3.6`, try following the solution indicat
 How to test that marvin has been installed correctly
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Marvin is built to have you started with minimum configuration on your part. This means that
-marvin is likely to import but maybe not all features will be available. Here are a few commands
-you can try that will inform you if there are problems with your installation.
+Marvin is designed to get you started with minimal configuration on your part. However, this means
+that Marvin may import correctly but may not have all features immediately available.  Here are a 
+few commands you can try that will inform you if there are problems with your installation.
 
 From a terminal window, type::
 
     check_marvin
 
-This will perform a variety of checks with Marvin and output the results to the terminal.  We may ask you for this output when
-diagnosing any installation issues.  After installing marvin, start a python/ipython session and run::
+This will perform a variety of checks with Marvin and output the results to the terminal.  We may ask 
+you for this output when diagnosing any installation issues.  After installing marvin, start a 
+python/ipython session and run::
 
     import marvin
     print(marvin.config.urlmap)
 
-If you get a dictionary with API routes, marvin is connecting correctly to the API server at
+If you get a dictionary filled with url routes, marvin is connecting correctly to the API server at
 Utah and you can use the remote features. If you get ``None``, you may want to
 check the steps in :ref:`setup-netrc`.  If you get an error message such as
 
@@ -238,7 +285,7 @@ this means the servers at Utah have timed out and may possibly be down.  Simply 
 Marvin Remote Access Problems
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-If the above test crashes, or you attempt to use a Marvin Tool remotely, and you see this error::
+If the above ``urlmap`` test crashes, or you attempt to use a Marvin Tool remotely, and you see this error::
 
     AttributeError: 'Extensions' object has no attribute 'get_extension_for_class'
 

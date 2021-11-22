@@ -11,6 +11,8 @@
 .. autosummary::
     marvin.contrib.vacs.firefly.FIREFLYVAC
 
-.. skipping this until DR16+
-.. .. autosummary::
-..    marvin.contrib.vacs.visual_morph.VMORPHOVAC
+.. autosummary::
+    marvin.contrib.vacs.visual_morph.VMORPHOVAC
+
+.. autosummary::
+    marvin.contrib.vacs.galaxyzoo3d.GZ3DVAC
