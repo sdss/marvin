@@ -11,7 +11,18 @@ What's New
 
 This section summarises the most important new features a bugfixes in Marvin. For the complete list of changes check the :ref:`marvin-changelog`.
 
-2.6.1 (unreleased)
+2.7.0 (unreleased)
+------------------
+- Support for DR17
+- Updated VACs for DR17.  New VAC GalazyZoo3D.  
+- New **Explore** page in Marvin Web
+
+  - Find it via the **Upload** button in the top navbar.
+  - Upload a list of targets to display DAP maps
+  
+- Improvements to the Marvin web interface
+
+2.6.1 (November 2021)
 ------------------
 - Support for using Tools as context managers, allowing efficient access and closure of file handlers. This will make workflows relying on looping through lists of galaxies and performing similar actions less error-prone.
 
