@@ -320,7 +320,7 @@ class GZ3DVAC(VACMixIn):
 
     name = 'gz3d'
     description = 'Return object for working with Galaxy Zoo 3D data masks'
-    version = {'DR17': 'v4_0_0', 'MPL-11': 'v3_1_1'}
+    version = {'DR17': 'v4_0_0', 'MPL-11': 'v4_0_0'}
 
     include = (marvin.tools.cube.Cube, marvin.tools.maps.Maps)
 
