@@ -36,7 +36,8 @@ var Explore = function () {
         this.mapparam = $('#mapchoice');
         this.bintemp = $('#btchoice');
 
-        this.mapsbtn.on('click', this, this.testall); // this event fires when a user clicks the MapSpec View Tab
+        // event handlers
+        this.mapsbtn.on('click', this, this.get_maps); // this event fires when a user clicks the Get Maps button
     }
 
     // Test print
@@ -48,101 +49,11 @@ var Explore = function () {
             console.log('We are now printing explore', this.targets);
         }
 
-        // Initialize the DAP Heatmap displays
+        // Fetch a map and initialize the DAP heatmap display
 
     }, {
-        key: 'initHeatmap',
-        value: function initHeatmap(maps, mapmsgs) {
-            var start = performance.now();
-            var mapchildren = this.mapsdiv.children('div');
-            var _this = this;
-            $.each(mapchildren, function (index, child) {
-                var mapdiv = $(child).find('div').first();
-                mapdiv.empty();
-                if (maps[index] !== undefined && maps[index].data !== null) {
-                    this.heatmap = new HeatMap(mapdiv, maps[index].data, maps[index].msg, maps[index].plotparams, _this);
-                    this.heatmap.mapdiv.highcharts().reflow();
-                } else {
-                    var err = '<p class=\'alert alert-danger\'>' + mapmsgs[index] + '</p>';
-                    mapdiv.html(err);
-                }
-            });
-            var end = performance.now();
-            console.log('td', end - start, 'in ms');
-        }
-
-        // Init a single Heatmap
-
-    }, {
-        key: 'initSingleHeatmap',
-        value: function initSingleHeatmap(data) {
-            var _this = this;
-            //let mapdiv = $(child).find('div').first();
-            //mapdiv.empty();
-
-            var _data = _slicedToArray(data, 3),
-                mapobj = _data[0],
-                mapmsg = _data[1],
-                div = _data[2];
-
-            var mapdiv = $(div).find('div').first();
-            mapdiv.empty();
-            if (mapobj !== undefined && mapobj.data !== null) {
-                this.heatmap = new HeatMap(mapdiv, mapobj.data, mapobj.msg, mapobj.plotparams, _this);
-                this.heatmap.mapdiv.highcharts().reflow();
-            } else {
-                var err = '<p class=\'alert alert-danger\'>' + mapmsg + '</p>';
-                mapdiv.html(err);
-            }
-        }
-
-        // Parallel process heatmaps
-
-    }, {
-        key: 'parallelHeatmaps',
-        value: function parallelHeatmaps(maps, mapmsgs) {
-            var zip = function zip(a, b, c) {
-                return a.map(function (k, i) {
-                    return [k, b[i], c[i]];
-                });
-            };
-            var mapdivs = this.mapsdiv.children('div'); //.find("div");
-            var data = zip(maps, mapmsgs, mapdivs);
-            console.log(data);
-            var p = new Parallel(data);
-            p.map(this.initSingleHeatmap);
-            //this.initSingleHeatmap(data[0]);
-        }
-    }, {
-        key: 'promise',
-        value: function promise(maps, mapmsgs) {
-            this.mapsbtn.prop('disabled', true);
-            var start = performance.now();
-            var _this = this;
-            var zip = function zip(a, b, c) {
-                return a.map(function (k, i) {
-                    return [k, b[i], c[i]];
-                });
-            };
-            var mapdivs = this.mapsdiv.children('div'); //.find("div");
-            var data = zip(maps, mapmsgs, mapdivs);
-
-            Promise.all(data.map(function (id) {
-                //console.log('id', id);
-                _this.initSingleHeatmap(id);
-                return "";
-            })).then(function (results) {
-                // results is an array of names
-                console.log('res', results);
-                var end = performance.now();
-                console.log('td', end - start, 'in ms');
-                _this.mapsbtn.prop('disabled', false);
-                _this.mapsbtn.button('reset');
-            });
-        }
-    }, {
-        key: 'test',
-        value: function test(input) {
+        key: 'get_map',
+        value: function get_map(input) {
             var _this2 = this;
 
             var _this = this;
@@ -160,15 +71,9 @@ var Explore = function () {
                     'mapchoice': param, 'btchoice': bintemp }),
                 'method': 'POST', 'headers': { 'Content-Type': 'application/json' } };
 
-            //let mapdivs = this.mapsdiv.children('div');
-            //let mapdiv = mapdivs.find('div').first();
-            //mapdiv.empty();
-            //console.log('test', target, mapdiv);
-
-            fetch(Flask.url_for('explore_page.webmap'), data).then(function (response) {
+            return fetch(Flask.url_for('explore_page.webmap'), data).then(function (response) {
                 return response.json();
             }).then(function (data) {
-                //console.log('json', data.result);
                 if (data.result.maps !== undefined && data.result.maps.data !== null) {
                     _this2.heatmap = new HeatMap(mapdiv, data.result.maps.data, data.result.maps.msg, data.result.maps.plotparams, _this);
                     _this2.heatmap.mapdiv.highcharts().reflow();
@@ -176,37 +81,37 @@ var Explore = function () {
                     var err = '<p class=\'alert alert-danger\'>' + data.result.msg + '</p>';
                     mapdiv.html(err);
                 }
+                return "done";
             });
-            //fetch('http://localhost:5000/marvin/explore/webmap/', {'body': JSON.stringify({'release':'DR17', 'target':'8485-1901', 'mapchoice':'emline_gflux_ha_6564', 'btchoice':'HYB10-MILESHC-MASTARSSP'}), 'method':'POST', 'headers':{'Content-Type':'application/json'}}).then(response=>response.json()).then(data => console.log(data));
         }
+
+        // Grab all map data for list of targets
+
     }, {
-        key: 'testall',
-        value: function testall(event) {
+        key: 'get_maps',
+        value: function get_maps(event) {
             var _this = event.data;
-            // if (targets === undefined) {
-            //     targets = this.targets;
-            // }
+
+            // set button to loading...
+            $(this).button('loading');
+
+            // get the target list
             var targets = _this.targets;
 
-            var start = performance.now();
-            //let _this = this;
-            //_this.mapsdiv.children('div').empty();
+            // construct the input data
             var zip = function zip(a, b) {
                 return a.map(function (k, i) {
                     return [k, b[i]];
                 });
             };
             var data = zip(targets, _this.mapsdiv.children('div'));
-            Promise.all(data.map(function (d) {
-                //let mapdiv = _this.mapsdiv.children('div').find('div[id^="exmapdiv"]')[index];
-                //console.log(mapdiv);
-                _this.test(d);
+
+            // create a list of promises to run
+            Promise.allSettled(data.map(function (d) {
+                return _this.get_map(d);
             })).then(function (response) {
-                var end = performance.now();
-                console.log('td', end - start, 'in ms');
-                _this.mapsbtn.prop('disabled', false);
-                _this.mapsbtn.button('reset');
                 console.log("all done");
+                return _this.mapsbtn.button('reset');
             });
         }
     }]);

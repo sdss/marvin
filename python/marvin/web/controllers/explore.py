@@ -25,6 +25,7 @@ import os
 import pandas as pd
 from brain.api.base import processRequest
 
+from marvin.api.base import arg_validate as av
 from marvin.web.controllers.galaxy import buildMapDict
 from marvin.tools import Cube
 
@@ -145,10 +146,11 @@ class Explore(BaseWebView):
 
             # check number of targets
             n_targets = len(targets)
-            msg = 'Targets succefully uploaded.'
-            # if n_targets > 50:
-            #     targets = targets[:50]
-            #     msg += ' Only a limit of 50 targets allowed.'
+            msg = 'Targets successfully uploaded.'
+            if n_targets > 50:
+                targets = targets[:50]
+                msg += ' Only a limit of 50 targets allowed.'
+            msg += ' Now select a map below.'
 
             flash(msg, 'info')
             targetlist = '&#10;'.join(targets)
@@ -164,10 +166,7 @@ class Explore(BaseWebView):
 
     @route('/maps/', methods=['GET', 'POST'], endpoint='maps')
     def get_maps(self):
-        import datetime
-        st = datetime.datetime.now()
         stuff = processRequest(request)
-        print('getting maps', st)
         home = 'explore_page.Explore:index'
 
         dm = datamodel[self._dapver]
@@ -198,62 +197,17 @@ class Explore(BaseWebView):
         self.explore['mapmsgs'] = 'go'
         self.explore['mapsloading'] = True
 
-        et = datetime.datetime.now()
-        print('ending maps', et)
-        print('td', (et - st).total_seconds())
         return render_template('explore.html', **self.explore)
     
-        # build the uber map dictionary
-        maps = []
-        mapmsgs = []
-        for target in targets:
-            try:
-                cube = Cube(target, release=self._release)
-            except MarvinError:
-                mapdict = {'data': None, 'msg': 'Error',
-                           'plotparams': None}
-                mapmsg = 'No cube available'
-                maps.append(mapdict)
-                mapmsgs.append(mapmsg)
-                continue
-
-            hasbin = btchoice.split('-')[0] in cube.get_available_bintypes() if btchoice else None
-
-            try:
-                mapdict = buildMapDict(cube, [mapchoice], self._dapver, bintemp=btchoice)
-                mapmsg = None
-            except Exception as e:
-                mapdict = {'data': None, 'msg': 'Error', 'plotparams': None}
-                if hasbin:
-                    mapmsg = 'Error getting maps: {0}'.format(e)
-                else:
-                    mapmsg = 'No maps available for selected bintype {0}. Try a different one.'.format(
-                        btchoice)
-            else:
-                self.explore['mapstatus'] = 1
-                maps.append(mapdict[0])
-                mapmsgs.append(mapmsg)
-        self.explore['maps'] = maps
-        self.explore['mapmsgs'] = mapmsgs
-        self.explore['mapsloading'] = True
-
-        et = datetime.datetime.now()
-        print('ending maps', et)
-        print('td', (et - st).total_seconds())
-        return render_template('explore.html', **self.explore)
-
     @route('/webmap/', methods=['POST'], endpoint='webmap')
-    #@cache.memoize()
     def updateMaps(self):
-        #args = av.manual_parse(self, request, use_params='galaxy', required=['plateifu', 'bintemp', 'params[]'], makemulti=True)
-        stuff = processRequest(request)
-        mapchoice = stuff.get('mapchoice', '')
-        btchoice = stuff.get('btchoice', '')
-        target = stuff.get('target', '')
+        args = av.manual_parse(self, request, use_params='explore', required='target')
+        #stuff = processRequest(request)
+        mapchoice = args.get('mapchoice', '')
+        btchoice = args.get('btchoice', '')
+        target = args.get('target', '')
 
         output = {'maps': None, 'msg': None}
-
-        #print('here', target, mapchoice, btchoice)
 
         try:
             cube = Cube(target, release=self._release)
@@ -266,8 +220,6 @@ class Explore(BaseWebView):
             return jsonify(result=output)
 
         hasbin = btchoice.split('-')[0] in cube.get_available_bintypes() if btchoice else None
-
-        #print('here', hasbin, cube, self._dapver)
 
         try:
             mapdict = buildMapDict(cube, [mapchoice], self._dapver, bintemp=btchoice)

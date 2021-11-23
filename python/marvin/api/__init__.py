@@ -95,7 +95,7 @@ params = {'query': {'searchfilter': fields.String(allow_none=True),
                      'bintemp': fields.String(allow_none=True),
                      'params[]': fields.List(fields.String(), allow_none=True)
                      },
-          'explore': {'targetlist': fields.DelimitedList(fields.String(), allow_none=True),
+          'explore': {'target': fields.String(required=True),
                       'mapchoice': fields.String(allow_none=True),
                       'btchoice': fields.String(allow_none=True)}
           }
