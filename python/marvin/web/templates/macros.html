@@ -44,7 +44,7 @@
 {% macro galidsearch(id, tip="bottom") %}
     <form class="navbar-form navbar-left galidsearch" role="form" id='{{id}}' action="{{url_for('index_page.galidselect')}}" method="post">
         <div class='form-group form-inline galids' id='scrollable-dropdown-menu'>
-            <input class='form-control typeahead' type='text' name='galid' placeholder='Plate or ID Designation' id='galid-{{id}}' val='' autocomplete='off' data-provide='typeahead' data-toggle="tooltip" data-placement="{{tip}}" title="Input a valid MaNGA plateID or mangaID"/>
+            <input class='form-control typeahead' type='text' name='galid' placeholder='Plate or ID Designation' id='galid-{{id}}' val='' autocomplete='off' data-provide='typeahead' data-toggle="tooltip" data-placement="{{tip}}" title="Input a valid MaNGA plateID or mangaID to search for a galaxy to display"/>
         </div>
     </form>
 {% endmacro %}

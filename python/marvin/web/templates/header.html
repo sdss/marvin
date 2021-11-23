@@ -16,15 +16,16 @@
 
         <div class="navbar-collapse" id="bs-example-navbar-collapse-1">
             <ul class="nav navbar-nav">
-                <li class="{{'active' if active_page=='help'}}"><a target='_blank' href="https://github.com/sdss/marvin"><i class="fa fa-github fa-fw" aria-hidden="true"></i>Github</a></li>
-                <li class="{{'active' if active_page=='help'}}"><a target='_blank' href="http://sdss-marvin.readthedocs.io/en/stable/"><i class="fa fa-question-circle-o fa-fw" aria-hidden="true"></i>Help</a></li>
-                <li class="{{'active' if active_page=='help'}}"><a target='_blank' href='http://sdss-marvin.readthedocs.io/en/stable/citation.html'><i class="fa fa-quote-right fa-fw" aria-hidden="true"></i>Cite Us</a></li>
-                <li class="{{'active' if active_page=='search'}}" id='search_link'><a href="{{url_for('search_page.Search:index')}}"><i class="fa fa-search fa-fw" aria-hidden="true"></i>Query</a></li>
+                <li class="{{'active' if active_page=='help'}}" data-toggle="tooltip" data-placement="bottom" title="Go to Marvin's Github page"><a target='_blank' href="https://github.com/sdss/marvin"><i class="fa fa-github fa-fw" aria-hidden="true"></i>Github</a></li>
+                <li class="{{'active' if active_page=='help'}}" data-toggle="tooltip" data-placement="bottom" title="Read the documentation"><a target='_blank' href="http://sdss-marvin.readthedocs.io/en/stable/"><i class="fa fa-question-circle-o fa-fw" aria-hidden="true"></i>Help</a></li>
+                <li class="{{'active' if active_page=='help'}}" data-toggle="tooltip" data-placement="bottom" title="See how to acknowledge us"><a target='_blank' href='http://sdss-marvin.readthedocs.io/en/stable/citation.html'><i class="fa fa-quote-right fa-fw" aria-hidden="true"></i>Cite Us</a></li>
+                <li class="{{'active' if active_page=='search'}}" id='search_link' data-toggle="tooltip" data-placement="bottom" title="Search the MaNGA data by parameters"><a href="{{url_for('search_page.Search:index')}}"><i class="fa fa-search fa-fw" aria-hidden="true"></i>Query</a></li>
+                <li class="{{'active' if active_page=='explore'}}" id='explore_link' data-toggle="tooltip" data-placement="bottom" title="Upload a list of targets to explore via DAP MAPS"><a href="{{url_for('explore_page.Explore:index')}}"><i class="fa fa-arrow-circle-up fa-fw" aria-hidden="true"></i>Upload</a></li>
             </ul>
 
             <!-- Galaxy ID Search Box-->
             {# Marvin PlateId/MaNGAId Search #}
-            {{galidsearch('headform', tip='bottom')}}
+            {{galidsearch('headform', tip='left')}}
 
             <!-- MPL Version Selection -->
             {# MPL Version Selection #}

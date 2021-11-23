@@ -1,4 +1,5 @@
 {% extends "layout.html" %}
+{% set active_page = active_page|default("explore") %}
 
 <!-- Galaxy CSS Sources -->
 {% block csshead %}
@@ -18,7 +19,7 @@
             <div class="form-group">
                 <label for="targetinput">Upload a List of Targets: <small>(limit of 50)</small></label>
                 <input type="file" name='file' id="targetinput" aria-describedby='inputgroupfile'>
-                <button type="submit" class="btn btn-sm btn-primary">Upload File</button>
+                <button type="submit" class="btn btn-sm btn-primary" data-toggle="tooltip" data-placement="right" title="Upload a csv of target plateifus or mangaids">Upload File</button>
             </div>
         </form>
 
@@ -55,7 +56,7 @@
                     {% endfor %}
                 </select>
             </div>
-            <button type="button" id='getmapbut' class="btn btn-primary {{'disabled' if not targetlist|safe or not mapchoice or mapsloading}}" data-loading-text="Loading..." >Get Maps</button>
+            <button type="button" id='getmapbut' class="btn btn-primary {{'disabled' if not targetlist|safe or not mapchoice or mapsloading}}" data-loading-text="<i class='fa fa-circle-o-notch fa-spin fa-fw'></i>Loading...">Get Maps</button>
         </form>
 
         </div>
@@ -104,38 +105,12 @@ $('#mapchoice').on('changed.bs.select', function (e, clickedIndex, newValue, old
     }
 });
 
-//onClick="this.form.submit(); this.disabled=true; this.value='Sending…'; "
-//  $('#getmapbut').on('click', function () {
-    //var $btn = $(this).button('loading');
-    //$('#mapform').submit();
-    // business logic...
-    //$btn.button('reset')
-//  })
-
 $(function() {
     let targets = {{targets|tojson}};
     let explore = new Explore(targets);
     explore.print();
 
     $('#mapchoice').selectpicker('refresh');
-    //console.log($('#explorediv').find("#exmaps").children("div"));
-    //console.log($('#explorediv').find("#exmaps").children("div").find("div"));
-    // initialize the maps
-    //maps = {{maps|tojson}};
-    console.log('have targets');
-    if (maps != null) {
-        //$('#getmapbut').addClass('disabled');
-        //$('#getmapbut').button('loading');
-        //let mapmsgs = {{mapmsgs|tojson}};
-        //maps = {{maps|tojson}};
-        //explore.initHeatmap(maps, mapmsgs);
-        //explore.parallelHeatmaps(maps, mapmsgs);
-        //console.log('running promise');
-        //explore.testall(targets);
-        //explore.promise(maps, mapmsgs);
-        //explore.uppercaseItems();
-        //$('#getmapbut').removeClass('disabled');
-    }
 });
 </script>
 {% endblock code %}
