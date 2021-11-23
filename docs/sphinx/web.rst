@@ -257,7 +257,7 @@ Explore Page
 Clicking the "Upload" button in the top navigation bar takes you to the Explore page.  This page 
 allows the user to upload a list of MaNGA targets for display via their DAP MAPS.  A valid file can
 either be a txt or csv file, and a valid MaNGA target name is either a plate-ifu or a MaNGA ID.  
-Currently only a limit of 50 targets is allowed.
+Currently only a limit of 100 targets is allowed.
 
 Once a valid target list has been uploaded, the user can select the type of DAP map to display, by
 choosing from a valid analysis parameter and binning scheme from the two dropdowns.  Clicking the

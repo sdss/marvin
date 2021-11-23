@@ -17,7 +17,7 @@
 
         <form role='form' action="{{url_for('explore_page.upload')}}" method='post' enctype="multipart/form-data">
             <div class="form-group">
-                <label for="targetinput">Upload a List of Targets: <small>(limit of 50)</small></label>
+                <label for="targetinput">Upload a List of Targets: <small>(limit of 100)</small></label>
                 <input type="file" name='file' id="targetinput" aria-describedby='inputgroupfile'>
                 <button type="submit" class="btn btn-sm btn-primary" data-toggle="tooltip" data-placement="right" title="Upload a csv of target plateifus or mangaids">Upload File</button>
             </div>
@@ -29,7 +29,7 @@
                 <textarea id='targetlist' name='targetlist' class="form-control" readonly rows="3"
                     placeholder='No targets loaded...'>{{targetlist|safe}}</textarea>
                 {% for category, message in get_flashed_messages(with_categories=True) %}
-                    <p class="error alert alert-{{'danger' if category == 'error' else 'info'}}"><strong>{{category|title}}:</strong> {{ message }}</p>
+                    <p class="error alert alert-{{'danger' if category == 'error' else 'warning' if category == 'warning' else 'info'}}"><strong>{{category|title}}:</strong> {{ message }}</p>
                 {% endfor %}
             </div>
             <div class='form-group'>

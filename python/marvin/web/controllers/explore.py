@@ -52,10 +52,7 @@ def read_targets(filename):
 
 def check_targets(targets):
     ''' check the target string is either plateifu or mangaid '''
-    target = targets[0]
-    targ_id = parseIdentifier(target)
-    return targ_id in ['plateifu', 'mangaid']
-
+    return [t for t in targets if parseIdentifier(t) in ['plateifu', 'mangaid']]
 
 class Explore(BaseWebView):
     route_base = '/explore/'
@@ -140,16 +137,22 @@ class Explore(BaseWebView):
             flash('Could not read targets from file.  Check file format.', 'error')
             return redirect(url_for(home))
         else:
-            if not check_targets(targets):
-                flash('Targets not valid format of plateifu or mangaid', 'error')
+            orig_count = len(targets)
+            targets = check_targets(targets)
+            if not targets:
+                flash('No valid targets found in format of plateifu or mangaid', 'error')
                 return redirect(url_for(home))
 
             # check number of targets
             n_targets = len(targets)
+
+            if n_targets < orig_count:
+                flash(f'Removed {orig_count - n_targets} invalid targets from list', 'warning')
+
             msg = 'Targets successfully uploaded.'
-            if n_targets > 50:
-                targets = targets[:50]
-                msg += ' Only a limit of 50 targets allowed.'
+            if n_targets > 100:
+                targets = targets[:100]
+                msg += ' Only a limit of 100 targets allowed.'
             msg += ' Now select a map below.'
 
             flash(msg, 'info')
