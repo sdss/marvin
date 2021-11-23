@@ -15,11 +15,11 @@ This section summarises the most important new features a bugfixes in Marvin. Fo
 ------------------
 - Support for DR17
 - Updated VACs for DR17.  New VAC GalazyZoo3D.  
-- New **Explore** page in Marvin Web
+- New `Explore <https://dr17.sdss.org/marvin/explore>`_ page in Marvin Web
 
   - Find it via the **Upload** button in the top navbar.
-  - Upload a list of targets to display DAP maps
-  
+  - Upload a list of targets and choose which DAP map to display for all targets
+
 - Improvements to the Marvin web interface
 
 2.6.1 (November 2021)
