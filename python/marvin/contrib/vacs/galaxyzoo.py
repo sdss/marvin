@@ -41,6 +41,8 @@ class GZVAC(VACMixIn):
     description = "Returns Galaxy Zoo morphology"
     version = {"MPL-7": "v1_0_1", "MPL-8": "v1_0_1", "DR15": "v1_0_1", "DR16": "v1_0_1", 
                "MPL-11" : None, "DR17" : None}
+    display_name = 'Galaxy Zoo'
+    url = 'https://www.sdss.org/dr17/data_access/value-added-catalogs/?vac_id=manga-morphologies-from-galaxy-zoo'
 
     # optional Marvin Tools to attach your vac to
     include = (marvin.tools.cube.Cube, marvin.tools.maps.Maps, marvin.tools.modelcube.ModelCube)

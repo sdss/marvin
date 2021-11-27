@@ -6276,6 +6276,9 @@ section h3.section-subheading {
   color: indianred !important;
   border-color: indianred !important; }
 
+#vacmodalbody {
+  padding: 0px; }
+
 /*
 * @Author: Brian Cherinka
 * @Date:   2016-04-28 00:05:52

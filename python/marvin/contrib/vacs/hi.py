@@ -94,7 +94,8 @@ class HIVAC(VACMixIn):
     name = 'HI'
     description = 'Returns HI summary data and spectra'
     version = {'MPL-7': 'v1_0_1', 'DR15': 'v1_0_1', 'DR16': 'v1_0_2', 'DR17': 'v2_0_1', 'MPL-11': 'v2_0_1'}
-
+    display_name = 'HI'
+    url = 'https://www.sdss.org/dr17/data_access/value-added-catalogs/?vac_id=hi-manga-data-release-1'
 
     # optional Marvin Tools to attach your vac to
     include = (marvin.tools.cube.Cube, marvin.tools.maps.Maps, marvin.tools.modelcube.ModelCube)

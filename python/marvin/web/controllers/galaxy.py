@@ -287,6 +287,38 @@ def remove_nans(datadict):
     return datadict
 
 
+def create_vacdata(mangaid: str) -> dict:
+    """ create a dictionary for VAC data for web display
+
+    Parameters
+    ----------
+    mangaid : str
+        The target mangaid 
+
+    Returns
+    -------
+    dict
+        A dictionary of VAC information
+    """
+    from marvin.tools.vacs import VACs
+    v = VACs()
+    dd = v.check_target(mangaid)
+    vacdata=[]
+    for i in v.list_vacs():
+        if isinstance(v[i], dict):
+            for k, j in v[i].items():
+                link = j._rsync.url('', full=j._path)
+                vacdata.append({'name': f'<a target="_blank" href="{j.url}">{j.display_name}: {k}</a>', 
+                                'data': dd[i][k], 'py': f'cube.vacs.{j.name}[{k}]', 
+                                'link': f'<a href="{link}">link</a>'})
+        else:
+            link = v[i]._rsync.url('', full=v[i]._path)
+            vacdata.append({'name': f'<a target="_blank" href="{v[i].url}">{v[i].display_name}</a>',
+                            'data': dd[i], 'py': f'cube.vacs.{v[i].name}', 
+                            'link': f'<a href="{link}">link</a>'})
+    return vacdata        
+
+
 class Galaxy(BaseWebView):
     route_base = '/galaxy/'
 
@@ -340,6 +372,7 @@ class Galaxy(BaseWebView):
             # set plateifu or mangaid
             self.galaxy['idtype'] = idtype
             galaxyid = {self.galaxy['idtype']: galid, 'release': self._release}
+            self.galaxy['vacdata'] = []
 
             # Get cube
             try:
@@ -387,6 +420,7 @@ class Galaxy(BaseWebView):
                 daplist = [p.full(web=True) for p in dm.properties]
                 dapdefaults = dm.get_default_mapset()
                 self.galaxy['cube'] = cube
+                self.galaxy['vacdata'] = create_vacdata(cube.mangaid)             
                 self.galaxy['toggleon'] = current_session.get('toggleon', 'false')
                 self.galaxy['cubehdr'] = cube.header
                 self.galaxy['quality'] = ('DRP3QUAL', cube.quality_flag.mask, cube.quality_flag.labels)
@@ -440,6 +474,13 @@ class Galaxy(BaseWebView):
                     line map<br>haflux = maps.emline_gflux_ha_6564<br>values = \
                     haflux.value<br>ivar = haflux.ivar<br>mask = haflux.mask<br>haflux.plot()<br>\
                     </samp></html>".format(cube.plateifu))
+
+                self.galaxy['vactoolstr'] = ("<html><samp>from marvin.tools.vacs import VACs<br>\
+                    vacs = VACs()</samp></html>")
+
+                self.galaxy['vactargstr'] = ("<html><samp>from marvin.tools.cube import Cube<br>\
+                    cube = Cube(mangaid='{0}')<br>cube.vacs</samp></html>".format(cube.mangaid))
+
         else:
             self.galaxy['error'] = 'Error: Galaxy ID {0} must either be a Plate-IFU, or MaNGA-Id designation.'.format(galid)
             return render_template("galaxy.html", **self.galaxy)

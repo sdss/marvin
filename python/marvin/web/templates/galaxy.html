@@ -105,6 +105,57 @@
                           <div class='infopop' id='marvinspaxel'>
                           {{infopopup('Use the spectrum in Python', 'Marvin Spaxel - start iPython', spaxelstr, 'marvinspaxel', 'warning')}}
                           </div>
+                          <div class='vert-offset-top-2'>
+                            <button id="vacbtn" type="button" class="btn btn-primary" data-toggle="modal" data-target="#vacTable" data-toggle="tooltip" data-placement="right" title="Click to see what VACs are available for this target.">
+                              Available VACs
+                            </button>
+
+                              <div class="modal fade" id="vacTable" tabindex="-1" role="dialog" aria-labelledby="vacLabel" aria-hidden="true">
+                                <div class="modal-dialog modal-lg">
+                                  <div class="modal-content">
+                                    <div class="modal-header">
+                                      <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                        <span aria-hidden="true">&times;</span></button>
+                                      <h4 class="modal-title">Available VACs <small>(see <a href='https://www.sdss.org/dr17/data_access/value-added-catalogs/' target="_blank">SDSS VAC Info</a> or <a target="_blank" href="https://sdss-marvin.readthedocs.io/en/latest/tools/vacs.html#marvin-vacs">Marvin VAC Docs</a>)</small></h4>
+                                    </div>
+                                    <div class="modal-body" id='vacmodalbody'>
+                                      <table id="vactable"
+                                        class="table table-responsive table-bordered table-condensed table-striped"
+                                        data-toggle="table">
+                                        <thead>
+                                          <tr>
+                                            <th data-field="name">Name</th>
+                                            <th data-field="data">Has Target Data</th>
+                                            <th data-field="py">Access in Python</th>
+                                            <th data-field="link">Download</th>
+                                          </tr>
+                                        </thead>
+                                        <tbody>
+                                          {% for vc in vacdata %}
+                                          <tr><td>{{vc.name|safe}}</td><td>{{vc.data}}</td><td>{{vc.py}}</td><td>{{vc.link|safe}}</td></tr>
+                                          {% endfor %}
+                                        </tbody>
+                                      </table>
+                                    </div>
+                                    <div class="modal-footer">
+                                      <div class='row'>
+                                        <div class='col-md-6'>
+                                          <div class='infopop text-left' id='vactarg'>
+                                          {{infopopup('Access this target VAC in Python', 'Marvin VACs - start iPython', vactargstr, 'vactarg', 'info', place='right')}}
+                                          </div>
+                                        </div>
+                                        <div class='col-md-6'>
+                                          <div class='infopop text-right' id='vactool'>
+                                          {{infopopup('Access all VACs in Python', 'Marvin VACs - start iPython', vactoolstr, 'vactool', 'info', place='left')}}
+                                          </div>
+                                        </div>
+                                      </div>
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+
+                          </div>
                     </div>
                     {{panellist('Quality Flags', quality[2], 'drp3quality')}}
                 </div>

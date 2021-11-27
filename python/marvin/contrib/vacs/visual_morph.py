@@ -38,6 +38,8 @@ class VMORPHOVAC(VACMixIn):
     name = 'visual_morphology'
     description = 'Returns visual morphology data'
     version = {'DR16': '1.0.1', 'DR17': '2.0.1', 'MPL-11': '2.0.1'}
+    display_name = 'Visual Morphology'
+    url = 'https://www.sdss.org/dr17/data_access/value-added-catalogs/?vac_id=manga-visual-morphologies-from-sdss-and-desi-images'
 
     # optional Marvin Tools to attach your vac to
     include = (marvin.tools.cube.Cube, marvin.tools.maps.Maps)

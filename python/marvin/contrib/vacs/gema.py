@@ -35,6 +35,8 @@ class GEMAVAC(VACMixIn):
     description = 'Returns GEMA table data'
     version = {'MPL-7': '1.0.1', 'DR15': '1.0.1', 'DR16': '1.0.1', 'DR17': '2.0.2', 
                'MPL-11': '2.0.2'}
+    display_name = 'GEMA'
+    url = 'https://www.sdss.org/dr17/data_access/value-added-catalogs/?vac_id=gema-vac:-galaxy-environment-for-manga-value-added-catalog'
 
     # optional Marvin Tools to attach your vac to
     include = (marvin.tools.cube.Cube, marvin.tools.maps.Maps, marvin.tools.modelcube.ModelCube)

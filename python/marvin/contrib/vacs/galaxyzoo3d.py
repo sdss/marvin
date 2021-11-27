@@ -321,7 +321,9 @@ class GZ3DVAC(VACMixIn):
     name = 'gz3d'
     description = 'Return object for working with Galaxy Zoo 3D data masks'
     version = {'DR17': 'v4_0_0', 'MPL-11': 'v4_0_0'}
-
+    display_name = 'Galaxy Zoo 3D'
+    url = 'https://www.sdss.org/dr17/data_access/value-added-catalogs/?vac_id=galaxy-zoo-3d'
+    
     include = (marvin.tools.cube.Cube, marvin.tools.maps.Maps)
 
     def set_summary_file(self, release):
