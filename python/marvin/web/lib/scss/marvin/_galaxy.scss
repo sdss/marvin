@@ -46,6 +46,11 @@
   @include loading-icon()
 }
 
+#toggle-load {
+  position: inherit;
+  z-index: 100;
+}
+
 #nsa-load {
   @include loading-icon()
 }
