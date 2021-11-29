@@ -41,6 +41,7 @@ except:
 try:
     import pandas as pd
 except ImportError:
+    pd = None
     warnings.warn('Could not import pandas.', MarvinUserWarning)
 
 __all__ = ['Results', 'ResultSet']
@@ -840,28 +841,32 @@ class Results(object):
         obj.getColumns()
         return obj
 
-    def toJson(self):
+    def toJson(self, orient: str = 'records', pure: bool = None) -> str:
         ''' Output the results as a JSON object
 
-        Uses Python json package to convert the results to JSON representation
+        Uses Python panda package to convert the results to a JSON object.  The default 
+        orientation is a list "records".  Valid orientations are ('split', 'records', 
+        'index', 'columns', 'values', 'table').  If pandas is not installed or the "pure" 
+        option is set, will use the json package to convert the results to JSON representation.
 
         Parameters:
-            None
+            orient (str):
+                The pandas orientation to use when converting to JSON. Default is 'records'.
+            pure (bool):
+                Set this to True to use the json library for conversion instead of the pandas package
 
         Returns:
-            jsonres:
-                JSONed results
-
-        Example:
-            >>> r = q.run()
-            >>> r.toJson()
-            >>> '[["4-3602", "1902", -9999.0], ["4-3862", "1902", -9999.0], ["4-3293", "1901", -9999.0],
-            >>>   ["4-3988", "1901", -9999.0], ["4-4602", "1901", -9999.0]]'
+            str:
+                The results as a JSON string
         '''
-        try:
-            jsonres = json.dumps(self.results)
-        except TypeError as e:
-            raise MarvinError('Results not JSON-ifiable. Check the format of results: {0}'.format(e))
+        # if no pandas or pure is true, then use json dumps
+        if not pd or pure:
+            try:
+                jsonres = json.dumps(self.results)
+            except TypeError as e:
+                raise MarvinError('Results not JSON-ifiable. Check the format of results: {0}'.format(e))
+        else:
+            jsonres = self.toDF().to_json(orient=orient)
         return jsonres
 
     def getColumns(self):
