@@ -1,0 +1,115 @@
+{% extends "layout.html" %}
+{% set active_page = active_page|default("explore") %}
+
+<!-- Galaxy CSS Sources -->
+{% block csshead %}
+{% endblock csshead %}
+<!-- Galaxy JS Sources-->
+{% block jshead %}
+{% endblock jshead %}
+
+<!-- Explore Page -->
+{% block body %}
+
+<div class='well'>
+    <div class='row'>
+        <div class='col-md-2' id='info'>
+
+        <form role='form' action="{{url_for('explore_page.upload')}}" method='post' enctype="multipart/form-data">
+            <div class="form-group">
+                <label for="targetinput">Upload a List of Targets: <small>(limit of 100)</small></label>
+                <input type="file" name='file' id="targetinput" aria-describedby='inputgroupfile'>
+                <button type="submit" class="btn btn-sm btn-primary" data-toggle="tooltip" data-placement="right" title="Upload a csv of target plateifus or mangaids">Upload File</button>
+            </div>
+        </form>
+
+        <form id='mapform' role='form' action="#" method='POST'>
+            <div class='form-group'>
+                <label for='targetlist'>Loaded Targets: {{n_targs}} </label>
+                <textarea id='targetlist' name='targetlist' class="form-control" readonly rows="3"
+                    placeholder='No targets loaded...'>{{targetlist|safe}}</textarea>
+                {% for category, message in get_flashed_messages(with_categories=True) %}
+                    <p class="error alert alert-{{'danger' if category == 'error' else 'warning' if category == 'warning' else 'info'}}"><strong>{{category|title}}:</strong> {{ message }}</p>
+                {% endfor %}
+            </div>
+            <div class='form-group'>
+                <label for="dapchoices">Select an Analysis Map:</label>
+                <select class="selectpicker show-tick form-control" name='mapchoice' id='mapchoice' data-selected-text-format="count"
+                data-header='Select your map property' data-live-search="true" title='No Maps selected'>
+                    {% for dapmap in dapmaps %}
+                    {% if dapmap == mapchoice %}
+                    <option selected>{{dapmap}}</option>
+                    {% else %}
+                    <option >{{dapmap}}</option>
+                    {% endif %}
+                    {% endfor %}
+                </select>
+
+                <label for="btchoice">Select a Binning Scheme:</label>
+                <select class="selectpicker show-tick form-control" name='btchoice' id='btchoice' data-header='Select a bintype'>
+                    {% for bt in dapbintemps %}
+                        {% if bt == session.bintemp %}
+                        <option selected >{{bt}}</option>
+                        {% else %}
+                        <option>{{bt}}</option>
+                        {% endif %}
+                    {% endfor %}
+                </select>
+            </div>
+            <button type="button" id='getmapbut' class="btn btn-primary {{'disabled' if not targetlist|safe or not mapchoice or mapsloading}}" data-loading-text="<i class='fa fa-circle-o-notch fa-spin fa-fw'></i>Loading...">Get Maps</button>
+        </form>
+
+        </div>
+
+        <div class='col-md-10' id='explorediv'>
+
+            {% if targets %}
+            <div class='row text-center' id='exmaps'>
+                {% for target in targets %}
+                <div class='col-md-4'>
+                    <label for="exmapdiv{{loop.index}}"><a target="_blank" href={{url_for('galaxy_page.Galaxy:get', galid=target)}}>{{target}}</a></label>
+                    <div id='exmapdiv{{loop.index}}' class='exmap'>
+                        {# <img src="https://via.placeholder.com/300/" alt="Image {{loop.index0}}"> #}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+
+        </div>
+    </div>
+</div>
+
+{% endblock body %}
+
+<!-- JS Code -->
+{% block code %}
+<script rel='preconnect' src="https://code.highcharts.com/highcharts.js"></script>
+<script rel='preconnect' src="https://code.highcharts.com/highcharts-more.js"></script>
+<script src="https://cdn.rawgit.com/highcharts/draggable-legend/9c154d4c/draggable-legend.js"></script>
+<script rel='preconnect' src="https://code.highcharts.com/modules/heatmap.js"></script>
+<script rel='preconnect' src="https://code.highcharts.com/modules/exporting.js"></script>
+<script rel='preconnect' src="https://code.highcharts.com/modules/boost.js"></script>
+<script rel='preconnect' src="https://highcharts.github.io/pattern-fill/pattern-fill-v2.js"></script>
+<script rel='preconnect' src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/3.6.0/math.min.js"></script>
+
+<script type='application/javascript'>
+let maps = null;
+
+// re-enabled map submit button when a map type is selected
+$('#mapchoice').on('changed.bs.select', function (e, clickedIndex, newValue, oldValue) {
+    var selected = $(e.currentTarget).selectpicker('val');
+    if (selected) {
+        $('#getmapbut').removeClass('disabled');
+    }
+});
+
+$(function() {
+    let targets = {{targets|tojson}};
+    let explore = new Explore(targets);
+    explore.print();
+
+    $('#mapchoice').selectpicker('refresh');
+});
+</script>
+{% endblock code %}
