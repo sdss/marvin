@@ -38,7 +38,7 @@ class Config(object):
     UPLOAD_FOLDER = os.environ.get("MARVIN_DATA_DIR", '/tmp/')
     LIB_PATH = os.path.join(APP_DIR, 'lib')
     ALLOWED_EXTENSIONS = set(['txt', 'csv'])
-    MAX_CONTENT_LENGTH = 50 * 1024 * 1024
+    MAX_CONTENT_LENGTH = 16 * 1024 * 1024
     WTF_CSRF_ENABLED = True
     WTF_CSRF_SECRET_KEY = 'wtfsecretkey'
     USE_PROFILER = True  # Use the Flask Profiler Extension
@@ -57,7 +57,8 @@ class Config(object):
             "/marvin/jsglue.js",
             "/marvin/static/.*",
             "/marvin/lib/.*",
-            "/marvin/getgalidlist/"
+            "/marvin/getgalidlist/",
+            "/marvin/explore/webmap/"
         ]
     }
     # RATELIMIT_DEFAULT = '10/hour;100/day;2000 per year'

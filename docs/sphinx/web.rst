@@ -5,7 +5,7 @@ Web
 ===
 
 Here we describe the general content and functionality of all pages in
-`Marvin-Web <https://dr15.sdss.org/marvin>`_.  Most of the functionality
+`Marvin-Web <https://dr17.sdss.org/marvin>`_.  Most of the functionality
 that you will find on the Web exists in Marvin Tools. Indeed, a lot of the
 functionality simply uses existing Marvin tools.
 
@@ -14,7 +14,7 @@ functionality simply uses existing Marvin tools.
 Main Page
 ---------
 
-The main `Marvin splash page <https://dr15.sdss.org/marvin>`_ for the MaNGA
+The main `Marvin splash page <https://dr17.sdss.org/marvin>`_ for the MaNGA
 survey contains a navigation bar with links to other Marvin pages, a Log-In
 window, general information about Marvin and the development team, as well as
 quick contact information at the bottom.
@@ -35,8 +35,8 @@ currently working with.  The default available releases are public data releases
 
 **Login**:
 
-The Marvin login box.  Log in using your personal SDSS credentials or the general SDSS username and password to
-access collaboration data.
+The Marvin login box.  Log in using your personal SDSS credentials or the general SDSS username and 
+password to access collaboration data.
 
 
 .. _web-random:
@@ -44,7 +44,7 @@ access collaboration data.
 Image Roulette Page
 -------------------
 
-The `Image Roulette page <https://dr15.sdss.org/marvin/random>`_ displays a
+The `Image Roulette page <https://dr17.sdss.org/marvin/random>`_ displays a
 random set of 16 images of galaxies from the MaNGA survey.  Each
 thumbnail on the left is displayed in larger form on the right.  Click the giant
 image to go the individual Galaxy Page.
@@ -54,8 +54,8 @@ image to go the individual Galaxy Page.
 Search Page
 -----------
 
-The `Search page <https://dr15.sdss.org/marvin/search>`_ enables querying the MaNGA dataset using a simplified interface with pseudo-natural
-language syntax.
+The `Search page <https://dr17.sdss.org/marvin/search>`_ enables querying the MaNGA dataset using a 
+simplified interface with pseudo-natural language syntax.
 
 **Return Parameters**:
 
@@ -74,13 +74,20 @@ The search filter accepts boolean search strings that are parsed with a
 
 **Guided Query Builder**:
 
-If you need help building a query, you can use this to help design your SQL filter.  This feature uses the `Jquery Query Builder <http://querybuilder.js.org/>`_.
+If you need help building a query, you can use this to help design your SQL filter.  This feature 
+uses the `Jquery Query Builder <http://querybuilder.js.org/>`_.
 
-After a query is run a table of results is generated to navigate around.  Returned columns include some default target identification parameters, plus any parameters used in your search filter, or additional returned parameters.  Large result sets are paginated.  You can also sort on individual columns by clicking the column header.
+After a query is run a table of results is generated to navigate around.  Returned columns include 
+some default target identification parameters, plus any parameters used in your search filter, or 
+additional returned parameters.  Large result sets are paginated.  You can also sort on individual 
+columns by clicking the column header.
 
 **View Galaxies**:
 
-After a search, the **View Galaxies** button will display the postage stamp images of all the galaxies in the results.  This page displays up to 16 galaxies at a time, with the big carousel image linking to the individual galaxy page.  There are pagination buttons to help you cycle through your pages.
+After a search, the **View Galaxies** button will display the postage stamp images of all the 
+galaxies in the results.  This page displays up to 16 galaxies at a time, with the big carousel 
+image linking to the individual galaxy page.  There are pagination buttons to help you cycle through 
+your pages.
 
 
 .. _web-plate:
@@ -88,7 +95,7 @@ After a search, the **View Galaxies** button will display the postage stamp imag
 Plate Pages
 -----------
 
-A `Plate page <https://dr15.sdss.org/marvin/plate/8485/>`_ includes:
+A `Plate page <https://dr17.sdss.org/marvin/plate/8485/>`_ includes:
 
 * **meta-data**: some basic information about the Plate
 
@@ -102,7 +109,7 @@ A `Plate page <https://dr15.sdss.org/marvin/plate/8485/>`_ includes:
 Galaxy Pages
 ------------
 
-A `Galaxy page <https://dr15.sdss.org/marvin/galaxy/7977-12705/>`_ includes:
+A `Galaxy page <https://dr17.sdss.org/marvin/galaxy/7977-12705/>`_ includes:
 
 * **meta-data**: basic observation details (such as coordinates and
   signal-to-noise\ :sup:`2`), quality flags, and targeting information,
@@ -147,9 +154,12 @@ A `Galaxy page <https://dr15.sdss.org/marvin/galaxy/7977-12705/>`_ includes:
 Spectrum Display
 ^^^^^^^^^^^^^^^^
 
-Enable the spectrum display by toggling on the Map/SpecView box.  The spectrum display uses the `DyGraphs <http://dygraphs.com/>`_ javascript library.
+Enable the spectrum display by toggling on the Map/SpecView box.  The spectrum display uses the 
+`DyGraphs <http://dygraphs.com/>`_ javascript library.
 
-* **Select Spectrum**: Click on the image or a :ref:`map <web-maps>` to show the spectrum of the spaxel at a particular location (default is central spaxel) whose coordinates are listed above the spectrum. The most recently selected location in the image is indicated by the red dot.
+* **Select Spectrum**: Click on the image or a :ref:`map <web-maps>` to show the spectrum of the 
+spaxel at a particular location (default is central spaxel) whose coordinates are listed above the 
+spectrum. The most recently selected location in the image is indicated by the red dot.
 
 * **Zooming**: Zoom in by clicking and dragging either horizontally or
   vertically.  Double click to unzoom.  The zoomed region will remain as you
@@ -177,7 +187,10 @@ Enable the spectrum display by toggling on the Map/SpecView box.  The spectrum d
 Map Display
 ^^^^^^^^^^^
 
-Enable the map display by toggling the red Map/SpecView box.  This displays a series of three maps by default, with the ability to select up to six maps.  The default maps loaded are the stellar velocity map, the Halpha emission line flux map, and the d4000 spectral index map.  All maps are generated using the `HighCharts <http://www.highcharts.com/>`_ javascript library.
+Enable the map display by toggling the red Map/SpecView box.  This displays a series of three maps 
+by default, with the ability to select up to six maps.  The default maps loaded are the stellar 
+velocity map, the Halpha emission line flux map, and the d4000 spectral index map.  All maps are 
+generated using the `HighCharts <http://www.highcharts.com/>`_ javascript library.
 
 * **Selecting Maps**: Choose Analysis Properties and Binning-Stellar Template combinations to show.
 
@@ -223,7 +236,9 @@ Enable the map display by toggling the red Map/SpecView box.  This displays a se
 Galaxy Properties Display
 ^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Clicking the Galaxy Properties tab will show you the `NASA-Sloan Atlas (NSA) catalog <https://www.sdss.org/dr13/manga/manga-target-selection/nsa/>`_ information for this galaxy in a table format.  In addition, there are two tabs for interactive display.
+Clicking the Galaxy Properties tab will show you the `NASA-Sloan Atlas (NSA) catalog 
+<https://www.sdss.org/dr13/manga/manga-target-selection/nsa/>`_ information for this galaxy in 
+a table format.  In addition, there are two tabs for interactive display.
 
 * **NSA table**: Most of the NSA galaxy properties are displayed in this table (paginated by default).  Click the arrow in the upper right corner to toggle the pagination and view all parameters at once.
 
@@ -237,5 +252,20 @@ In each `box-and-whisker <https://en.wikipedia.org/wiki/Box_plot>`_ plot:
  * The lower and upper bounds of the box are the 25th and 75th percentiles.
  * The whiskers of the box are 1.5 \* interquartile range.
  * Outlier points are indicated as light grey open circles.
+
+.. _web-explore:
+
+Explore Page
+------------
+
+Clicking the "Upload" button in the top navigation bar takes you to the Explore page.  This page 
+allows the user to upload a list of MaNGA targets for display via their DAP MAPS.  A valid file can
+either be a txt or csv file, and a valid MaNGA target name is either a plate-ifu or a MaNGA ID.  
+Currently only a limit of 100 targets is allowed.
+
+Once a valid target list has been uploaded, the user can select the type of DAP map to display, by
+choosing from a valid analysis parameter and binning scheme from the two dropdowns.  Clicking the
+"Get Maps" button will display the selected DAP maps for all targets.  If a map cannot be loaded, 
+a red error message will be displayed with the reason for the failure.  
 
 |
