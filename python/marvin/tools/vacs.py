@@ -116,11 +116,15 @@ class VACs(VACContainer):
                 # return a list of data classes if multiple summary files are provided
                 if sv.data_container and type(sv.data_container) is dict:
                     # use any data container if provided
-                    vacdc = {k: VACDataClass(subvac.name, subvac.description, v) for k, v in sv.data_container.items()}
+                    vacdc = {k: VACDataClass(subvac.name, subvac.description, v, 
+                                             display_name=subvac.display_name, url=subvac.url) for k, v in sv.data_container.items()}
                 else:
-                    vacdc = [VACDataClass(subvac.name, subvac.description, s) for s in sv.summary_file]
+                    vacdc = [VACDataClass(subvac.name, subvac.description, s, 
+                                          display_name=subvac.display_name, url=subvac.url) for s in sv.summary_file]
+                    if len(vacdc) == 1:
+                        vacdc = vacdc[0]
             elif isinstance(sv.summary_file, str):
-                vacdc = VACDataClass(subvac.name, subvac.description, sv.summary_file)
+                vacdc = VACDataClass(subvac.name, subvac.description, sv.summary_file, display_name=subvac.display_name, url=subvac.url)
 
             # add any custom methods to the VAC
             if hasattr(subvac, 'add_methods'):
@@ -164,7 +168,12 @@ class VACs(VACContainer):
         '''
         vacs = {}
         for vac in self._vacs:
-            vacs[vac] = self[vac].has_target(target)
+            if isinstance(self[vac], VACDataClass):
+                vacs[vac] = self[vac].has_target(target)
+            elif isinstance(self[vac], dict):
+                vacs[vac] = {k: v.has_target(target) for k, v in self[vac].items()}
+            elif isinstance(self[vac], list):
+                vacs[vac] = [v.has_target(target) for v in self[vac]]
         return vacs
 
 
@@ -178,6 +187,10 @@ class VACDataClass(object):
             The description of the VAC
         path (str):
             The full path to the VAC summary file
+        display_name (str):
+            The display name of the VAC
+        url (str):
+            The URL to the VAC description page
 
     Attributes:
         name (str):
@@ -186,6 +199,10 @@ class VACDataClass(object):
             The description of the VAC
         data (HDUList):
             The Astropy FITS HDUList
+        display_name (str):
+            The display name of the VAC
+        url (str):
+            The URL to the VAC description page
 
     Example:
         >>> from marvin.tools.vacs import VACs
@@ -193,17 +210,17 @@ class VACDataClass(object):
         >>> vacs.galaxyzoo.data
         >>> vacs.galaxyzoo.get_table(ext=1)
     '''
-    def __init__(self, name, description, path):
+    def __init__(self, name, description, path, display_name=None, url=None):
         self.name = name
         self.description = description
+        self.display_name = display_name
+        self.url = url
         self._path = path
         self._data = None
 
         if not sdss_access.sync.Access:
             raise MarvinError('sdss_access is not installed')
         else:
-            # is_public = 'DR' in config.release
-            # rsync_release = config.release.lower() if is_public else None
             self._rsync = sdss_access.sync.Access(release=config.release)
 
     def __repr__(self):
@@ -220,6 +237,11 @@ class VACDataClass(object):
             self._check_file()
             self._data = fits.open(self._path)
         return self._data
+    
+    def __del__(self):
+        ''' Close the file on delete '''
+        if self._data and isinstance(self._data, fits.HDUList):
+            self._data.close()
 
     def info(self):
         ''' print the VAC HDU info '''

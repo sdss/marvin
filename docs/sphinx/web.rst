@@ -144,6 +144,10 @@ A `Galaxy page <https://dr17.sdss.org/marvin/galaxy/7977-12705/>`_ includes:
 
     * an :ref:`interactive galaxy properties display <galaxy_properties>`.
 
+* **Available VACs**: Click this button to open a dialog window displaying a list of 
+  available Value-Added catalogs in Marvin.  Each VAC row contains a link to the SDSS
+  VAC documentation, a boolean indicating whether the target is in the VAC, how to 
+  access the VAC in Marvin python code, and a download link for the VAC summary file.  
 
 .. _web-spectrum:
 

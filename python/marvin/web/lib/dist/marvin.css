@@ -6246,6 +6246,10 @@ section h3.section-subheading {
   background-color: #39b3d7;
   border-color: #269abc; }
 
+#toggle-load {
+  position: inherit;
+  z-index: 100; }
+
 #nsa-load {
   color: white;
   background-color: #39b3d7;
@@ -6275,6 +6279,9 @@ section h3.section-subheading {
 .annotation {
   color: indianred !important;
   border-color: indianred !important; }
+
+#vacmodalbody {
+  padding: 0px; }
 
 /*
 * @Author: Brian Cherinka
