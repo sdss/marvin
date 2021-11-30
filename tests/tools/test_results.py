@@ -191,7 +191,7 @@ class TestResultsOutput(object):
     @pytest.mark.parametrize('orient, rtype', 
                              [('records', list), 
                               ('values', list),
-                              ('index', dict)]))
+                              ('index', dict)])
     def test_tojson(self, results, orient, rtype):
         res = results.toJson(orient=orient)
         assert isinstance(res, six.string_types)
