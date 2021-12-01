@@ -188,11 +188,15 @@ class TestResultsOutput(object):
         df = results.toDF()
         assert isinstance(df, pd.core.frame.DataFrame)
 
-    def test_tojson(self, results):
-        res = results.toJson()
+    @pytest.mark.parametrize('orient, rtype', 
+                             [('records', list), 
+                              ('values', list),
+                              ('index', dict)])
+    def test_tojson(self, results, orient, rtype):
+        res = results.toJson(orient=orient)
         assert isinstance(res, six.string_types)
         json_res = json.loads(res)
-        assert isinstance(json_res, list)
+        assert isinstance(json_res, rtype)
 
 
 class TestResultsGetParams(object):
