@@ -22,6 +22,11 @@ This section summarises the most important new features a bugfixes in Marvin. Fo
 
 - Improvements to the Marvin web interface
 - New "Available VACs" information button on galaxy web page
+- Change to default behaviour of Marvin's Query Result `~marvin.tools.results.Results.toJson` method
+
+ - conversion to JSON now uses `.pandas.DataFrame.to_json` as default internal mechanism
+ - the `toJson` method by default now returns an orientation of a list of records
+ 
 
 2.6.1 (November 2021)
 ------------------
