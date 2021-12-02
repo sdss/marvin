@@ -33,6 +33,9 @@ class VMORPHOVAC(VACMixIn):
     Authors: J. Antonio Vazquez-Mata and Hector Hernandez-Toledo
 
     """
+    #  hidden from DR17 until future notice
+    _hidden = True
+    _hidden_for = 'DR17'
 
     # Required parameters
     name = 'visual_morphology'
@@ -174,17 +177,20 @@ class VizMorphTarget(VACTarget):
             A matplotlib axis object
         '''
         
-        print('NOTE: For DR16, must specify either survey: sdss or desi. For DR17 must write: mos')
+        #print('NOTE: For DR16, must specify either survey: sdss or desi. For DR17 must write: mos')
 
         if survey == 'sdss':
             impath = self._sdss_img
             fsize = (15,5)
-        if survey == 'desi':
+        elif survey == 'desi':
             impath = self._desi_img
             fsize = (10,5)
-        if survey == 'mos':
+        elif survey == 'mos':
             impath = self._mos_img
             fsize = (20,5)
+        else:
+            raise ValueError('survey must be either "sdss" or "desi" for DR16, or "mos" for DR17')
+
         imdata = mpimg.imread(impath)
         fig, ax = plt.subplots(figsize = fsize)
         ax.imshow(imdata)
