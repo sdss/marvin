@@ -60,6 +60,8 @@ class DAPDataModel(object):
     db_only : list
         A list of bintypes that are accessible in the DB. If ``None``, assumes
         that all the bintypes are loaded in the DB.
+    excluded_daptypes : list
+        A list of DAPTYPE that do not exist and should be excluded from combinations
     default_mapset : list
         A list of maps to show in the web by default.
     default_mapmask : list
@@ -77,12 +79,13 @@ class DAPDataModel(object):
     def __init__(self, release, bintypes=[], templates=[], properties=[], models=[],
                  default_template=None, default_bintype=None, property_table=None,
                  default_binid=None, aliases=[], bitmasks=None, db_only=[], default_mapset=None,
-                 default_mapmask=None, qual_flag='MANGA_DAPQUAL'):
+                 default_mapmask=None, qual_flag='MANGA_DAPQUAL', excluded_daptypes=[]):
 
         self.release = release
         self.bintypes = bintypes
         self.templates = templates
         self.db_only = db_only
+        self.excluded_daptypes = excluded_daptypes
 
         self.aliases = aliases
 
@@ -264,7 +267,7 @@ class DAPDataModel(object):
         if db_only and self.db_only:
             bins = [b for b in bins if b in self.db_only]
 
-        return ['-'.join(item) for item in list(itertools.product(bins, temps))]
+        return ['-'.join(item) for item in list(itertools.product(bins, temps)) if '-'.join(item) not in self.excluded_daptypes]
 
     def get_properties(self, name):
         ''' Returns a list of properties of the given name '''
