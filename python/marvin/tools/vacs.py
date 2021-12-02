@@ -12,6 +12,7 @@
 
 
 from __future__ import print_function, division, absolute_import
+import contextlib
 import inspect
 import six
 import os
@@ -99,7 +100,8 @@ class VACs(VACContainer):
         cls.release = config.release
         for subvac in VACMixIn.__subclasses__():
             # Exclude any hidden VACs
-            if subvac._hidden:
+            if subvac._hidden and (not subvac._hidden_for or 
+                                   (subvac._hidden_for == cls.release)):
                 continue
 
             # Excludes VACs from other releases
@@ -152,7 +154,7 @@ class VACs(VACContainer):
         ''' list the available VACS '''
         return self._vacs
 
-    def check_target(self, target):
+    def check_target(self, target, lomem=None):
         ''' check which VACS a MaNGA target is available in
 
         Checks for the target in each VAC and returns a
@@ -162,6 +164,8 @@ class VACs(VACContainer):
         Parameters:
             target (str):
                 The name of the target
+            lomem (str):
+                If True, loads the data via context manager
 
         Returns:
             A dict of booleans
@@ -169,11 +173,11 @@ class VACs(VACContainer):
         vacs = {}
         for vac in self._vacs:
             if isinstance(self[vac], VACDataClass):
-                vacs[vac] = self[vac].has_target(target)
+                vacs[vac] = self[vac].has_target(target, lomem=lomem)
             elif isinstance(self[vac], dict):
-                vacs[vac] = {k: v.has_target(target) for k, v in self[vac].items()}
+                vacs[vac] = {k: v.has_target(target, lomem=lomem) for k, v in self[vac].items()}
             elif isinstance(self[vac], list):
-                vacs[vac] = [v.has_target(target) for v in self[vac]]
+                vacs[vac] = [v.has_target(target, lomem=lomem) for v in self[vac]]
         return vacs
 
 
@@ -238,6 +242,19 @@ class VACDataClass(object):
             self._data = fits.open(self._path)
         return self._data
     
+    @contextlib.contextmanager
+    def get_data(self, ext=1):
+        ''' Get the data from a specific extension
+        
+        Context manager to return the data from a given extension.
+        Useful for large FITS files that you don't want to load all at once.
+
+        '''
+        self._check_file()
+        with fits.open(self._path) as hdulist:
+            yield hdulist[ext].data
+        del hdulist[ext].data
+    
     def __del__(self):
         ''' Close the file on delete '''
         if self._data and isinstance(self._data, fits.HDUList):
@@ -292,12 +309,21 @@ class VACDataClass(object):
         if not self._rsync.exists('', full=self._path):
             self.download_vac()
 
-    def has_target(self, target):
+    def has_target(self, target: str, lomem: bool = False) -> bool:
         ''' Checks if a target is contained within the VAC
+
+        Checks if a target mangaid or plateifu is within the 
+        first data extension of the VAC.  By default, uses the
+        full data loaded into memory.  Use the lomem flag to
+        instead load the data using a context manager.  This is useful
+        for large FITS files in a low-memory environment, such as a web
+        server.
 
         Parameters:
             target (str):
                 The name of the target
+            lomem (str):
+                If True, loads the data via context manager
 
         Returns:
             A boolean indicating if the target is in the VAC or not
@@ -306,9 +332,15 @@ class VACDataClass(object):
         targ_type = parseIdentifier(target)
         ttypes = ['plateifu', 'mangaid']
         other = ttypes[ttypes.index(targ_type)-1]
+        
+        if not lomem:
+            data = self.data[1].data
+            assert targ_type in map(str.lower, data.columns.names), \
+                'Identifier "{0}" is not available.  Try a "{1}".'.format(targ_type, other)
+            return target in data[targ_type]
 
-        data = self.data[1].data
-        assert targ_type in map(str.lower, data.columns.names), \
-            'Identifier "{0}" is not available.  Try a "{1}".'.format(targ_type, other)
+        with self.get_data(ext=1) as data:
+            assert targ_type in map(str.lower, data.columns.names), \
+                'Identifier "{0}" is not available.  Try a "{1}".'.format(targ_type, other)
 
-        return target in data[targ_type]
+            return target in data[targ_type]

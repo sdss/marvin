@@ -287,34 +287,40 @@ def remove_nans(datadict):
     return datadict
 
 
-def create_vacdata(mangaid: str) -> dict:
+def create_vacdata(mangaid: str, release: str = None) -> dict:
     """ create a dictionary for VAC data for web display
 
     Parameters
     ----------
     mangaid : str
         The target mangaid 
+    release : str
+        The data release to use
 
     Returns
     -------
     dict
         A dictionary of VAC information
     """
+    # hack to get vacs to switch based on release in the web
+    # TODO - improve this
+    release = release or marvin.config.release
+    marvin.config.setRelease(release)
     from marvin.tools.vacs import VACs
     v = VACs()
-    dd = v.check_target(mangaid)
+    #dd = v.check_target(mangaid)
     vacdata=[]
     for i in v.list_vacs():
         if isinstance(v[i], dict):
             for k, j in v[i].items():
                 link = j._rsync.url('', full=j._path)
                 vacdata.append({'name': f'<a target="_blank" href="{j.url}">{j.display_name}: {k}</a>', 
-                                'data': dd[i][k], 'py': f'cube.vacs.{j.name}[{k}]', 
+                                'py': f'cube.vacs.{j.name}[{k}]', #'data': dd[i][k], 
                                 'link': f'<a href="{link}">link</a>'})
         else:
             link = v[i]._rsync.url('', full=v[i]._path)
             vacdata.append({'name': f'<a target="_blank" href="{v[i].url}">{v[i].display_name}</a>',
-                            'data': dd[i], 'py': f'cube.vacs.{v[i].name}', 
+                            'py': f'cube.vacs.{v[i].name}', #'data': dd[i], 
                             'link': f'<a href="{link}">link</a>'})
     return vacdata        
 
@@ -420,7 +426,7 @@ class Galaxy(BaseWebView):
                 daplist = [p.full(web=True) for p in dm.properties]
                 dapdefaults = dm.get_default_mapset()
                 self.galaxy['cube'] = cube
-                self.galaxy['vacdata'] = create_vacdata(cube.mangaid)             
+                self.galaxy['vacdata'] = create_vacdata(cube.mangaid, release=self._release)             
                 self.galaxy['toggleon'] = current_session.get('toggleon', 'false')
                 self.galaxy['cubehdr'] = cube.header
                 self.galaxy['quality'] = ('DRP3QUAL', cube.quality_flag.mask, cube.quality_flag.labels)

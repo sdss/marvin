@@ -89,6 +89,7 @@ class VACMixIn(object, six.with_metaclass(abc.ABCMeta)):
     """
     # Set this is True on your VAC to exclude it from Marvin
     _hidden = False
+    _hidden_for = None
 
     # The name and description of the VAC.
     name = None
@@ -164,10 +165,6 @@ class VACMixIn(object, six.with_metaclass(abc.ABCMeta)):
         vac_container = VACContainer()
 
         for subvac in VACMixIn.__subclasses__():
-            # check if VAC is hidden
-            if subvac._hidden:
-                continue
-
             # Excludes VACs from showing up in Plate
             if issubclass(parent_object.__class__, marvin.tools.plate.Plate):
                 continue
@@ -175,6 +172,11 @@ class VACMixIn(object, six.with_metaclass(abc.ABCMeta)):
             # Only shows VACs if in the include list.
             if (hasattr(subvac, 'include') and subvac.include is not None and
                     not issubclass(parent_object.__class__, subvac.include)):
+                continue
+
+            # check if VAC is hidden
+            if subvac._hidden and (not subvac._hidden_for or 
+                                   (subvac._hidden_for == parent_object._release)):
                 continue
 
             # We need to set sv=subvac in the lambda function to prevent
