@@ -75,7 +75,7 @@ var Explore = function () {
                 return response.json();
             }).then(function (data) {
                 if (data.result.maps !== undefined && data.result.maps.data !== null) {
-                    _this2.heatmap = new HeatMap(mapdiv, data.result.maps.data, data.result.maps.msg, data.result.maps.plotparams, _this);
+                    _this2.heatmap = new HeatMap(mapdiv, data.result.maps.data, data.result.maps.msg, data.result.maps.plotparams, null);
                     _this2.heatmap.mapdiv.highcharts().reflow();
                 } else {
                     var err = '<p class=\'alert alert-danger\'>' + data.result.msg + '</p>';
