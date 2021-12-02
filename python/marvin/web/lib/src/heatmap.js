@@ -412,7 +412,6 @@ class HeatMap {
                 dataLabels: {enabled: false},
                 events: {
                     click: (_galthis === null) ? undefined : function (event) { _galthis.getSpaxel(event); }
-                    //click: function (event) { _galthis.getSpaxel(event); }
                 }
             }]
         });
