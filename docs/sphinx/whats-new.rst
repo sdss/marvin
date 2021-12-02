@@ -21,6 +21,7 @@ This section summarises the most important new features a bugfixes in Marvin. Fo
   - Upload a list of targets and choose which DAP map to display for all targets
 
 - Improvements to the Marvin web interface
+- New "Available VACs" information button on galaxy web page
 
 2.6.1 (November 2021)
 ------------------

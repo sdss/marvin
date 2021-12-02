@@ -7,6 +7,7 @@ Marvin's Change Log
 - Fixing bug in web galaxy template when no nsa data available; so pages do not crash
 - Added new explore page in the web to upload a target list and display DAP maps
 - Adds basic VAC availablity to galaxy web page
+- Updates the Marvin Query `Results.toJson` method to return a more flexible JSON format
 
 [2.6.1] - 2021/11/18
 --------------------
