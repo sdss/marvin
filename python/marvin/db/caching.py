@@ -67,7 +67,7 @@ cache_type = {
     'redis': {'name': 'dogpile.cache.redis',
               'args': {'url': os.environ.get('SESSION_REDIS'),
                        'distributed_lock': True, 'lock_sleep': 1,
-                       'lock_timeout': 5}}
+                       'lock_timeout': 5, 'thread_local_lock': False}}
 }
 
 
