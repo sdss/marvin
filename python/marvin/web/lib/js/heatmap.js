@@ -320,9 +320,6 @@ var HeatMap = function () {
                         theme: { fill: null }
                     }
                 },
-                boost: {
-                    useGPUTranslations: true
-                },
                 xAxis: {
                     title: { text: 'Spaxel X' },
                     minorGridLineWidth: 0,
@@ -394,10 +391,9 @@ var HeatMap = function () {
                 series: [{
                     type: "heatmap",
                     data: data,
-                    boostThreshold: 100,
                     dataLabels: { enabled: false },
                     events: {
-                        click: function click(event) {
+                        click: _galthis === null ? undefined : function (event) {
                             _galthis.getSpaxel(event);
                         }
                     }

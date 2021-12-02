@@ -59,7 +59,7 @@ class Explore {
         .then((data) => {
             if (data.result.maps !== undefined && data.result.maps.data !== null) {
                 this.heatmap = new HeatMap(mapdiv, data.result.maps.data, data.result.maps.msg,
-                    data.result.maps.plotparams, _this);
+                    data.result.maps.plotparams, null);
                 this.heatmap.mapdiv.highcharts().reflow();
             } else {
                 let err = `<p class='alert alert-danger'>${data.result.msg}</p>`;

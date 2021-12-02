@@ -336,9 +336,6 @@ class HeatMap {
                     theme: {fill: null}
                 }
             },
-            boost: {
-                useGPUTranslations: true
-            },
             xAxis: {
                 title: {text: 'Spaxel X'},
                 minorGridLineWidth: 0,
@@ -408,10 +405,9 @@ class HeatMap {
             series:[{
                 type: "heatmap",
                 data: data,
-                boostThreshold: 100,
                 dataLabels: {enabled: false},
                 events: {
-                    click: function (event) { _galthis.getSpaxel(event); }
+                    click: (_galthis === null) ? undefined : function (event) { _galthis.getSpaxel(event); }
                 }
             }]
         });

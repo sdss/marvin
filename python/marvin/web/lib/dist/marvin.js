@@ -585,7 +585,7 @@ var Explore = function () {
                 return response.json();
             }).then(function (data) {
                 if (data.result.maps !== undefined && data.result.maps.data !== null) {
-                    _this2.heatmap = new HeatMap(mapdiv, data.result.maps.data, data.result.maps.msg, data.result.maps.plotparams, _this);
+                    _this2.heatmap = new HeatMap(mapdiv, data.result.maps.data, data.result.maps.msg, data.result.maps.plotparams, null);
                     _this2.heatmap.mapdiv.highcharts().reflow();
                 } else {
                     var err = '<p class=\'alert alert-danger\'>' + data.result.msg + '</p>';
@@ -2197,9 +2197,6 @@ var HeatMap = function () {
                         theme: { fill: null }
                     }
                 },
-                boost: {
-                    useGPUTranslations: true
-                },
                 xAxis: {
                     title: { text: 'Spaxel X' },
                     minorGridLineWidth: 0,
@@ -2271,10 +2268,9 @@ var HeatMap = function () {
                 series: [{
                     type: "heatmap",
                     data: data,
-                    boostThreshold: 100,
                     dataLabels: { enabled: false },
                     events: {
-                        click: function click(event) {
+                        click: _galthis === null ? undefined : function (event) {
                             _galthis.getSpaxel(event);
                         }
                     }
