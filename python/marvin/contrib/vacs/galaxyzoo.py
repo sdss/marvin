@@ -73,7 +73,7 @@ class GZVAC(VACMixIn):
             self.data_container = dict(zip(files, self.summary_file))
         else: 
             # for other releases prior to DR17, simply do based on release as before
-            self.path_params.append({"ver": self.version[release]})
+            self.path_params.append({"ver": self.version[release], "file": "gz"})
             self.summary_file.append(self.get_path("mangagalaxyzoo", path_params=self.path_params[0]))
 
     # Required method
