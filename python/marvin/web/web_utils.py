@@ -76,8 +76,8 @@ def check_access():
 
 def get_web_releases():
     ''' Get the dict of supported web releases '''
-    min_web_release = current_app.config.get('MIN_RELEASE', None)
-    releases = config.get_allowed_releases(min_release=min_web_release)
+    web_releases = current_app.config.get('WEB_RELEASES', None)
+    releases = config.get_allowed_releases(web_releases=web_releases)
     return releases
 
 

@@ -53,9 +53,9 @@ class BaseView(BrainBaseView):
 
     def set_allowed_releases(self):
         ''' set the supported API / web MaNGA releases '''
-        min_release = current_app.config.get('MIN_RELEASE', None)
+        web_releases = current_app.config.get('WEB_RELEASES', None)
         public = config.access == 'public' or os.environ.get('PUBLIC_SERVER', None) is True
-        self.allowed_releases = config.get_allowed_releases(public=public, min_release=min_release)
+        self.allowed_releases = config.get_allowed_releases(public=public, web_releases=web_releases)
 
     def check_release(self, release):
         ''' check a release against the list of supported API releases '''
