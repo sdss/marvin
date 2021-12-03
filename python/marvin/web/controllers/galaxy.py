@@ -286,6 +286,8 @@ def remove_nans(datadict):
 
     return datadict
 
+vactarget_cache = {}
+
 
 def create_vacdata(mangaid: str, release: str = None) -> dict:
     """ create a dictionary for VAC data for web display
@@ -308,19 +310,30 @@ def create_vacdata(mangaid: str, release: str = None) -> dict:
     marvin.config.setRelease(release)
     from marvin.tools.vacs import VACs
     v = VACs()
-    #dd = v.check_target(mangaid)
+
+    # get the VAC target info from the cache or filesystem
+    if release in vactarget_cache and mangaid in vactarget_cache[release]:
+        # may not hit since entire page is cached - see galaxy_get_cache
+        dd = vactarget_cache[release][mangaid]
+    else:
+        dd = v.check_target(mangaid)
+        # add to cache
+        if release not in vactarget_cache:
+            vactarget_cache[release] = {}
+        vactarget_cache[release][mangaid] = dd
+
     vacdata=[]
     for i in v.list_vacs():
         if isinstance(v[i], dict):
             for k, j in v[i].items():
                 link = j._rsync.url('', full=j._path)
                 vacdata.append({'name': f'<a target="_blank" href="{j.url}">{j.display_name}: {k}</a>', 
-                                'py': f'cube.vacs.{j.name}[{k}]', #'data': dd[i][k], 
+                                'py': f'cube.vacs.{j.name}[{k}]', 'data': dd[i][k], 
                                 'link': f'<a href="{link}">link</a>'})
         else:
             link = v[i]._rsync.url('', full=v[i]._path)
             vacdata.append({'name': f'<a target="_blank" href="{v[i].url}">{v[i].display_name}</a>',
-                            'py': f'cube.vacs.{v[i].name}', #'data': dd[i], 
+                            'py': f'cube.vacs.{v[i].name}', 'data': dd[i], 
                             'link': f'<a href="{link}">link</a>'})
     return vacdata        
 
