@@ -316,7 +316,7 @@ def create_vacdata(mangaid: str, release: str = None) -> dict:
         # may not hit since entire page is cached - see galaxy_get_cache
         dd = vactarget_cache[release][mangaid]
     else:
-        dd = v.check_target(mangaid)
+        dd = v.check_target(mangaid, lomem=True)
         # add to cache
         if release not in vactarget_cache:
             vactarget_cache[release] = {}
