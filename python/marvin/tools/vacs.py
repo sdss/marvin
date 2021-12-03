@@ -18,10 +18,11 @@ import six
 import os
 import importlib
 import types
+import numpy as np
 from marvin.contrib.vacs.base import VACContainer, VACMixIn
 from marvin import config, log
 from marvin.core.exceptions import MarvinError
-from marvin.utils.general import parseIdentifier
+from marvin.utils.general import parseIdentifier, get_drpall_table
 from decorator import decorator
 
 from astropy.io import fits
@@ -179,7 +180,64 @@ class VACs(VACContainer):
             elif isinstance(self[vac], list):
                 vacs[vac] = [v.has_target(target, lomem=lomem) for v in self[vac]]
         return vacs
+    
+    def match_targets(self, targets: list = None, to_df: bool = True):
+        """ Match a list of mangaid targets across all VACs
 
+        Check a list of mangaid targets against all VACs and return a Pandas
+        DataFrame (default) or a dictionary of booleans indicating which mangaids
+        are in which VACs.  If no targets are provided, all targets from the 
+        DRPall file of the currently set release will be checked.
+
+        Parameters
+        ----------
+        targets : list, optional
+            A list of mangaids, by default None
+        to_df : bool, optional
+            If True converts the dictionary to a pandas dataframe, by default True
+
+        Returns
+        -------
+        pandas.DataFrame or dict
+            Booleans indicating which mangaids are in which VACs
+
+        Raises
+        ------
+        ValueError
+            when targets is not a list
+        ValueError
+            when the targets are not a mangaid
+        """
+
+        if not targets:
+            drpver, __ = config.lookUpVersions(self.release)
+            targets = get_drpall_table(drpver)['mangaid'].tolist()
+
+        if not isinstance(targets, list):
+            raise ValueError('targets must be a list')
+
+        # check target
+        targtype = parseIdentifier(targets[0])
+        if targtype != 'mangaid':
+            raise ValueError('targets must be mangaids')
+
+        vtargs = {"release": [self.release] * len(targets), "mangaid": targets}
+        for vac in self._vacs:
+            if isinstance(self[vac], VACDataClass):
+                mm = self[vac].get_mangaids()
+                vtargs[vac] = np.isin(targets, mm)
+            elif isinstance(self[vac], dict):
+                for kk, vv in self[vac].items():
+                    vtargs[f'{vac}_{kk}'] = np.isin(targets, vv.get_mangaids())
+            elif isinstance(self[vac], list):
+                for ii, ee in enumerate(self[vac]):
+                    vtargs[f'{vac}_{ii}'] = np.isin(targets, ee.get_mangaids())
+        
+        # by default convert to a pandas dataframe
+        if to_df:
+            import pandas as pd
+            return pd.DataFrame.from_dict(vtargs)
+        return vtargs
 
 class VACDataClass(object):
     ''' A data class for a given VAC
@@ -344,3 +402,8 @@ class VACDataClass(object):
                 'Identifier "{0}" is not available.  Try a "{1}".'.format(targ_type, other)
 
             return target in data[targ_type]
+        
+    def get_mangaids(self, ext=1):
+        """ Get the mangaids from the VAC """
+        return self.data[ext].data['mangaid'].strip().tolist()
+        
