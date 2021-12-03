@@ -133,15 +133,16 @@
         <div class="modal-content">
           <div class="modal-header well">
             <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-            <h4 class="modal-title" id="myModalLabel">Guided Query Builder <a target='_blank' href='http://querybuilder.js.org/demo.html'>(demo)</a> <small>drag me</small></h4>
+            <h4 class="modal-title" id="myModalLabel">Guided Query Builder <a target='_blank' href='http://querybuilder.js.org/demo.html' data-container="body" data-toggle="tooltip" title="See the help for this tool">(demo)</a> <small>drag me</small></h4>
+            <small>Select conditions from the dropdowns below to build a SQL search.</small>
           </div>
           <div class="modal-body well">
             <div id='builder'></div>
           </div>
           <div class="modal-footer well">
-            <button class='btn btn-primary btn-sm pull-left' type='button' id='get-sql'>Generate SQL</button>
-            <button class='btn btn-primary btn-sm pull-left' type='button' id='reset-sql'>Reset SQL</button>
-            <button class='btn btn-primary btn-sm pull-left' type='button' id='run-sql'>Run Query</button>
+            <button class='btn btn-primary btn-sm pull-left' type='button' id='get-sql' data-container="body" data-toggle="tooltip" title="Add the SQL to the Input Search Filter">Generate SQL</button>
+            <button class='btn btn-primary btn-sm pull-left' type='button' id='reset-sql' data-container="body" data-toggle="tooltip" title="Clear the SQL from the Input Search Filter">Reset SQL</button>
+            <button class='btn btn-primary btn-sm pull-left' type='button' id='run-sql' data-container="body" data-toggle="tooltip" title="Run the SQL displayed in the Input Search Filter">Run Query</button>
             <div id='sqlalert'></div>
           </div>
         </div>
