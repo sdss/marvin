@@ -23,6 +23,8 @@ var Table = function () {
         // Event Handlers
         this.table.on('load-success.bs.table', this, this.setSuccessMsg);
         this.table.on('load-error.bs.table', this, this.setErrMsg);
+        $('#export-json').on('click', this, this.exportTable);
+        $('#export-csv').on('click', this, this.exportTable);
     }
 
     // Print
@@ -61,31 +63,55 @@ var Table = function () {
                 cols = this.makeColumns(data.columns);
             }
 
+            this.data = data;
+            this.initPageSize = 10;
             console.log(data);
             console.log('cols', cols);
+
             // init the Bootstrap table
             this.table.bootstrapTable({
                 classes: 'table table-bordered table-condensed table-hover',
                 toggle: 'table',
                 toolbar: '#toolbar',
                 pagination: true,
-                pageSize: 10,
+                pageSize: this.initPageSize,
                 pageList: '[10, 20, 50]',
                 sidePagination: 'server',
                 method: 'post',
                 contentType: "application/x-www-form-urlencoded",
-                data: data.rows,
+                data: data.rows.slice(0, this.initPageSize),
                 totalRows: data.total,
                 columns: cols,
-                url: url,
+                deferUrl: url,
                 showColumns: true,
                 showToggle: true,
+                queryParams: this.queryParams,
                 sortName: 'mangaid',
                 sortOrder: 'asc',
+                usePipeline: true,
                 formatNoMatches: function formatNoMatches() {
                     return "This table is empty...";
                 }
             });
+        }
+
+        // send additional query parameters with each request
+
+    }, {
+        key: 'queryParams',
+        value: function queryParams(params) {
+            this.table = $('#searchtable');
+            var options = this.table.bootstrapTable('getOptions');
+            console.log('table opts', options);
+            console.log('parmas', params);
+
+            // this is necessary to ensure the backend has the validated API parameters it needs
+            // the table pipeline extension renames some of the query parameters
+            if (options.usePipeline) {
+                params.order = params.sortOrder;
+                params.sort = params.sortName;
+            }
+            return params;
         }
 
         // update the error div with a message
@@ -164,7 +190,7 @@ var Table = function () {
             if (this.table === null) {
                 this.setTable();
             }
-            this.table = $('#table');
+            this.table = $('#searchtable');
             // Get new columns
             var cols = results.columns;
             cols = [];
@@ -180,6 +206,46 @@ var Table = function () {
             this.table.bootstrapTable('refreshOptions', { 'columns': cols, 'totalRows': results.total });
 
             return results;
+        }
+
+        // export the table data
+
+    }, {
+        key: 'exportTable',
+        value: function exportTable(event) {
+            var _this = event.data;
+            var filetype = event.currentTarget.name;
+
+            var options = $('#searchtable').bootstrapTable('getOptions');
+            var url = options.deferUrl;
+
+            var params = { limit: options.totalRows, export: true, filetype: filetype,
+                offset: 0, sort: 'mangaid', order: 'asc' };
+
+            var form = { 'body': JSON.stringify(params),
+                'method': 'POST', 'headers': { 'Content-Type': 'application/json' } };
+
+            // toggle on export displays
+            $('#export-btn').children('button').addClass('btn-warning');
+            $('#export-load').show();
+
+            // fetch the full query results
+            return fetch(url, form).then(function (response) {
+                return response.blob();
+            }).then(function (blob) {
+                // convert blob into a file link and prompt to download
+                var url = window.URL.createObjectURL(blob);
+                var link = document.createElement('a');
+                document.body.appendChild(link);
+                link.style = "display: none";
+                link.href = url;
+                link.download = "marvin_table." + filetype;
+                link.click();
+            }).then(function () {
+                // toggle off export displays
+                $('#export-btn').children('button').removeClass('btn-warning');
+                $('#export-load').hide();
+            });
         }
     }]);
 

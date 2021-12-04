@@ -15,7 +15,7 @@ from __future__ import division, print_function
 import random
 
 from brain.api.base import processRequest
-from flask import Blueprint, jsonify, render_template, request
+from flask import Blueprint, jsonify, render_template, request, send_file
 from flask import session as current_session
 from flask_classful import route
 from wtforms import ValidationError
@@ -138,7 +138,7 @@ class Search(BaseWebView):
                     if res.count > 0:
                         cols = res.columns.remote
                         rows = res.getDictOf(format_type='listdict')
-                        output = {'total': res.totalcount, 'rows': rows, 'columns': cols, 'limit': None, 'offset': None}
+                        output = {'total': res.totalcount, 'rows': rows, 'columns': cols, 'limit': len(rows), 'offset': 0}
                     else:
                         output = None
                     self.search['results'] = output
@@ -174,8 +174,7 @@ class Search(BaseWebView):
             params = q.get_available_params('all')
         elif paramdisplay == 'best':
             params = bestparams
-        output = jsonify(params)
-        return output
+        return jsonify(params)
 
     @route('/webtable/', methods=['GET', 'POST'], endpoint='webtable')
     def webtable(self):
@@ -183,6 +182,10 @@ class Search(BaseWebView):
 
         form = processRequest(request=request)
         args = av.manual_parse(self, request, use_params='query')
+
+        # get export options
+        export = form.get('export', None)
+        export_format = form.get('filetype', 'csv')
 
         # remove args
         __tmp__ = args.pop('release', None)
@@ -225,7 +228,23 @@ class Search(BaseWebView):
             rows = res.getDictOf(format_type='listdict')
             output = {'total': res.totalcount, 'rows': rows, 'columns': cols, 'limit': limit, 'offset': offset}
             output = jsonify(output)
-            return output
+            
+            # export the table data
+            if export:
+                mime = 'text/csv' if export_format == 'csv' else 'application/json'
+                df = res.toDF()
+                from io import BytesIO
+                b = BytesIO()
+                if export_format == 'csv':
+                    df.to_csv(b, index=False)
+                elif export_format == 'json':
+                    df.to_json(b, orient='records')
+                b.seek(0)
+                return send_file(b, mimetype=mime, 
+                                 as_attachment=True, 
+                                 attachment_filename='marvin_table.{0}'.format(export_format))
+            
+            return output      
 
     @route('/postage/', methods=['GET', 'POST'], defaults={'page': 1}, endpoint='postage')
     @route('/postage/<page>/', methods=['GET', 'POST'], endpoint='postage')
