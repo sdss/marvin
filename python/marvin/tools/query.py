@@ -491,6 +491,9 @@ class Query(object):
         ''' Sort the SQLA query object by a given parameter '''
 
         if not isinstance(self.sort, type(None)):
+            # check any shortcut names
+            self.sort = self._marvinform._param_form_lookup.get_real_name(self.sort)
+            
             # set the sort variable ModelClass parameter
             if '.' in self.sort:
                 param = self.datamodel.parameters[str(self.sort)].full
