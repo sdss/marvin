@@ -6283,6 +6283,10 @@ section h3.section-subheading {
 #vacmodalbody {
   padding: 0px; }
 
+#guideqb div.modal-dialog {
+  position: initial;
+  top: 150px; }
+
 /*
 * @Author: Brian Cherinka
 * @Date:   2016-04-28 00:05:52

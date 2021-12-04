@@ -102,7 +102,19 @@
                 <!-- Table -->
                 {# Table #}
                 <div class='table-responsive' id='searchtablediv'>
-                    <div id='toolbar'><a class='btn btn-sm btn-default' type='button' target='_blank' href="{{url_for('search_page.postage', page=1)}}">View Galaxies</a></div>
+                    <div id='toolbar'>
+                        <a class='btn btn-sm btn-default' role='button' target='_blank' href="{{url_for('search_page.postage', page=1)}}" data-toggle="tooltip" title="View postage stamps of targets in search results" data-container='body'><span class="glyphicon glyphicon-eye-open" aria-hidden="true"></span> View</a>
+                        <div class="btn-group" id='export-btn'>
+                            <button type="button" class="btn btn-sm btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" aria-label='export-data'>
+                                <span class="glyphicon glyphicon-export" aria-hidden="true" data-toggle="tooltip" title="Export the table data" data-container='body'></span><span class="sr-only">Export</span><span class="caret"></span>
+                            </button>
+                            <ul class="dropdown-menu">
+                              <li><a class='export' id='export-json' name='json' role='button'>JSON</a></li>
+                              <li><a class='export' id='export-csv' name='csv' role='button'>CSV</a></li>
+                            </ul>
+                          </div>
+                        <a href='#' style='display: none;' class='btn btn-sm btn-warning disabled' id='export-load'><i class='fa fa-circle-o-notch fa-spin fa-fw'></i>Exporting data...</a>
+                    </div>
                     <div id='errdiv'><p class='alert alert-danger' id='tableerror' style="display:none;">hello</p></div>
                     <table id='searchtable'></table>
                 </div>
@@ -133,15 +145,16 @@
         <div class="modal-content">
           <div class="modal-header well">
             <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-            <h4 class="modal-title" id="myModalLabel">Guided Query Builder <a target='_blank' href='http://querybuilder.js.org/demo.html'>(demo)</a> <small>drag me</small></h4>
+            <h4 class="modal-title" id="myModalLabel">Guided Query Builder <a target='_blank' href='http://querybuilder.js.org/demo.html' data-container="body" data-toggle="tooltip" title="See the help for this tool">(demo)</a> <small>drag me</small></h4>
+            <small>Select conditions from the dropdowns below to build a SQL search.</small>
           </div>
           <div class="modal-body well">
             <div id='builder'></div>
           </div>
           <div class="modal-footer well">
-            <button class='btn btn-primary btn-sm pull-left' type='button' id='get-sql'>Generate SQL</button>
-            <button class='btn btn-primary btn-sm pull-left' type='button' id='reset-sql'>Reset SQL</button>
-            <button class='btn btn-primary btn-sm pull-left' type='button' id='run-sql'>Run Query</button>
+            <button class='btn btn-primary btn-sm pull-left' type='button' id='get-sql' data-container="body" data-toggle="tooltip" title="Add the SQL to the Input Search Filter">Generate SQL</button>
+            <button class='btn btn-primary btn-sm pull-left' type='button' id='reset-sql' data-container="body" data-toggle="tooltip" title="Clear the SQL from the Input Search Filter">Reset SQL</button>
+            <button class='btn btn-primary btn-sm pull-left' type='button' id='run-sql' data-container="body" data-toggle="tooltip" title="Run the SQL displayed in the Input Search Filter">Run Query</button>
             <div id='sqlalert'></div>
           </div>
         </div>
@@ -154,6 +167,8 @@
 {% block code %}
 <script rel='preconnect' src='https://unpkg.com/jQuery-QueryBuilder@2.4.3/dist/js/query-builder.standalone.min.js'></script>
 <script rel='preconnect' src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
+<script rel='preconnect'  src="https://unpkg.com/bootstrap-table@1.19.1/dist/extensions/defer-url/bootstrap-table-defer-url.min.js"></script>
+<script rel='preconnect' src="https://unpkg.com/bootstrap-table@1.19.1/dist/extensions/pipeline/bootstrap-table-pipeline.min.js"></script>
 <script type='application/javascript'>
     $(function() {
         m.table = new Table($('#searchtable'));

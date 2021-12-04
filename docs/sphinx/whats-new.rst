@@ -27,6 +27,8 @@ This section summarises the most important new features a bugfixes in Marvin. Fo
  - conversion to JSON now uses `.pandas.DataFrame.to_json` as default internal mechanism
  - the `toJson` method by default now returns an orientation of a list of records
  
+- Adds "Export Data" button to the web query page
+- Improves performance of data table in the web query page
 
 2.6.1 (November 2021)
 ------------------
