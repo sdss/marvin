@@ -8,6 +8,9 @@ Marvin's Change Log
 - Added new explore page in the web to upload a target list and display DAP maps
 - Adds basic VAC availablity to galaxy web page
 - Updates the Marvin Query `Results.toJson` method to return a more flexible JSON format
+- Improves performance of web query table
+- Adds export table button option to web query table
+- Improves web pages with various tooltips and other small improvements 
 
 [2.6.1] - 2021/11/18
 --------------------
