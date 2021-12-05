@@ -93,8 +93,8 @@
                           <div class='btn-group-vertical'>
                           {#<button class='btn btn-primary btn-danger' id='toggleinteract' type='button' data-toggle='button' aria-pressed="false" autocomplete='off' data-complete-text='<i class="fa fa-check fa-fw" aria-hidden="true"></i>Map/SpecView On'><i class="fa fa-close fa-fw" aria-hidden="true"></i>Map/SpecView Off</button>#}
 
-                          <div class='input-group' id='toggle-grp'>
-                          <input type="checkbox" id='toggleinteract' aria-pressed="false" data-toggle="toggle" data-on="Map/SpecView On" data-off="Map/SpecView Off" data-onstyle="success" data-offstyle="danger" data-width="170" data-toggle="tooltip" data-placement="top" title="Toggle the interactive spaxel/map view.">
+                          <div class='input-group' id='toggle-grp' data-toggle="tooltip" data-placement="top" data-container="body" title="Toggle the interactive spaxel/map view.">
+                          <input type="checkbox" id='toggleinteract' aria-pressed="false" data-toggle="toggle" data-on="Map/SpecView On" data-off="Map/SpecView Off" data-onstyle="success" data-offstyle="danger" data-width="170">
                           <span class="input-group-addon info" style="display: none;" id="toggle-load"><i class='fa fa-circle-o-notch fa-spin fa-fw'></i>Loading...</span>
                           </div>
                           </div>
@@ -107,9 +107,11 @@
                           {{infopopup('Use the spectrum in Python', 'Marvin Spaxel - start iPython', spaxelstr, 'marvinspaxel', 'warning')}}
                           </div>
                           <div class='vert-offset-top-2'>
-                            <button id="vacbtn" type="button" class="btn btn-primary" data-toggle="modal" data-target="#vacTable" data-toggle="tooltip" data-placement="right" title="Click to see what VACs are available for this target.">
+                            <div class='btn-group' data-toggle="tooltip" data-container="body" title="Click to see what VACs are available for this target.">
+                            <button id="vacbtn" type="button" class="btn btn-primary" data-toggle="modal" data-target="#vacTable">
                               Available VACs
                             </button>
+                            </div>
 
                               <div class="modal fade" id="vacTable" tabindex="-1" role="dialog" aria-labelledby="vacLabel" aria-hidden="true">
                                 <div class="modal-dialog modal-lg">
