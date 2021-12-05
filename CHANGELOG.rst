@@ -11,6 +11,7 @@ Marvin's Change Log
 - Improves performance of web query table
 - Adds export table button option to web query table
 - Improves web pages with various tooltips and other small improvements 
+- Fixes bug in `get_bpt` method with `add_all` kwargs to `ImageGrid` for `matplotlib>3.5`
 
 [2.6.1] - 2021/11/18
 --------------------
