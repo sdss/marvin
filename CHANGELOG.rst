@@ -3,6 +3,7 @@ Marvin's Change Log
 
 [2.7.0] - unreleased
 --------------------
+- Adds support for DR17, aliases to MPL-11
 - Fixing bug in core Marvin Tools `close` method, for use as contextmanager
 - Fixing bug in web galaxy template when no nsa data available; so pages do not crash
 - Added new explore page in the web to upload a target list and display DAP maps
@@ -12,6 +13,8 @@ Marvin's Change Log
 - Adds export table button option to web query table
 - Improves web pages with various tooltips and other small improvements 
 - Fixes bug in `get_bpt` method with `add_all` kwargs to `ImageGrid` for `matplotlib>3.5`
+- Adds support for DR17 DAPTYPES SPX and VOR10
+- Removes web and API support for MPL-8, MPL-9, and MPL-10
 
 [2.6.1] - 2021/11/18
 --------------------
