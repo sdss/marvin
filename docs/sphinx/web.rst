@@ -89,6 +89,12 @@ galaxies in the results.  This page displays up to 16 galaxies at a time, with t
 image linking to the individual galaxy page.  There are pagination buttons to help you cycle through 
 your pages.
 
+**Export Data**:
+
+After a search, the **Export** button will export the table of results to either a CSV or 
+JSON file.  The entire set of results, and columns, will be downloaded regardless of the content
+displayed in the table.
+
 
 .. _web-plate:
 

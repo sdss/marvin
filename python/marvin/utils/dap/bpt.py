@@ -10,8 +10,10 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import absolute_import
 
+from packaging.version import parse
 import warnings
 
+import matplotlib
 import matplotlib.pyplot as plt
 import numpy as np
 
@@ -70,13 +72,13 @@ def _get_kewley06_axes(use_oi=True):
     plt.subplots_adjust(top=0.99, bottom=0.08, hspace=0.01)
 
     # The axes for the three classification plots
+    imgrid_kwargs = {'add_all': True} if parse(matplotlib.__version__) < parse('3.5.0') else {}
     grid_bpt = ImageGrid(fig, 211,
                          nrows_ncols=(1, 3) if use_oi else (1, 2),
                          direction='row',
                          axes_pad=0.1,
-                         add_all=True,
                          label_mode='L',
-                         share_all=False)
+                         share_all=False, **imgrid_kwargs)
 
     # The axes for the galaxy display
     gal_bpt = ImageGrid(fig, 212, nrows_ncols=(1, 1))
