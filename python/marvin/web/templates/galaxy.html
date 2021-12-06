@@ -107,7 +107,7 @@
                           {{infopopup('Use the spectrum in Python', 'Marvin Spaxel - start iPython', spaxelstr, 'marvinspaxel', 'warning')}}
                           </div>
                           <div class='vert-offset-top-2'>
-                            <div class='btn-group' data-toggle="tooltip" data-container="body" title="Click to see what VACs are available for this target.">
+                            <div class='btn-group' id='vactip' data-trigger='hover' data-toggle="tooltip" data-container="body" title="Click to see what VACs are available for this target.">
                             <button id="vacbtn" type="button" class="btn btn-primary" data-toggle="modal" data-target="#vacTable">
                               Available VACs
                             </button>
@@ -412,6 +412,7 @@
 
         // show or hide the image alert;
         $('#staticimage').prop('height') <= 50 ? $('#noimagealert').show() : $('#noimagealert').hide();
+
     });
 </script>
 {% endblock code %}
