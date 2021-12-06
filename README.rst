@@ -4,8 +4,8 @@ Marvin
 Marvin is the ultimate tool to visualise and analyse MaNGA data. It is
 developed and maintained by the MaNGA team.
 
-|Build Status| |Coverage Status| |PyPI| |DOI| |astropy|
-|BrowserStack Status| |readthedocs|
+|Build Package| |Coverage Status| |PyPI| |DOI| |astropy|
+|readthedocs|
 
 Installation
 ------------
@@ -101,16 +101,15 @@ License
 Marvin is licensed under a 3-clause BSD style license - see the
 ``LICENSE.md`` file.
 
-.. |Build Status| image:: https://travis-ci.org/sdss/marvin.svg?branch=master
-   :target: https://travis-ci.org/sdss/marvin
+.. |Build Package| image:: https://github.com/sdss/marvin/actions/workflows/build.yml/badge.svg
+   :target: https://github.com/sdss/marvin/actions/workflows/build.yml
 .. |Coverage Status| image:: https://coveralls.io/repos/github/sdss/marvin/badge.svg?branch=master
    :target: https://coveralls.io/github/sdss/marvin?branch=master
 .. |PyPI| image:: https://img.shields.io/pypi/v/sdss-marvin.svg
    :target: https://pypi.python.org/pypi/sdss-marvin
-.. |DOI| image:: https://zenodo.org/badge/DOI/10.5281/zenodo.1146705.svg
-   :target: https://doi.org/10.5281/zenodo.1146705
+.. |DOI| image:: https://zenodo.org/badge/DOI/10.5281/zenodo.596700.svg
+   :target: https://doi.org/10.5281/zenodo.596700
 .. |astropy| image:: http://img.shields.io/badge/powered%20by-AstroPy-orange.svg?style=flat
    :target: http://www.astropy.org/
-.. |BrowserStack Status| image:: https://www.browserstack.com/automate/badge.svg?badge_key=WWgyaGJBbW45aityUVJtYytDcHFydU9EZE9ObVdOVVpkaUxGZkxwbzdHQT0tLUNkcW5Hc3JaRTdqR0l6ajltSUdTRXc9PQ==--21b221b6714b852f8f4215c787ffa6e2812e2ad6
 .. |readthedocs| image:: https://readthedocs.org/projects/docs/badge/
    :target: http://sdss-marvin.readthedocs.io/en/latest/
