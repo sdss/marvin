@@ -13,8 +13,9 @@ This section summarises the most important new features a bugfixes in Marvin. Fo
 
 2.7.0 (December 2021)
 ---------------------
-- Support for DR17
-- Updated VACs for DR17.  New VAC GalazyZoo3D.  
+- Support for `DR17 <https://www.sdss.org/dr17/manga/>`_.  See the :ref:`Marvin DR17 datamodel<datamodel-dr17>`.
+- Updated VACs for DR17.  New VAC GalazyZoo3D (`~marvin.contrib.vacs.galaxyzoo3d.GZ3DVAC`).
+- Adds support for DR17 DAPTYPES `SPX-MILESHC-MASTARSSP` and `VOR10-MILESHC-MASTARSSP` (see `DAP Output <https://www.sdss.org/dr17/manga/manga-data/data-model/#DataAnalysisPipelineOutput>`_).
 - New `Explore <https://dr17.sdss.org/marvin/explore>`_ page in Marvin Web
 
   - Find it via the **Upload** button in the top navbar.
