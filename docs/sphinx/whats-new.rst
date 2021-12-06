@@ -11,7 +11,7 @@ What's New
 
 This section summarises the most important new features a bugfixes in Marvin. For the complete list of changes check the :ref:`marvin-changelog`.
 
-2.7.0 (unreleased)
+2.7.0 (December 2021)
 ------------------
 - Support for DR17
 - Updated VACs for DR17.  New VAC GalazyZoo3D.  
