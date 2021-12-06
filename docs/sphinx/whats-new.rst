@@ -31,6 +31,10 @@ This section summarises the most important new features a bugfixes in Marvin. Fo
 - Adds "Export Data" button to the web query page
 - Improves performance of data table in the web query page
 - Removes web and API support for MPLs 8-10.  These MPLs are still accessible via local file-based mode in Marvin.
+- ..note:: 
+
+  The SDSS rsync file server has recently been upgraded, and modified.  This change requires updates two of marvin's dependencies
+  to continue downloading files.  This version of Marvin depends on `tree==3.1.1` and `sdss-access=2.0.0`.  
 
 2.6.1 (November 2021)
 ---------------------
