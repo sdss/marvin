@@ -1,7 +1,7 @@
 Marvin's Change Log
 ===================
 
-[2.7.0] - unreleased
+[2.7.0] - 2021/12/05
 --------------------
 - Adds support for DR17, aliases to MPL-11
 - Fixing bug in core Marvin Tools `close` method, for use as contextmanager
