@@ -1,6 +1,10 @@
 Marvin's Change Log
 ===================
 
+[2.7.1] - 2021/12/05
+--------------------
+- Bug fix in Query datamodel.  Removed older MPLs from the datamodel as they are no longer in the database.
+
 [2.7.0] - 2021/12/05
 --------------------
 - Adds support for DR17, aliases to MPL-11

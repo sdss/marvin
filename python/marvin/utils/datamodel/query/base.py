@@ -46,11 +46,11 @@ PARAM_CACHE = {}
 
 def get_allowed_releases():
     ''' get the supported API / web MaNGA releases '''
-    min_release = getattr(config, '_min_web_release', None)
+    web_releases = getattr(config, '_web_releases', None)
     public = config.access == 'public' or os.environ.get(
         'PUBLIC_SERVER', None) is True
     allowed_releases = config.get_allowed_releases(
-        public=public, min_release=min_release)
+        public=public, web_releases=web_releases)
     return allowed_releases
 
 
