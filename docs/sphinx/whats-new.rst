@@ -29,6 +29,7 @@ This section summarises the most important new features a bugfixes in Marvin. Fo
  
 - Adds "Export Data" button to the web query page
 - Improves performance of data table in the web query page
+- Removes web and API support for MPLs 8-10.  These MPLs are still accessible via local file-based mode in Marvin.
 
 2.6.1 (November 2021)
 ------------------

@@ -114,8 +114,8 @@ class MarvinConfig(object):
         # Allow DAP queries
         self._allow_DAP_queries = True
 
-        # Minimum web release; also see web.settings.Config.MIN_RELEASE
-        self._min_web_release = 'MPL-7'
+        # Allowed web releases; also see web.settings.Config.WEB_RELEASES
+        self._web_releases = ['MPL-7', 'MPL-11']
 
         # perform some checks
         self._load_defaults()
@@ -554,14 +554,21 @@ class MarvinConfig(object):
 
         return release
 
-    def get_allowed_releases(self, public=None, min_release=None):
+    def get_allowed_releases(self, public=None, min_release=None, 
+                             web_releases=None):
         ''' Get a dictionary of supported MaNGA releases
+
+        Set public flag to only include public releases. Set min_release to
+        filer out all releases below this one.  Set web_releases to
+        a filter out all releases included in the list.  
 
         Parameters:
             public (bool):
                 If True, only return public DR releases
             min_release (str):
                 Filter out all releases below this version
+            web_releases (list):
+                A list of all releases for the web/api
 
         Returns:
             dict: the supported MaNGA releases in Marvin
@@ -581,6 +588,10 @@ class MarvinConfig(object):
             min_drpver, __ = self.lookUpVersions(min_release)
             allowed = {k: v for k, v in allowed.items() if parse(
                 v[0]) >= parse(min_drpver)}
+            
+        # if web releases set, filter them out
+        if web_releases:
+            allowed = {k: v for k, v in allowed.items() if k in web_releases or 'DR' in k}
         return allowed
 
     def switchSasUrl(self, sasmode='utah', ngrokid=None, port=5000, test=False,

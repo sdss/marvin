@@ -77,8 +77,8 @@ class Config(object):
     CACHE_REDIS_URL = os.environ.get("SESSION_REDIS")
     CACHE_KEY_PREFIX = 'caching:'
 
-    # Minimum Supported MPL/DR
-    MIN_RELEASE = 'MPL-7'
+    # Web/API Supported MPL/DR
+    WEB_RELEASES = ['MPL-7', 'MPL-11']
 
 
 class ProdConfig(Config):

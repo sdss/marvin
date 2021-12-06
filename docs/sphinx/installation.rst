@@ -35,6 +35,12 @@ If you are using an Anaconda distribution of Python, you may use the following a
 
   conda env create -f marvin_2.6.0.yml
 
+To create a clean, isolated, conda virtual environment from scratch, and install marvin into it, do the following::
+
+  conda create -n marvin python=3.8 ipython
+  conda activate marvin
+  pip install sdss-marvin
+
 For troubleshooting installation issues, please see :ref:`marvin-install-issues` or the 
 `Marvin Github Issues <https://github.com/sdss/marvin/issues>`_ page.
 

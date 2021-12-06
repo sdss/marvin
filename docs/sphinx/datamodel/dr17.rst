@@ -72,5 +72,5 @@ VACs
 
 .. datamodel:: marvin.utils.datamodel.vacs:datamodel
    :prog: Available VACs
-   :vac: dr17
+   :vac: DR17
    :description: A list of the contributed VACs available in this data release.
