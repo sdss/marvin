@@ -94,7 +94,7 @@
 
 {# Download Button for Single Galaxy #}
 {% macro download(id, links) %}
-  <div class="btn-group marvin-download-singles" id='{{id}}'>
+  <div class="btn-group marvin-download-singles" id='{{id}}' data-toggle="tooltip" data-container="body" data-placement="right" title="Download the MaNGA products for this target">
     <button type="button" class="btn btn-info dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
       <i class="fa fa-download fa-fw" aria-hidden="true"></i>Download <span class="caret"></span>
     </button>

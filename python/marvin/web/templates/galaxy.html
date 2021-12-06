@@ -67,8 +67,8 @@
                           </div>
                           <div class='btn-group-vertical'>
                           {{download('#galaxydownload', links)}}
-                          <a href='https://skyserver.sdss.org/dr17/VisualTools/navi?ra={{cubehdr.objra}}&dec={{cubehdr.objdec}}&opt=GS&scale=0.2' class='btn btn-warning' id='gotocas' target='_blank'><i class="fa fa-external-link fa-fw" aria-hidden="true"></i> Go to SkyServer</a>
-                          <a href='http://simbad.u-strasbg.fr/simbad/sim-coo?Coord={{cubehdr.objra}} {{cubehdr.objdec}}&CooFrame=FK5&CooEpoch=2000&CooEqui=2000&CooDefinedFrames=none&Radius=1&Radius.unit=arcmin&submit=submit+query&CoordList=' class='btn btn-default' id='gotosim' target='_blank'><i class="fa fa-external-link fa-fw" aria-hidden="true"></i> Go to Simbad</a>
+                          <a href='https://skyserver.sdss.org/dr17/VisualTools/navi?ra={{cubehdr.objra}}&dec={{cubehdr.objdec}}&opt=GS&scale=0.2' class='btn btn-warning' id='gotocas' target='_blank' data-toggle="tooltip" data-container="body" data-placement="right" title="Search for this target in SDSS SkyServer"><i class="fa fa-external-link fa-fw" aria-hidden="true"></i> Go to SkyServer</a>
+                          <a href='http://simbad.u-strasbg.fr/simbad/sim-coo?Coord={{cubehdr.objra}} {{cubehdr.objdec}}&CooFrame=FK5&CooEpoch=2000&CooEqui=2000&CooDefinedFrames=none&Radius=1&Radius.unit=arcmin&submit=submit+query&CoordList=' class='btn btn-default' id='gotosim' target='_blank' data-toggle="tooltip" data-container="body" data-placement="right" title="Search for this target in Simbad"><i class="fa fa-external-link fa-fw" aria-hidden="true"></i> Go to Simbad</a>
                           </div>
                     </div>
                     <!-- MaNGA Target Flags -->
