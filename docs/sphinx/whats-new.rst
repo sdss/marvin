@@ -12,7 +12,7 @@ What's New
 This section summarises the most important new features a bugfixes in Marvin. For the complete list of changes check the :ref:`marvin-changelog`.
 
 2.7.0 (December 2021)
-------------------
+---------------------
 - Support for DR17
 - Updated VACs for DR17.  New VAC GalazyZoo3D.  
 - New `Explore <https://dr17.sdss.org/marvin/explore>`_ page in Marvin Web
@@ -32,7 +32,7 @@ This section summarises the most important new features a bugfixes in Marvin. Fo
 - Removes web and API support for MPLs 8-10.  These MPLs are still accessible via local file-based mode in Marvin.
 
 2.6.1 (November 2021)
-------------------
+---------------------
 - Support for using Tools as context managers, allowing efficient access and closure of file handlers. This will make workflows relying on looping through lists of galaxies and performing similar actions less error-prone.
 
 2.6.0 (March 2020)
