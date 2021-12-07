@@ -84,6 +84,9 @@ class Explore(BaseWebView):
         self.explore['dapbintemps'] = dm.get_bintemps(db_only=True)
         self.explore['dapmaps'] = daplist
 
+        if 'bintemp' not in current_session:
+            current_session['bintemp'] = '{0}-{1}'.format(dm.get_bintype(), dm.get_template())
+
         self.explore['targetlist'] = current_session.get('targetlist', '')
         self.explore['n_targs'] = current_session.get('n_targs', 0)
 
@@ -189,12 +192,16 @@ class Explore(BaseWebView):
         if not mapchoice or not btchoice:
             flash('Must select a map and bintype', 'error')
             return redirect(url_for(home))
+        
+        # update the DAPTYPE session selection
+        current_session['bintemp'] = btchoice
 
         targets = targetlist.split('\r\n')
         self.explore['targetlist'] = targetlist
         self.explore['targets'] = targets
         self.explore['n_targs'] = len(targets)
         self.explore['mapchoice'] = mapchoice
+        self.explore['btchoice'] = btchoice
 
         self.explore['maps'] = True
         self.explore['mapmsgs'] = 'go'
@@ -223,6 +230,8 @@ class Explore(BaseWebView):
             return jsonify(result=output)
 
         hasbin = btchoice.split('-')[0] in cube.get_available_bintypes() if btchoice else None
+        # in principle update the DAPTYPE session selection, but doesn't quite work
+        current_session['bintemp'] = btchoice
 
         try:
             mapdict = buildMapDict(cube, [mapchoice], self._dapver, bintemp=btchoice)

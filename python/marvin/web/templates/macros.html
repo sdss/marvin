@@ -94,7 +94,7 @@
 
 {# Download Button for Single Galaxy #}
 {% macro download(id, links) %}
-  <div class="btn-group marvin-download-singles" id='{{id}}'>
+  <div class="btn-group marvin-download-singles" id='{{id}}' data-toggle="tooltip" data-container="body" data-placement="right" title="Download the MaNGA products for this target">
     <button type="button" class="btn btn-info dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
       <i class="fa fa-download fa-fw" aria-hidden="true"></i>Download <span class="caret"></span>
     </button>
@@ -131,7 +131,7 @@
 {# Info PopUp #}
 {% macro infopopup(text, title, inner, id, alert='warning', place='right') %}
 {#<div class='col-md-{{col}} infopop' id='{{id}}'>#}
-    <button type="button" class="btn btn-{{alert}}" data-html='true' data-toggle="popover"
+    <button type="button" class="btn btn-{{alert}} infopop" data-html='true' data-toggle="popover"
     data-placement="{{place}}" data-container='#{{id}}' title="{{title}}" data-content="{{inner}}">{{text}}</button>
 {#</div>#}
 {% endmacro %}
