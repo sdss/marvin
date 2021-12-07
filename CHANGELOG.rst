@@ -1,6 +1,13 @@
 Marvin's Change Log
 ===================
 
+[2.7.2] - 2021/12/07
+--------------------
+- Small tweaks to the web interface: added tooltips, updated link to SkyServer
+- Adds default bintype to Explore page
+- Fixes issue :issue:`551` - fix z-index bug in Guided Query Builder
+- Fixes issue :issue:`142` - add link to Simbad
+
 [2.7.1] - 2021/12/05
 --------------------
 - Bug fix in Query datamodel.  Removed older MPLs from the datamodel as they are no longer in the database.
