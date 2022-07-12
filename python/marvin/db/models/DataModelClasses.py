@@ -921,7 +921,6 @@ Fibers.ifu = relationship(IFUDesign, backref="fibers")
 Fibers.fibertype = relationship(FiberType, backref="fibers")
 Fibers.targettype = relationship(TargetType, backref="fibers")
 
-#insp = reflection.Inspector.from_engine(db.engine)
 insp = inspect(db.engine)
 fks = insp.get_foreign_keys(Spaxel.__table__.name, schema='mangadatadb')
 if fks:

@@ -434,8 +434,6 @@ Structure.bintype = relationship(BinType, backref='structures')
 Structure.template_kin = relationship(Template, foreign_keys=[Structure.template_kin_pk], backref='structures_kin')
 Structure.template_pop = relationship(Template, foreign_keys=[Structure.template_pop_pk], backref='structures_pop')
 
-#insp = reflection.Inspector.from_engine(db.engine)
-#insp = inspect(db.engine)
 # add foreign key relationships on (Clean)SpaxelProp classses to File
 spaxel_tables = {k: v for k, v in locals().items() if 'SpaxelProp' in k or 'CleanSpaxelProp' in k}
 
