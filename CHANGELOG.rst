@@ -1,6 +1,11 @@
 Marvin's Change Log
 ===================
 
+[2.7.3] - 2022/07/12
+--------------------
+- Small tweaks to documentation links and tutorial exercise notebooks
+- Pinning markupsafe dependency to < 2.1
+
 [2.7.2] - 2021/12/07
 --------------------
 - Small tweaks to the web interface: added tooltips, updated link to SkyServer
@@ -22,7 +27,7 @@ Marvin's Change Log
 - Updates the Marvin Query `Results.toJson` method to return a more flexible JSON format
 - Improves performance of web query table
 - Adds export table button option to web query table
-- Improves web pages with various tooltips and other small improvements 
+- Improves web pages with various tooltips and other small improvements
 - Fixes bug in `get_bpt` method with `add_all` kwargs to `ImageGrid` for `matplotlib>3.5`
 - Adds support for DR17 DAPTYPES SPX and VOR10
 - Removes web and API support for MPL-8, MPL-9, and MPL-10
@@ -130,7 +135,7 @@ Fixed
 
 Added
 ^^^^^
-- Support for DR16.  Updated datamodels and docs. 
+- Support for DR16.  Updated datamodels and docs.
 - Added Galaxy Zoo VAC
 - Added GEMA VAC
 - Added Firefly VAC
