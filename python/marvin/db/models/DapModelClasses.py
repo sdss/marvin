@@ -16,8 +16,7 @@ from astropy.io import fits
 from marvin.core.caching_query import RelationshipCache
 from marvin.db.database import db
 from marvin.utils.datamodel.dap import datamodel
-from sqlalchemy import Float, ForeignKeyConstraint, and_, case, cast, select
-from sqlalchemy.engine import reflection
+from sqlalchemy import Float, ForeignKeyConstraint, and_, case, cast, select, inspect
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.inspection import inspect
 from sqlalchemy.orm import configure_mappers, relationship
@@ -389,7 +388,9 @@ class DapAll(Base):
         return '<DapAll (pk={0}, file={1})'.format(self.pk, self.file_pk)
 
 
-if 'testtable' in db.engine.table_names('mangadapdb'):
+insp = inspect(db.engine)
+
+if 'testtable' in insp.get_table_names('mangadapdb'):
     class TestTable(Base):
         __tablename__ = 'testtable'
         __table_args__ = {'autoload': True, 'schema': 'mangadapdb'}
@@ -399,7 +400,7 @@ if 'testtable' in db.engine.table_names('mangadapdb'):
         def __repr__(self):
             return ('<TestTable pk={0}, file={1}>'.format(self.pk, self.file_pk))
 
-if 'cleanspaxeltest' in db.engine.table_names('mangadapdb'):
+if 'cleanspaxeltest' in insp.get_table_names('mangadapdb'):
     class CleanSpaxelTest(Base):
         __tablename__ = 'cleanspaxeltest'
         __table_args__ = {'autoload': True, 'schema': 'mangadapdb'}
@@ -433,8 +434,8 @@ Structure.bintype = relationship(BinType, backref='structures')
 Structure.template_kin = relationship(Template, foreign_keys=[Structure.template_kin_pk], backref='structures_kin')
 Structure.template_pop = relationship(Template, foreign_keys=[Structure.template_pop_pk], backref='structures_pop')
 
-insp = reflection.Inspector.from_engine(db.engine)
-
+#insp = reflection.Inspector.from_engine(db.engine)
+#insp = inspect(db.engine)
 # add foreign key relationships on (Clean)SpaxelProp classses to File
 spaxel_tables = {k: v for k, v in locals().items() if 'SpaxelProp' in k or 'CleanSpaxelProp' in k}
 
