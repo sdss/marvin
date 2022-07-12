@@ -17,9 +17,8 @@ from flask_login import UserMixin
 from marvin.core.caching_query import RelationshipCache
 from marvin.db.ArrayUtils import ARRAY_D
 from marvin.db.database import db
-from sqlalchemy import and_, func, select  # for aggregate, other functions
+from sqlalchemy import and_, func, select, inspect  # for aggregate, other functions
 from sqlalchemy.dialects.postgresql import *
-from sqlalchemy.engine import reflection
 from sqlalchemy.ext.hybrid import hybrid_method, hybrid_property
 
 from sqlalchemy.orm import configure_mappers, deferred, relationship
@@ -507,7 +506,7 @@ class PipelineInfo(Base):
     __table_args__ = {'autoload': True, 'schema': 'mangadatadb'}
 
     def __repr__(self):
-        return ('<Pipeline_Info (pk={0}, name={3}, ver={1}, release={2})>'.format(self.pk, 
+        return ('<Pipeline_Info (pk={0}, name={3}, ver={1}, release={2})>'.format(self.pk,
                 self.version.version, self.version.label, self.name.label))
 
 
@@ -922,7 +921,7 @@ Fibers.ifu = relationship(IFUDesign, backref="fibers")
 Fibers.fibertype = relationship(FiberType, backref="fibers")
 Fibers.targettype = relationship(TargetType, backref="fibers")
 
-insp = reflection.Inspector.from_engine(db.engine)
+insp = inspect(db.engine)
 fks = insp.get_foreign_keys(Spaxel.__table__.name, schema='mangadatadb')
 if fks:
     Spaxel.cube = relationship(Cube, backref='spaxels')

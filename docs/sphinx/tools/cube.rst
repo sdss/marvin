@@ -66,7 +66,7 @@ Cubes come with some basic attributes attached, like the full header (as an Astr
     c.nsa['elpetro_ba']
     0.87454
 
-The `~marvin.tools.cube.Cube` data quality and targeting flags are available as the ``quality_flag`` and ``target_flags`` attributes, respectively.  These are represented as :ref:`Maskbit <marvin-utils-maskbit>` objects.  A **good** quality `~marvin.tools.cube.Cube` has an empty (0) bit list. If you are not familiar with MaNGA's maskbits, check the `official documentation <https://www.sdss.org/algorithms/bitmasks/#MANGA_TARGET1>`__.
+The `~marvin.tools.cube.Cube` data quality and targeting flags are available as the ``quality_flag`` and ``target_flags`` attributes, respectively.  These are represented as :ref:`Maskbit <marvin-utils-maskbit>` objects.  A **good** quality `~marvin.tools.cube.Cube` has an empty (0) bit list. If you are not familiar with MaNGA's maskbits, check the `official documentation <https://www.sdss.org/dr17/algorithms/bitmasks/#MANGA_TARGET1>`__.
 
 ::
 
