@@ -899,8 +899,12 @@ class QueryParameter(object):
     @property
     def db_table(self):
         schema, table, column = self._split_full()
-        release_num = self.parent.release.split('-')[1]
-        table = table + release_num if table == 'spaxelprop' else table
+        if 'DR' in self.parent.release:
+            mpl = [a for a in self.parent.aliases if 'MPL' in a][0]
+            release_num = mpl[3:]
+        else:
+            release_num = self.parent.release.split('-')[1]
+        table = (table + release_num) if table == 'spaxelprop' else table
         return table
 
     @property

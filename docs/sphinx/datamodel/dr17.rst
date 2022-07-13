@@ -38,7 +38,7 @@ DataModels
 
 .. _dr17query:
 
-.. datamodel:: marvin.utils.datamodel.query:MPL11
+.. datamodel:: marvin.utils.datamodel.query:DR17
    :prog: Query DataModel
    :title: DR17 DataModel
    :parameters:
