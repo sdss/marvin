@@ -4,15 +4,15 @@
 Getting Started
 ===============
 
-Here is a guide to how Marvin works and the basics of getting set up to use Marvin for accessing 
-MaNGA data.  If you are unfamiliar with MaNGA data, see the 
-`MaNGA Survey <https://www.sdss.org/surveys/manga/>`_ for an introduction into the survey.  See 
+Here is a guide to how Marvin works and the basics of getting set up to use Marvin for accessing
+MaNGA data.  If you are unfamiliar with MaNGA data, see the
+`MaNGA Survey <https://www.sdss.org/surveys/manga/>`_ for an introduction into the survey.  See
 `MaNGA in DR17 <https://www.sdss.org/dr17/manga/>`_ for details on the latest MaNGA data release.
 
 .. _getstart-tools:
 .. py:currentmodule:: marvin.tools
 
-.. note:: 
+.. note::
 
     In all of the code blocks on this page, and throughout the rest of the documentation, a `>>>` may
     appear in the top right corner.  Clicking this icon will allow you to copy the displayed code to
@@ -21,16 +21,16 @@ MaNGA data.  If you are unfamiliar with MaNGA data, see the
 With Tools
 ----------
 
-Marvin Galaxy Tools are the four main classes (`~cube.Cube`, `~rss.RSS`, `~maps.Maps`, and `~modelcube.ModelCube`) 
-associated with the analogous DRP and DAP data products, the `Astropy quantities <marvin-quantities>` 
-representing multidimensional data, and a variety of utilities and mixins that provide additional 
-functionality. Sub-region galaxy tools (`~spaxel.Spaxel` and binning information) are explained 
-:ref:`in their own section <marvin-subregion-tools>`. The four main Tools classes inherit from 
-`~tools.core.MarvinToolsClass` and thus much of their functionality and logic is shared. In this 
-section we will prominently use the `~cube.Cube` but most of what we explain here also applies to the 
+Marvin Galaxy Tools are the four main classes (`~cube.Cube`, `~rss.RSS`, `~maps.Maps`, and `~modelcube.ModelCube`)
+associated with the analogous DRP and DAP data products, the `Astropy quantities <marvin-quantities>`
+representing multidimensional data, and a variety of utilities and mixins that provide additional
+functionality. Sub-region galaxy tools (`~spaxel.Spaxel` and binning information) are explained
+:ref:`in their own section <marvin-subregion-tools>`. The four main Tools classes inherit from
+`~tools.core.MarvinToolsClass` and thus much of their functionality and logic is shared. In this
+section we will prominently use the `~cube.Cube` but most of what we explain here also applies to the
 remaining Tools.
 
-All the Tools classes can be accessed from the :ref:`marvin.tools <marvin-tools-ref>` module. Let's 
+All the Tools classes can be accessed from the :ref:`marvin.tools <marvin-tools-ref>` module. Let's
 load a DRP Cube ::
 
     >>> import marvin
@@ -38,22 +38,22 @@ load a DRP Cube ::
     >>> my_cube
     <Marvin Cube (plateifu='8485-1901', mode='local', data_origin='file')>
 
-Depending on whether you have the file on disk or not, the access mode will be ``'local'`` or 
-``'remote'``. Regardless of that, the way we interact with the object will be the same. All tools 
+Depending on whether you have the file on disk or not, the access mode will be ``'local'`` or
+``'remote'``. Regardless of that, the way we interact with the object will be the same. All tools
 provide quick access to some basic metadata ::
 
     >>> print(my_cube.filename, my_cube.plateifu, my_cube.mangaid, my_cube.release)
-    /Users/albireo/Documents/MaNGA/mangawork/manga/spectro/redux/v2_3_1/8485/stack/manga-8485-1901-LOGCUBE.fits.gz 8485-1901 1-209232 DR15
+    /Users/albireo/Documents/MaNGA/mangawork/manga/spectro/redux/v3_1_1/8485/stack/manga-8485-1901-LOGCUBE.fits.gz 8485-1901 1-209232 DR17
 
     >>> print(my_cube.ra, my_cube.dec)
     232.544703894 48.6902009334
 
 .. note::
 
-    When accessing remote data in Marvin, i.e. when the mode is "remote", the ``filename`` 
+    When accessing remote data in Marvin, i.e. when the mode is "remote", the ``filename``
     attribute on the Marvin Tool instance will be None.
 
-Similarly we can access the `FITS header <astropy.io.fits.Header>` of the file and 
+Similarly we can access the `FITS header <astropy.io.fits.Header>` of the file and
 the `Astropy WCS <astropy.wcs.WCS>` object ::
 
     >>> my_cube.header
@@ -75,7 +75,7 @@ the `Astropy WCS <astropy.wcs.WCS>` object ::
     CD3_1 CD3_2 CD3_3  : 0.0  0.0  8.33903304339e-11
     NAXIS : 34  34  4563
 
-Furthermore, we can access the :ref:`datamodel <marvin-datamodel>` of the cube file, which show us 
+Furthermore, we can access the :ref:`datamodel <marvin-datamodel>` of the cube file, which show us
 what extensions are available, how they are named in Marvin, and what they contain ::
 
     >>> datamodel = my_cube.datamodel
@@ -83,27 +83,28 @@ what extensions are available, how they are named in Marvin, and what they conta
     <DRPCubeDataModel release='DR15', n_datacubes=3, n_spectra=2>
 
     >>> datamodel.datacubes
-    [<DataCube 'flux', release='DR15', unit='1e-17 erg / (Angstrom cm2 s spaxel)'>,
-     <DataCube 'dispersion', release='DR15', unit='Angstrom'>,
-     <DataCube 'dispersion_prepixel', release='DR15', unit='Angstrom'>]
+    [<DataCube 'flux', release='DR17', unit='1e-17 erg / (Angstrom cm2 s spaxel)'>,
+     <DataCube 'dispersion', release='DR17', unit='Angstrom'>,
+     <DataCube 'dispersion_prepixel', release='DR17', unit='Angstrom'>]
 
     >>> datamodel.spectra
-    [<Spectrum 'spectral_resolution', release='DR15', unit='Angstrom'>,
-     <Spectrum 'spectral_resolution_prepixel', release='DR15', unit='Angstrom'>]
+    [<Spectrum 'spectral_resolution', release='DR17', unit='Angstrom'>,
+     <Spectrum 'spectral_resolution_prepixel', release='DR17', unit='Angstrom'>]
 
-This tells us that this cube has two associated 3D datacubes, ``'flux'``, ``'dispersion'``, 
-and ``'dispersion_prepixel'``, and two associated spectra, ``'spectral_resolution'`` 
-and ``'spectral_resolution_prepixel'``, as well as their associated units. We can get a desciption 
+This tells us that this cube has two associated 3D datacubes, ``'flux'``, ``'dispersion'``,
+and ``'dispersion_prepixel'``, and two associated spectra, ``'spectral_resolution'``
+and ``'spectral_resolution_prepixel'``, as well as their associated units. We can get a desciption
 of what each of them ::
 
-    >>> datamodel.datacubes.flux.description
+    >>> datamodel.datacubes.flux.name
     'flux'
     >>> datamodel.datacubes.flux.description
     '3D rectified cube'
 
-In ``my_cube``, we can use the name of each of these datacubes and spectra to access the associated 
+In ``my_cube``, we can use the name of each of these datacubes and spectra to access the associated
 data quantity. Let's get the cube flux ::
 
+    >>> # access the full 3d cube
     >>> flux = my_cube.flux
     >>> flux
     <DataCube [[[0., 0., 0., ..., 0., 0., 0.],
@@ -114,11 +115,12 @@ data quantity. Let's get the cube flux ::
                 [0., 0., 0., ..., 0., 0., 0.],
                 [0., 0., 0., ..., 0., 0., 0.]]] 1e-17 erg / (Angstrom cm2 s spaxel)>
 
-The flux is represented as a 3D array with units. We can also access the inverse variance and the 
-mask using ``flux.ivar`` and ``flux.mask``, respectively. We can slice this datacube to get another 
+The flux is represented as a 3D array with units. We can also access the inverse variance and the
+mask using ``flux.ivar`` and ``flux.mask``, respectively. We can slice this datacube to get another
 datacube ::
 
-    >>> flux[:, 50:60, 50:60]
+    >>> # use array indexing to slice a cube
+    >>> flux[:, 10:20, 10:20]
     <DataCube [[[ 0.23239002,  0.21799691,  0.1915081 , ...,  0.06516988,
               0.03220467,  0.02613733],
             [ 0.2511523 ,  0.25672358,  0.24318442, ...,  0.07530793,
@@ -135,10 +137,11 @@ datacube ::
 
 Or get a single spectrum and plot it::
 
-    >>> spectrum = flux[:, 50, 55]
+    >>> # get a single spaxel from the cube
+    >>> spectrum = flux[:, 20, 25]
     >>> spectrum
-    <Spectrum [0.1060614 , 0.07801704, 0.02460545, ..., 0.16328742, 0.13772544,
-           0.        ] 1e-17 erg / (Angstrom cm2 s spaxel)>
+    <Spectrum [ 0.01717607, -0.0455085 ,  0.05266405, ...,  0.        ,
+            0.        ,  0.        ] 1e-17 erg / (Angstrom cm2 s spaxel)>
 
     >>> spectrum.plot(show_std=True)
 
@@ -152,42 +155,42 @@ Or get a single spectrum and plot it::
     ax = spectrum.plot(show_std=True)
     ax.set_xlim(6000, 8000)
 
-We will talk more about quantities in the :ref:`marvin-quantities` section, and about more advance 
+We will talk more about quantities in the :ref:`marvin-quantities` section, and about more advance
 plotting in :ref:`marvin-plotting`.
 
-From a DRP cube we can get the associated DAP `~marvin.tools.maps.Maps` object for a certain 
+From a DRP cube we can get the associated DAP `~marvin.tools.maps.Maps` object for a certain
 bintype ::
 
     >>> hyb_maps = my_cube.getMaps(bintype='HYB10')
-    <Marvin Maps (plateifu='8485-1901', mode='local', data_origin='file', bintype='HYB10', template='GAU-MILESHC')>
+    <Marvin Maps (plateifu='8485-1901', mode='local', data_origin='file', bintype='HYB10', template='MILESHC-MASTARSSP')>
 
-A `~marvin.tools.maps.Maps` behaves very similarly to a `~marvin.tools.cube.Cube` and everything we 
-have discussed above will still work. Instead of datacubes and spectra, a Maps object contains a set 
-of 2D quantities called `~marvin.tools.quantities.map.Map`, each one of them representing a 
-different ``property`` measured by the DAP. One can get a full list of all the properties available 
+A `~marvin.tools.maps.Maps` behaves very similarly to a `~marvin.tools.cube.Cube` and everything we
+have discussed above will still work. Instead of datacubes and spectra, a Maps object contains a set
+of 2D quantities called `~marvin.tools.quantities.map.Map`, each one of them representing a
+different ``property`` measured by the DAP. One can get a full list of all the properties available
 using the :ref:`datamodel <marvin-datamodel>` ::
 
     >>> hyb_maps.datamodel
-    [<Property 'spx_skycoo', channel='on_sky_x', release='2.1.3', unit='arcsec'>,
-     <Property 'spx_skycoo', channel='on_sky_y', release='2.1.3', unit='arcsec'>,
-     <Property 'spx_ellcoo', channel='elliptical_radius', release='2.1.3', unit='arcsec'>,
-     <Property 'spx_ellcoo', channel='r_re', release='2.1.3', unit=''>,
-     <Property 'spx_ellcoo', channel='elliptical_azimuth', release='2.1.3', unit='deg'>,
-     <Property 'spx_mflux', channel='None', release='2.1.3', unit='1e-17 erg / (cm2 s spaxel)'>,
-     <Property 'spx_snr', channel='None', release='2.1.3', unit=''>,
-     <Property 'binid', channel='binned_spectra', release='2.1.3', unit=''>,
+    [<Property 'spx_skycoo', channel='on_sky_x', release='3.1.0', unit='arcsec'>,
+     <Property 'spx_skycoo', channel='on_sky_y', release='3.1.0', unit='arcsec'>,
+     <Property 'spx_ellcoo', channel='elliptical_radius', release='3.1.0', unit='arcsec'>,
+     <Property 'spx_ellcoo', channel='r_re', release='3.1.0', unit=''>,
+     <Property 'spx_ellcoo', channel='elliptical_azimuth', release='3.1.0', unit='deg'>,
+     <Property 'spx_mflux', channel='None', release='3.1.0', unit='1e-17 erg / (cm2 s spaxel)'>,
+     <Property 'spx_snr', channel='None', release='3.1.0', unit=''>,
+     <Property 'binid', channel='binned_spectra', release='3.1.0', unit=''>,
      ...
     ]
 
-Note that some properties such as ``'spx_skycoo'`` have multiple channels (in this case the on-sky x 
+Note that some properties such as ``'spx_skycoo'`` have multiple channels (in this case the on-sky x
 and y coordinates). We can get more information about a property ::
 
     >>> hyb_maps.datamodel.spx_skycoo_on_sky_x.description
-    'Offsets of each spaxel from the galaxy center.'
+    'Offsets of each spaxel from the galaxy center. Channel = On-sky X.'
 
-See the :ref:`datamodel <marvin-datamodel>` section for more information on how to use this feature. 
-We can retrieve the map associated to a specific property directly from the `~marvin.tools.maps.Maps` 
-instance. For example, let's get the H :math:`\alpha` emission line flux (fitted by a Gaussian) from 
+See the :ref:`datamodel <marvin-datamodel>` section for more information on how to use this feature.
+We can retrieve the map associated to a specific property directly from the `~marvin.tools.maps.Maps`
+instance. For example, let's get the H :math:`\alpha` emission line flux (fitted by a Gaussian) from
 a different Maps file ::
 
     >>> my_cube = marvin.tools.Maps('7443-12703')
@@ -202,11 +205,11 @@ a different Maps file ::
      [0. 0. 0. ... 0. 0. 0.]
      [0. 0. 0. ... 0. 0. 0.]] 1e-17 erg / (cm2 s spaxel)
 
-.. hint:: In IPython, you can use tab-completion to autocomplete the name of the property. If you 
-press tab after writing ``hyb_maps.emline_`` you will get a list of all the emission line properties 
+.. hint:: In IPython, you can use tab-completion to autocomplete the name of the property. If you
+press tab after writing ``hyb_maps.emline_`` you will get a list of all the emission line properties
 available.
 
-`~marvin.tools.quantities.map.Map` quantities are similar to `~marvin.tools.quantities.datacube.DataCube` 
+`~marvin.tools.quantities.map.Map` quantities are similar to `~marvin.tools.quantities.datacube.DataCube`
 but wrap a 2D array. We can plot the Map as ::
 
     >>> fig, ax = ha.plot()
@@ -218,38 +221,38 @@ but wrap a 2D array. We can plot the Map as ::
     my_maps = marvin.tools.Maps('7443-12703', bintype='HYB10')
     my_maps.emline_gflux_ha_6564.plot()
 
-Note that the `~marvin.tools.quantities.map.Map.plot` method returns the matplotlib 
-`~matplotlib.figure.Figure` and `~matplotlib.axes.Axes` for the plot. We can use those to modify or 
-save the plot. :ref:`Marvin plotting routines <marvin-plotting>` try to select the best parameters, 
-colour maps, and dynamic ranges. You can modify those by passing extra arguments to 
-`~marvin.tools.quantities.map.Map.plot`. You can learn more in the :ref:`Map plotting <marvin-utils-plot-map>` 
-section. We will talk about the `~marvin.tools.quantities.map.Map` class in detail in :ref:`marvin-quantities` 
+Note that the `~marvin.tools.quantities.map.Map.plot` method returns the matplotlib
+`~matplotlib.figure.Figure` and `~matplotlib.axes.Axes` for the plot. We can use those to modify or
+save the plot. :ref:`Marvin plotting routines <marvin-plotting>` try to select the best parameters,
+colour maps, and dynamic ranges. You can modify those by passing extra arguments to
+`~marvin.tools.quantities.map.Map.plot`. You can learn more in the :ref:`Map plotting <marvin-utils-plot-map>`
+section. We will talk about the `~marvin.tools.quantities.map.Map` class in detail in :ref:`marvin-quantities`
 and in :ref:`marvin-map`.
 
-Let's take a step back and go back to ``hyb_maps``, our `~marvin.tools.maps.Maps` instance. We can 
-access the `targeting bits <~marvin.tools.core.MarvinToolsClass.target_flags>` for that galaxy 
-(for an introduction to maskbits check `this page <https://www.sdss.org/algorithms/bitmasks/>`) ::
+Let's take a step back and go back to ``hyb_maps``, our `~marvin.tools.maps.Maps` instance. We can
+access the `targeting bits <~marvin.tools.core.MarvinToolsClass.target_flags>` for that galaxy
+(for an introduction to maskbits check `this page <https://www.sdss.org/dr17/algorithms/bitmasks/>`_) ::
 
     >>> hyb_maps.target_flags
     [<Maskbit 'MANGA_TARGET1' ['PRIMARY_PLUS_COM', 'COLOR_ENHANCED_COM', 'PRIMARY_v1_1_0', 'COLOR_ENHANCED_COM2', 'PRIMARY_v1_2_0']>,
      <Maskbit 'MANGA_TARGET2' []>,
      <Maskbit 'MANGA_TARGET3' []>]
 
-Note that in this case the galaxy belongs to the primary sample from the final target selection 
-(``PRIMARY_v1_2_0``) as well as to the primary and colour enhanced samples from several commissioning 
+Note that in this case the galaxy belongs to the primary sample from the final target selection
+(``PRIMARY_v1_2_0``) as well as to the primary and colour enhanced samples from several commissioning
 target selections. The galaxy does not have any ancillary bit (``manga_target3``).
 
-Similarly, we can access quality flags, which indicate us if there is something we need to know about 
+Similarly, we can access quality flags, which indicate us if there is something we need to know about
 the data ::
 
     >>> hyb_maps.quality_flag
     <Maskbit 'MANGA_DAPQUAL' []>
 
-In this case the ``MANGA_DAPQUAL`` maskbit does not have any bit activated, which means the data is 
+In this case the ``MANGA_DAPQUAL`` maskbit does not have any bit activated, which means the data is
 safe to use. See the :ref:`Maskbits <marvin-utils-maskbit>` section for more information.
 
-For each target we can also access additional catalogue data: the associated parameters from the 
-`NASA Sloan Atlas <http://nsatlas.org/>`_, and the `DAPall <https://testng.sdss.org/dr15/manga/manga-data/catalogs/#DAPALLFile>`_ file ::
+For each target we can also access additional catalogue data: the associated parameters from the
+`NASA Sloan Atlas <http://nsatlas.org/>`_, and the `DAPall <https://www.sdss.org/dr17/manga/manga-data/catalogs/#DAPALLFile>`_ file ::
 
     >>> my_cube.nsa
     {'iauname': 'J151806.10+424438.0',
@@ -268,17 +271,17 @@ For each target we can also access additional catalogue data: the associated par
      'ifudesign': 12703,
      'plateifu': '7443-12703',
      'mangaid': '12-193481',
-     'drpallindx': 1465,
+     'drpallindx': 4319,
      'mode': 'CUBE',
-     'daptype': 'HYB10-GAU-MILESHC',
+     'daptype': 'HYB10-MILESHC-MASTARSSP',
      ... }
 
-The NSA and DAPall catalogues are implemented as mixins via `~marvin.tools.mixins.nsa.NSAMixIn` and 
+The NSA and DAPall catalogues are implemented as mixins via `~marvin.tools.mixins.nsa.NSAMixIn` and
 `~marvin.tools.mixins.dapall.DAPAllMixIn`, respectively.
 
-While Marvin allows you to access data remotely, frequently you will find that you want to download 
-the file associated to an object so that you can access it more quickly in the future. We can do 
-that using the `MarvinToolsClass.download <marvin.tools.core.MarvinToolsClass.download>` method. Let's 
+While Marvin allows you to access data remotely, frequently you will find that you want to download
+the file associated to an object so that you can access it more quickly in the future. We can do
+that using the `MarvinToolsClass.download <marvin.tools.core.MarvinToolsClass.download>` method. Let's
 try to load a cube that we know we do not have in out hard drive ::
 
     >>> remote_cube = marvin.tools.Cube('8485-1902')
@@ -319,7 +322,7 @@ or we can use `~cube.Cube.getSpaxel`, which accepts multiple arguments (refer to
 Working with Astropy Quantities
 -------------------------------
 
-Marvin presents scientific data in the form of `Astropy Quantities <http://docs.astropy.org/en/stable/units/quantity.html#quantity>`__. A Quantity is essentially a number with an associated physical unit. In Marvin we expand on that concept and extend the Quantities with a mask, an inverse variance (`why do we use ivar in MaNGA? <https://www.sdss.org/manga/manga-tutorials/manga-faq/#WhydoyououtputIVAR(inversevariance)insteadoferrors?>`__) and, when relevant, the associated wavelength. Marvin Quantities also provide useful methods to, for instance, calculate the SNR or plot the value. Marvin provides Quantities for 1D (`~marvin.tools.quantities.spectrum.Spectrum`, `~marvin.tools.quantities.analysis_props.AnalysisProperty`), 2D (`~marvin.tools.quantities.map.Map`), and 3D data (`~marvin.tools.quantities.datacube.DataCube`).
+Marvin presents scientific data in the form of `Astropy Quantities <http://docs.astropy.org/en/stable/units/quantity.html#quantity>`__. A Quantity is essentially a number with an associated physical unit. In Marvin we expand on that concept and extend the Quantities with a mask, an inverse variance (`why do we use ivar in MaNGA? <https://www.sdss.org/dr17/manga/manga-tutorials/manga-faq/#WhydoyououtputIVAR(inversevariance)insteadoferrors?>`__) and, when relevant, the associated wavelength. Marvin Quantities also provide useful methods to, for instance, calculate the SNR or plot the value. Marvin provides Quantities for 1D (`~marvin.tools.quantities.spectrum.Spectrum`, `~marvin.tools.quantities.analysis_props.AnalysisProperty`), 2D (`~marvin.tools.quantities.map.Map`), and 3D data (`~marvin.tools.quantities.datacube.DataCube`).
 
 All Quantities behave similarly. Let's start by getting a datacube (3D Quantity) from a `~marvin.tools.cube.Cube` object ::
 

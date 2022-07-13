@@ -35,7 +35,7 @@ currently working with.  The default available releases are public data releases
 
 **Login**:
 
-The Marvin login box.  Log in using your personal SDSS credentials or the general SDSS username and 
+The Marvin login box.  Log in using your personal SDSS credentials or the general SDSS username and
 password to access collaboration data.
 
 
@@ -54,7 +54,7 @@ image to go the individual Galaxy Page.
 Search Page
 -----------
 
-The `Search page <https://dr17.sdss.org/marvin/search>`_ enables querying the MaNGA dataset using a 
+The `Search page <https://dr17.sdss.org/marvin/search>`_ enables querying the MaNGA dataset using a
 simplified interface with pseudo-natural language syntax.
 
 **Return Parameters**:
@@ -74,24 +74,24 @@ The search filter accepts boolean search strings that are parsed with a
 
 **Guided Query Builder**:
 
-If you need help building a query, you can use this to help design your SQL filter.  This feature 
+If you need help building a query, you can use this to help design your SQL filter.  This feature
 uses the `Jquery Query Builder <http://querybuilder.js.org/>`_.
 
-After a query is run a table of results is generated to navigate around.  Returned columns include 
-some default target identification parameters, plus any parameters used in your search filter, or 
-additional returned parameters.  Large result sets are paginated.  You can also sort on individual 
+After a query is run a table of results is generated to navigate around.  Returned columns include
+some default target identification parameters, plus any parameters used in your search filter, or
+additional returned parameters.  Large result sets are paginated.  You can also sort on individual
 columns by clicking the column header.
 
 **View Galaxies**:
 
-After a search, the **View Galaxies** button will display the postage stamp images of all the 
-galaxies in the results.  This page displays up to 16 galaxies at a time, with the big carousel 
-image linking to the individual galaxy page.  There are pagination buttons to help you cycle through 
+After a search, the **View Galaxies** button will display the postage stamp images of all the
+galaxies in the results.  This page displays up to 16 galaxies at a time, with the big carousel
+image linking to the individual galaxy page.  There are pagination buttons to help you cycle through
 your pages.
 
 **Export Data**:
 
-After a search, the **Export** button will export the table of results to either a CSV or 
+After a search, the **Export** button will export the table of results to either a CSV or
 JSON file.  The entire set of results, and columns, will be downloaded regardless of the content
 displayed in the table.
 
@@ -150,21 +150,21 @@ A `Galaxy page <https://dr17.sdss.org/marvin/galaxy/7977-12705/>`_ includes:
 
     * an :ref:`interactive galaxy properties display <galaxy_properties>`.
 
-* **Available VACs**: Click this button to open a dialog window displaying a list of 
+* **Available VACs**: Click this button to open a dialog window displaying a list of
   available Value-Added catalogs in Marvin.  Each VAC row contains a link to the SDSS
-  VAC documentation, a boolean indicating whether the target is in the VAC, how to 
-  access the VAC in Marvin python code, and a download link for the VAC summary file.  
+  VAC documentation, a boolean indicating whether the target is in the VAC, how to
+  access the VAC in Marvin python code, and a download link for the VAC summary file.
 
 .. _web-spectrum:
 
 Spectrum Display
 ^^^^^^^^^^^^^^^^
 
-Enable the spectrum display by toggling on the Map/SpecView box.  The spectrum display uses the 
+Enable the spectrum display by toggling on the Map/SpecView box.  The spectrum display uses the
 `DyGraphs <http://dygraphs.com/>`_ javascript library.
 
-* **Select Spectrum**: Click on the image or a :ref:`map <web-maps>` to show the spectrum of the 
-spaxel at a particular location (default is central spaxel) whose coordinates are listed above the 
+* **Select Spectrum**: Click on the image or a :ref:`map <web-maps>` to show the spectrum of the
+spaxel at a particular location (default is central spaxel) whose coordinates are listed above the
 spectrum. The most recently selected location in the image is indicated by the red dot.
 
 * **Zooming**: Zoom in by clicking and dragging either horizontally or
@@ -193,9 +193,9 @@ spectrum. The most recently selected location in the image is indicated by the r
 Map Display
 ^^^^^^^^^^^
 
-Enable the map display by toggling the red Map/SpecView box.  This displays a series of three maps 
-by default, with the ability to select up to six maps.  The default maps loaded are the stellar 
-velocity map, the Halpha emission line flux map, and the d4000 spectral index map.  All maps are 
+Enable the map display by toggling the red Map/SpecView box.  This displays a series of three maps
+by default, with the ability to select up to six maps.  The default maps loaded are the stellar
+velocity map, the Halpha emission line flux map, and the d4000 spectral index map.  All maps are
 generated using the `HighCharts <http://www.highcharts.com/>`_ javascript library.
 
 * **Selecting Maps**: Choose Analysis Properties and Binning-Stellar Template combinations to show.
@@ -242,8 +242,8 @@ generated using the `HighCharts <http://www.highcharts.com/>`_ javascript librar
 Galaxy Properties Display
 ^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Clicking the Galaxy Properties tab will show you the `NASA-Sloan Atlas (NSA) catalog 
-<https://www.sdss.org/dr13/manga/manga-target-selection/nsa/>`_ information for this galaxy in 
+Clicking the Galaxy Properties tab will show you the `NASA-Sloan Atlas (NSA) catalog
+<https://www.sdss.org/dr17/manga/manga-target-selection/nsa/>`_ information for this galaxy in
 a table format.  In addition, there are two tabs for interactive display.
 
 * **NSA table**: Most of the NSA galaxy properties are displayed in this table (paginated by default).  Click the arrow in the upper right corner to toggle the pagination and view all parameters at once.
@@ -264,14 +264,14 @@ In each `box-and-whisker <https://en.wikipedia.org/wiki/Box_plot>`_ plot:
 Explore Page
 ------------
 
-Clicking the "Upload" button in the top navigation bar takes you to the Explore page.  This page 
+Clicking the "Upload" button in the top navigation bar takes you to the Explore page.  This page
 allows the user to upload a list of MaNGA targets for display via their DAP MAPS.  A valid file can
-either be a txt or csv file, and a valid MaNGA target name is either a plate-ifu or a MaNGA ID.  
+either be a txt or csv file, and a valid MaNGA target name is either a plate-ifu or a MaNGA ID.
 Currently only a limit of 100 targets is allowed.
 
 Once a valid target list has been uploaded, the user can select the type of DAP map to display, by
 choosing from a valid analysis parameter and binning scheme from the two dropdowns.  Clicking the
-"Get Maps" button will display the selected DAP maps for all targets.  If a map cannot be loaded, 
-a red error message will be displayed with the reason for the failure.  
+"Get Maps" button will display the selected DAP maps for all targets.  If a map cannot be loaded,
+a red error message will be displayed with the reason for the failure.
 
 |
