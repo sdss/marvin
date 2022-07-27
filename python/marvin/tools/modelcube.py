@@ -12,11 +12,11 @@
 
 from __future__ import absolute_import, division, print_function
 
-import distutils
 import warnings
 
 import numpy as np
-from pkg_resources import parse_version
+from packaging.version import parse
+
 from astropy.io import fits
 from astropy.wcs import WCS
 
@@ -88,8 +88,8 @@ class ModelCube(MarvinToolsClass, NSAMixIn, DAPallMixIn, GetApertureMixIn):
         NSAMixIn.__init__(self, nsa_source=nsa_source)
 
         # Checks that DAP is at least MPL-5
-        MPL5 = distutils.version.StrictVersion('2.0.2')
-        if self.filename is None and distutils.version.StrictVersion(self._dapver) < MPL5:
+        MPL5 = parse('2.0.2')
+        if self.filename is None and parse(self._dapver) < MPL5:
             raise MarvinError('ModelCube requires at least dapver=\'2.0.2\'')
 
         self.header = None
@@ -509,8 +509,7 @@ class ModelCube(MarvinToolsClass, NSAMixIn, DAPallMixIn, GetApertureMixIn):
 
         # Before MPL-6, the modelcube does not include the binid extension,
         # so we need to get the binid map from the associated MAPS.
-        if (distutils.version.StrictVersion(self._dapver) <
-                distutils.version.StrictVersion('2.1')):
+        if (parse(self._dapver) < parse('2.1')):
             return self.getMaps().get_binid()
 
         if self.data_origin == 'file':

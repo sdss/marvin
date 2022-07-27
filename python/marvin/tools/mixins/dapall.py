@@ -9,8 +9,8 @@
 # @Last modified by: José Sánchez-Gallego (gallegoj@uw.edu)
 # @Last modified time: 2018-11-14 12:03:58
 
-import distutils
 import os
+from packaging.version import parse
 
 import astropy.io.fits
 
@@ -35,14 +35,14 @@ class DAPallMixIn(object):
 
     """
 
-    __min_dapall_version__ = distutils.version.StrictVersion('2.1.0')
+    __min_dapall_version__ = parse('2.1.0')
 
     @property
     def dapall(self):
         """Returns the contents of the DAPall data for this target."""
 
         if (not self._dapver or
-                distutils.version.StrictVersion(self._dapver) < self.__min_dapall_version__):
+                parse(self._dapver) < self.__min_dapall_version__):
             raise MarvinError('DAPall is not available for versions before MPL-6.')
 
         if hasattr(self, '_dapall') and self._dapall is not None:
