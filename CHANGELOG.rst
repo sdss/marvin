@@ -1,6 +1,10 @@
 Marvin's Change Log
 ===================
 
+[2.8.0] - unreleased
+--------------------
+- Drop support for py <3.7.  Min. version is py3.8.
+
 [2.7.4] - 2022/07/27
 --------------------
 - Last tag to support python versions >2.7 up to <3.8
