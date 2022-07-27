@@ -1,6 +1,12 @@
 Marvin's Change Log
 ===================
 
+[2.7.4] - 2022/07/27
+--------------------
+- Last tag to support python versions >2.7 up to <3.8
+- Pinning `marvin_brain` and `marvin_wtforms_alchemy` dependencies
+- Additional docs updates
+
 [2.7.3] - 2022/07/12
 --------------------
 - Small tweaks to documentation links and tutorial exercise notebooks
