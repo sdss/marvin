@@ -8,7 +8,7 @@ from __future__ import print_function, division
 import os
 # Flask imports
 from flask import Flask, Blueprint, send_from_directory, request
-import flask_jsglue as jsg
+from marvin.web import flask_jsglue as jsg
 # Marvin imports
 from brain.utils.general.general import getDbMachine
 from marvin import config, log
