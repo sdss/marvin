@@ -216,6 +216,23 @@ class TestConfig(object):
         assert 'drpall-{0}'.format(drp) in config.drpall
         assert 'dapall-{0}-{1}'.format(drp, dap) in config.dapall
 
+    def test_summary_filepaths(self):
+        config.setRelease("DR17")
+        assert 'sas/dr17' in config.drpall
+        assert 'sas/dr17' in config.dapall
+        config.setRelease("DR15")
+        assert 'sas/dr15' in config.drpall
+        assert 'sas/dr15' in config.dapall
+
+    @pytest.mark.parametrize('name, vers, exp',
+                             [('drpall', ('v3_1_1', None), 'sas/dr17/manga/spectro/redux/v3_1_1'),
+                              ('dapall', ('v3_1_1', '3.1.0'), 'sas/dr17/manga/spectro/analysis/v3_1_1/3.1.0/')],
+                             ids=['drpall', 'dapall'])
+    def test_default_path(self, name, vers, exp):
+        config.setRelease("DR17")
+        drpver, dapver = vers
+        path = config._get_default_path(name, drpver, dapver=dapver)
+        assert exp in path
 
 @pytest.mark.usefixtures('setapi')
 class TestSasUrl(object):

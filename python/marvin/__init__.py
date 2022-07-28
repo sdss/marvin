@@ -24,6 +24,7 @@ __version__ = get_package_version(path=__file__, package_name='sdss-marvin')
 
 # Does this so that the implicit module definitions in extern can happen.
 # time - 483 ms
+from sdss_access.path import Path
 from marvin.core.exceptions import MarvinUserWarning, MarvinError
 from brain.utils.general.general import getDbMachine
 from brain import bconfig
@@ -231,13 +232,9 @@ class MarvinConfig(object):
         assert name in ['drpall', 'dapall'], 'name must be either drpall or dapall'
         envvar = 'MANGA_SPECTRO_REDUX' if name == 'drpall' else 'MANGA_SPECTRO_ANALYSIS'
         version = drpver if name == 'drpall' else dapver
-        if name == 'drpall':
-            path = os.path.join(str(drpver), 'drpall-{0}.fits'.format(version))
-        elif name == 'dapall':
-            path = os.path.join(str(drpver), str(dapver), 'dapall-{0}-{1}.fits'.format(drpver, dapver))
 
         if envvar in os.environ and version:
-            return os.path.join(os.environ[envvar], path)
+            return self._path.full(name, drpver=drpver, dapver=dapver)
         else:
             raise MarvinError('Must have the {0} environment variable set'.format(envvar))
 
@@ -284,6 +281,10 @@ class MarvinConfig(object):
         # set the new release and possibly replant the tree
         with self._replant_tree(value) as val:
             self._release = val
+
+        # set the access path if needed and set initial drpall and dapall paths
+        if not hasattr(self, '_path'):
+            self._path = Path(self._release)
 
         drpver, dapver = self.lookUpVersions(value)
         if 'MANGA_SPECTRO_REDUX' in os.environ:
@@ -554,13 +555,13 @@ class MarvinConfig(object):
 
         return release
 
-    def get_allowed_releases(self, public=None, min_release=None, 
+    def get_allowed_releases(self, public=None, min_release=None,
                              web_releases=None):
         ''' Get a dictionary of supported MaNGA releases
 
         Set public flag to only include public releases. Set min_release to
         filer out all releases below this one.  Set web_releases to
-        a filter out all releases included in the list.  
+        a filter out all releases included in the list.
 
         Parameters:
             public (bool):
@@ -588,7 +589,7 @@ class MarvinConfig(object):
             min_drpver, __ = self.lookUpVersions(min_release)
             allowed = {k: v for k, v in allowed.items() if parse(
                 v[0]) >= parse(min_drpver)}
-            
+
         # if web releases set, filter them out
         if web_releases:
             allowed = {k: v for k, v in allowed.items() if k in web_releases or 'DR' in k}
@@ -667,8 +668,10 @@ class MarvinConfig(object):
             from tree.tree import Tree
         except ImportError:
             self._tree = None
+            self._path = None
         else:
             self._tree = Tree(key='MANGA', config=tree_config)
+            self._path = Path(release=self._release)
 
     @contextlib.contextmanager
     def _replant_tree(self, value):
@@ -722,6 +725,7 @@ class MarvinConfig(object):
         if is_different and not nullinit:
             if (relchange and self.access == 'collab') or stilldr or topublic or tocollab:
                 self._tree.replant_tree(tree_config)
+                self._path = Path(tree_config)
 
         # switch the API url depending on release
         if 'MPL' in value:
