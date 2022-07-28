@@ -198,7 +198,7 @@ class TestConfig(object):
         assert 'You must have collaboration access to login.' in str(cm.value)
 
     @pytest.mark.parametrize('defrel, exprel',
-                             [('DR20', 'MPL-9'), ('bad_release', 'MPL-9')])
+                             [('DR20', 'MPL-11'), ('bad_release', 'MPL-11')])
     def test_bad_default_release(self, initconfig, defrel, exprel):
         ''' this tests some initial conditions on config '''
         config._release = defrel
@@ -222,7 +222,7 @@ class TestSasUrl(object):
 
     def test_sasurl_nonetrc(self, initconfig, netrc):
         assert 'DR' in config.release
-        assert 'dr15.sdss.org/' in config.sasurl
+        assert 'dr17.sdss.org/' in config.sasurl
 
     @pytest.mark.parametrize('release',
                              [('MPL-6'), ('DR15')],
