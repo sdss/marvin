@@ -277,8 +277,8 @@ class ModelCube(MarvinToolsClass, NSAMixIn, DAPallMixIn, GetApertureMixIn):
 
             self.header = self.data.file.primary_header
             self.wcs = WCS(self.data.file.cube.wcs.makeHeader())
-            self._wavelength = np.array(self.data.file.cube.wavelength.wavelength, dtype=np.float)
-            self._redcorr = np.array(self.data.redcorr[0].value, dtype=np.float)
+            self._wavelength = np.array(self.data.file.cube.wavelength.wavelength, dtype=float)
+            self._redcorr = np.array(self.data.redcorr[0].value, dtype=float)
             self._shape = self.data.file.cube.shape.shape
 
             self.plateifu = str(self.header['PLATEIFU'].strip())

@@ -279,7 +279,7 @@ def remove_nans(datadict):
         if key != 'plateifu':
             naninds = np.where(np.isnan(vals))[0]
             allnans = np.append(allnans, naninds)
-    allnans = list(set(allnans.astype(np.int)))
+    allnans = list(set(allnans.astype(int)))
     # delete those targets from all items in the dictionary
     for key, vals in datadict.items():
         datadict[key] = np.delete(np.asarray(vals), allnans).tolist()
@@ -295,7 +295,7 @@ def create_vacdata(mangaid: str, release: str = None) -> dict:
     Parameters
     ----------
     mangaid : str
-        The target mangaid 
+        The target mangaid
     release : str
         The data release to use
 
@@ -327,15 +327,15 @@ def create_vacdata(mangaid: str, release: str = None) -> dict:
         if isinstance(v[i], dict):
             for k, j in v[i].items():
                 link = j._rsync.url('', full=j._path)
-                vacdata.append({'name': f'<a target="_blank" href="{j.url}">{j.display_name}: {k}</a>', 
-                                'py': f'cube.vacs.{j.name}[{k}]', 'data': dd[i][k], 
+                vacdata.append({'name': f'<a target="_blank" href="{j.url}">{j.display_name}: {k}</a>',
+                                'py': f'cube.vacs.{j.name}[{k}]', 'data': dd[i][k],
                                 'link': f'<a href="{link}">link</a>'})
         else:
             link = v[i]._rsync.url('', full=v[i]._path)
             vacdata.append({'name': f'<a target="_blank" href="{v[i].url}">{v[i].display_name}</a>',
-                            'py': f'cube.vacs.{v[i].name}', 'data': dd[i], 
+                            'py': f'cube.vacs.{v[i].name}', 'data': dd[i],
                             'link': f'<a href="{link}">link</a>'})
-    return vacdata        
+    return vacdata
 
 
 class Galaxy(BaseWebView):
@@ -439,7 +439,7 @@ class Galaxy(BaseWebView):
                 daplist = [p.full(web=True) for p in dm.properties]
                 dapdefaults = dm.get_default_mapset()
                 self.galaxy['cube'] = cube
-                self.galaxy['vacdata'] = create_vacdata(cube.mangaid, release=self._release)             
+                self.galaxy['vacdata'] = create_vacdata(cube.mangaid, release=self._release)
                 self.galaxy['toggleon'] = current_session.get('toggleon', 'false')
                 self.galaxy['cubehdr'] = cube.header
                 self.galaxy['quality'] = ('DRP3QUAL', cube.quality_flag.mask, cube.quality_flag.labels)
