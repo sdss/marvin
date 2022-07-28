@@ -21,7 +21,7 @@ import astropy.wcs
 import numpy as np
 import pandas as pd
 import six
-from pkg_resources import parse_version
+#from pkg_resources import parse_version
 
 import marvin
 import marvin.api.api
@@ -285,7 +285,6 @@ class Maps(MarvinToolsClass, NSAMixIn, DAPallMixIn, GetApertureMixIn):
             header_bintype = self.data[0].header['BINTYPE'].strip().upper()
 
         # Checks the template from the header
-        #is_MPL8 = parse_version(self._dapver) >= parse_version(datamodel['MPL-8'].release)
         is_MPL8 = check_versions(self._dapver, datamodel['MPL-8'].release)
         header_template_key = 'TPLKEY' if is_MPL4 else 'DAPTYPE' if is_MPL8 else 'SCKEY'
         if is_MPL8:

@@ -22,7 +22,8 @@ import warnings
 from builtins import range
 from collections import OrderedDict
 from functools import wraps
-from pkg_resources import parse_version
+#from pkg_resources import parse_version
+from packaging.version import parse
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -171,7 +172,7 @@ def getSpaxel(cube=True, maps=True, modelcube=True,
         isScalar = np.isscalar(x)
         x = np.atleast_1d(x)
         y = np.atleast_1d(y)
-        coords = np.array([x, y], np.float).T
+        coords = np.array([x, y], float).T
 
     elif ra is not None or dec is not None:
         assert x is None and y is None, 'Either use (x, y) or (ra, dec)'
@@ -181,7 +182,7 @@ def getSpaxel(cube=True, maps=True, modelcube=True,
         isScalar = np.isscalar(ra)
         ra = np.atleast_1d(ra)
         dec = np.atleast_1d(dec)
-        coords = np.array([ra, dec], np.float).T
+        coords = np.array([ra, dec], float).T
 
     else:
         raise ValueError('You need to specify either (x, y) or (ra, dec)')
@@ -263,7 +264,7 @@ def convertCoords(coords, mode='sky', wcs=None, xyorig='center', shape=None):
         coordsSpec = np.ones((coords.shape[0], 3), np.float32)
         coordsSpec[:, :-1] = coords
         cubeCoords = wcs.wcs_world2pix(coordsSpec, 0)
-        cubeCoords = np.fliplr(np.array(np.round(cubeCoords[:, :-1]), np.int))
+        cubeCoords = np.fliplr(np.array(np.round(cubeCoords[:, :-1]), int))
 
     elif mode in ['pix', 'pixel']:
         assert xyorig, 'if mode==pix, xyorig must be defined.'
@@ -283,7 +284,7 @@ def convertCoords(coords, mode='sky', wcs=None, xyorig='center', shape=None):
         else:
             raise ValueError('xyorig must be center or lower.')
 
-        cubeCoords = np.array([yCube, xCube], np.int).T
+        cubeCoords = np.array([yCube, xCube], int).T
 
     else:
         raise ValueError('mode must be pix or sky.')
@@ -1852,7 +1853,7 @@ def check_versions(version1, version2):
         A boolean indicating if version1 is >= version2
     '''
 
-    return parse_version(version1) >= parse_version(version2)
+    return parse(version1) >= parse(version2)
 
 
 def get_manga_image(cube=None, drpver=None, plate=None, ifu=None, dir3d=None, local=None, public=None):

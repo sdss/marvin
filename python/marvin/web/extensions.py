@@ -20,7 +20,7 @@ from flask_login import LoginManager
 from flask_jwt_extended import JWTManager
 from flask_cors import CORS
 from flask_session import Session
-import flask_jsglue as jsg
+from marvin.web import flask_jsglue as jsg
 import logging
 
 # JS Glue (allows use of Flask.url_for inside javascript)

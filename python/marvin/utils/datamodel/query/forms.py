@@ -23,6 +23,7 @@ from sqlalchemy.orm.attributes import InstrumentedAttribute
 from wtforms import Field, SelectMultipleField, StringField, SubmitField, ValidationError, validators
 from wtforms.widgets import TextInput
 from wtforms_alchemy import model_form_factory
+from flask import Markup
 from marvin import config, marvindb
 from marvin.core.exceptions import MarvinUserWarning
 from marvin.utils.general.structs import FuzzyDict
@@ -369,7 +370,7 @@ class ValidOperand(object):
 class SearchForm(Form):
     ''' Main Search Level WTForm for Marvin '''
 
-    url = ("<a target='_blank' data-toggle='tooltip' title='Click to read more about Queries' "
+    url = Markup("<a target='_blank' data-toggle='tooltip' title='Click to read more about Queries' "
            "href='https://sdss-marvin.readthedocs.io/en/stable/query/query/query_using.html'>Input Search Filter</a>")
     searchbox = StringField(url,
                             [validators.Length(min=3, message='Input must have at least 3 characters'),

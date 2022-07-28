@@ -23,7 +23,7 @@ jinjablue = flask.Blueprint('jinja_filters', __name__)
 # Ref: http://stackoverflow.com/questions/12288454/how-to-import-custom-jinja2-filters-from-another-file-and-using-flask
 
 
-@jinja2.contextfilter
+@jinja2.pass_context
 @jinjablue.app_template_filter()
 def make_token(context, value, group):
     ''' Make a keyword string for query parameter dropdown live search '''
@@ -31,7 +31,7 @@ def make_token(context, value, group):
     return tokstring
 
 
-@jinja2.contextfilter
+@jinja2.pass_context
 @jinjablue.app_template_filter()
 def filtergaltype(context, value):
     ''' Parse plateifu or mangaid into better form '''
@@ -41,7 +41,7 @@ def filtergaltype(context, value):
         return 'MaNGA-ID'
 
 
-@jinja2.contextfilter
+@jinja2.pass_context
 @jinjablue.app_template_filter()
 def filternsa(context, value):
     ''' Parse plateifu or mangaid into better form '''
@@ -52,7 +52,7 @@ def filternsa(context, value):
     return newvalue
 
 
-@jinja2.contextfilter
+@jinja2.pass_context
 @jinjablue.app_template_filter()
 def filternsaval(context, value, key):
     ''' Parse plateifu or mangaid into better form '''
@@ -67,7 +67,7 @@ def filternsaval(context, value, key):
     return newvalue
 
 
-@jinja2.contextfilter
+@jinja2.pass_context
 @jinjablue.app_template_filter()
 def allclose(context, value, newvalue):
     ''' Do a numpy allclose comparison between the two values '''
@@ -77,7 +77,7 @@ def allclose(context, value, newvalue):
         return False
 
 
-@jinja2.contextfilter
+@jinja2.pass_context
 @jinjablue.app_template_filter()
 def prettyFlag(context, value):
     ''' Pretty print bit mask and flags '''
@@ -85,7 +85,7 @@ def prettyFlag(context, value):
     return '{0}: {1} - {2}'.format(name, bit, ', '.join(flags))
 
 
-@jinja2.contextfilter
+@jinja2.pass_context
 @jinjablue.app_template_filter()
 def qaclass(context, value):
     ''' Return an alert indicator based on quality flags '''
@@ -97,7 +97,7 @@ def qaclass(context, value):
     return out, text
 
 
-@jinja2.contextfilter
+@jinja2.pass_context
 @jinjablue.app_template_filter()
 def targtype(context, value):
     ''' Return the MaNGA target type based on what bit is set '''
@@ -108,7 +108,7 @@ def targtype(context, value):
     return out
 
 
-@jinja2.contextfilter
+@jinja2.pass_context
 @jinjablue.app_template_filter()
 def split(context, value, delim=None):
     '''Split a string based on a delimiter'''
@@ -117,7 +117,7 @@ def split(context, value, delim=None):
     return value.split(delim) if value else None
 
 
-@jinja2.contextfilter
+@jinja2.pass_context
 @jinjablue.app_template_filter()
 def striprelease(context, value):
     '''Strip and trim and lowercase a release string'''

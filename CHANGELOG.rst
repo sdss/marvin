@@ -4,6 +4,10 @@ Marvin's Change Log
 [2.8.0] - unreleased
 --------------------
 - Drop support for py <3.7.  Min. version is py3.8.
+- Updating flask web dependencies: Flask > 2, Jinja2 > 3, werkzeug > 2.0, <2.1
+- Removing pacakged Flask-JSGlue, replacing with custom 0.3.1 version with correct use of `markupsafe`.
+- Pinning miniumum numpy version to 1.20, removing use of `np.int` and `np.float`
+- Switch to `packaging.version.parse` from `distutils` for version checking
 
 [2.7.4] - 2022/07/27
 --------------------

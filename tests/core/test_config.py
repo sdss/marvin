@@ -198,7 +198,7 @@ class TestConfig(object):
         assert 'You must have collaboration access to login.' in str(cm.value)
 
     @pytest.mark.parametrize('defrel, exprel',
-                             [('DR20', 'MPL-9'), ('bad_release', 'MPL-9')])
+                             [('DR20', 'MPL-11'), ('bad_release', 'MPL-11')])
     def test_bad_default_release(self, initconfig, defrel, exprel):
         ''' this tests some initial conditions on config '''
         config._release = defrel
@@ -216,13 +216,30 @@ class TestConfig(object):
         assert 'drpall-{0}'.format(drp) in config.drpall
         assert 'dapall-{0}-{1}'.format(drp, dap) in config.dapall
 
+    def test_summary_filepaths(self):
+        config.setRelease("DR17")
+        assert 'sas/dr17' in config.drpall
+        assert 'sas/dr17' in config.dapall
+        config.setRelease("DR15")
+        assert 'sas/dr15' in config.drpall
+        assert 'sas/dr15' in config.dapall
+
+    @pytest.mark.parametrize('name, vers, exp',
+                             [('drpall', ('v3_1_1', None), 'sas/dr17/manga/spectro/redux/v3_1_1'),
+                              ('dapall', ('v3_1_1', '3.1.0'), 'sas/dr17/manga/spectro/analysis/v3_1_1/3.1.0/')],
+                             ids=['drpall', 'dapall'])
+    def test_default_path(self, name, vers, exp):
+        config.setRelease("DR17")
+        drpver, dapver = vers
+        path = config._get_default_path(name, drpver, dapver=dapver)
+        assert exp in path
 
 @pytest.mark.usefixtures('setapi')
 class TestSasUrl(object):
 
     def test_sasurl_nonetrc(self, initconfig, netrc):
         assert 'DR' in config.release
-        assert 'dr15.sdss.org/' in config.sasurl
+        assert 'dr17.sdss.org/' in config.sasurl
 
     @pytest.mark.parametrize('release',
                              [('MPL-6'), ('DR15')],
