@@ -40,4 +40,4 @@ jobs:
 
     - name: Run tests
       run: |
-        pytest tests --cov marvin --cov-report html -W
+        pytest tests --cov marvin --cov-report html
