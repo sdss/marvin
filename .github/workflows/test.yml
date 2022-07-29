@@ -36,7 +36,7 @@ jobs:
       id: cache-sas
       uses: actions/cache@v3
       with:
-        path: ${{ env.SAS_BASE_DIR }}/**
+        path: ${{ env.SAS_BASE_DIR }}
         key: ${{ runner.os }}-sas
 
     - name: Download and Check Data
