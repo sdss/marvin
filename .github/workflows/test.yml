@@ -46,6 +46,6 @@ jobs:
         python bin/get_test_data.py
         ls ${{ env.SAS_BASE_DIR }}/*
 
-    # - name: Run tests
-    #   run: |
-    #     pytest tests --cov marvin --cov-report html
+    - name: Run tests
+      run: |
+        pytest tests --cov marvin --cov-report html
