@@ -32,12 +32,20 @@ jobs:
         # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
         flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
 
+    - name: Cache Files
+      id: cache-sas
+      uses: actions/cache@v3
+      with:
+        path: ${{ env.SAS_BASE_DIR }}/**
+        key: ${{ runner.os }}-sas
+
     - name: Download and Check Data
+      if: steps.cache-sas.outputs.cache-hit != 'true'
       run: |
         mkdir ${{ env.SAS_BASE_DIR }}
         python bin/get_test_data.py
         ls ${{ env.SAS_BASE_DIR }}/*
 
-    - name: Run tests
-      run: |
-        pytest tests --cov marvin --cov-report html
+    # - name: Run tests
+    #   run: |
+    #     pytest tests --cov marvin --cov-report html
