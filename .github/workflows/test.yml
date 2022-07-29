@@ -45,6 +45,9 @@ jobs:
         mkdir ${{ env.SAS_BASE_DIR }}
         python bin/get_test_data.py
         ls ${{ env.SAS_BASE_DIR }}/*
+        find ${{ env.SAS_BASE_DIR }} -name '*'
+        find ${{ env.SAS_BASE_DIR }} -name '*' | wc -l
+        du -sh ${{ env.SAS_BASE_DIR }}
 
     # - name: Run tests
     #   run: |
