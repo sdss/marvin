@@ -64,7 +64,7 @@ class TestBPT(object):
             assert len(axes) == 3
 
         for ax in axes:
-            assert isinstance(ax, LocatableAxes)
+            assert isinstance(ax, Axes)
 
     def test_bpt_diffsn(self, maps):
 
