@@ -7,10 +7,6 @@ except ImportError as e:
     Access = None
 
 
-rsync_access = Access(label='marvin_get_test_data')
-rsync_access.remote()
-
-
 def add_data(rsync, release=None, plate=None, ifu=None, exclude=[]):
 
     drpver, dapver = config.lookUpVersions(release)
@@ -36,13 +32,20 @@ def add_data(rsync, release=None, plate=None, ifu=None, exclude=[]):
     return rsync
 
 # DR17
+rsync_access = Access(label='marvin_get_test_data', release='DR17')
+rsync_access.remote()
 rsync_access = add_data(rsync_access, release='DR17', plate='8485', ifu='1901')
 rsync_access = add_data(rsync_access, release='DR17', plate='7443', ifu='12701')
+rsync_access.set_stream()
+rsync_access.commit()
 
 # DR15
+rsync_access = Access(label='marvin_get_test_data', release='DR17')
+rsync_access.remote()
 rsync_access = add_data(rsync_access, release='DR15', plate='8485', ifu='1901')
 rsync_access = add_data(rsync_access, release='DR15', plate='7443', ifu='12701')
-
+rsync_access.set_stream()
+rsync_access.commit()
 
 # MPL-7
 # rsync_access = add_data(rsync_access, release='MPL-7', plate='8485', ifu='1901')
@@ -63,5 +66,5 @@ rsync_access = add_data(rsync_access, release='DR15', plate='7443', ifu='12701')
 #rsync_access = add_data(rsync_access, release='MPL-4', plate='7443', ifu='12701', exclude=['mangacube', 'mangarss', 'mangaimage', 'mangamap', 'mangadefault'])
 
 # Download
-rsync_access.set_stream()
-rsync_access.commit()
+# rsync_access.set_stream()
+# rsync_access.commit()
