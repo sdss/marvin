@@ -40,7 +40,7 @@ rsync_access.set_stream()
 rsync_access.commit()
 
 # DR15
-rsync_access = Access(label='marvin_get_test_data', release='DR17')
+rsync_access = Access(label='marvin_get_test_data', release='DR15')
 rsync_access.remote()
 rsync_access = add_data(rsync_access, release='DR15', plate='8485', ifu='1901')
 rsync_access = add_data(rsync_access, release='DR15', plate='7443', ifu='12701')
