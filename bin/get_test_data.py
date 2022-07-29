@@ -19,7 +19,7 @@ def add_data(rsync, release=None, plate=None, ifu=None, exclude=[]):
     if 'mangarss' not in exclude:
         rsync.add('mangarss', plate=plate, ifu=ifu, drpver=drpver, wave='LOG')
     if 'mangaimage' not in exclude:
-        rsync.add('mangaimage', plate=plate, drpver=drpver, dir3d='stack', ifu='*')
+        rsync.add('mangaimage', plate=plate, drpver=drpver, dir3d='stack', ifu=ifu)
 
     if release == 'MPL-4':
         if 'mangamap' not in exclude:
@@ -27,7 +27,8 @@ def add_data(rsync, release=None, plate=None, ifu=None, exclude=[]):
         if 'mangadefault' not in exclude:
             rsync.add('mangadefault', plate=plate, drpver=drpver, dapver=dapver, ifu=ifu)
     elif 'mangadap' not in exclude:
-        rsync.add('mangadap', plate=plate, drpver=drpver, dapver=dapver, ifu=ifu, daptype='*', mode='*')
+        rsync.add('mangadap', plate=plate, drpver=drpver, dapver=dapver, ifu=ifu, daptype='*', mode='MAPS')
+        rsync.add('mangadap', plate=plate, drpver=drpver, dapver=dapver, ifu=ifu, daptype='*', mode='LOGCUBE')
 
     return rsync
 

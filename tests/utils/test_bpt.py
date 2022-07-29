@@ -14,7 +14,7 @@ from __future__ import absolute_import
 import inspect
 
 from matplotlib import pyplot as plt
-from mpl_toolkits.axes_grid1.axes_divider import LocatableAxes
+from mpl_toolkits.axes_grid1.mpl_axes import Axes
 import numpy as np
 import pytest
 
