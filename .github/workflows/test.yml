@@ -49,6 +49,6 @@ jobs:
         find ${{ env.SAS_BASE_DIR }} -name '*' | wc -l
         du -sh ${{ env.SAS_BASE_DIR }}
 
-    # - name: Run tests
-    #   run: |
-    #     pytest tests --cov marvin --cov-report html
+    - name: Run tests
+      run: |
+        pytest tests --local-only -m "not uses_web" --cov marvin --cov-report html
