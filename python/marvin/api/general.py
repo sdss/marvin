@@ -17,6 +17,7 @@ Revision history:
 from __future__ import division
 from __future__ import print_function
 
+from numpyencoder import NumpyEncoder
 from flask import jsonify, Response, request
 from flask_classful import route
 
@@ -160,7 +161,7 @@ class GeneralRequestsView(BrainGeneralRequestsView):
             self.results['error'] = 'get_nsa_data failed with error: {0}'.format(str(ee))
 
         # these should be jsonify but switching back to json.dumps until fucking Utah gets with the fucking picture
-        return Response(json.dumps(self.results), mimetype='application/json')
+        return Response(json.dumps(self.results, cls=NumpyEncoder), mimetype='application/json')
 
     @route('/nsa/drpall/<mangaid>/', endpoint='nsa_drpall', methods=['GET', 'POST'])
     @av.check_args()
@@ -223,7 +224,7 @@ class GeneralRequestsView(BrainGeneralRequestsView):
             self.results['status'] = -1
             self.results['error'] = 'get_nsa_data failed with error: {0}'.format(str(ee))
 
-        return Response(json.dumps(self.results), mimetype='application/json')
+        return Response(json.dumps(self.results, cls=NumpyEncoder), mimetype='application/json')
 
     @public
     @route('/login/', methods=['POST'], endpoint='login')
