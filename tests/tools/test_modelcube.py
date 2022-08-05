@@ -67,14 +67,9 @@ class TestModelCubeInit(object):
         self._test_init(model_cube, galaxy)
 
     def test_init_from_file_global_mpl4(self, galaxy):
-        model_cube = ModelCube(filename=galaxy.modelpath, release='MPL-4')
+        model_cube = ModelCube(filename=galaxy.modelpath, release='DR17')
         assert model_cube.data_origin == 'file'
         self._test_init(model_cube, galaxy)
-
-    def test_raises_exception_mpl4(self, galaxy):
-        with pytest.raises(MarvinError) as cm:
-            ModelCube(plateifu=galaxy.plateifu, release='MPL-4')
-        assert 'ModelCube requires at least dapver=\'2.0.2\'' in str(cm.value)
 
     def test_init_modelcube_bintype(self, galaxy, data_origin):
         kwargs = {'bintype': galaxy.bintype.name}
@@ -155,10 +150,10 @@ class TestPickling(object):
         assert isinstance(modelcube, ModelCube)
         assert modelcube.data is not None
 
-        file = temp_scratch.join('test_modelcube.mpf')
+        file = temp_scratch / 'test_modelcube.mpf'
         modelcube.save(str(file))
 
-        assert file.check() is True
+        assert file.exists() is True
         assert modelcube.data is not None
 
         modelcube = None
@@ -175,11 +170,11 @@ class TestPickling(object):
         assert isinstance(modelcube, ModelCube)
         assert modelcube.data is not None
 
-        file = temp_scratch.join('mcpickle').join('test_modelcube.mpf')
-        assert file.check(file=1) is False
+        file = temp_scratch / 'mcpickle' / 'test_modelcube.mpf'
+        assert file.exists() is False
 
         path = modelcube.save(path=str(file))
-        assert file.check() is True
+        assert file.exists() is True
         assert os.path.exists(path)
 
         modelcube_restored = ModelCube.restore(str(file), delete=True)
@@ -192,7 +187,7 @@ class TestPickling(object):
     def test_pickling_db(self, galaxy, temp_scratch):
         modelcube = ModelCube(plateifu=galaxy.plateifu, bintype=galaxy.bintype)
 
-        file = temp_scratch.join('test_modelcube_db.mpf')
+        file = temp_scratch / 'test_modelcube_db.mpf'
         with pytest.raises(MarvinError) as cm:
             modelcube.save(str(file))
 
@@ -204,10 +199,10 @@ class TestPickling(object):
         assert isinstance(modelcube, ModelCube)
         assert modelcube.data is None
 
-        file = temp_scratch.join('test_modelcube_api.mpf')
+        file = temp_scratch / 'test_modelcube_api.mpf'
         modelcube.save(str(file))
 
-        assert file.check() is True
+        assert file.exists() is True
 
         modelcube = None
         assert modelcube is None

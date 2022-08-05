@@ -25,6 +25,9 @@ from marvin.tools.query import Query, doQuery
 from marvin.tools.spaxel import Spaxel
 
 
+pytestmark = pytest.mark.uses_db
+
+
 @pytest.fixture(scope='function', autouse=True)
 def allow_dap(monkeypatch):
     monkeypatch.setattr(config, '_allow_DAP_queries', True)
@@ -230,17 +233,17 @@ class TestQueryPickling(object):
     def test_pickle_save(self, temp_scratch, query):
         if query.mode == 'local':
             pytest.xfail('save cannot be run in local mode')
-        file = temp_scratch.join('test_query.mpf')
+        file = temp_scratch / 'test_query.mpf'
         query.save(str(file))
-        assert file.check() is True
+        assert file.exists() is True
 
     @pytest.mark.parametrize('query, sfilter', [('nsa.z < 0.1', 'nsa.z < 0.1')], indirect=['query'])
     def test_pickle_restore(self, temp_scratch, query, sfilter):
         if query.mode == 'local':
             pytest.xfail('save cannot be run in local mode')
-        file = temp_scratch.join('test_query.mpf')
+        file = temp_scratch / 'test_query.mpf'
         query.save(str(file))
-        assert file.check() is True
+        assert file.exists() is True
         query = None
         assert query is None
         query = Query.restore(str(file))
@@ -360,17 +363,17 @@ class TestQueryLocal(object):
         assert r.results is not None
 
     @pytest.mark.parametrize('sf, qual, flags, count',
-                             [(None, None, 'mangadatadb.cube', 5),
+                             [(None, None, 'mangadatadb.cube', 2),
                               (None, ['BADFLUX'], 'DRP3QUAL', 0),
                               (None, ['BADFLUX', 'BADZ'], 'DRP3QUAL, DAPQUAL', 0),
-                              ('cube.quality = 0', None, 'DRP3QUAL', 5),
+                              ('cube.quality = 0', None, 'DRP3QUAL', 2),
                               ('cube.quality & 256', None, 'DRP3QUAL', 0),
-                              (None, ['FORESTAR'], 'DAPQUAL', 40),
+                              (None, ['FORESTAR'], 'DAPQUAL', 16),
                               ('cube.quality & ~0', None, 'DRP3QUAL', 0)],
                              ids=['all', 'drp', 'drpdap', 'goodqual',
                                   'badflux', 'forestar', 'not0'])
     def test_quality_queries(self, sf, qual, flags, count):
-        q = Query(search_filter=sf, quality=qual, release='MPL-5')
+        q = Query(search_filter=sf, quality=qual, release='DR17')
         sql = q.show()
         for flag in flags.split(','):
             assert flag.strip() in sql
@@ -379,12 +382,12 @@ class TestQueryLocal(object):
         assert r.totalcount == count
 
     @pytest.mark.parametrize('sf, targ, flags, count',
-                             [(None, None, 'mangadatadb.cube', 3282),
-                              (None, ['PRIMARY'], 'MNGT%RG1', 846),
-                              (None, ['mwa', 'dwarf'], 'MNGT%RG3', 4)],
+                             [(None, None, 'mangadatadb.cube', 2),
+                              (None, ['PRIMARY'], 'MNGT%RG1', 1),
+                              (None, ['mwa', 'dwarf'], 'MNGT%RG3', 0)],
                              ids=['all', 'primary', 'anc'])
     def test_target_queries(self, sf, targ, flags, count):
-        q = Query(search_filter=sf, targets=targ, release='MPL-4')
+        q = Query(search_filter=sf, targets=targ, release='DR17')
         sql = q.show()
         for flag in flags.split(','):
             ff = flag.strip()

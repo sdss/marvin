@@ -56,6 +56,7 @@ class TestMaps(object):
 
         return maps_kwargs
 
+    @pytest.mark.slow
     def test_load(self, galaxy, exporigin):
 
         maps = Maps(**self._get_maps_kwargs(galaxy, exporigin))
@@ -106,7 +107,9 @@ class TestMaps(object):
 
         for hdu in hdus[1:]:
 
-            if ('IVAR' in hdu.name) or ('MASK' in hdu.name) or ('SIGMACORR' in hdu.name):
+            if (('IVAR' in hdu.name) or ('MASK' in hdu.name) or
+               ('SIGMACORR' in hdu.name) or ('FOM' in hdu.name) or
+               ('TPLSIGMA' in hdu.name)):
                 continue
 
             name = hdu.name.lower()
@@ -127,10 +130,10 @@ class TestMaps(object):
                         val = maps.getMap(fullname, exact=True).value
                         assert val == pytest.approx(data[int(kk[1:]) - 1], 0.0001), name
 
-    @pytest.mark.parametrize('monkeyconfig', [('release', 'MPL-5')], indirect=True)
+    @pytest.mark.parametrize('monkeyconfig', [('release', 'DR17')], indirect=True)
     def test_load_mpl4_global_mpl5(self, galaxy, monkeyconfig, data_origin):
 
-        assert marvin.config.release == 'MPL-5'
+        assert marvin.config.release == 'DR17'
         maps = Maps(**self._get_maps_kwargs(galaxy, data_origin))
 
         assert maps.release == galaxy.release
@@ -194,22 +197,15 @@ class TestMaps(object):
     def test_use_as_context_manager(self, galaxy, exporigin):
 
         if exporigin == 'file':
-            # if origin is a file, test whether ValueError is raised
-            # when file access is attempted outside context
-            with pytest.raises(ValueError) as excinfo:
-                with Maps(**self._get_maps_kwargs(galaxy, exporigin)) as maps:
-                    pass
+            with Maps(**self._get_maps_kwargs(galaxy, exporigin)) as maps:
+                assert maps is not None
 
-                access_attempt = maps[1].data
-
-            assert 'closed file' in excinfo.value
+            assert maps is None
         else:
             # for other origins, test that context-manager fails
-            with pytest.raises(MarvinError) as excinfo:
+            with pytest.raises(MarvinError, match='to use Tools as a context-manager'):
                 with Maps(**self._get_maps_kwargs(galaxy, exporigin)) as maps:
                     pass
-
-            assert 'to use Tools as a context-manager' in excinfo.value
 
 
 class TestMaskbit(object):

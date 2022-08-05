@@ -258,9 +258,9 @@ class TestBinInfo(object):
 
     def test_load_all(self):
 
-        set_the_config('MPL-6')
+        set_the_config('DR17')
         spaxel = Spaxel(26, 13, plateifu='8485-1901', cube=True,
-                        maps=True, modelcube=True, bintype='HYB10', release='MPL-6')
+                        maps=True, modelcube=True, bintype='HYB10', release='DR17')
 
         assert isinstance(spaxel, Spaxel)
 
@@ -272,7 +272,7 @@ class TestBinInfo(object):
     def test_correct_binid(self):
         """Checks if the binid of the bin spaxels is the correct one (#457)"""
 
-        maps = Maps(plateifu='8485-1901', release='MPL-6', bintype='HYB10')
+        maps = Maps(plateifu='8485-1901', release='DR17', bintype='HYB10')
         spaxel = maps[22, 14]
 
         assert isinstance(spaxel, Spaxel)
@@ -289,13 +289,13 @@ class TestBinInfo(object):
             assert sp_bin.stellar_vel.bin.binid == spaxel.stellar_vel.bin.binid
 
     def test_hasbin(self):
-        maps = Maps(plateifu='8485-1901', release='MPL-6', bintype='HYB10')
+        maps = Maps(plateifu='8485-1901', release='DR17', bintype='HYB10')
         spaxel = maps[22, 14]
         sv = spaxel.stellar_vel
         assert sv.bin is not None
 
     def test_hasmap(self):
-        maps = Maps(plateifu='8485-1901', release='MPL-6', bintype='HYB10')
+        maps = Maps(plateifu='8485-1901', release='DR17', bintype='HYB10')
         spaxel = maps[22, 14]
         b = spaxel.stellar_vel.bin
         assert isinstance(b._parent, Maps)
@@ -310,12 +310,12 @@ class TestPickling(object):
         cube = Cube(plateifu=galaxy.plateifu)
         spaxel = cube.getSpaxel(1, 3)
 
-        file = temp_scratch.join('test_spaxel.mpf')
+        file = temp_scratch / 'test_spaxel.mpf'
 
-        with pytest.raises(MarvinError) as cm:
+        with pytest.raises(MarvinError, match="objects with data_origin='db' cannot be saved."):
             spaxel.save(str(file), overwrite=True)
 
-        assert 'objects with data_origin=\'db\' cannot be saved.' in str(cm.value)
+        #assert 'objects with data_origin=\'db\' cannot be saved.' in str(cm.value)
 
     def test_pickling_only_cube_file(self, temp_scratch, galaxy):
         if galaxy.bintype.name != 'SPX':
@@ -326,10 +326,10 @@ class TestPickling(object):
 
         spaxel = cube.getSpaxel(1, 3, maps=maps, modelcube=False)
 
-        file = temp_scratch.join('test_spaxel.mpf')
+        file = temp_scratch / 'test_spaxel.mpf'
 
         path_saved = spaxel.save(str(file), overwrite=True)
-        assert file.check() is True
+        assert file.exists() is True
         assert os.path.exists(path_saved)
 
         del spaxel
@@ -358,10 +358,10 @@ class TestPickling(object):
         assert spaxel._maps.data_origin == 'api'
         assert spaxel._modelcube.data_origin == 'api'
 
-        file = temp_scratch.join('test_spaxel_api.mpf')
+        file = temp_scratch / 'test_spaxel_api.mpf'
 
         path_saved = spaxel.save(str(file), overwrite=True)
-        assert file.check() is True
+        assert file.exists() is True
         assert os.path.exists(path_saved)
 
         del spaxel
@@ -394,10 +394,10 @@ class TestPickling(object):
         modelcube = ModelCube(filename=galaxy.modelpath)
         spaxel = maps.getSpaxel(25, 15, xyorig='lower', cube=False, modelcube=modelcube)
 
-        file = temp_scratch.join('test_spaxel.mpf')
+        file = temp_scratch / 'test_spaxel.mpf'
 
         path_saved = spaxel.save(str(file), overwrite=True)
-        assert file.check() is True
+        assert file.exists() is True
         assert os.path.exists(path_saved)
 
         del spaxel
@@ -410,13 +410,13 @@ class TestPickling(object):
 
 class TestMaskbit(object):
 
-    @marvin_test_if(mark='include', galaxy=dict(release=['MPL-4']))
-    def test_quality_flags_mpl4(self, galaxy):
-        maps = Maps(plateifu=galaxy.plateifu)
-        sp = maps.getSpaxel(0, 0, model=True)
-        assert len(sp.quality_flags) == 1
+    # @marvin_test_if(mark='include', galaxy=dict(release=['DR17']))
+    # def test_quality_flags_mpl4(self, galaxy):
+    #     maps = Maps(plateifu=galaxy.plateifu)
+    #     sp = maps.getSpaxel(0, 0, modelcube=True)
+    #     assert len(sp.quality_flags) == 1
 
-    @marvin_test_if(mark='skip', galaxy=dict(release=['MPL-4']))
+    #@marvin_test_if(mark='skip', galaxy=dict(release=['DR17']))
     def test_quality_flags(self, galaxy):
         maps = Maps(plateifu=galaxy.plateifu)
         sp = maps.getSpaxel(0, 0, modelcube=True)
@@ -488,7 +488,7 @@ class TestCubeGetSpaxel(object):
         abs = 1.e-7
         assert flux[galaxy.spaxel['specidx']] == pytest.approx(galaxy.spaxel['flux'], abs=abs)
 
-    @pytest.mark.xfail  # This test fails in some cases
+    #@pytest.mark.xfail  # This test fails in some cases
     @pytest.mark.parametrize('monkeyconfig',
                              [('sasurl', 'http://www.averywrongurl.com')],
                              ids=['wrongurl'], indirect=True)
@@ -496,19 +496,19 @@ class TestCubeGetSpaxel(object):
 
         assert config.urlmap is not None
 
-        with pytest.raises(MarvinError) as cm:
+        with pytest.raises(MarvinError, match='Failed to establish a new connection'):
             Cube(mangaid='1-209232', mode='remote')
 
-        assert 'Failed to establish a new connection' in str(cm.value)
+        #assert 'Failed to establish a new connection' in str(cm.value)
 
     @pytest.mark.parametrize('monkeyconfig',
-                             [('release', 'MPL-5')],
-                             ids=['mpl5'], indirect=True)
+                             [('release', 'DR17')],
+                             ids=['dr17'], indirect=True)
     def test_getSpaxel_remote_drpver_differ_from_global(self, galaxy, monkeyconfig):
-        if galaxy.release == 'MPL-5':
-            pytest.skip('Skipping release for forced global MPL-5')
+        if galaxy.release == 'DR17':
+            pytest.skip('Skipping release for forced global DR17')
 
-        assert config.release == 'MPL-5'
+        assert config.release == 'DR17'
 
         cube = Cube(plateifu=galaxy.plateifu, mode='remote', release=galaxy.release)
         expected = galaxy.spaxel['flux']
@@ -516,6 +516,7 @@ class TestCubeGetSpaxel(object):
         spectrum = cube.getSpaxel(ra=galaxy.spaxel['ra'], dec=galaxy.spaxel['dec']).flux
         assert spectrum.value[galaxy.spaxel['specidx']] == pytest.approx(expected)
 
+    @pytest.mark.uses_web
     def test_getspaxel_matches_file_db_remote(self, galaxy):
 
         cube_file = Cube(filename=galaxy.cubepath)
@@ -630,7 +631,7 @@ class TestMapsGetSpaxel(object):
 
         assert len(spaxel.maps_quantities.keys()) > 0
 
-    @marvin_test_if(mark='include', galaxy=dict(bintype=['SPX', 'NONE']))
+    @marvin_test_if(mark='include', galaxy=dict(bintype=['HYB10']))
     def test_values(self, galaxy, exporigin):
 
         template = str(galaxy.template)
@@ -651,14 +652,14 @@ class TestMapsGetSpaxel(object):
             channel_data = galaxy.dap[template][channel]
             map = maps[channel]
 
-            assert map[yy, xx].value == pytest.approx(channel_data['value'], abs=1.e-4)
+            assert map[yy, xx].value == pytest.approx(channel_data['value'], abs=2.e-4)
             assert map.unit.scale == 1e-17
             assert map.unit.to_string() == channel_data['unit']
 
-            assert map[yy, xx].mask == pytest.approx(channel_data['mask'], abs=1.e-4)
-            assert map[yy, xx].ivar == pytest.approx(channel_data['ivar'], abs=1.e-4)
+            assert map[yy, xx].mask == pytest.approx(channel_data['mask'], abs=2.e-4)
+            assert map[yy, xx].ivar == pytest.approx(channel_data['ivar'], abs=2.e-4)
 
-    @marvin_test_if(mark='include', galaxy=dict(bintype=['SPX']))
+    @marvin_test_if(mark='include', galaxy=dict(bintype=['HYB10']))
     def test_deprecated(self, galaxy, exporigin):
 
         if exporigin != 'db':
@@ -675,7 +676,7 @@ class TestMapsGetSpaxel(object):
             assert 'the {0} parameter has been deprecated.'.format(old_arg) in str(ee)
 
 
-@marvin_test_if_class(mark='skip', galaxy=dict(release=['MPL-4']))
+#@marvin_test_if_class(mark='skip', galaxy=dict(release=['DR17']))
 class TestModelCubeGetSpaxel(object):
 
     def _test_getspaxel(self, spaxel, galaxy):
