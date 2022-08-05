@@ -262,7 +262,7 @@ class DB(object):
 @pytest.fixture(scope='session')
 def maindb():
     """Yield an instance of the DB object."""
-    if not marvindb.isdbconnected:
+    if not marvindb or not marvindb.isdbconnected:
         pytest.skip('Skipping when no database is connected')
 
     yield DB()
@@ -298,7 +298,7 @@ def db(request, check_marks):
 
     Use this to parametrize over all db options.
     """
-    if not marvindb.isdbconnected:
+    if not marvindb or not marvindb.isdbconnected:
         pytest.skip('Skipping when no database is connected')
 
     marker, local = check_marks
