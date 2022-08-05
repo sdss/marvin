@@ -172,6 +172,8 @@ class TestGetNSAData(object):
             assert 'elpetro_absmag' in data.keys()
 
     @pytest.mark.parametrize('source', [('nsa'), ('drpall')])
+    @pytest.mark.uses_db
+    @pytest.mark.uses_web
     def test_nsa(self, galaxy, mode, db, source):
         if mode == 'local' and source == 'nsa' and marvin.config.db is None:
             with pytest.raises(MarvinError) as cm:
@@ -265,7 +267,7 @@ class TestGetDapRedux(object):
         path = getDapRedux(release)
         verpath = '/'.join(versions)
 
-        base = 'https://data.sdss.org/sas/mangawork/manga/spectro/analysis'
+        base = 'https://data.sdss.org/sas/dr17/manga/spectro/analysis'
         full = '{0}/{1}'.format(base, verpath)
         assert 'default' not in path
         assert base in path
@@ -278,7 +280,7 @@ class TestGetDefaultMapPath(object):
         path = getDefaultMapPath(release=galaxy.release, plate=galaxy.plate, ifu=galaxy.ifu,
                                  daptype=galaxy.bintemp, mode='MAPS')
         verpath = '/'.join((galaxy.drpver, galaxy.dapver))
-        base = 'https://data.sdss.org/sas/mangawork/manga/spectro/analysis'
+        base = 'https://data.sdss.org/sas/dr17/manga/spectro/analysis'
         full = '{0}/{1}'.format(base, verpath)
 
         if galaxy.release == 'MPL-4':
@@ -293,14 +295,14 @@ class TestTargetStatus(object):
 
     @pytest.mark.parametrize('galid, exp', [('1-209232', True),
                                             ('1-208345', False),
-                                            ('1-95058', False)])
+                                            ('1-490610', False)])
     def test_is_observed(self, galid, exp):
         observed = target_is_observed(galid)
         assert observed == exp
 
     @pytest.mark.parametrize('galid, exp', [('1-209232', 'observed'),
                                             ('1-208345', 'not valid target'),
-                                            ('1-95058', 'not yet observed')])
+                                            ('1-490610', 'not yet observed')])
     def test_status(self, galid, exp):
         status = target_status(galid)
         assert status == exp
@@ -328,7 +330,7 @@ class TestDownloadList(object):
 class TestCheckVersion(object):
 
     @pytest.mark.parametrize('v1, exp',
-                             [('v2_5_3', True),
+                             [('v3_1_1', True),
                               ('v2_4_3', False)], ids=['good', 'bad'])
     def test_checks(self, v1, exp):
         assert check_versions(v1, 'v2_5_3') is exp
@@ -337,18 +339,18 @@ class TestCheckVersion(object):
 class TestGetMangaImage(object):
 
     @pytest.mark.parametrize('v1, exp',
-                             [('v2_5_3', '8485/images/'),
+                             [('v3_1_1', '8485/images/'),
                               ('v2_4_3', '8485/stack/images')],
                              ids=['postMPL8', 'preMPL8'])
     def test_image(self, v1, exp):
         dir3d = 'stack' if v1 == 'v2_4_3' else None
-        img = get_manga_image(drpver=v1, plate=8485, ifu=1901, dir3d=dir3d)
+        img = get_manga_image(drpver=v1, plate=8485, ifu=1901, dir3d=dir3d, public=True, local=True)
         assert exp in img
 
 
 class TestSummaryFiles(object):
-    drp = 'v2_5_3'
-    dap = '2.3.0'
+    drp = 'v3_1_1'
+    dap = '3.1.0'
 
     @pytest.mark.parametrize('name', [('drpall'), ('dapall')])
     def test_paths(self, name):
@@ -359,11 +361,11 @@ class TestSummaryFiles(object):
             path = get_dapall_path(self.drp, self.dap)
             assert 'dapall-{0}-{1}'.format(self.drp, self.dap) in path
 
-    @pytest.mark.parametrize('name, hdu, expnum',
-                             [('drpall', 'MANGA', 6779),
-                              ('drpall', 'MASTAR', 20649),
-                              ('dapall', 1, 19596)])
-    def test_tables(self, name, hdu, expnum):
+    @pytest.mark.parametrize('name, hdu, rownum',
+                             [('drpall', 'MANGA', 11273),
+                              ('drpall', 'MASTAR', 35394),
+                              ('dapall', 1, 43128)])
+    def test_tables(self, name, hdu, rownum):
         if name == 'drpall':
             table = get_drpall_table(self.drp, hdu=hdu)
             assert 'nsa_z' in table.colnames
@@ -371,8 +373,8 @@ class TestSummaryFiles(object):
         else:
             table = get_dapall_table(self.drp, self.dap)
             assert 'SFR_TOT' in table.colnames
-            assert self.dap in set(table['VERSDAP'])
+            assert self.dap in set(table['VERSDAP'].tolist())
 
-        assert len(table) == expnum
+        assert len(table) == rownum
         if hdu == 'MASTAR':
             assert 'APOGEE lead' in set(table['srvymode'])

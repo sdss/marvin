@@ -124,7 +124,7 @@ class TestMasks(object):
         actual = mapplot._mask_nocov(mask=None, dapmap=None, ivar=ivar)
         assert np.all(actual == expected)
 
-    @marvin_test_if(mark='skip', maps_release_only=dict(release='MPL-4'))
+    @marvin_test_if(mark='skip', maps_release_only=dict(release='DR17'))
     def test_mask_nocov_dapmap(self, maps_release_only):
         ha = maps_release_only['emline_gvel_ha_6564']
         actual = mapplot._mask_nocov(mask=ha.mask, dapmap=ha, ivar=ha.ivar)
@@ -157,8 +157,8 @@ class TestMasks(object):
                               ])
     def test_format_use_masks_mpl4(self, use_masks, mask, expected, set_release):
 
-        if config.release != 'MPL-4':
-            pytest.skip('Only include MPL-4.')
+        # if config.release != 'MPL-4':
+        #     pytest.skip('Only include MPL-4.')
 
         for prop in ['stellar_vel', 'stellar_sigma', 'emline_gflux', 'specindex']:
             params = datamodel[config.lookUpVersions()[1]].get_plot_params(prop)
