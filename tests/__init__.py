@@ -90,3 +90,25 @@ def marvin_test_if(mark='skip', **kfilter):
 
         return ff(*args, **kwargs)
     return decorated_function
+
+class marvin_test_if_class(object):
+    """Decorate all tests in a class to run only for, or skip, certain parameters.
+
+    See ``marvin_test_if``. This decorator is the equivalent for decorating
+    classes isntead of functions.
+
+    """
+
+    def __init__(self, *args, **kwargs):
+        self.args = args
+        self.kwargs = kwargs
+
+    def __call__(self, decorated_class):
+        for attr in inspect.getmembers(decorated_class, inspect.isfunction):
+            # only decorate public functions
+            if attr[0][0] != '_':
+                setattr(decorated_class, attr[0],
+                        marvin_test_if(*self.args,
+                                       **self.kwargs)(getattr(decorated_class, attr[0])))
+        return decorated_class
+
