@@ -11,10 +11,10 @@
 
 import importlib
 
-import astropy.io.fits
 import pytest
 
 from marvin.contrib.vacs import VACMixIn
+from marvin.contrib.vacs.hi import HITarget
 from marvin.tools.maps import Maps
 
 
@@ -29,7 +29,7 @@ class TestVACs(object):
         my_map = Maps('7443-12701')
 
         assert hasattr(my_map, 'vacs')
-        #assert my_map.vacs.mangahi is not None  # figure out how to test based on release
+        assert my_map.vacs.HI is not None  # figure out how to test based on release
 
     def test_vac_container(self):
 
@@ -40,25 +40,19 @@ class TestVACs(object):
 
     def test_vacs_return(self, plateifu, release):
 
-        if release in ['MPL-4', 'MPL-5', 'MPL-6', 'MPL-8']:
+        if release not in ['DR17']:
             pytest.skip()
 
-        vacs = VACMixIn.__subclasses__()
-
-        for vac in vacs:
-            for include_class in vac.include:
-                __ = importlib.import_module(str(include_class.__module__))
-                obj = include_class(plateifu, release=release)
-
-                assert hasattr(obj, 'vacs')
-                assert hasattr(obj.vacs, vac.name)
-                assert getattr(obj.vacs, vac.name) is not None
+        for vac in ['HI', 'gema', 'galaxyzoo']:
+            obj = Maps(plateifu, release=release)
+            assert hasattr(obj, 'vacs')
+            assert vac in obj.vacs
+            assert obj.vacs[vac] is not None
 
 
-@pytest.mark.xfail(reason="will not work with tested releases it does not have")
 class TestMangaHI(object):
 
     def test_return_type(self, plateifu):
 
         my_map = Maps(plateifu)
-        assert isinstance(my_map.vacs.HI, object)
+        assert isinstance(my_map.vacs.HI, HITarget)
