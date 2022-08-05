@@ -51,4 +51,4 @@ jobs:
 
     - name: Run tests
       run: |
-        pytest tests --local-only -m "not uses_web" --cov marvin --cov-report html
+        pytest tests --local-only -m "not uses_web and not uses_db and not slow" --cov marvin --cov-report html
