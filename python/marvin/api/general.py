@@ -28,7 +28,7 @@ from brain.utils.general.decorators import public
 from marvin import marvindb, config
 from marvin.utils.general import mangaid2plateifu as mangaid2plateifu
 from marvin.utils.general import get_nsa_data
-from marvin.api.base import arg_validate as av
+from marvin.api.base import BaseView, arg_validate as av
 from flask_jwt_extended import create_access_token
 import json
 
@@ -42,7 +42,9 @@ def get_drpver(release=None):
     return drpver
 
 
-class GeneralRequestsView(BrainGeneralRequestsView):
+class GeneralRequestsView(BaseView, BrainGeneralRequestsView):
+    decorators = [public]
+
 
     @route('/mangaid2plateifu/<mangaid>/', endpoint='mangaid2plateifu', methods=['GET', 'POST'])
     @av.check_args()
