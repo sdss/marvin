@@ -1,104 +1,43 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 #
-# @Author: Brian Cherinka, José Sánchez-Gallego, and Brett Andrews
-# @Date: 2017-03-20
-# @Filename: conftest.py
-# @License: BSD 3-clause (http://www.opensource.org/licenses/BSD-3-Clause)
-#
-# @Last modified by:   Brian Cherinka
-# @Last modified time: 2018-07-21 21:51:06
 
+import os
+import pathlib
+import json
+import yaml
+import pytest
 import copy
 import itertools
-import os
-import warnings
-from collections import OrderedDict
-
-import pytest
-import yaml
-from brain import bconfig
 from flask_jwt_extended import tokens
-from sdss_access.path import Path
+
+from brain import bconfig
 
 from marvin import config, marvindb
-from marvin.api.api import Interaction
-from marvin.tools.cube import Cube
-from marvin.tools.maps import Maps
-from marvin.tools.modelcube import ModelCube
-from marvin.tools.query import Query
 from marvin.utils.datamodel.dap import datamodel
-from marvin.utils.general import check_versions
-from brain.utils.general import get_yaml_loader
-
-warnings.simplefilter('always')
-
-
-# PYTEST MODIFIERS
-# -----------------
-def pytest_addoption(parser):
-    """Add new options"""
-    # run slow tests
-    parser.addoption('--runslow', action='store_true', default=False, help='Run slow tests.')
-    # control releases run
-    parser.addoption('--travis-only', action='store_true', default=False, help='Run a Travis only subset')
+from marvin.api.api import Interaction
+from marvin.tools import Maps, Cube, ModelCube
+from marvin.tools.query import Query
+from sdss_access.path import Path
 
 
-def pytest_runtest_setup(item):
-    """Skip slow tests."""
-    if 'slow' in item.keywords and not item.config.getoption('--runslow'):
-        pytest.skip('Requires --runslow option to run.')
-
-
-def pytest_configure(config):
-    ''' Runs during configuration of conftest.  Checks and sets a global instance for a
-        TravisSubset based on the pytest command line input of --travis-only
-    '''
-    option = config.getoption('--travis-only')
-    global travis
-    if option:
-        travis = TravisSubset()
-
-
-# specific release instance
-travis = None
-
-
-class TravisSubset(object):
-    def __init__(self):
-        self.new_gals = ['8485-1901']
-        self.new_releases = ['MPL-6']
-        self.new_bintypes = ['SPX', 'HYB10']
-        self.new_templates = ['GAU-MILESHC']
-        self.new_dbs = ['nodb']
-        self.new_origins = ['file', 'api']
-        self.new_modes = ['local', 'remote', 'auto']
 
 
 # Global Parameters for FIXTURES
 # ------------------------------
-#releases = ['MPL-6', 'MPL-5', 'MPL-4']  # to loop over releases (see release fixture)
-releases = ['MPL-8']
 
-bintypes_accepted = {'MPL-4': ['NONE', 'VOR10'],
-                     'MPL-5': ['SPX', 'VOR10'],
-                     'MPL-6': ['SPX', 'HYB10'],
-                     'MPL-7': ['HYB10', 'VOR10'],
-                     'MPL-8': ['HYB10', 'SPX'],
-                     'MPL-9': ['HYB10', 'SPX']}
 
-templates_accepted = {'MPL-4': ['MIUSCAT_THIN', 'MILES_THIN'],
-                      'MPL-5': ['GAU-MILESHC'],
-                      'MPL-6': ['GAU-MILESHC'],
-                      'MPL-7': ['GAU-MILESHC'],
-                      'MPL-8': ['MILESHC-MILESHC'],
-                      'MPL-9': ['MILESHC-MASTARHC']}
+releases = ['DR17']
+
+bintypes_accepted = {'DR17': ['HYB10', 'SPX', 'VOR10']}
+
+templates_accepted = {'DR17': ['MILESHC-MASTARSSP']}
 
 
 def populate_bintypes_templates(releases, onlybin=None):
     ''' Generates bintype and template dictionaries for each release '''
-    bintypes = OrderedDict((release, []) for release in releases)
-    templates = OrderedDict((release, []) for release in releases)
+    bintypes = {release: [] for release in releases}
+    templates = {release: [] for release in releases}
     for release in releases:
         bintemps = datamodel[release].get_bintemps()
         for bintemp in bintemps:
@@ -121,25 +60,9 @@ def populate_bintypes_templates(releases, onlybin=None):
 
 bintypes, templates = populate_bintypes_templates(releases, onlybin='HYB10')
 
-# TODO reduce modes to only local and remote
-modes = ['local', 'remote', 'auto']     # to loop over modes (see mode fixture)
-dbs = ['db', 'nodb']                    # to loop over dbs (see db fixture)
-origins = ['file', 'db', 'api']         # to loop over data origins (see data_origin fixture)
-
-
-# Galaxy and Query data is stored in a YAML file
-with open(os.path.join(os.path.dirname(__file__), 'data/galaxy_test_data.dat')) as f:
-    galaxy_data = yaml.load(f, Loader=get_yaml_loader())
-with open(os.path.join(os.path.dirname(__file__), 'data/query_test_data.dat')) as f:
-    query_data = yaml.load(f, Loader=get_yaml_loader())
-
-
 @pytest.fixture(scope='session', params=releases)
 def release(request):
     """Yield a release."""
-    if travis and request.param not in travis.new_releases:
-        pytest.skip('Skipping non-requested release')
-
     return request.param
 
 
@@ -157,47 +80,87 @@ def _params_ids(fixture_value):
 @pytest.fixture(scope='session', params=sorted(_get_release_generator_chain()), ids=_params_ids)
 def get_params(request):
     """Yield a tuple of (release, bintype, template)."""
-
-    # placeholder until the marvin_test_if decorator works in 2.7
-    release, bintype, template = request.param
-    if travis and release not in travis.new_releases:
-        pytest.skip('Skipping non-requested release')
-
-    if travis and bintype not in travis.new_bintypes:
-        pytest.skip('Skipping non-requested bintype')
-
-    if travis and template not in travis.new_templates:
-        pytest.skip('Skipping non-requested template')
-
     return request.param
+
+
+with open(os.path.join(os.path.dirname(__file__), 'data/query_test_data.dat')) as f:
+    query_data = yaml.load(f, Loader=yaml.FullLoader)
+
+
+with open(os.path.join(os.path.dirname(__file__), 'data/galaxy_test_data.dat')) as f:
+    galaxy_data = yaml.load(f, Loader=yaml.FullLoader)
+
+
+modes = ['local', 'remote']     # to loop over modes (see mode fixture)
+dbs = ['db', 'nodb']                    # to loop over dbs (see db fixture)
+origins = ['file', 'db', 'api']         # to loop over data origins (see data_origin fixture)
+
+
+def pytest_addoption(parser):
+    """Add new options"""
+    # control releases run
+    parser.addoption('--local-only', action='store_true', default=False, help='Run a local file tests only')
+
+
+@pytest.fixture(scope='session')
+def check_marks(pytestconfig):
+    markers_arg = pytestconfig.getoption('-m')
+    local = pytestconfig.getoption('--local-only')
+    return markers_arg, local
 
 
 @pytest.fixture(scope='session', params=sorted(galaxy_data.keys()))
 def plateifu(request):
     """Yield a plate-ifu."""
-    if travis and request.param not in travis.new_gals:
-        pytest.skip('Skipping non-requested galaxies')
     return request.param
 
 
 @pytest.fixture(scope='session', params=origins)
-def data_origin(request):
+def data_origin(request, check_marks):
     """Yield a data access mode."""
-    if travis and request.param not in travis.new_origins:
-        pytest.skip('Skipping non-requested origins')
+    marker, local = check_marks
+    if local and request.param != 'file':
+        pytest.skip('Skipping non-local modes')
+    if ((marker == 'not uses_db' and request.param == 'db') or
+        (marker == 'uses_db' and request.param != 'db')):
+        pytest.skip('Skipping database modes')
+    if ((marker == 'not uses_web' and request.param == 'api')
+        or (marker == 'uses_web' and request.param != 'api')):
+        pytest.skip('Skipping web/api modes')
+
     return request.param
 
 
 @pytest.fixture(scope='session', params=modes)
-def mode(request):
+def mode(request, check_marks):
     """Yield a data mode."""
-    if travis and request.param not in travis.new_modes:
-        pytest.skip('Skipping non-requested modes')
+    marker, local = check_marks
+    if local and request.param != 'local':
+        pytest.skip('Skipping non-local modes')
+    if ((marker == 'not uses_web' and request.param == 'remote')
+        or (marker == 'uses_web' and request.param != 'remote')):
+        pytest.skip('Skipping web/api modes')
+
     return request.param
 
 
 # Config-based FIXTURES
 # ----------------------
+def read_urlmap():
+    """ read a test urlmap """
+    path = pathlib.Path(__file__).parent / 'data/urlmap.json'
+    with open(path, 'r') as f:
+        return json.load(f)
+
+
+URLMAP = read_urlmap()
+
+
+@pytest.fixture(autouse=True)
+def setup_config():
+    config.access = 'public'
+
+
 @pytest.fixture(scope='session', autouse=True)
 def set_config():
     """Set config."""
@@ -211,20 +174,38 @@ def check_config():
     """Check the config to see if a db is on."""
     return config.db is None
 
-URLMAP = None
+
+def set_the_config(release):
+    """Set config release without parametrizing.
+
+    Using ``set_release`` combined with ``galaxy`` double parametrizes!"""
+    config.access = 'public'
+    config.setRelease(release)
+    set_sasurl(loc='local')
+    #config.login()
+    config._traceback = None
+
+def custom_login():
+    config.token = tokens.encode_access_token('test', os.environ.get('MARVIN_SECRET'), 'HS256', False, True, 'user_claims', True, 'identity', 'user_claims')
+
+def custom_auth(self, authtype=None):
+    authtype = 'token'
+    super(Interaction, self).setAuth(authtype=authtype)
 
 
 def set_sasurl(loc='local', port=None):
     """Set the sasurl to local or test-utah, and regenerate the urlmap."""
     if not port:
         port = int(os.environ.get('LOCAL_MARVIN_PORT', 5000))
-    istest = True if loc == 'utah' else False
+    istest = loc == 'utah'
     config.switchSasUrl(loc, test=istest, port=port)
-    global URLMAP
-    if not URLMAP:
-        response = Interaction('/marvin/api/general/getroutemap', request_type='get', auth='netrc')
-        config.urlmap = response.getRouteMap()
-        URLMAP = config.urlmap
+
+
+@pytest.fixture(autouse=True)
+def mock_urlmap(monkeypatch, mocker):
+    """ Mock the urlmap """
+    monkeypatch.setattr(config, 'urlmap', URLMAP)
+    mocker.patch('marvin.config', new=config)
 
 
 @pytest.fixture(scope='session', autouse=True)
@@ -234,15 +215,9 @@ def saslocal():
 
 
 @pytest.fixture(scope='session')
-def urlmap(saslocal):
-    """Yield the config urlmap."""
-    return config.urlmap
-
-
-@pytest.fixture(scope='session')
 def set_release(release):
     """Set the release in the config."""
-    config.setMPL(release)
+    config.setRelease(release)
 
 
 @pytest.fixture(scope='session')
@@ -266,26 +241,6 @@ def dapver(versions):
     return dapver
 
 
-def set_the_config(release):
-    """Set config release without parametrizing.
-
-    Using ``set_release`` combined with ``galaxy`` double parametrizes!"""
-    config.access = 'collab'
-    config.setRelease(release)
-    set_sasurl(loc='local')
-    config.login()
-    config._traceback = None
-
-
-def custom_login():
-    config.token = tokens.encode_access_token('test', os.environ.get('MARVIN_SECRET'), 'HS256', False, True, 'user_claims', True, 'identity', 'user_claims')
-
-
-def custom_auth(self, authtype=None):
-    authtype = 'token'
-    super(Interaction, self).setAuth(authtype=authtype)
-
-
 # DB-based FIXTURES
 # -----------------
 
@@ -307,6 +262,9 @@ class DB(object):
 @pytest.fixture(scope='session')
 def maindb():
     """Yield an instance of the DB object."""
+    if not marvindb.isdbconnected:
+        pytest.skip('Skipping when no database is connected')
+
     yield DB()
 
 
@@ -335,13 +293,21 @@ def usedb(request):
 
 
 @pytest.fixture(params=dbs)
-def db(request):
+def db(request, check_marks):
     """Turn local db on or off.
 
     Use this to parametrize over all db options.
     """
-    if travis and request.param not in travis.new_dbs:
-        pytest.skip('Skipping non-requested dbs')
+    if not marvindb.isdbconnected:
+        pytest.skip('Skipping when no database is connected')
+
+    marker, local = check_marks
+    if local and request.param != 'nodb':
+        pytest.skip('Skipping non-local db modes')
+    if ((marker == 'not uses_db' and request.param == 'db') or
+        (marker == 'uses_db' and request.param != 'notdb')):
+        pytest.skip('Skipping database modes')
+
     if request.param == 'db':
         config.forceDbOn()
     else:
@@ -383,7 +349,6 @@ def expmode(mode, db):
     elif mode == 'auto' and not db:
         return 'remote'
 
-
 @pytest.fixture()
 def user(maindb):
     username = 'test'
@@ -411,19 +376,6 @@ def monkeyconfig(request, monkeypatch):
 
 
 @pytest.fixture()
-def monkeymanga(monkeypatch, temp_scratch):
-    """Monkeypatch the environ to create a temp SAS dir for reading/writing/downloading.
-
-    Example at line 141 in utils/test_images.
-    """
-    monkeypatch.setitem(os.environ, 'SAS_BASE_DIR', str(temp_scratch))
-    monkeypatch.setitem(os.environ, 'MANGA_SPECTRO_REDUX',
-                        str(temp_scratch.join('mangawork/manga/spectro/redux')))
-    monkeypatch.setitem(os.environ, 'MANGA_SPECTRO_ANALYSIS',
-                        str(temp_scratch.join('mangawork/manga/spectro/analysis')))
-
-
-@pytest.fixture()
 def monkeyauth(monkeypatch):
     monkeypatch.setattr(config, 'login', custom_login)
     monkeypatch.setattr(Interaction, 'setAuth', custom_auth)
@@ -433,8 +385,8 @@ def monkeyauth(monkeypatch):
 
 # Temp Dir/File-based FIXTURES
 # ----------------------------
-@pytest.fixture(scope='function')
-def temp_scratch(tmpdir_factory):
+@pytest.fixture(scope='session')
+def temp_scratch(tmp_path_factory):
     """Create a temporary scratch space for reading/writing.
 
     Use for creating temp dirs and files.
@@ -442,22 +394,9 @@ def temp_scratch(tmpdir_factory):
     Example at line 208 in tools/test_query, line 254 in tools/test_results, and
     misc/test_marvin_pickle.
     """
-    fn = tmpdir_factory.mktemp('scratch')
-    return fn
-
-
-def tempafile(path, temp_scratch):
-    """Return a pytest temporary file given the original file path.
-
-    Example at line 141 in utils/test_images.
-    """
-    redux = os.getenv('MANGA_SPECTRO_REDUX')
-    anal = os.getenv('MANGA_SPECTRO_ANALYSIS')
-    endredux = path.partition(redux)[-1]
-    endanal = path.partition(anal)[-1]
-    end = (endredux or endanal)
-
-    return temp_scratch.join(end)
+    fn = tmp_path_factory.mktemp('scratch')
+    yield fn
+    fn = None
 
 
 # Object-based FIXTURES
@@ -528,7 +467,7 @@ class Galaxy(object):
 
     def set_filepaths(self, pathtype='full'):
         """Set the paths for cube, maps, etc."""
-        self.path = Path()
+        self.path = Path(release=self.release, public=True)
         self.imgpath = self.path.__getattribute__(pathtype)('mangaimage', **self.access_kwargs)
         self.cubepath = self.path.__getattribute__(pathtype)('mangacube', **self.access_kwargs)
         self.rsspath = self.path.__getattribute__(pathtype)('mangarss', **self.access_kwargs)
@@ -571,6 +510,8 @@ class Galaxy(object):
         return path
 
 
+
+
 @pytest.fixture(scope='function')
 def galaxy(monkeyauth, get_params, plateifu):
     """Yield an instance of a Galaxy object for use in tests."""
@@ -591,8 +532,8 @@ def cube(galaxy, exporigin, mode):
         Fixture tests 6 cube origins from (mode+db) combos [file, db and api]
     '''
 
-    if str(galaxy.bintype) != 'SPX':
-        pytest.skip()
+    # if str(galaxy.bintype) != 'HYB10':
+    #     pytest.skip()
 
     if exporigin == 'file':
         c = Cube(filename=galaxy.cubepath, release=galaxy.release, mode=mode)
@@ -636,18 +577,14 @@ def maps(galaxy, exporigin, mode):
     m = None
 
 
-modes = ['local', 'remote', 'auto']     # to loop over modes (see mode fixture)
-dbs = ['db', 'nodb']                    # to loop over dbs (see db fixture)
-origins = ['file', 'db', 'api']         # to loop over data origins (see data_origin fixture)
-
-
 @pytest.fixture(scope='class')
 def maps_release_only(release):
     return Maps(plateifu='8485-1901', release=release)
 
 
 @pytest.fixture(scope='function')
-def query(request, allow_dap, monkeyauth, release, mode, db):
+@pytest.mark.uses_db
+def query(request, allow_dap, release, mode, db):
     ''' Yields a Query that loops over all modes and db options '''
     data = query_data[release]
     set_the_config(release)
@@ -661,10 +598,3 @@ def query(request, allow_dap, monkeyauth, release, mode, db):
     yield q
     config.forceDbOn()
     q = None
-
-
-# @pytest.fixture(autouse=True)
-# def skipall():
-#     pytest.skip('skipping everything')
-
-

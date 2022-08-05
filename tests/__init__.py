@@ -9,60 +9,6 @@ from decorator import decorator
 import pytest
 
 
-def use_bintypes(*bintypes):
-    """Decorate test to run only for the given bintypes."""
-    def check_bintype(f):
-        @wraps(f)
-        def decorated_function(self, *args, **kwargs):
-            if kwargs['galaxy'].bintype not in bintypes:
-                pytest.skip('Only use {}'.format(', '.join(bintypes)))
-            return f(self, *args, **kwargs)
-        return decorated_function
-    return check_bintype
-
-
-def use_releases(*releases):
-    """Decorate test to run only for the given releases."""
-    def check_bintype(f):
-        @wraps(f)
-        def decorated_function(self, *args, **kwargs):
-            if 'release' in kwargs.keys():
-                release = kwargs['release']
-            elif 'galaxy' in kwargs.keys():
-                release = kwargs['galaxy'].release
-            if release not in releases:
-                pytest.skip('Only use {}'.format(', '.join(releases)))
-            return f(self, *args, **kwargs)
-        return decorated_function
-    return check_bintype
-
-
-class MetaUse(object):
-    """Meta class to define a testing class that decorates all tests to use the specified fxn."""
-    def __init__(self, *args):
-        self.args = args
-
-    def __call__(self, decorated_class):
-        for attr in inspect.getmembers(decorated_class, inspect.isfunction):
-            # only decorate public functions
-            if attr[0][0] != '_':
-                setattr(decorated_class, attr[0],
-                        self.fxn(*self.args)(attr[1]))
-        return decorated_class
-
-
-class UseBintypes(MetaUse):
-    def __init__(self, *args):
-        self.args = args
-        self.fxn = use_bintypes
-
-
-class UseReleases(MetaUse):
-    def __init__(self, *args):
-        self.args = args
-        self.fxn = use_releases
-
-
 # These decorators for functions and classes allow to skip or run tests only for galaxies
 # that have certain bintypes, templates, or releases
 def marvin_test_if(mark='skip', **kfilter):
@@ -144,36 +90,3 @@ def marvin_test_if(mark='skip', **kfilter):
 
         return ff(*args, **kwargs)
     return decorated_function
-
-
-class marvin_test_if_class(object):
-    """Decorate all tests in a class to run only for, or skip, certain parameters.
-
-    See ``marvin_test_if``. This decorator is the equivalent for decorating
-    classes isntead of functions.
-
-    """
-
-    def __init__(self, *args, **kwargs):
-        self.args = args
-        self.kwargs = kwargs
-
-    def __call__(self, decorated_class):
-        for attr in inspect.getmembers(decorated_class, inspect.isfunction):
-            # only decorate public functions
-            if attr[0][0] != '_':
-                setattr(decorated_class, attr[0],
-                        marvin_test_if(*self.args,
-                                       **self.kwargs)(getattr(decorated_class, attr[0])))
-        return decorated_class
-
-
-def skipIfNoDB(test):
-    """Decorate a test to skip if DB ``session`` is ``None``."""
-    @wraps(test)
-    def wrapper(self, db, *args, **kwargs):
-        if db.session is None:
-            pytest.skip('Skip because no DB.')
-        else:
-            return test(self, db, *args, **kwargs)
-    return wrapper
