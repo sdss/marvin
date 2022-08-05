@@ -68,10 +68,13 @@ class TestQueryCubes(object):
 
     @pytest.mark.parametrize('reqtype', [('get'), ('post')])
     @pytest.mark.parametrize('name, missing, errmsg', [(None, 'release', 'Missing data for required field.'),
-                                                       (None, 'searchfilter', 'Missing data for required field.')],
+                                                       ('nosearch', 'searchfilter', 'Missing data for required field.')],
                              ids=['norelease', 'nosearchfilter'])
     def test_query_failure(self, page, reqtype, params, name, missing, errmsg):
-        page.route_no_valid_params(page.url, missing, reqtype=reqtype, errmsg=errmsg)
+        if name is None:
+            page.route_no_valid_params(page.url, missing, reqtype=reqtype, errmsg=errmsg)
+        else:
+            page.route_no_valid_params(page.url, missing, reqtype=reqtype, errmsg=errmsg, params=params)
 
 
 @pytest.mark.parametrize('page', [('api', 'getparams')], ids=['getparams'], indirect=True)
@@ -87,9 +90,13 @@ class TestQueryGetParams(object):
 
     @pytest.mark.parametrize('reqtype', [('get'), ('post')])
     @pytest.mark.parametrize('name, missing, errmsg', [(None, 'release', 'Missing data for required field.'),
-                                                       (None, 'paramdisplay', 'Missing data for required field.')],
+                                                       ('noparam', 'paramdisplay', 'Missing data for required field.')],
                              ids=['norelease', 'noparamdisplay'])
     def test_plateifu_failure(self, page, reqtype, params, name, missing, errmsg):
-        page.route_no_valid_params(page.url, missing, reqtype=reqtype, errmsg=errmsg)
+        if name is None:
+            page.route_no_valid_params(page.url, missing, reqtype=reqtype, errmsg=errmsg)
+        else:
+            page.route_no_valid_params(page.url, missing, reqtype=reqtype, errmsg=errmsg, params=params)
+
 
 

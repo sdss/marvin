@@ -44,15 +44,17 @@ class TestGetCube(object):
             page.route_no_valid_params(page.url.format(name=name), missing, reqtype=reqtype, params=params, errmsg=errmsg)
 
 
+cmsg = 'Must be one of: flux, ivar, mask, disp, predisp, specres, specresd, prespecres, prespecresd.'
+
 @pytest.mark.slow
-@pytest.mark.parametrize('page', [('api', 'getCubeExtension')], ids=['getcubeext'], indirect=True)
+@pytest.mark.parametrize('page', [('api', 'getExtension')], ids=['getcubeext'], indirect=True)
 class TestCubeExtension(object):
 
     @pytest.mark.parametrize('reqtype', [('get'), ('post')])
     @pytest.mark.parametrize('cubeext', [('flux'), ('ivar'), ('mask')])
     def test_cubeext_success(self, galaxy, page, params, reqtype, cubeext):
         params.update({'name': galaxy.plateifu, 'cube_extension': cubeext})
-        data = {'cube_extension': []}
+        data = {'extension_data': []}
         page.load_page(reqtype, page.url.format(**params), params=params)
         page.assert_success(data)
 
@@ -61,7 +63,7 @@ class TestCubeExtension(object):
                              [(None, 'release', 'Missing data for required field.', 'flux'),
                               ('badname', 'name', 'String does not match expected pattern.', 'flux'),
                               ('84', 'name', 'Shorter than minimum length 4.', 'flux'),
-                              ('8485-1901', 'cube_extension', 'Not a valid choice.', 'stuff')],
+                              ('8485-1901', 'cube_extension', cmsg, 'stuff')],
                              ids=['norelease', 'badname', 'shortname', 'badext'])
     def test_cubeext_failure(self, galaxy, page, reqtype, params, name, missing, errmsg, cubeext):
         params.update({'name': name, 'cube_extension': cubeext})
