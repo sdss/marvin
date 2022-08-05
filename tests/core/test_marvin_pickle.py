@@ -18,27 +18,25 @@ data = dict(a=7, b=[10, 2])
 
 class TestMarvinPickle(object):
 
-    def test_specify_path(self, temp_scratch):
-        file = temp_scratch.join('tmp_testMarvinPickleSpecifyPath.pck')
-        path_out = marvin_pickle.save(obj=data, path=str(file), overwrite=False)
-        assert file.check() is True
-        revived_data = marvin_pickle.restore(path_out)
+    def _save_pickle(self, file, overwrite=False, delete=False):
+        path_out = marvin_pickle.save(obj=data, path=str(file), overwrite=overwrite)
+        assert file.exists() is True
+        revived_data = marvin_pickle.restore(path_out, delete=delete)
         assert data == revived_data
+
+
+    def test_specify_path(self, temp_scratch):
+        file = temp_scratch / 'tmp_testMarvinPickleSpecifyPath.pck'
+        self._save_pickle(file)
 
     def test_overwrite_true(self, temp_scratch):
-        file = temp_scratch.join('tmp_testMarvinPickleOverwriteTrue.pck')
+        file = temp_scratch / 'tmp_testMarvinPickleOverwriteTrue.pck'
         open(str(file), 'a').close()
-        path_out = marvin_pickle.save(obj=data, path=str(file), overwrite=True)
-        assert file.check() is True
-        revived_data = marvin_pickle.restore(path_out)
-        assert data == revived_data
+        self._save_pickle(file, overwrite=True)
 
     def test_delete_on_restore(self, temp_scratch):
-        file = temp_scratch.join('tmp_testMarvinPickleDeleteOnRestore.pck')
-        path_out = marvin_pickle.save(obj=data, path=str(file), overwrite=False)
-        assert file.check() is True
-        revived_data = marvin_pickle.restore(path_out, delete=True)
-        assert data == revived_data
+        file = temp_scratch / 'tmp_testMarvinPickleDeleteOnRestore.pck'
+        self._save_pickle(file, delete=True)
         assert os.path.isfile(str(file)) is False
 
 
