@@ -13,6 +13,8 @@ from marvin.api.api import Interaction
 from marvin import config
 import pytest
 
+pytestmark = pytest.mark.uses_web
+
 
 auths = [None, 'token', 'netrc']
 

@@ -12,6 +12,8 @@ from __future__ import print_function, division, absolute_import
 from tests.api.conftest import ApiPage
 import pytest
 
+pytestmark = pytest.mark.uses_web
+
 
 @pytest.mark.parametrize('page', [('api', 'PlateView:index')], ids=['plate'], indirect=True)
 class TestPlateView(object):

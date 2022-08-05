@@ -14,6 +14,9 @@ from marvin import config
 import pytest
 
 
+pytestmark = pytest.mark.uses_web
+
+
 @pytest.fixture(autouse=True)
 def baseview():
     baseview = BaseView()

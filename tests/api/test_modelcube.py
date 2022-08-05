@@ -13,6 +13,8 @@ from tests.api.conftest import ApiPage
 from marvin import config
 import pytest
 
+pytestmark = pytest.mark.uses_web
+
 
 @pytest.mark.parametrize('page', [('api', 'getModelCube')], ids=['getModelCube'], indirect=True)
 class TestGetModelCubes(object):

@@ -13,6 +13,8 @@ import pytest
 from marvin import marvindb
 from flask import url_for
 
+pytestmark = pytest.mark.uses_web
+
 
 @pytest.mark.parametrize('page', [('index_page', 'Marvin:index')], ids=['index'], indirect=True)
 class TestIndexPage(object):

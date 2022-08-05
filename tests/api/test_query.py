@@ -17,6 +17,8 @@ import pytest
 import yaml
 import os
 
+pytestmark = pytest.mark.uses_web
+
 # @pytest.fixture()
 # def page(client, request, init_api):
 #     blue, endpoint = request.param

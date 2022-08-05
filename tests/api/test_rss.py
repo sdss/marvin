@@ -13,6 +13,8 @@ from tests.api.conftest import ApiPage
 from tests import marvin_test_if
 import pytest
 
+pytestmark = pytest.mark.uses_web
+
 
 @pytest.mark.parametrize('page', [('api', 'getRSS')], ids=['getrss'], indirect=True)
 class TestGetRss(object):

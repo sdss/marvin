@@ -12,6 +12,8 @@ from __future__ import print_function, division, absolute_import
 from tests.api.conftest import ApiPage
 import pytest
 
+pytestmark = pytest.mark.uses_web
+
 
 @pytest.mark.parametrize('page', [('api', 'MapsView:index')], ids=['maps'], indirect=True)
 class TestMapsView(object):

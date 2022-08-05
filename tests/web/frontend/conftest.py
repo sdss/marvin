@@ -18,6 +18,8 @@ from marvin.web import create_app
 from tests.web.frontend.live_server import live_server
 from marvin.web.settings import TestConfig, CustomConfig
 
+pytestmark = pytest.mark.uses_web
+
 browserstack = os.environ.get('USE_BROWSERSTACK', None)
 
 if browserstack:
