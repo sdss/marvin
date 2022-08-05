@@ -11,6 +11,8 @@
 from __future__ import print_function, division, absolute_import
 import pytest
 
+pytestmark = pytest.mark.uses_db
+
 
 @pytest.fixture()
 def nsa_target(maindb, galaxy):
