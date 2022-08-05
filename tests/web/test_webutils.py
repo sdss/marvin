@@ -31,5 +31,5 @@ class TestBuildImageDict(object):
         names = [im['name'] for im in images]
         assert images
         assert '8485-1901' in names
-        assert 'https://data.sdss.org/sas/mangawork/manga/spectro/redux/' in images[0]['image']
+        assert 'https://data.sdss.org/sas/dr17/manga/spectro/redux/' in images[0]['image']
 
