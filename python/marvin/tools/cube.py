@@ -616,7 +616,7 @@ class Cube(MarvinToolsClass, NSAMixIn, GetApertureMixIn):
         if self.data_origin == 'file' or self.data_origin == 'api':
             daptable = get_dapall_table(drpver=self._drpver, dapver=self._dapver)
             locs = (daptable['PLATEIFU'] == self.plateifu) & (daptable['DAPDONE'] == True)
-            return daptable[locs]['BINKEY'].tolist()
+            return set(daptable[locs]['BINKEY'].tolist())
         elif self.data_origin == 'db':
             session = marvin.marvindb.session
             datadb = marvin.marvindb.datadb
@@ -628,5 +628,5 @@ class Cube(MarvinToolsClass, NSAMixIn, GetApertureMixIn):
                         datadb.PipelineVersion.version == self._dapver,
                         dapdb.File.filename.ilike('%{0}%MAPS%'.format(self.plateifu)))
             bintypes = [i[0] for i in query]
-            return bintypes
+            return set(bintypes)
 
