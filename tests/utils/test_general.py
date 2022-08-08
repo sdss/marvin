@@ -230,6 +230,7 @@ class TestDataModelPlotParams(object):
         assert desired == actual
 
 
+@pytest.mark.usefixtures('checkdb')
 class TestSortDir(object):
 
     @pytest.mark.parametrize('class_, expected',
@@ -291,18 +292,20 @@ class TestGetDefaultMapPath(object):
         assert full in path
 
 
+@pytest.mark.usefixtures('checkdb')
+@pytest.mark.xfail(reason='skipping until can sort out auth bug.')
 class TestTargetStatus(object):
 
     @pytest.mark.parametrize('galid, exp', [('1-209232', True),
                                             ('1-208345', False),
-                                            ('1-490610', False)])
+                                            ('1-92284', False)])
     def test_is_observed(self, galid, exp):
         observed = target_is_observed(galid)
         assert observed == exp
 
     @pytest.mark.parametrize('galid, exp', [('1-209232', 'observed'),
                                             ('1-208345', 'not valid target'),
-                                            ('1-490610', 'not yet observed')])
+                                            ('1-92284', 'not yet observed')])
     def test_status(self, galid, exp):
         status = target_status(galid)
         assert status == exp

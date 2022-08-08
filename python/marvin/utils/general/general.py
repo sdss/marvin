@@ -1689,6 +1689,9 @@ def target_status(mangaid, mode='auto', source='nsa', drpall=None, drpver=None):
         status = 'not yet observed'
     elif not plateifu and not nsa:
         status = 'not valid target'
+    elif plateifu and not nsa:
+        log.debug('No NSA info retrieved.  Cannot determine status of target {0}'.format(mangaid))
+        status = 'unknown'
 
     return status
 
