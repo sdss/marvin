@@ -75,7 +75,7 @@ class TestCube(object):
         assert errmsg in str(cm.value)
 
     @marvin_test_if(mark='include', cube={'plateifu': '8485-1901',
-                                          'release': 'MPL-6',
+                                          'release': 'DR17',
                                           'mode': 'local',
                                           'data_origin': 'file'})
     def test_quatities_reorder(self, cube):

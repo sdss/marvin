@@ -12,6 +12,7 @@ from __future__ import print_function, division, absolute_import
 
 import numpy as np
 import pytest
+from marvin import config
 from marvin.tools.image import Image
 from marvin.utils.general import check_versions
 
@@ -113,10 +114,12 @@ class TestImage(object):
         assert images[0].plate == 8485
 
     def test_imversion(self):
+        config.setRelease("DR15")
         im = Image('8485-1901', release='DR15')
         fp = im._getFullPath()
         assert 'stack' in fp
 
+        config.setRelease("DR17")
         im = Image('8485-1901', release='DR17')
         fp = im._getFullPath()
         assert 'stack' not in fp

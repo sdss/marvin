@@ -51,7 +51,7 @@ def bestnet(goodnet):
     goodnet.write(write('api.sdss.org'))
     config._check_access()
     config.access = 'collab'
-    config.setRelease('MPL-6')
+    config.setRelease('MPL-11')
     yield goodnet
 
 
@@ -143,9 +143,10 @@ class TestReleases(object):
 
         assert config.release == release.upper()
 
-    @pytest.mark.parametrize('release', [('dr15'), ('mpl-6')])
+    @pytest.mark.parametrize('release', [('dr17')])
     def test_drpall(self, bestnet, release):
-        assert 'mangawork' in config.drpall
+        if config.drpall:
+            assert 'mangawork' in config.drpall
         config.setRelease(release)
         if config.drpall:
             word = 'mangawork' if 'mpl' in release else release
