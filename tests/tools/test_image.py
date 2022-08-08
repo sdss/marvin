@@ -115,12 +115,12 @@ class TestImage(object):
 
     def test_imversion(self):
         config.setRelease("DR15")
-        im = Image('8485-1901', release='DR15')
+        im = Image('8485-1901', release='DR15', mode='local')
         fp = im._getFullPath()
         assert 'stack' in fp
 
         config.setRelease("DR17")
-        im = Image('8485-1901', release='DR17')
+        im = Image('8485-1901', release='DR17', mode='local')
         fp = im._getFullPath()
         assert 'stack' not in fp
 

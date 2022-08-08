@@ -26,7 +26,7 @@ from marvin.core.exceptions import MarvinDeprecationWarning
 
 
 @pytest.fixture()
-def maps(galaxy, mode):
+def maps(galaxy, mode, checkdb):
     maps = Maps(plateifu=galaxy.plateifu, mode=mode)
     maps.bptsums = galaxy.bptsums if hasattr(galaxy, 'bptsums') else None
     yield maps
