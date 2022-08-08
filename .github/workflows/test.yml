@@ -51,6 +51,20 @@ jobs:
         find ${{ env.SAS_BASE_DIR }} -name '*' | wc -l
         du -sh ${{ env.SAS_BASE_DIR }}
 
+    - name: Setup SDSS-IV data netrc
+      uses: extractions/netrc@v1
+      with:
+        machine: data.sdss.org
+        username: ${{ secrets.S4_USERNAME }}
+        password: ${{ secrets.S4_PASSWORD }}
+
+    - name: Setup SDSS-IV api netrc
+      uses: extractions/netrc@v1
+      with:
+        machine: api.sdss.org
+        username: ${{ secrets.S4_USERNAME }}
+        password: ${{ secrets.S4_PASSWORD }}
+
     - name: Run tests
       run: |
         pytest tests --local-only -m "not uses_web and not uses_db and not slow" --cov marvin --cov-report html
