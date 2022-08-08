@@ -41,7 +41,7 @@ class TestCube(object):
     def test_cube_load_from_local_file_by_filename_success(self, galaxy):
         cube = Cube(filename=galaxy.cubepath)
         assert cube is not None
-        assert os.path.abspath(galaxy.cubepath) == cube.filename
+        assert cube.filename in os.path.abspath(galaxy.cubepath)
 
     def test_cube_load_from_local_file_by_filename_fail(self):
         with pytest.raises(AssertionError):

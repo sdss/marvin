@@ -37,7 +37,9 @@ jobs:
       uses: actions/cache@v3
       with:
         path: ${{ env.SAS_BASE_DIR }}
-        key: ${{ runner.os }}-sas
+        key: ${{ runner.os }}-sas-${{ hashFiles('sas/**') }}
+        restore-keys: |
+          ${{ runner.os }}-sas-
 
     - name: Download and Check Data
       if: steps.cache-sas.outputs.cache-hit != 'true'
@@ -51,4 +53,4 @@ jobs:
 
     - name: Run tests
       run: |
-        pytest tests -vs --local-only -m "not uses_web and not uses_db and not slow" --cov marvin --cov-report html
+        pytest tests --local-only -m "not uses_web and not uses_db and not slow" --cov marvin --cov-report html
