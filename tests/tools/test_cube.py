@@ -181,6 +181,7 @@ class TestCube(object):
 
         assert cube._release == galaxy.release
 
+    @pytest.mark.uses_db
     def test_load_cube_from_db_disconnected(self, galaxy, monkeypatch):
         monkeypatch.setattr(marvindb, 'isdbconnected', False)
         with pytest.raises(MarvinError, match='No DB connected'):
