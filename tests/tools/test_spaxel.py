@@ -28,6 +28,10 @@ from marvin.tools.spaxel import Spaxel
 from marvin.utils.datamodel.dap import Property
 from marvin.web.controllers.galaxy import get_flagged_regions
 
+
+pytestmark = pytest.mark.usefixtures("checkdb")
+
+
 spaxel_modes = [True, False, 'object']
 
 
@@ -244,6 +248,7 @@ class TestSpaxel(object):
         assert not isinstance(spaxel._modelcube, ModelCube)
 
 
+#@pytest.mark.usefixtures('db_off')
 class TestBinInfo(object):
 
     def test_bad_binid(self):
@@ -306,6 +311,7 @@ class TestBinInfo(object):
 
 class TestPickling(object):
 
+    @pytest.mark.uses_db
     def test_pickling_db_fails(self, temp_scratch, galaxy):
         cube = Cube(plateifu=galaxy.plateifu)
         spaxel = cube.getSpaxel(1, 3)
@@ -346,6 +352,7 @@ class TestPickling(object):
         assert spaxel_restored._maps.data_origin == 'file'
         assert isinstance(spaxel_restored._maps.data, astropy.io.fits.HDUList)
 
+    @pytest.mark.uses_web
     def test_pickling_all_api(self, temp_scratch, galaxy):
         drpver, __ = config.lookUpVersions()
 
@@ -418,7 +425,7 @@ class TestMaskbit(object):
 
     #@marvin_test_if(mark='skip', galaxy=dict(release=['DR17']))
     def test_quality_flags(self, galaxy):
-        maps = Maps(plateifu=galaxy.plateifu)
+        maps = Maps(filename=galaxy.mapspath)
         sp = maps.getSpaxel(0, 0, modelcube=True)
         assert len(sp.quality_flags) == 2
 
@@ -489,6 +496,7 @@ class TestCubeGetSpaxel(object):
         assert flux[galaxy.spaxel['specidx']] == pytest.approx(galaxy.spaxel['flux'], abs=abs)
 
     #@pytest.mark.xfail  # This test fails in some cases
+    @pytest.mark.uses_web
     @pytest.mark.parametrize('monkeyconfig',
                              [('sasurl', 'http://www.averywrongurl.com')],
                              ids=['wrongurl'], indirect=True)

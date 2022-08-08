@@ -69,6 +69,7 @@ class TestImage(object):
                               ((18, 18), (286.61798202, 286.61798202)),
                               ((9.99826865, 6.34193863), (241.66439915, 221.12320284))],
                              ids=['center', 'off', 'hexedge'])
+    @pytest.mark.usefixtures('checkdb')
     def test_wcs(self, image, cubecoord, imcoord):
         cube = image.getCube()
         wcs = cube.wcs.celestial
@@ -76,6 +77,7 @@ class TestImage(object):
         im_radec = image.wcs.all_pix2world([imcoord], 1)
         assert im_radec == pytest.approx(cube_radec, rel=1e-6)
 
+    @pytest.mark.usefixtures('checkdb')
     def test_wcs_aperture(self, image):
         cube = image.getCube()
         wcs = cube.wcs.celestial

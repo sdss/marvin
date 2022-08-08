@@ -292,13 +292,24 @@ def usedb(request):
     return config.db is not None
 
 
+@pytest.fixture()
+def checkdb():
+    """ Fixture to check if db available and turn off in marvin config """
+    config.forceDbOn()
+    nodb = not marvindb or not marvindb.isdbconnected
+    if nodb:
+        config.forceDbOff()
+    yield
+    config.forceDbOn()
+
+
 @pytest.fixture(params=dbs)
 def db(request, check_marks):
     """Turn local db on or off.
 
     Use this to parametrize over all db options.
     """
-    if not marvindb or not marvindb.isdbconnected:
+    if request.param == 'db' and (not marvindb or not marvindb.isdbconnected):
         pytest.skip('Skipping when no database is connected')
 
     marker, local = check_marks
@@ -577,9 +588,9 @@ def maps(galaxy, exporigin, mode):
     m = None
 
 
-@pytest.fixture(scope='class')
-def maps_release_only(release):
-    return Maps(plateifu='8485-1901', release=release)
+@pytest.fixture(scope='function')
+def maps_release_only(galaxy, release):
+    return Maps(filename=galaxy.mapspath, release=release)
 
 
 @pytest.fixture(scope='function')

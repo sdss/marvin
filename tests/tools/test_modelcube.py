@@ -88,19 +88,21 @@ class TestModelCubeInit(object):
 
 class TestModelCube(object):
 
+    @pytest.mark.uses_db
     @marvin_test_if(mark='include', galaxy={'plateifu': '8485-1901'})
     def test_get_flux_db(self, galaxy):
         model_cube = ModelCube(plateifu=galaxy.plateifu)
         shape = tuple([4563] + galaxy.shape)
         assert model_cube.binned_flux.shape == shape
 
+    @pytest.mark.uses_web
     @marvin_test_if(mark='include', galaxy={'plateifu': '8485-1901'})
     def test_get_flux_remote(self, galaxy):
         model_cube = ModelCube(plateifu=galaxy.plateifu, mode='remote')
         shape = tuple([4563] + galaxy.shape)
         assert model_cube.binned_flux.shape == shape
 
-    def test_get_cube_file(self, galaxy):
+    def test_get_cube_file(self, galaxy, db_off):
         model_cube = ModelCube(filename=galaxy.modelpath)
         assert isinstance(model_cube.getCube(), Cube)
 
@@ -118,6 +120,7 @@ class TestModelCube(object):
         dmunit = model_cube.emline_fit.unit
         assert newunit == dmunit
 
+    @pytest.mark.uses_web
     def test_get_maps_api(self, galaxy):
         model_cube = ModelCube(plateifu=galaxy.plateifu, mode='remote')
         assert isinstance(model_cube.getMaps(), Maps)
@@ -184,6 +187,7 @@ class TestPickling(object):
 
         assert not os.path.exists(path)
 
+    @pytest.mark.uses_db
     def test_pickling_db(self, galaxy, temp_scratch):
         modelcube = ModelCube(plateifu=galaxy.plateifu, bintype=galaxy.bintype)
 
@@ -193,6 +197,7 @@ class TestPickling(object):
 
         assert 'objects with data_origin=\'db\' cannot be saved.' in str(cm.value)
 
+    @pytest.mark.uses_web
     def test_pickling_api(self, temp_scratch, galaxy):
         modelcube = ModelCube(plateifu=galaxy.plateifu, bintype=galaxy.bintype, mode='remote')
         assert modelcube.data_origin == 'api'
@@ -215,8 +220,8 @@ class TestPickling(object):
 
 class TestMaskbit(object):
 
-    def test_quality_flag(self, galaxy):
-        modelcube = ModelCube(plateifu=galaxy.plateifu, bintype=galaxy.bintype)
+    def test_quality_flag(self, modelcube):
+        #modelcube = ModelCube(plateifu=galaxy.plateifu, bintype=galaxy.bintype)
         assert modelcube.quality_flag is not None
 
     @pytest.mark.parametrize('flag',
@@ -224,6 +229,6 @@ class TestMaskbit(object):
                               'manga_target2',
                               'manga_target3',
                               'target_flags'])
-    def test_flag(self, flag, galaxy):
-        modelcube = ModelCube(plateifu=galaxy.plateifu, bintype=galaxy.bintype)
+    def test_flag(self, flag, modelcube):
+        #modelcube = ModelCube(plateifu=galaxy.plateifu, bintype=galaxy.bintype)
         assert getattr(modelcube, flag, None) is not None

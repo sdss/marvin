@@ -145,23 +145,26 @@ class TestMaps(object):
             if maps.release == 'MPL-4' and maps.data_origin == 'file' else maps.nsa.z
         assert redshift == pytest.approx(galaxy.redshift)
 
-    def test_release(self, galaxy):
-        maps = Maps(plateifu=galaxy.plateifu)
+    def test_release(self, maps, galaxy):
+        #maps = Maps(plateifu=galaxy.plateifu)
         assert maps.release == galaxy.release
 
-    def test_set_release_fails(self, galaxy):
-        maps = Maps(plateifu=galaxy.plateifu)
-        with pytest.raises(MarvinError) as ee:
+    def test_set_release_fails(self, maps):
+        #maps = Maps(plateifu=galaxy.plateifu)
+        with pytest.raises(MarvinError, match='the release cannot be changed'):
             maps.release = 'a'
-            assert 'the release cannot be changed' in str(ee.exception)
+            #assert 'the release cannot be changed' in str(ee.exception)
 
-    def test_deepcopy(self, galaxy):
-        maps1 = Maps(plateifu=galaxy.plateifu)
-        maps2 = copy.deepcopy(maps1)
+    def test_deepcopy(self, maps):
+        #maps1 = Maps(plateifu=galaxy.plateifu)
+        maps2 = copy.deepcopy(maps)
 
-        for attr in vars(maps1):
+        for attr in vars(maps):
+            if attr == 'exporigin':
+                continue
+
             if not attr.startswith('_'):
-                value = getattr(maps1, attr)
+                value = getattr(maps, attr)
                 value2 = getattr(maps2, attr)
 
                 if isinstance(value, np.ndarray):
@@ -182,11 +185,15 @@ class TestMaps(object):
                         for property1, property2 in zip(value, value2):
                             assert property1 == property2
 
+                elif isinstance(value, astropy.io.fits.hdu.hdulist.HDUList):
+                    fd = astropy.io.fits.FITSDiff(value, value2)
+                    assert fd.identical, attr
+
                 else:
                     assert value == value2, attr
 
-    def test_getMapRatio(self, galaxy):
-        maps = Maps(galaxy.plateifu)
+    def test_getMapRatio(self, maps):
+        #maps = Maps(galaxy.plateifu)
         map_ratio = maps.getMapRatio('emline_gflux', 'nii_6585', 'ha_6564')
         map_arith = maps.emline_gflux_nii_6585 / maps.emline_gflux_ha_6564
 
