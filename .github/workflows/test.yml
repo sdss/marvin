@@ -9,6 +9,10 @@ jobs:
   build:
     runs-on: ubuntu-latest
 
+    strategy:
+      matrix:
+        group: [1, 2, 3, 4, 5]
+
     steps:
     - uses: actions/checkout@v2
 
@@ -67,4 +71,4 @@ jobs:
 
     - name: Run tests
       run: |
-        pytest tests --local-only -m "not uses_web and not uses_db and not slow" --cov marvin --cov-report html
+        pytest tests --splits 5 --group ${{ matrix.group }} --durations-path tests --local-only -m "not uses_web and not uses_db and not slow" --cov marvin --cov-report html
