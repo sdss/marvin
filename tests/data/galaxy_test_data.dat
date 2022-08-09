@@ -28,7 +28,7 @@
             sersic_n: 3.29617
             sersic_phi: 163.295
     releasedata:
-        MPL-4:
+        DR17:
             spaxel:
                 x: 12
                 y: 5
@@ -37,266 +37,62 @@
                 specidx: 200
                 x_cen: -5
                 y_cen: -12
-                flux: 0.017639931
-                ivar: 352.12421
+                flux: -0.0174516
+                ivar: 279.3288
                 mask: 1026
+            rss:
+                mjd: 57132
+                nexp: 9
+                expnum: 198573
+                nfiber: 19
             dap:
                 x: 17
                 y: 17
-                M11-STELIB-ZSOL:
-                    model: []
-                    emline_gflux_ha_6564:
-                        channel: 'ha_6564'
-                        description: 'Fluxes of emission lines based on a single Gaussian fit.'
-                        ivar: 0.92562236
-                        mask: 0
-                        name: 'emline_gflux'
-                        unit: '1e-17 erg / (cm2 s spaxel)'
-                        value: 29.34503448
-                MILES-THIN:
-                    model: []
-                    emline_gflux_ha_6564:
-                        channel: 'ha_6564'
-                        description: 'Fluxes of emission lines based on a single Gaussian fit.'
-                        ivar: 0.9217666
-                        mask: 0
-                        name: 'emline_gflux'
-                        unit: '1e-17 erg / (cm2 s spaxel)'
-                        value: 29.27634775
-                MIUSCAT-THIN:
-                    model: []
-                    emline_gflux_ha_6564:
-                        channel: 'ha_6564'
-                        description: 'Fluxes of emission lines based on a single Gaussian fit.'
-                        ivar: 0.9209043
-                        mask: 0
-                        name: 'emline_gflux'
-                        unit: '1e-17 erg / (cm2 s spaxel)'
-                        value: 29.44485646
-                stellar_sigma:
-                    MIUSCAT-THIN: 0.0
-                stellar_sigmacorr:
-                    MIUSCAT-THIN: 0.0
-            bins:
-                100:
-                    NONE-M11-STELIB-ZSOL: [[16, 23]]
-                    STON-M11-STELIB-ZSOL: []
-                    RADIAL-M11-STELIB-ZSOL: []
-                    NONE-MIUSCAT-THIN: [[16, 23]]
-                    STON-MIUSCAT-THIN: []
-                    RADIAL-MIUSCAT-THIN: []
-                    NONE-MILES-THIN: [[16, 23]]
-                    STON-MILES-THIN: []
-                    RADIAL-MILES-THIN: []
-        MPL-5:
-            spaxel:
-                x: 12
-                y: 5
-                ra: 232.545752
-                dec: 48.688534
-                specidx: 200
-                x_cen: -5
-                y_cen: -12
-                flux: 0.016027471
-                ivar: 361.13596
-                mask: 1026
-                model_flux: 0.016027471
-                model_ivar: 361.13596
-                model_mask: 33
-            dap:
-                x: 17
-                y: 17
-                GAU-MILESHC:
-                    model: [4.71273e-18, 1.2857299999999999e+36, 32, 0, 0, 0, 128]
+                MILESHC-MASTARSSP:
                     emline_gflux_ha_6564:
                         channel: 'ha_6564'
                         description: 'Gaussian profile integrated flux for emission lines.'
-                        ivar: 47.08968516
+                        ivar: 53.881374
                         mask: 0
                         name: 'emline_gflux'
                         unit: '1e-17 erg / (cm2 s spaxel)'
-                        value: 31.47541953
+                        value: 33.383545
                 stellar_sigma:
-                    SPX: 89.046
-                    VOR10: 90.596771373123403
+                    SPX: 92.89063
+                    VOR10: 94.23949
+                    HYB10: 94.23949
                 stellar_sigmacorr:
-                    SPX: 62.3983
-                    VOR10: 62.576822691528562
-            bins:
-                100:
-                    ALL-GAU-MILESHC: []
-                    NRE-GAU-MILESHC: []
-                    SPX-GAU-MILESHC: [[13, 7]]
-                    VOR10-GAU-MILESHC: [[18, 22], [18, 23]]
+                    SPX: 48.968945
+                    VOR10: 48.972733
+                    HYB10: 48.972733
             bptsums:
                 global:
                     agn: 0
-                    ambiguous: 8
-                    comp: 1
+                    ambiguous: 5
+                    comp: 3
                     liner: 0
-                    invalid: 1085
+                    invalid: 1023
                     seyfert: 0
-                    sf: 62
+                    sf: 125
                 nooi:
                     agn: 0
-                    ambiguous: 0
-                    comp: 27
+                    ambiguous: 1
+                    comp: 25
                     liner: 0
-                    invalid: 980
+                    invalid: 969
                     seyfert: 0
-                    sf: 149
+                    sf: 161
                 snrmin5:
                     agn: 0
                     ambiguous: 0
                     comp: 0
                     liner: 0
-                    invalid: 1128
+                    invalid: 1079
                     seyfert: 0
-                    sf: 28
-        MPL-6:
-            spaxel:
-                x: 12
-                y: 5
-                ra: 232.545752
-                dec: 48.688534
-                specidx: 200
-                x_cen: -5
-                y_cen: -12
-                flux: -0.018191988
-                ivar: 323.38205
-                mask: 1026
-                model_flux: 0
-                model_ivar: 0
-                model_mask: 45
-            dap:
-                x: 17
-                y: 17
-                GAU-MILESHC:
-                    model: [4.71273e-18, 1.2857299999999999e+36, 32, 0, 0, 0, 128]
-                    emline_gflux_ha_6564:
-                        channel: 'ha_6564'
-                        description: 'Gaussian profile integrated flux for emission lines.'
-                        ivar: 62.48931
-                        mask: 0
-                        name: 'emline_gflux'
-                        unit: '1e-17 erg / (cm2 s spaxel)'
-                        value: 30.744535
-                stellar_sigma:
-                    SPX: 90.53972625732422
-                    VOR10: 0.0
-                    HYB10: 90.539726
-                stellar_sigmacorr:
-                    SPX: 0.0
-                    VOR10: 0.0
-                    HYB10: 0.0
-            bins:
-                100:
-                    ALL-GAU-MILESHC: []
-                    NRE-GAU-MILESHC: []
-                    SPX-GAU-MILESHC: [[13, 7]]
-                    VOR10-GAU-MILESHC: [[18, 22], [18, 23]]
-        MPL-7:
-            spaxel:
-                x: 12
-                y: 5
-                ra: 232.545752
-                dec: 48.688534
-                specidx: 200
-                x_cen: -5
-                y_cen: -12
-                flux: -0.0182887
-                ivar: 322.849
-                mask: 1026
-                model_flux: 0
-                model_ivar: 0
-                model_mask: 45
-            dap:
-                x: 17
-                y: 17
-                GAU-MILESHC:
-                    model: [4.71273e-18, 1.2857299999999999e+36, 32, 0, 0, 0, 128]
-                    emline_gflux_ha_6564:
-                        channel: 'ha_6564'
-                        description: 'Gaussian profile integrated flux for emission lines.'
-                        ivar: 57.590518
-                        mask: 0
-                        name: 'emline_gflux'
-                        unit: '1e-17 erg / (cm2 s spaxel)'
-                        value: 32.1308
-                stellar_sigma:
-                    SPX: 0.0
-                    VOR10: 90.6331
-                    HYB10: 90.6331
-                stellar_sigmacorr:
-                    SPX: 0.0
-                    VOR10: 12.0428
-                    HYB10: 12.0428
-            bins:
-                100:
-                    ALL-GAU-MILESHC: []
-                    NRE-GAU-MILESHC: []
-                    SPX-GAU-MILESHC: [[13, 7]]
-                    VOR10-GAU-MILESHC: [[18, 22], [18, 23]]
-        MPL-8:
-            spaxel:
-                x: 12
-                y: 5
-                ra: 232.545752
-                dec: 48.688534
-                specidx: 200
-                x_cen: -5
-                y_cen: -12
-                flux: -0.0166218
-                ivar: 292.453
-                mask: 1026
-                model_flux: 0
-                model_ivar: 0
-                model_mask: 1
-            rss:
-                mjd: 57132
-                nexp: 9   
-                expnum: 198573
-                nfiber: 19   
-            dap:
-                x: 17
-                y: 17
-                MILEHSC-MILESHC:
-                    model: [4.71273e-18, 1.2857299999999999e+36, 32, 0, 0, 0, 128]
-                    emline_gflux_ha_6564:
-                        channel: 'ha_6564'
-                        description: 'Gaussian profile integrated flux for emission lines.'
-                        ivar: 54.5273399
-                        mask: 0
-                        name: 'emline_gflux'
-                        unit: '1e-17 erg / (cm2 s spaxel)'
-                        value: 33.2483
-                stellar_sigma:
-                    SPX: 94.3814
-                    VOR10: 94.3015
-                    HYB10: 94.3015
-                stellar_sigmacorr:
-                    SPX: 41.2534
-                    VOR10: 41.219
-                    HYB10: 41.219
-            bins:
-                100:
-                    ALL-GAU-MILESHC: []
-                    NRE-GAU-MILESHC: []
-                    SPX-GAU-MILESHC: [[13, 7]]
-                    VOR10-GAU-MILESHC: [[18, 22], [18, 23]]
+                    sf: 77
     stellar_vel_ivar_x15_y8_lower:
-        MPL-4:
-            M11-STELIB-ZSOL: 1.20021642356e-05
-            MIUSCAT-THIN: 1.013657267e-05
-            MILES-THIN: 2.25913102153e-05
-        MPL-5:
-            GAU-MILESHC: 0.00031520479546875247
-        MPL-6:
-            GAU-MILESHC: 0.00019261586
-        MPL-7:
-            GAU-MILEHSC: 0.000598979648202658
-        MPL-8:
-            MILESHC-MILESHC: 0.000138863280881196
+        DR17:
+            MILESHC-MASTARSSP: 0.00026166823
 
 7443-12701:
     mangaid: 12-98126
@@ -327,67 +123,7 @@
             sersic_n: 4.43097
             sersic_phi: 150.192
     releasedata:
-        MPL-4:
-            spaxel:
-                x: 15
-                y: 32
-                ra: 230.511423
-                dec: 43.534076
-                specidx: 200
-                x_cen: -5
-                y_cen: -12
-                flux: 0.0187161993
-                ivar: 2151.76000
-                mask: 0
-            dap:
-                x: 32
-                y: 32
-                M11-STELIB-ZSOL:
-                    model: []
-                    emline_gflux_ha_6564:
-                        channel: 'ha_6564'
-                        description: 'Fluxes of emission lines based on a single Gaussian fit.'
-                        ivar: 0.0
-                        mask: 1
-                        name: 'emline_gflux'
-                        unit: '1e-17 erg / (cm2 s spaxel)'
-                        value: 0.0
-                MILES-THIN:
-                    model: []
-                    emline_gflux_ha_6564:
-                        channel: 'ha_6564'
-                        description: 'Fluxes of emission lines based on a single Gaussian fit.'
-                        ivar: 0.0
-                        mask: 1
-                        name: 'emline_gflux'
-                        unit: '1e-17 erg / (cm2 s spaxel)'
-                        value: 0.0
-                MIUSCAT-THIN:
-                    model: []
-                    emline_gflux_ha_6564:
-                        channel: 'ha_6564'
-                        description: 'Fluxes of emission lines based on a single Gaussian fit.'
-                        ivar: 0.0
-                        mask: 1
-                        name: 'emline_gflux'
-                        unit: '1e-17 erg / (cm2 s spaxel)'
-                        value: 0.0
-                stellar_sigma:
-                    MIUSCAT-THIN: 0.0
-                stellar_sigmacorr:
-                    MIUSCAT-THIN: 0.0
-            bins:
-                100:
-                    NONE-M11-STELIB-ZSOL: [[31, 31]]
-                    STON-M11-STELIB-ZSOL: []
-                    RADIAL-M11-STELIB-ZSOL: []
-                    NONE-MIUSCAT-THIN: [[31, 31]]
-                    STON-MIUSCAT-THIN: []
-                    RADIAL-MIUSCAT-THIN: []
-                    NONE-MILES-THIN: [[31, 31]]
-                    STON-MILES-THIN: []
-                    RADIAL-MILES-THIN: []
-        MPL-5:
+        DR17:
             spaxel:
                 x: 15
                 y: 32
@@ -396,164 +132,34 @@
                 specidx: 200
                 x_cen: -21
                 y_cen: -4
-                flux: 0.021661391
-                ivar: 2145.38110
+                flux: 0.03070905
+                ivar: 1889.4606
                 mask: 0
-                model_flux: 0.021661391
-                model_ivar: 2145.38110
-                model_mask: 64
-            dap:
-                x: 17
-                y: 17
-                GAU-MILESHC:
-                    model: [-0.0497285, 424.938, 32, 0, 0, 0, 128]
-                    emline_gflux_ha_6564:
-                        channel: 'ha_6564'
-                        description: 'Gaussian profile integrated flux for emission lines.'
-                        ivar: 680.29495619
-                        mask: 32
-                        name: 'emline_gflux'
-                        unit: '1e-17 erg / (cm2 s spaxel)'
-                        value: 0.05784708
-                stellar_sigma:
-                    SPX: 19.441884916319285
-                    VOR10: 31.735091988650336
-                stellar_sigmacorr:
-                    SPX: 52.358176822585364
-                    VOR10: 52.357828737363242
-            bins:
-                100:
-                    ALL-GAU-MILESHC: []
-                    NRE-GAU-MILESHC: []
-                    SPX-GAU-MILESHC: [[11, 22]]
-                    VOR10-GAU-MILESHC: [[36, 10]]
-        MPL-6:
-            spaxel:
-                x: 15
-                y: 32
-                ra: 230.511423
-                dec: 43.534076
-                specidx: 200
-                x_cen: -21
-                y_cen: -4
-                flux: 0.030110553
-                ivar: 1966.09070
-                mask: 0
-                model_flux: 0.030110553
-                model_ivar: 1966.0907
-                model_mask: 32
-            dap:
-                x: 17
-                y: 17
-                GAU-MILESHC:
-                    model: [-0.0497285, 424.938, 32, 0, 0, 0, 128]
-                    emline_gflux_ha_6564:
-                        channel: 'ha_6564'
-                        description: 'Gaussian profile integrated flux for emission lines.'
-                        ivar: 3740.394
-                        mask: 0
-                        name: 'emline_gflux'
-                        unit: '1e-17 erg / (cm2 s spaxel)'
-                        value: 0.0
-                stellar_sigma:
-                    SPX: 25.610834
-                    VOR10: 31.963898
-                    HYB10: 31.963898
-                stellar_sigmacorr:
-                    SPX: 0.0
-                    VOR10: 0.0
-                    HYB10: 0.0
-            bins:
-                100:
-                    ALL-GAU-MILESHC: []
-                    NRE-GAU-MILESHC: []
-                    SPX-GAU-MILESHC: [[11, 22]]
-                    VOR10-GAU-MILESHC: [[36, 10]]
-        MPL-7:
-            spaxel:
-                x: 15
-                y: 32
-                ra: 230.511423
-                dec: 43.534076
-                specidx: 200
-                x_cen: -21
-                y_cen: -4
-                flux: 0.0318083
-                ivar: 1945.04
-                mask: 0
-                model_flux: 0.0
-                model_ivar: 0.0
-                model_mask: 13
-            dap:
-                x: 17
-                y: 17
-                GAU-MILESHC:
-                    emline_gflux_ha_6564:
-                        channel: 'ha_6564'
-                        description: 'Gaussian profile integrated flux for emission lines.'
-                        ivar: 7197.71093
-                        mask: 0
-                        name: 'emline_gflux'
-                        unit: '1e-17 erg / (cm2 s spaxel)'
-                        value: 0.00212938
-                stellar_sigma:
-                    SPX: 0.0
-                    VOR10: 29.9126
-                    HYB10: 29.9126
-                stellar_sigmacorr:
-                    SPX: 0.0
-                    VOR10: 33.843
-                    HYB10: 33.843
-        MPL-8:
-            spaxel:
-                x: 15
-                y: 32
-                ra: 230.511423
-                dec: 43.534076
-                specidx: 200
-                x_cen: -21
-                y_cen: -4
-                flux: 0.0308674
-                ivar: 1921.87
-                mask: 0
-                model_flux: 0.030867405
-                model_ivar: 1921.8691
-                model_mask: 0
             rss:
                 mjd: 56745
-                nexp: 6   
-                expnum: 177684 
-                nfiber: 127     
+                nexp: 6
+                expnum: 177684
+                nfiber: 127
             dap:
                 x: 17
                 y: 17
-                MILEHSC-MILESHC:
+                MILESHC-MASTARSSP:
                     emline_gflux_ha_6564:
                         channel: 'ha_6564'
                         description: 'Gaussian profile integrated flux for emission lines.'
-                        ivar: 3643.828
+                        ivar: 4326.945
                         mask: 0
                         name: 'emline_gflux'
                         unit: '1e-17 erg / (cm2 s spaxel)'
                         value: 0.0
                 stellar_sigma:
-                    SPX: 36.4264
-                    VOR10: 26.8135
-                    HYB10: 26.8135
+                    SPX: 39.852356
+                    VOR10: 26.314278
+                    HYB10: 26.314278
                 stellar_sigmacorr:
-                    SPX: 28.5875
-                    VOR10: 25.2017
-                    HYB10: 25.2017
+                    SPX: 38.12474
+                    VOR10: 37.653706
+                    HYB10: 37.653706
     stellar_vel_ivar_x15_y8_lower:
-        MPL-4:
-            M11-STELIB-ZSOL: 0.0
-            MIUSCAT-THIN: 0.0
-            MILES-THIN: 0.0
-        MPL-5:
-            GAU-MILESHC: 0.0
-        MPL-6:
-            GAU-MILESHC: 0.0
-        MPL-7:
-            GAU-MILEHSC: 0.0
-        MPL-8:
-            MILESHC-MILESHC: 0.0
+        DR17:
+            MILESHC-MASTARSSP: 0.0

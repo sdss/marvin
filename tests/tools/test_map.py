@@ -120,9 +120,9 @@ class TestMap(object):
     @marvin_test_if(mark='skip', map_={'data_origin': ['db']})
     def test_save_and_restore(self, temp_scratch, map_):
 
-        fout = temp_scratch.join('test_map.mpf')
+        fout = temp_scratch / 'test_map.mpf'
         map_.save(str(fout))
-        assert fout.check() is True
+        assert fout.exists() is True
 
         map_restored = Map.restore(str(fout), delete=True)
         assert tuple(map_.shape) == tuple(map_restored.shape)
@@ -180,7 +180,7 @@ class TestMap(object):
         assert 'Your input value is too ambiguous.' in str(ee.value)
 
     @marvin_test_if(mark='include', maps={'plateifu': '8485-1901',
-                                          'release': 'MPL-6',
+                                          'release': 'DR17',
                                           'mode': 'local',
                                           'data_origin': 'file'})
     def test_quatities_reorder(self, maps):
@@ -195,8 +195,8 @@ class TestMap(object):
         assert reordered_ha.unit is not None
 
     @marvin_test_if(mark='include', maps={'plateifu': '8485-1901',
-                                          'release': 'MPL-6',
-                                          'bintype': ['SPX']})
+                                          'release': 'DR17',
+                                          'bintype': ['HYB10']})
     def test_get_spaxel(self, maps):
         """Tests `.Map.getSpaxel`."""
 
@@ -207,7 +207,7 @@ class TestMap(object):
         assert spaxel is not None
         assert spaxel.x == 10 and spaxel.y == 10
 
-    @marvin_test_if(mark='skip', galaxy=dict(release=['MPL-6']))
+    @marvin_test_if(mark='skip', galaxy=dict(release=['DR17']))
     def test_stellar_sigma_values(self, maps, galaxy):
         ''' Assert values for stellar_sigma and stellar_sigmacorr are different (issue #411) '''
 
@@ -227,11 +227,11 @@ class TestMap(object):
         gew_ha = maps.emline_gew_ha_6564
         assert gew_ha.datamodel.description == ('Gaussian-fitted equivalent widths measurements '
                                                 '(based on EMLINE_GFLUX). Channel = H-alpha 6564.')
-    @marvin_test_if(mark='include', galaxy=dict(release=['MPL-6']))
+    @marvin_test_if(mark='include', galaxy=dict(release=['DR15']))
     def test_stellar_sigma_mpl6(self, maps, galaxy):
         with pytest.raises(MarvinError) as cm:
             __ = maps.stellar_sigmacorr
-        assert 'stellar_sigmacorr is unreliable in MPL-6. Please use MPL-7.' in str(cm.value)
+        assert 'stellar_sigmacorr is unreliable in DR15. Please use DR17.' in str(cm.value)
 
 
 class TestMapArith(object):

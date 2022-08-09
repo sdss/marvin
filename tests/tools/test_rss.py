@@ -39,8 +39,8 @@ def galaxy(get_params, plateifu):
 def rss_session(galaxy, mode):
     # These get created only once per session.
 
-    if mode == 'auto' or str(galaxy.bintype) != 'SPX':
-        pytest.skip()
+    # if mode == 'auto' or str(galaxy.bintype) != 'SPX':
+    #     pytest.skip()
 
     if mode == 'local':
         rss = marvin.tools.RSS(filename=galaxy.rsspath, release=galaxy.release, mode='local')
@@ -253,9 +253,9 @@ class TestPickling(object):
         if rss.data_origin == 'file':
             assert rss.data is not None
 
-        rss_file = temp_scratch.join('test_rss.mpf')
+        rss_file = temp_scratch / 'test_rss.mpf'
         rss.save(str(rss_file))
-        assert rss_file.check() is True
+        assert rss_file.exists() is True
 
         rss_restored = marvin.tools.RSS.restore(str(rss_file))
 

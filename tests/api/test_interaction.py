@@ -10,7 +10,10 @@
 
 from __future__ import print_function, division, absolute_import
 from marvin.api.api import Interaction
+from marvin import config
 import pytest
+
+pytestmark = pytest.mark.uses_web
 
 
 auths = [None, 'token', 'netrc']
@@ -34,12 +37,11 @@ class TestInteraction(object):
         if mint.authtype:
             assert mint.authtype == mint.session.auth.authtype
 
-    def test_auth_fail(self):
+    def test_auth_fail(self, monkeypatch):
+        monkeypatch.setattr(config, 'access', 'collab')
         base = 'https://lore.sdss.utah.edu/'
         url = '/marvin/api/general/getroutemap/'
-        with pytest.raises(AssertionError) as cm:
-            ii = Interaction(url, auth=None, send=False, base=base)
-        errmsg = 'Must have an authorization type set for collab access to MPLs!'
-        assert errmsg in str(cm.value)
+        with pytest.raises(AssertionError, match='Must have an authorization type set for collab access to MPLs!'):
+            Interaction(url, auth=None, send=False, base=base, params={'release': 'MPL-11'})
 
 

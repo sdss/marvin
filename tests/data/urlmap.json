@@ -1,0 +1,524 @@
+{
+  "api": {
+    "CubeView:add_config": {
+      "methods": "HEAD,GET,OPTIONS",
+      "url": "/marvin/api/cubes/add_config/"
+    },
+    "CubeView:check_release": {
+      "methods": "HEAD,GET,OPTIONS",
+      "url": "/marvin/api/cubes/check_release/{release}/"
+    },
+    "CubeView:index": {
+      "methods": "HEAD,GET,OPTIONS",
+      "url": "/marvin/api/cubes/"
+    },
+    "CubeView:reset_results": {
+      "methods": "HEAD,GET,OPTIONS",
+      "url": "/marvin/api/cubes/reset_results/"
+    },
+    "CubeView:reset_status": {
+      "methods": "HEAD,GET,OPTIONS",
+      "url": "/marvin/api/cubes/reset_status/"
+    },
+    "CubeView:set_allowed_releases": {
+      "methods": "HEAD,GET,OPTIONS",
+      "url": "/marvin/api/cubes/set_allowed_releases/"
+    },
+    "CubeView:update_results": {
+      "methods": "HEAD,GET,OPTIONS",
+      "url": "/marvin/api/cubes/update_results/{newresults}/"
+    },
+    "GeneralRequestsView:add_config": {
+      "methods": "HEAD,GET,OPTIONS",
+      "url": "/marvin/api/general/add_config/"
+    },
+    "GeneralRequestsView:index": {
+      "methods": "HEAD,GET,OPTIONS",
+      "url": "/marvin/api/general/"
+    },
+    "GeneralRequestsView:reset_results": {
+      "methods": "HEAD,GET,OPTIONS",
+      "url": "/marvin/api/general/reset_results/"
+    },
+    "GeneralRequestsView:reset_status": {
+      "methods": "HEAD,GET,OPTIONS",
+      "url": "/marvin/api/general/reset_status/"
+    },
+    "GeneralRequestsView:update_results": {
+      "methods": "HEAD,GET,OPTIONS",
+      "url": "/marvin/api/general/update_results/{newresults}/"
+    },
+    "MapsView:add_config": {
+      "methods": "HEAD,GET,OPTIONS",
+      "url": "/marvin/api/maps/add_config/"
+    },
+    "MapsView:check_release": {
+      "methods": "HEAD,GET,OPTIONS",
+      "url": "/marvin/api/maps/check_release/{release}/"
+    },
+    "MapsView:index": {
+      "methods": "HEAD,GET,OPTIONS",
+      "url": "/marvin/api/maps/"
+    },
+    "MapsView:reset_results": {
+      "methods": "HEAD,GET,OPTIONS",
+      "url": "/marvin/api/maps/reset_results/"
+    },
+    "MapsView:reset_status": {
+      "methods": "HEAD,GET,OPTIONS",
+      "url": "/marvin/api/maps/reset_status/"
+    },
+    "MapsView:set_allowed_releases": {
+      "methods": "HEAD,GET,OPTIONS",
+      "url": "/marvin/api/maps/set_allowed_releases/"
+    },
+    "MapsView:update_results": {
+      "methods": "HEAD,GET,OPTIONS",
+      "url": "/marvin/api/maps/update_results/{newresults}/"
+    },
+    "ModelCubeView:add_config": {
+      "methods": "HEAD,GET,OPTIONS",
+      "url": "/marvin/api/modelcubes/add_config/"
+    },
+    "ModelCubeView:check_release": {
+      "methods": "HEAD,GET,OPTIONS",
+      "url": "/marvin/api/modelcubes/check_release/{release}/"
+    },
+    "ModelCubeView:reset_results": {
+      "methods": "HEAD,GET,OPTIONS",
+      "url": "/marvin/api/modelcubes/reset_results/"
+    },
+    "ModelCubeView:reset_status": {
+      "methods": "HEAD,GET,OPTIONS",
+      "url": "/marvin/api/modelcubes/reset_status/"
+    },
+    "ModelCubeView:set_allowed_releases": {
+      "methods": "HEAD,GET,OPTIONS",
+      "url": "/marvin/api/modelcubes/set_allowed_releases/"
+    },
+    "ModelCubeView:update_results": {
+      "methods": "HEAD,GET,OPTIONS",
+      "url": "/marvin/api/modelcubes/update_results/{newresults}/"
+    },
+    "PlateView:add_config": {
+      "methods": "HEAD,GET,OPTIONS",
+      "url": "/marvin/api/plates/add_config/"
+    },
+    "PlateView:check_release": {
+      "methods": "HEAD,GET,OPTIONS",
+      "url": "/marvin/api/plates/check_release/{release}/"
+    },
+    "PlateView:index": {
+      "methods": "HEAD,GET,OPTIONS",
+      "url": "/marvin/api/plates/"
+    },
+    "PlateView:reset_results": {
+      "methods": "HEAD,GET,OPTIONS",
+      "url": "/marvin/api/plates/reset_results/"
+    },
+    "PlateView:reset_status": {
+      "methods": "HEAD,GET,OPTIONS",
+      "url": "/marvin/api/plates/reset_status/"
+    },
+    "PlateView:set_allowed_releases": {
+      "methods": "HEAD,GET,OPTIONS",
+      "url": "/marvin/api/plates/set_allowed_releases/"
+    },
+    "PlateView:update_results": {
+      "methods": "HEAD,GET,OPTIONS",
+      "url": "/marvin/api/plates/update_results/{newresults}/"
+    },
+    "QueryView:add_config": {
+      "methods": "HEAD,GET,OPTIONS",
+      "url": "/marvin/api/query/add_config/"
+    },
+    "QueryView:check_release": {
+      "methods": "HEAD,GET,OPTIONS",
+      "url": "/marvin/api/query/check_release/{release}/"
+    },
+    "QueryView:index": {
+      "methods": "HEAD,GET,OPTIONS",
+      "url": "/marvin/api/query/"
+    },
+    "QueryView:reset_results": {
+      "methods": "HEAD,GET,OPTIONS",
+      "url": "/marvin/api/query/reset_results/"
+    },
+    "QueryView:reset_status": {
+      "methods": "HEAD,GET,OPTIONS",
+      "url": "/marvin/api/query/reset_status/"
+    },
+    "QueryView:set_allowed_releases": {
+      "methods": "HEAD,GET,OPTIONS",
+      "url": "/marvin/api/query/set_allowed_releases/"
+    },
+    "QueryView:update_results": {
+      "methods": "HEAD,GET,OPTIONS",
+      "url": "/marvin/api/query/update_results/{newresults}/"
+    },
+    "RSSView:add_config": {
+      "methods": "HEAD,GET,OPTIONS",
+      "url": "/marvin/api/rss/add_config/"
+    },
+    "RSSView:check_release": {
+      "methods": "HEAD,GET,OPTIONS",
+      "url": "/marvin/api/rss/check_release/{release}/"
+    },
+    "RSSView:reset_results": {
+      "methods": "HEAD,GET,OPTIONS",
+      "url": "/marvin/api/rss/reset_results/"
+    },
+    "RSSView:reset_status": {
+      "methods": "HEAD,GET,OPTIONS",
+      "url": "/marvin/api/rss/reset_status/"
+    },
+    "RSSView:set_allowed_releases": {
+      "methods": "HEAD,GET,OPTIONS",
+      "url": "/marvin/api/rss/set_allowed_releases/"
+    },
+    "RSSView:update_results": {
+      "methods": "HEAD,GET,OPTIONS",
+      "url": "/marvin/api/rss/update_results/{newresults}/"
+    },
+    "cleanupqueries": {
+      "methods": "HEAD,POST,GET,OPTIONS",
+      "url": "/marvin/api/query/cleanup/"
+    },
+    "dapall": {
+      "methods": "HEAD,POST,GET,OPTIONS",
+      "url": "/marvin/api/maps/{name}/{bintype}/{template}/dapall"
+    },
+    "getCube": {
+      "methods": "HEAD,POST,GET,OPTIONS",
+      "url": "/marvin/api/cubes/{name}/"
+    },
+    "getCubeQuantitiesSpaxel": {
+      "methods": "HEAD,POST,GET,OPTIONS",
+      "url": "/marvin/api/cubes/{name}/quantities/{x}/{y}/"
+    },
+    "getExtension": {
+      "methods": "HEAD,POST,GET,OPTIONS",
+      "url": "/marvin/api/cubes/{name}/extensions/{cube_extension}/"
+    },
+    "getMaps": {
+      "methods": "HEAD,POST,GET,OPTIONS",
+      "url": "/marvin/api/maps/{name}/{bintype}/{template}/"
+    },
+    "getMapsQuantitiesSpaxel": {
+      "methods": "HEAD,POST,GET,OPTIONS",
+      "url": "/marvin/api/maps/{name}/{bintype}/{template}/quantities/{x}/{y}/"
+    },
+    "getModelCube": {
+      "methods": "HEAD,POST,GET,OPTIONS",
+      "url": "/marvin/api/modelcubes/{name}/{bintype}/{template}/"
+    },
+    "getModelCubeBinid": {
+      "methods": "HEAD,POST,GET,OPTIONS",
+      "url": "/marvin/api/modelcubes/{name}/{bintype}/{template}/binids/{modelcube_extension}/"
+    },
+    "getModelCubeExtension": {
+      "methods": "HEAD,POST,GET,OPTIONS",
+      "url": "/marvin/api/modelcubes/{name}/{bintype}/{template}/extensions/{modelcube_extension}/"
+    },
+    "getModelCubeQuantitiesSpaxel": {
+      "methods": "HEAD,POST,GET,OPTIONS",
+      "url": "/marvin/api/modelcubes/{name}/{bintype}/{template}/quantities/{x}/{y}/"
+    },
+    "getPlate": {
+      "methods": "HEAD,POST,GET,OPTIONS",
+      "url": "/marvin/api/plates/{plateid}/"
+    },
+    "getPlateCubes": {
+      "methods": "HEAD,POST,GET,OPTIONS",
+      "url": "/marvin/api/plates/{plateid}/cubes/"
+    },
+    "getRSS": {
+      "methods": "HEAD,POST,GET,OPTIONS",
+      "url": "/marvin/api/rss/{name}/"
+    },
+    "getRSSFiber": {
+      "methods": "HEAD,POST,GET,OPTIONS",
+      "url": "/marvin/api/rss/{name}/fibers/{fiberid}"
+    },
+    "getallparams": {
+      "methods": "HEAD,POST,GET,OPTIONS",
+      "url": "/marvin/api/query/getallparams/"
+    },
+    "getcolumn": {
+      "methods": "HEAD,POST,GET,OPTIONS",
+      "url": "/marvin/api/query/cubes/columns/{colname}/"
+    },
+    "getmap": {
+      "methods": "HEAD,POST,GET,OPTIONS",
+      "url": "/marvin/api/maps/{name}/{bintype}/{template}/map/{property_name}/{channel}/"
+    },
+    "getparams": {
+      "methods": "HEAD,POST,GET,OPTIONS",
+      "url": "/marvin/api/query/getparamslist/"
+    },
+    "getroutemap": {
+      "methods": "HEAD,GET,OPTIONS",
+      "url": "/marvin/api/general/getroutemap/"
+    },
+    "getsubset": {
+      "methods": "HEAD,POST,GET,OPTIONS",
+      "url": "/marvin/api/query/cubes/getsubset/"
+    },
+    "login": {
+      "methods": "POST,OPTIONS",
+      "url": "/marvin/api/general/login/"
+    },
+    "mangaid2plateifu": {
+      "methods": "HEAD,POST,GET,OPTIONS",
+      "url": "/marvin/api/general/mangaid2plateifu/{mangaid}/"
+    },
+    "nsa_drpall": {
+      "methods": "HEAD,POST,GET,OPTIONS",
+      "url": "/marvin/api/general/nsa/drpall/{mangaid}/"
+    },
+    "nsa_full": {
+      "methods": "HEAD,POST,GET,OPTIONS",
+      "url": "/marvin/api/general/nsa/full/{mangaid}/"
+    },
+    "querycubes": {
+      "methods": "HEAD,POST,GET,OPTIONS",
+      "url": "/marvin/api/query/cubes/"
+    },
+    "stream": {
+      "methods": "HEAD,POST,GET,OPTIONS",
+      "url": "/marvin/api/query/stream/"
+    }
+  },
+  "flask-profiler": {
+    "deleteDatabase": {
+      "methods": "HEAD,GET,OPTIONS",
+      "url": "/marvin/profiler/db/deleteDatabase"
+    },
+    "dumpDatabase": {
+      "methods": "HEAD,GET,OPTIONS",
+      "url": "/marvin/profiler/db/dumpDatabase"
+    },
+    "filterMeasurements": {
+      "methods": "HEAD,GET,OPTIONS",
+      "url": "/marvin/profiler/api/measurements/"
+    },
+    "getContext": {
+      "methods": "HEAD,GET,OPTIONS",
+      "url": "/marvin/profiler/api/measurements/{measurementId}"
+    },
+    "getMeasurementsSummary": {
+      "methods": "HEAD,GET,OPTIONS",
+      "url": "/marvin/profiler/api/measurements/grouped"
+    },
+    "getMethodDistribution": {
+      "methods": "HEAD,GET,OPTIONS",
+      "url": "/marvin/profiler/api/measurements/methodDistribution/"
+    },
+    "getRequestsTimeseries": {
+      "methods": "HEAD,GET,OPTIONS",
+      "url": "/marvin/profiler/api/measurements/timeseries/"
+    },
+    "index": {
+      "methods": "HEAD,GET,OPTIONS",
+      "url": "/marvin/profiler/"
+    },
+    "static": {
+      "methods": "HEAD,GET,OPTIONS",
+      "url": "/marvin/profiler/static/dist/{filename}"
+    }
+  },
+  "galaxy_page": {
+    "Galaxy:get": {
+      "methods": "HEAD,GET,OPTIONS",
+      "url": "/marvin/galaxy/{galid}/"
+    },
+    "Galaxy:index": {
+      "methods": "HEAD,GET,OPTIONS",
+      "url": "/marvin/galaxy/"
+    },
+    "Galaxy:reset_dict": {
+      "methods": "HEAD,GET,OPTIONS",
+      "url": "/marvin/galaxy/reset_dict/{mydict}/"
+    },
+    "Galaxy:update_title": {
+      "methods": "HEAD,GET,OPTIONS",
+      "url": "/marvin/galaxy/update_title/{page}/"
+    },
+    "getspaxel": {
+      "methods": "POST,OPTIONS",
+      "url": "/marvin/galaxy/getspaxel/"
+    },
+    "initdynamic": {
+      "methods": "POST,OPTIONS",
+      "url": "/marvin/galaxy/initdynamic/"
+    },
+    "initnsaplot": {
+      "methods": "POST,OPTIONS",
+      "url": "/marvin/galaxy/initnsaplot/"
+    },
+    "updatemaps": {
+      "methods": "POST,OPTIONS",
+      "url": "/marvin/galaxy/updatemaps/"
+    }
+  },
+  "images_page": {
+    "Random:index": {
+      "methods": "HEAD,POST,GET,OPTIONS",
+      "url": "/marvin/random/"
+    },
+    "Random:reset_dict": {
+      "methods": "HEAD,GET,OPTIONS",
+      "url": "/marvin/random/reset_dict/{mydict}/"
+    },
+    "Random:update_title": {
+      "methods": "HEAD,GET,OPTIONS",
+      "url": "/marvin/random/update_title/{page}/"
+    }
+  },
+  "index_page": {
+    "Marvin:clear_session": {
+      "methods": "HEAD,GET,OPTIONS",
+      "url": "/marvin/clear/"
+    },
+    "Marvin:database": {
+      "methods": "HEAD,GET,OPTIONS",
+      "url": "/marvin/database/"
+    },
+    "Marvin:get_session": {
+      "methods": "HEAD,GET,OPTIONS",
+      "url": "/marvin/session/"
+    },
+    "Marvin:get_versions": {
+      "methods": "HEAD,GET,OPTIONS",
+      "url": "/marvin/versions/"
+    },
+    "Marvin:index": {
+      "methods": "HEAD,GET,OPTIONS",
+      "url": "/marvin/"
+    },
+    "Marvin:quote": {
+      "methods": "HEAD,GET,OPTIONS",
+      "url": "/marvin/quote/"
+    },
+    "Marvin:reset_dict": {
+      "methods": "HEAD,GET,OPTIONS",
+      "url": "/marvin/reset_dict/{mydict}/"
+    },
+    "Marvin:status": {
+      "methods": "HEAD,GET,OPTIONS",
+      "url": "/marvin/status/"
+    },
+    "Marvin:test": {
+      "methods": "HEAD,GET,OPTIONS",
+      "url": "/marvin/test/"
+    },
+    "Marvin:update_title": {
+      "methods": "HEAD,GET,OPTIONS",
+      "url": "/marvin/update_title/{page}/"
+    },
+    "galidselect": {
+      "methods": "HEAD,POST,GET,OPTIONS",
+      "url": "/marvin/galidselect/"
+    },
+    "getgalidlist": {
+      "methods": "HEAD,POST,GET,OPTIONS",
+      "url": "/marvin/getgalidlist/"
+    },
+    "login": {
+      "methods": "HEAD,POST,GET,OPTIONS",
+      "url": "/marvin/login/"
+    },
+    "logout": {
+      "methods": "HEAD,POST,GET,OPTIONS",
+      "url": "/marvin/logout/"
+    },
+    "selectmpl": {
+      "methods": "HEAD,POST,GET,OPTIONS",
+      "url": "/marvin/selectmpl/"
+    }
+  },
+  "lib": {
+    "null": {
+      "methods": "HEAD,GET,OPTIONS",
+      "url": "/marvin/lib/{filename}"
+    }
+  },
+  "plate_page": {
+    "Plate:get": {
+      "methods": "HEAD,GET,OPTIONS",
+      "url": "/marvin/plate/{plateid}/"
+    },
+    "Plate:index": {
+      "methods": "HEAD,POST,GET,OPTIONS",
+      "url": "/marvin/plate/"
+    },
+    "Plate:reset_dict": {
+      "methods": "HEAD,GET,OPTIONS",
+      "url": "/marvin/plate/reset_dict/{mydict}/"
+    },
+    "Plate:update_title": {
+      "methods": "HEAD,GET,OPTIONS",
+      "url": "/marvin/plate/update_title/{page}/"
+    }
+  },
+  "search_page": {
+    "Search:index": {
+      "methods": "HEAD,POST,GET,OPTIONS",
+      "url": "/marvin/search/"
+    },
+    "Search:reset_dict": {
+      "methods": "HEAD,GET,OPTIONS",
+      "url": "/marvin/search/reset_dict/{mydict}/"
+    },
+    "Search:update_title": {
+      "methods": "HEAD,GET,OPTIONS",
+      "url": "/marvin/search/update_title/{page}/"
+    },
+    "dopost": {
+      "methods": "POST,OPTIONS",
+      "url": "/marvin/search/dopost/"
+    },
+    "getparams": {
+      "methods": "HEAD,POST,GET,OPTIONS",
+      "url": "/marvin/search/getparams/{paramdisplay}/"
+    },
+    "postage": {
+      "methods": "HEAD,POST,GET,OPTIONS",
+      "url": "/marvin/search/postage/{page}/"
+    },
+    "webtable": {
+      "methods": "HEAD,POST,GET,OPTIONS",
+      "url": "/marvin/search/webtable/"
+    }
+  },
+  "serve_js": {
+    "null": {
+      "methods": "HEAD,GET,OPTIONS",
+      "url": "/marvin/jsglue.js"
+    }
+  },
+  "static": {
+    "null": {
+      "methods": "HEAD,GET,OPTIONS",
+      "url": "/marvin/static/{filename}"
+    }
+  },
+  "users_page": {
+    "User:index": {
+      "methods": "HEAD,GET,OPTIONS",
+      "url": "/marvin/user/"
+    },
+    "User:preferences": {
+      "methods": "HEAD,GET,OPTIONS",
+      "url": "/marvin/user/preferences/"
+    },
+    "User:reset_dict": {
+      "methods": "HEAD,GET,OPTIONS",
+      "url": "/marvin/user/reset_dict/{mydict}/"
+    },
+    "User:update_title": {
+      "methods": "HEAD,GET,OPTIONS",
+      "url": "/marvin/user/update_title/{page}/"
+    }
+  }
+  }

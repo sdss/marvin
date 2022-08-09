@@ -7,10 +7,6 @@ except ImportError as e:
     Access = None
 
 
-rsync_access = Access(label='marvin_get_test_data')
-rsync_access.remote()
-
-
 def add_data(rsync, release=None, plate=None, ifu=None, exclude=[]):
 
     drpver, dapver = config.lookUpVersions(release)
@@ -23,7 +19,7 @@ def add_data(rsync, release=None, plate=None, ifu=None, exclude=[]):
     if 'mangarss' not in exclude:
         rsync.add('mangarss', plate=plate, ifu=ifu, drpver=drpver, wave='LOG')
     if 'mangaimage' not in exclude:
-        rsync.add('mangaimage', plate=plate, drpver=drpver, dir3d='stack', ifu='*')
+        rsync.add('mangaimage', plate=plate, drpver=drpver, dir3d='stack', ifu=ifu)
 
     if release == 'MPL-4':
         if 'mangamap' not in exclude:
@@ -31,18 +27,32 @@ def add_data(rsync, release=None, plate=None, ifu=None, exclude=[]):
         if 'mangadefault' not in exclude:
             rsync.add('mangadefault', plate=plate, drpver=drpver, dapver=dapver, ifu=ifu)
     elif 'mangadap' not in exclude:
-        rsync.add('mangadap', plate=plate, drpver=drpver, dapver=dapver, ifu=ifu, daptype='*', mode='*')
+        rsync.add('mangadap', plate=plate, drpver=drpver, dapver=dapver, ifu=ifu, daptype='*', mode='MAPS')
+        rsync.add('mangadap', plate=plate, drpver=drpver, dapver=dapver, ifu=ifu, daptype='*', mode='LOGCUBE')
 
     return rsync
 
 # DR17
+rsync_access = Access(label='marvin_get_test_data', release='DR17')
+rsync_access.remote()
 rsync_access = add_data(rsync_access, release='DR17', plate='8485', ifu='1901')
 rsync_access = add_data(rsync_access, release='DR17', plate='7443', ifu='12701')
+rsync_access.add('mangagema', ver='2.0.2')
+rsync_access.add('mangagalaxyzoo', ver='v1_0_1', file='GZD_auto')
+rsync_access.add('mangahisum', ver='v2_0_1')
+rsync_access.add('mangahispectra', ver='v2_0_1', program='gbt', plateifu='7443-12701')
+rsync_access.set_stream()
+rsync_access.commit()
 
 # DR15
-rsync_access = add_data(rsync_access, release='DR15', plate='8485', ifu='1901')
-rsync_access = add_data(rsync_access, release='DR15', plate='7443', ifu='12701')
-
+rsync_access = Access(label='marvin_get_test_data', release='DR15')
+rsync_access.remote()
+rsync_access = add_data(rsync_access, release='DR15', plate='8485', ifu='1901',
+                        exclude=['mangacube', 'mangarss', 'mangadap'])
+rsync_access = add_data(rsync_access, release='DR15', plate='7443', ifu='12701',
+                        exclude=['mangacube', 'mangarss', 'mangadap'])
+rsync_access.set_stream()
+rsync_access.commit()
 
 # MPL-7
 # rsync_access = add_data(rsync_access, release='MPL-7', plate='8485', ifu='1901')
@@ -63,5 +73,5 @@ rsync_access = add_data(rsync_access, release='DR15', plate='7443', ifu='12701')
 #rsync_access = add_data(rsync_access, release='MPL-4', plate='7443', ifu='12701', exclude=['mangacube', 'mangarss', 'mangaimage', 'mangamap', 'mangadefault'])
 
 # Download
-rsync_access.set_stream()
-rsync_access.commit()
+# rsync_access.set_stream()
+# rsync_access.commit()

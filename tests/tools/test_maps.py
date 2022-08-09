@@ -56,6 +56,7 @@ class TestMaps(object):
 
         return maps_kwargs
 
+    @pytest.mark.slow
     def test_load(self, galaxy, exporigin):
 
         maps = Maps(**self._get_maps_kwargs(galaxy, exporigin))
@@ -106,7 +107,9 @@ class TestMaps(object):
 
         for hdu in hdus[1:]:
 
-            if ('IVAR' in hdu.name) or ('MASK' in hdu.name) or ('SIGMACORR' in hdu.name):
+            if (('IVAR' in hdu.name) or ('MASK' in hdu.name) or
+               ('SIGMACORR' in hdu.name) or ('FOM' in hdu.name) or
+               ('TPLSIGMA' in hdu.name)):
                 continue
 
             name = hdu.name.lower()
@@ -127,10 +130,10 @@ class TestMaps(object):
                         val = maps.getMap(fullname, exact=True).value
                         assert val == pytest.approx(data[int(kk[1:]) - 1], 0.0001), name
 
-    @pytest.mark.parametrize('monkeyconfig', [('release', 'MPL-5')], indirect=True)
+    @pytest.mark.parametrize('monkeyconfig', [('release', 'DR17')], indirect=True)
     def test_load_mpl4_global_mpl5(self, galaxy, monkeyconfig, data_origin):
 
-        assert marvin.config.release == 'MPL-5'
+        assert marvin.config.release == 'DR17'
         maps = Maps(**self._get_maps_kwargs(galaxy, data_origin))
 
         assert maps.release == galaxy.release
@@ -142,23 +145,26 @@ class TestMaps(object):
             if maps.release == 'MPL-4' and maps.data_origin == 'file' else maps.nsa.z
         assert redshift == pytest.approx(galaxy.redshift)
 
-    def test_release(self, galaxy):
-        maps = Maps(plateifu=galaxy.plateifu)
+    def test_release(self, maps, galaxy):
+        #maps = Maps(plateifu=galaxy.plateifu)
         assert maps.release == galaxy.release
 
-    def test_set_release_fails(self, galaxy):
-        maps = Maps(plateifu=galaxy.plateifu)
-        with pytest.raises(MarvinError) as ee:
+    def test_set_release_fails(self, maps):
+        #maps = Maps(plateifu=galaxy.plateifu)
+        with pytest.raises(MarvinError, match='the release cannot be changed'):
             maps.release = 'a'
-            assert 'the release cannot be changed' in str(ee.exception)
+            #assert 'the release cannot be changed' in str(ee.exception)
 
-    def test_deepcopy(self, galaxy):
-        maps1 = Maps(plateifu=galaxy.plateifu)
-        maps2 = copy.deepcopy(maps1)
+    def test_deepcopy(self, maps):
+        #maps1 = Maps(plateifu=galaxy.plateifu)
+        maps2 = copy.deepcopy(maps)
 
-        for attr in vars(maps1):
+        for attr in vars(maps):
+            if attr == 'exporigin':
+                continue
+
             if not attr.startswith('_'):
-                value = getattr(maps1, attr)
+                value = getattr(maps, attr)
                 value2 = getattr(maps2, attr)
 
                 if isinstance(value, np.ndarray):
@@ -179,11 +185,15 @@ class TestMaps(object):
                         for property1, property2 in zip(value, value2):
                             assert property1 == property2
 
+                elif isinstance(value, astropy.io.fits.hdu.hdulist.HDUList):
+                    fd = astropy.io.fits.FITSDiff(value, value2)
+                    assert fd.identical, attr
+
                 else:
                     assert value == value2, attr
 
-    def test_getMapRatio(self, galaxy):
-        maps = Maps(galaxy.plateifu)
+    def test_getMapRatio(self, maps):
+        #maps = Maps(galaxy.plateifu)
         map_ratio = maps.getMapRatio('emline_gflux', 'nii_6585', 'ha_6564')
         map_arith = maps.emline_gflux_nii_6585 / maps.emline_gflux_ha_6564
 
@@ -194,22 +204,15 @@ class TestMaps(object):
     def test_use_as_context_manager(self, galaxy, exporigin):
 
         if exporigin == 'file':
-            # if origin is a file, test whether ValueError is raised
-            # when file access is attempted outside context
-            with pytest.raises(ValueError) as excinfo:
-                with Maps(**self._get_maps_kwargs(galaxy, exporigin)) as maps:
-                    pass
+            with Maps(**self._get_maps_kwargs(galaxy, exporigin)) as maps:
+                assert maps is not None
 
-                access_attempt = maps[1].data
-
-            assert 'closed file' in excinfo.value
+            assert maps is None
         else:
             # for other origins, test that context-manager fails
-            with pytest.raises(MarvinError) as excinfo:
+            with pytest.raises(MarvinError, match='to use Tools as a context-manager'):
                 with Maps(**self._get_maps_kwargs(galaxy, exporigin)) as maps:
                     pass
-
-            assert 'to use Tools as a context-manager' in excinfo.value
 
 
 class TestMaskbit(object):

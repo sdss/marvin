@@ -138,7 +138,7 @@ def getRandomImages(num=10, download=False, mode=None, as_url=None, verbose=None
 
     '''
     warnings.warn('getRandomImages is deprecated as of Marvin 2.3.0. '
-                  'Please use get_randome_images', MarvinDeprecationWarning)
+                  'Please use get_random_images', MarvinDeprecationWarning)
 
     release = release if release else marvin.config.release
     drpver, __ = marvin.config.lookUpVersions(release=release)

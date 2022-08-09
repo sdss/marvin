@@ -1,135 +1,4 @@
----
-MPL-4:
-    params:
-        all:
-            count: 571
-            subset: ['binmode.name', 'nsa.tile', 'cube.ra', 'spaxelprop.emline_ew_ha_6564', 'wcs.crpix1', 'spaxelprop.x', 'spaxelprop.specindex_nad']
-        best:
-            count: 41
-            subset: ['nsa.z', 'cube.ra', 'cube.dec', 'spaxelprop.emline_gflux_ha_6564', 'spaxelprop.x']
-    defaults: ['cube.mangaid', 'cube.plateifu']
-    queries:
-        nsa.z < 0.1:
-            count: 1282
-            top5:
-                [['1-109394', '8082-9102', 0.0361073],
-                 ['1-113208', '8618-3701', 0.0699044],
-                 ['1-113219', '7815-9102', 0.0408897],
-                 ['1-113375', '7815-9101', 0.028215],
-                 ['1-113379', '7815-6101', 0.0171611]]
-            sorted:
-                '1': ['1-619066', '8554-12704',  0.00054371]
-                '10': ['1-96077', '8612-12703',  0.0156578]
-                '11': ['1-605549', '8244-12705', 0.0156688]
-                '21': ['1-155903', '8439-1901', 0.0163661]
-                '31': ['1-167013', '8459-9102', 0.0170491]
-                '36': ['1-73670', '8244-12703',  0.0172316]
-                '41': ['1-596095', '8618-9101', 0.0175331]
-                '46': ['1-46494', '8243-12702',  0.0178715]
-                'last': ['1-22286', '7992-12704', 0.0999542]
-            row: ['1-209232', '8485-1901', 0.0407447]
-        npergood(emline_gflux_ha_6564 > 5) > 20:
-            count: 6
-        absmag_g_r > -1:
-            count: 1389
-        emline_gflux_ha_6564 > 25:
-            count: 34
-        nsa.z < 0.1 and emline_gflux_ha_6564 > 25:
-            count: 34
-MPL-5:
-    params:
-        all:
-            count: 703
-            subset: ['binmode.name', 'nsa.tile', 'cube.ra', 'wcs.crpix1', 'spaxelprop.spx_snr', 'spaxelprop.x', 'spaxelprop.emline_sew_ha_6564']
-        best:
-            count: 41
-            subset: ['nsa.z', 'cube.ra', 'cube.dec', 'spaxelprop.emline_gflux_ha_6564', 'spaxelprop.x']
-    defaults: ['cube.mangaid', 'cube.plateifu']
-    queries:
-        nsa.z < 0.1:
-            count: 5
-            top5:
-                [['1-209232', '8485-1901', 0.0407447],
-                 ['1-209113', '8485-1902', 0.0378877],
-                 ['1-209191', '8485-12701', 0.0234253],
-                 ['12-98126', '7443-12701', 0.020478],
-                 ['1-209151', '8485-12702', 0.0185246]]
-            sorted:
-                '1': ['1-209151', '8485-12702', 0.0185246]
-                '2': ['12-98126', '7443-12701', 0.020478]
-                '3': ['1-209191', '8485-12701', 0.0234253]
-                '4': ['1-209113', '8485-1902', 0.0378877]
-                '5': ['1-209232', '8485-1901', 0.0407447]
-                'last': ['1-209232', '8485-1901', 0.0407447]
-            row: ['1-209232', '8485-1901', 0.0407447]
-
-        npergood(emline_gflux_ha_6564 > 5) > 20:
-            count: 1
-        absmag_g_r > -1:
-            count: 5
-        emline_gflux_ha_6564 > 25:
-            count: 18
-        nsa.z < 0.1 and emline_gflux_ha_6564 > 25:
-            count: 18
-MPL-6:
-    params:
-        all:
-            count: 1676
-            subset: ['binmode.name', 'nsa.tile', 'cube.ra', 'wcs.crpix1', 'spaxelprop.spx_snr', 'spaxelprop.x', 'spaxelprop.emline_sew_ha_6564']
-        best:
-            count: 41
-            subset: ['nsa.z', 'cube.ra', 'cube.dec', 'spaxelprop.emline_gflux_ha_6564', 'spaxelprop.x']
-    defaults: ['cube.mangaid', 'cube.plateifu']
-    queries:
-        nsa.z < 0.1:
-            count: 2
-            top5:
-                [['1-209232', '8485-1901', 0.0407447],
-                 ['12-98126', '7443-12701', 0.020478]]
-            sorted:
-                '1': ['12-98126', '7443-12701', 0.020478]
-                '2': ['1-209232', '8485-1901', 0.0407447]
-                'last': ['1-209232', '8485-1901', 0.0407447]
-            row: ['1-209232', '8485-1901', 0.0407447]
-
-        npergood(emline_gflux_ha_6564 > 5) > 20:
-            count: 0
-        absmag_g_r > -1:
-            count: 2
-        emline_gflux_ha_6564 > 25:
-            count: 27
-        nsa.z < 0.1 and emline_gflux_ha_6564 > 25:
-            count: 27
-MPL-7:
-    params:
-        all:
-            count: 1676
-            subset: ['binmode.name', 'nsa.tile', 'cube.ra', 'wcs.crpix1', 'spaxelprop.spx_snr', 'spaxelprop.x', 'spaxelprop.emline_sew_ha_6564']
-        best:
-            count: 41
-            subset: ['nsa.z', 'cube.ra', 'cube.dec', 'spaxelprop.emline_gflux_ha_6564', 'spaxelprop.x']
-    defaults: ['cube.mangaid', 'cube.plateifu']
-    queries:
-        nsa.z < 0.1:
-            count: 2
-            top5:
-                [['1-209232', '8485-1901', 0.0407447],
-                 ['12-98126', '7443-12701', 0.020478]]
-            sorted:
-                '1': ['12-98126', '7443-12701', 0.020478]
-                '2': ['1-209232', '8485-1901', 0.0407447]
-                'last': ['1-209232', '8485-1901', 0.0407447]
-            row: ['1-209232', '8485-1901', 0.0407447]
-
-        npergood(emline_gflux_ha_6564 > 5) > 20:
-            count: 3
-        absmag_g_r > -1:
-            count: 2
-        emline_gflux_ha_6564 > 25:
-            count: 27
-        nsa.z < 0.1 and emline_gflux_ha_6564 > 25:
-            count: 27
-MPL-8:
+DR17:
     params:
         all:
             count: 1874
@@ -151,10 +20,10 @@ MPL-8:
             row: ['1-209232', '8485-1901', 0.0407447]
 
         npergood(emline_gflux_ha_6564 > 5) > 20:
-            count: 3
+            count: 4
         absmag_g_r > -1:
             count: 2
         emline_gflux_ha_6564 > 25:
-            count: 27
+            count: 36
         nsa.z < 0.1 and emline_gflux_ha_6564 > 25:
-            count: 27
+            count: 36

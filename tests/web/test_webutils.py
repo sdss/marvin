@@ -9,9 +9,11 @@
 # @Last Modified time: 2018-07-12 15:31:26
 
 from __future__ import print_function, division, absolute_import
+import pytest
 from marvin.web.web_utils import buildImageDict
 from marvin.utils.general.images import getImagesByPlate
 
+pytestmark = pytest.mark.uses_web
 
 class TestBuildImageDict(object):
 
@@ -31,5 +33,5 @@ class TestBuildImageDict(object):
         names = [im['name'] for im in images]
         assert images
         assert '8485-1901' in names
-        assert 'https://data.sdss.org/sas/mangawork/manga/spectro/redux/' in images[0]['image']
+        assert 'https://data.sdss.org/sas/dr17/manga/spectro/redux/' in images[0]['image']
 

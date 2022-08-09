@@ -16,6 +16,9 @@ from tests.conftest import set_the_config
 import pytest
 
 
+pytestmark = pytest.mark.uses_web
+
+
 @pytest.fixture()
 def cube(galaxy, mode):
     set_the_config(galaxy.release)

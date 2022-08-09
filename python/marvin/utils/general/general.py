@@ -1689,6 +1689,9 @@ def target_status(mangaid, mode='auto', source='nsa', drpall=None, drpver=None):
         status = 'not yet observed'
     elif not plateifu and not nsa:
         status = 'not valid target'
+    elif plateifu and not nsa:
+        log.debug('No NSA info retrieved.  Cannot determine status of target {0}'.format(mangaid))
+        status = 'unknown'
 
     return status
 
@@ -1799,18 +1802,20 @@ def get_dapall_table(drpver=None, dapver=None, dapall=None):
 
     # Loads the dapall table if it was not cached from a previous session.
     config_drpver, config_dapver = config.lookUpVersions(config.release)
-    drpver = drpver if drpver else config_drpver
-    dapver = dapver if dapver else config_dapver
+    drpver = drpver or config_drpver
+    dapver = dapver or config_dapver
 
     # check for dapver
     if dapver not in dapTable:
-        dapall = dapall if dapall else get_dapall_path(drpver=drpver, dapver=dapver)
-        data = table.Table.read(dapall, hdu=1)
+        dapall = dapall or get_dapall_path(drpver=drpver, dapver=dapver)
+        if check_versions(dapver, '3.1.0'):
+            tables = [table.Table.read(dapall, hdu=i) for i in range(1, 5)]
+            data = table.vstack(tables, metadata_conflicts='silent')
+        else:
+            data = table.Table.read(dapall, hdu=1)
         dapTable[dapver] = data
 
-    dapall_table = dapTable[dapver]
-
-    return dapall_table
+    return dapTable[dapver]
 
 
 def get_plates(drpver=None, drpall=None, release=None):

@@ -9,15 +9,17 @@
 # @Last Modified time: 2017-07-05 14:22:58
 
 from __future__ import print_function, division, absolute_import
-from marvin import config
-from marvin.tools.cube import Cube
+
 import pytest
 import os
+
+from marvin import config
+from marvin.tools.cube import Cube
 
 
 class TestMisc(object):
 
-    @pytest.mark.parametrize('mpl, drpver', [('MPL-4', 'v1_5_1')])
+    @pytest.mark.parametrize('mpl, drpver', [('DR17', 'v3_1_1')])
     def test_custom_drpall(self, galaxy, mpl, drpver):
         assert galaxy.drpall in config.drpall
         cube = Cube(plateifu=galaxy.plateifu, release=mpl)

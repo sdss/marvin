@@ -17,6 +17,7 @@ Revision history:
 from __future__ import division
 from __future__ import print_function
 
+from numpyencoder import NumpyEncoder
 from flask import jsonify, Response, request
 from flask_classful import route
 
@@ -27,7 +28,7 @@ from brain.utils.general.decorators import public
 from marvin import marvindb, config
 from marvin.utils.general import mangaid2plateifu as mangaid2plateifu
 from marvin.utils.general import get_nsa_data
-from marvin.api.base import arg_validate as av
+from marvin.api.base import BaseView, arg_validate as av
 from flask_jwt_extended import create_access_token
 import json
 
@@ -41,7 +42,9 @@ def get_drpver(release=None):
     return drpver
 
 
-class GeneralRequestsView(BrainGeneralRequestsView):
+class GeneralRequestsView(BaseView, BrainGeneralRequestsView):
+    decorators = [public]
+
 
     @route('/mangaid2plateifu/<mangaid>/', endpoint='mangaid2plateifu', methods=['GET', 'POST'])
     @av.check_args()
@@ -160,7 +163,7 @@ class GeneralRequestsView(BrainGeneralRequestsView):
             self.results['error'] = 'get_nsa_data failed with error: {0}'.format(str(ee))
 
         # these should be jsonify but switching back to json.dumps until fucking Utah gets with the fucking picture
-        return Response(json.dumps(self.results), mimetype='application/json')
+        return Response(json.dumps(self.results, cls=NumpyEncoder), mimetype='application/json')
 
     @route('/nsa/drpall/<mangaid>/', endpoint='nsa_drpall', methods=['GET', 'POST'])
     @av.check_args()
@@ -223,7 +226,7 @@ class GeneralRequestsView(BrainGeneralRequestsView):
             self.results['status'] = -1
             self.results['error'] = 'get_nsa_data failed with error: {0}'.format(str(ee))
 
-        return Response(json.dumps(self.results), mimetype='application/json')
+        return Response(json.dumps(self.results, cls=NumpyEncoder), mimetype='application/json')
 
     @public
     @route('/login/', methods=['POST'], endpoint='login')

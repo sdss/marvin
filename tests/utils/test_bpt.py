@@ -14,7 +14,7 @@ from __future__ import absolute_import
 import inspect
 
 from matplotlib import pyplot as plt
-from mpl_toolkits.axes_grid1.axes_divider import LocatableAxes
+from mpl_toolkits.axes_grid1.mpl_axes import Axes
 import numpy as np
 import pytest
 
@@ -26,20 +26,13 @@ from marvin.core.exceptions import MarvinDeprecationWarning
 
 
 @pytest.fixture()
-def maps(galaxy, mode):
-    if galaxy.bintype.name != 'SPX':
-        pytest.skip('Only running one bintype for bpt tests')
-
-    # if galaxy.release != 'MPL-6':
-    #     pytest.skip('Explicitly skipping here since marvin_test_if_class does not work in 2.7')
-
+def maps(galaxy, mode, checkdb):
     maps = Maps(plateifu=galaxy.plateifu, mode=mode)
     maps.bptsums = galaxy.bptsums if hasattr(galaxy, 'bptsums') else None
     yield maps
     maps = None
 
 
-@marvin_test_if_class(mark='skip', maps=dict(release=['MPL-4', 'MPL-5']))
 class TestBPT(object):
 
     mechanisms = ['sf', 'comp', 'agn', 'seyfert', 'liner', 'invalid', 'ambiguous']
@@ -64,7 +57,7 @@ class TestBPT(object):
             assert len(axes) == 3
 
         for ax in axes:
-            assert isinstance(ax, LocatableAxes)
+            assert isinstance(ax, Axes)
 
     def test_bpt_diffsn(self, maps):
 
@@ -135,6 +128,6 @@ class TestGetSNR(object):
 
     def test_get_snr_default(self):
 
-        default = inspect.getargspec(get_snr).defaults[0]
+        default = inspect.getfullargspec(get_snr).defaults[0]
 
         assert get_snr({'ha': 5, 'hb': 4}, 'xx') == default

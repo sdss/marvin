@@ -16,6 +16,8 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
 from tests.web.frontend.models import IndexPage, SearchPage
 
+pytestmark = pytest.mark.uses_web
+
 
 @pytest.fixture()
 def page(driver, base_url):

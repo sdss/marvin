@@ -51,7 +51,7 @@ def bestnet(goodnet):
     goodnet.write(write('api.sdss.org'))
     config._check_access()
     config.access = 'collab'
-    config.setRelease('MPL-6')
+    config.setRelease('MPL-11')
     yield goodnet
 
 
@@ -80,7 +80,7 @@ class TestVars(object):
     ''' test getting/setting variables '''
 
     @pytest.mark.parametrize('var, toval',
-                             [('mode', 'remote'), ('access', 'public')])
+                             [('mode', 'remote'), ('access', 'collab')])
     def test_set(self, monkeypatch, var, toval):
         defval = config.__getattribute__(var)
         assert defval != toval
@@ -143,9 +143,10 @@ class TestReleases(object):
 
         assert config.release == release.upper()
 
-    @pytest.mark.parametrize('release', [('dr15'), ('mpl-6')])
+    @pytest.mark.parametrize('release', [('dr17')])
     def test_drpall(self, bestnet, release):
-        assert 'mangawork' in config.drpall
+        if config.drpall:
+            assert 'mangawork' in config.drpall
         config.setRelease(release)
         if config.drpall:
             word = 'mangawork' if 'mpl' in release else release
@@ -174,7 +175,8 @@ class TestNetrc(object):
                              [('data.sdss.org', 'api.sdss.org not found in netrc. You will not have remote access to SDSS data'),
                               ('api.sdss.org', 'data.sdss.org not found in netrc. You will not be able to download SDSS data')],
                              ids=['noapi', 'nodata'])
-    def test_only_one_host(self, goodnet, host, msg):
+    def test_only_one_host(self, monkeypatch, goodnet, host, msg):
+        monkeypatch.setitem(config._custom_config, 'check_access', True)
         goodnet.write(write(host))
         with pytest.warns(BrainUserWarning) as cm:
             config._check_access()
@@ -198,11 +200,11 @@ class TestConfig(object):
         assert 'You must have collaboration access to login.' in str(cm.value)
 
     @pytest.mark.parametrize('defrel, exprel',
-                             [('DR20', 'MPL-11'), ('bad_release', 'MPL-11')])
+                             [('DR20', 'DR17'), ('bad_release', 'DR17')])
     def test_bad_default_release(self, initconfig, defrel, exprel):
         ''' this tests some initial conditions on config '''
         config._release = defrel
-        config._check_access()
+        config._check_config()
         msg = 'Release {0} is not in the allowed releases.  Switching to {1}'.format(defrel, exprel)
         with pytest.warns(MarvinUserWarning):
             warnings.warn(msg, MarvinUserWarning)
@@ -287,22 +289,13 @@ class TestSasUrl(object):
         final = urlunsplit(tuple(strjoin(*z) for z in zip(e, t)))
         assert exp == final
 
-    # @pytest.mark.parametrize('set_default, defrel, exp',
-    #                          [('MPL-5', 'MPL-5', 'api.sdss.org'),
-    #                           ('DR15', 'DR15', 'dr15.sdss.org/api')], indirect=['set_default'])
-    # def test_sasurl_default_release(self, set_default, defrel, exp):
-    #     assert config.release == defrel
-    #     assert exp in config.sasurl
-    #
-
 
 def strjoin(str1, str2):
-    ''' joins two url strings '''
+    """ joins two url strings """
     if not str2.startswith(str1):
-        f = os.path.join(str1, str2.lstrip('/')) if str2 else str1
+        return os.path.join(str1, str2.lstrip('/')) if str2 else str1
     else:
-        f = str2
-    return f
+        return str2
 
 
 @pytest.mark.usefixtures('saslocal')
@@ -311,13 +304,14 @@ class TestLogin(object):
     def test_login_fail(self, monkeypatch):
         monkeypatch.setattr(config, 'token', None)
         assert config.token is None
-        monkeypatch.setattr(config, 'access', 'public')
         with pytest.raises(AssertionError) as cm:
             config.login()
         assert 'You must have collaboration access to login.' in str(cm.value)
 
+    @pytest.mark.uses_web
     def test_login(self, monkeypatch):
         monkeypatch.setattr(config, 'token', None)
+        monkeypatch.setattr(config, 'access', 'collab')
         assert config.token is None
         config.login()
         assert config.token is not None

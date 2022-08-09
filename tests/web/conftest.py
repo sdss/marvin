@@ -19,6 +19,8 @@ from contextlib import contextmanager
 import numpy as np
 #from pytest_flask.fixtures import config as app_config
 
+pytestmark = pytest.mark.uses_web
+
 try:
     from urllib.parse import urlparse, urljoin
 except ImportError:
@@ -122,6 +124,12 @@ class Page(object):
             if aa != bb and not np.isclose(aa, bb):
                 return False
         else:
+            # check invalid string "Must be one of: xxx"
+            if len(aa) == 1 and isinstance(aa[0], str) and 'Must be one of' in aa[0]:
+                aset = set(aa[0].split(':')[1].replace(' ','').split('.',1)[0].split(','))
+                bset = set(aa[0].split(':')[1].replace(' ','').split('.',1)[0].split(','))
+                return aset.issubset(bset)
+
             # Checks whether the elements are a list of lists. If so, recursively calls itself.
             try:
                 if not set(aa).issubset(set(bb)):
@@ -192,7 +200,7 @@ class Page(object):
         valid_status_code_str = ', '.join(str(code) for code in valid_status_codes)
         not_redirect = "HTTP Status {0} expected but got {1}".format(valid_status_code_str, self.response.status_code)
         assert self.response.status_code in valid_status_codes, message or not_redirect
-        assert self.response.location == expected_location, message
+        assert self.response.location in expected_location, message
 
 
 def _split_request(data):

@@ -13,6 +13,8 @@ from tests.api.conftest import ApiPage
 from tests import marvin_test_if
 import pytest
 
+pytestmark = pytest.mark.uses_web
+
 
 @pytest.mark.parametrize('page', [('api', 'getRSS')], ids=['getrss'], indirect=True)
 class TestGetRss(object):
@@ -37,15 +39,15 @@ class TestGetRss(object):
 
 
 @pytest.mark.slow
-@pytest.mark.parametrize('page', [('api', 'getRSSAllFibers')], ids=['getrssfibers'], indirect=True)
+@pytest.mark.parametrize('page', [('api', 'getRSSFiber')], ids=['getrssfibers'], indirect=True)
 class TestGetRssFibers(object):
 
     @pytest.mark.parametrize('reqtype', [('get'), ('post')])
     def test_plateifu_success(self, galaxy, page, params, reqtype):
         data = {'wavelength': []}
-        page.load_page(reqtype, page.url.format(name=galaxy.plateifu), params=params)
+        page.load_page(reqtype, page.url.format(name=galaxy.plateifu, fiberid=10), params=params)
         page.assert_success()
-        assert len(page.json['data'].keys()) == 172
+        assert len(page.json['data'].keys()) == 12
 
     @pytest.mark.parametrize('reqtype', [('get'), ('post')])
     @pytest.mark.parametrize('name, missing, errmsg', [(None, 'release', 'Missing data for required field.'),
@@ -54,6 +56,6 @@ class TestGetRssFibers(object):
                              ids=['norelease', 'badname', 'shortname'])
     def test_plateifu_failure(self, galaxy, page, reqtype, params, name, missing, errmsg):
         if name is None:
-            page.route_no_valid_params(page.url.format(name=galaxy.plateifu), missing, reqtype=reqtype, errmsg=errmsg)
+            page.route_no_valid_params(page.url.format(name=galaxy.plateifu, fiberid=10), missing, reqtype=reqtype, errmsg=errmsg)
         else:
-            page.route_no_valid_params(page.url.format(name=name), missing, reqtype=reqtype, params=params, errmsg=errmsg)
+            page.route_no_valid_params(page.url.format(name=name, fiberid=10), missing, reqtype=reqtype, params=params, errmsg=errmsg)

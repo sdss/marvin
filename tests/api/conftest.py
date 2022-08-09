@@ -18,6 +18,8 @@ from brain.utils.general import build_routemap
 import pytest
 import six
 
+pytestmark = pytest.mark.uses_web
+
 
 @pytest.fixture(scope='session')
 def app():

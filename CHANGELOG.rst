@@ -8,6 +8,7 @@ Marvin's Change Log
 - Removing pacakged Flask-JSGlue, replacing with custom 0.3.1 version with correct use of `markupsafe`.
 - Pinning miniumum numpy version to 1.20, removing use of `np.int` and `np.float`
 - Switch to `packaging.version.parse` from `distutils` for version checking
+- Updates test suite to run only on DR17, and on CI on Github Actions.  Removes travis yaml.
 
 [2.7.4] - 2022/07/27
 --------------------

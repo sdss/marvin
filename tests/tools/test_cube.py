@@ -25,9 +25,9 @@ from marvin.tools.cube import Cube
 
 @pytest.fixture(autouse=True)
 def skipbins(galaxy):
-    if galaxy.bintype.name not in ['SPX', 'NONE']:
+    if galaxy.bintype.name not in ['HYB10', 'NONE']:
         pytest.skip('Skipping all bins for Cube tests')
-    if galaxy.template.name not in ['MILES-THIN', 'GAU-MILESHC', 'MILESHC-MILESHC']:
+    if galaxy.template.name not in ['MILESHC-MASTARSSP']:
         pytest.skip('Skipping all templates for Cube tests')
 
 
@@ -41,7 +41,7 @@ class TestCube(object):
     def test_cube_load_from_local_file_by_filename_success(self, galaxy):
         cube = Cube(filename=galaxy.cubepath)
         assert cube is not None
-        assert os.path.abspath(galaxy.cubepath) == cube.filename
+        assert cube.filename in os.path.abspath(galaxy.cubepath)
 
     def test_cube_load_from_local_file_by_filename_fail(self):
         with pytest.raises(AssertionError):
@@ -54,6 +54,7 @@ class TestCube(object):
             Cube(filename=path)
         assert 'Trying to open a DAP file with Marvin Cube' in str(cm.value)
 
+    @pytest.mark.uses_db
     def test_cube_load_from_local_database_success(self, galaxy):
         """Tests for Cube Load by Database."""
         cube = Cube(mangaid=galaxy.mangaid)
@@ -63,6 +64,7 @@ class TestCube(object):
         assert galaxy.dec == cube.dec
         assert galaxy.ra == cube.ra
 
+    @pytest.mark.uses_db
     @pytest.mark.parametrize('plateifu, mode, errmsg',
                              [('8485-0923', 'local', 'Could not retrieve cube for '
                                                      'plate-ifu 8485-0923: No Results Found')],
@@ -73,7 +75,7 @@ class TestCube(object):
         assert errmsg in str(cm.value)
 
     @marvin_test_if(mark='include', cube={'plateifu': '8485-1901',
-                                          'release': 'MPL-6',
+                                          'release': 'DR17',
                                           'mode': 'local',
                                           'data_origin': 'file'})
     def test_quatities_reorder(self, cube):
@@ -91,16 +93,17 @@ class TestCube(object):
         assert reordered_flux.unit is not None
         assert reordered_spectral_resolution.unit is not None
 
+    @pytest.mark.uses_web
     @pytest.mark.parametrize('monkeyconfig',
-                             [('release', 'MPL-5')],
-                             ids=['mpl5'], indirect=True)
+                             [('release', 'DR15')],
+                             ids=['dr15'], indirect=True)
     def test_cube_remote_drpver_differ_from_global(self, galaxy, monkeyconfig):
 
-        if galaxy.release == 'MPL-5':
-            pytest.skip('Skipping release for forced global MPL-5')
+        if galaxy.release == 'DR15':
+            pytest.skip('Skipping release for forced global DR15')
 
         drpver, dapver = config.lookUpVersions(config.release)
-        assert config.release == 'MPL-5'
+        assert config.release == 'DR15'
         cube = Cube(plateifu=galaxy.plateifu, mode='remote', release=galaxy.release)
         assert cube.release != config.release
         assert cube._drpver != drpver
@@ -111,15 +114,15 @@ class TestCube(object):
             if cube.release == 'MPL-4' and cube.data_origin == 'file' else cube.nsa.z
         assert redshift == pytest.approx(galaxy.redshift)
 
-    def test_release(self, galaxy):
-        cube = Cube(plateifu=galaxy.plateifu)
+    def test_release(self, cube, galaxy):
+        #cube = Cube(plateifu=galaxy.plateifu)
         assert cube.release == galaxy.release
 
-    def test_set_release_fails(self, galaxy):
-        cube = Cube(plateifu=galaxy.plateifu)
-        with pytest.raises(MarvinError) as ee:
+    def test_set_release_fails(self, cube):
+        #cube = Cube(plateifu=galaxy.plateifu)
+        with pytest.raises(MarvinError, match='the release cannot be changed'):
             cube.release = 'a'
-        assert 'the release cannot be changed' in str(ee.value)
+        #assert 'the release cannot be changed' in str(ee.value)
 
     def test_load_filename_does_not_exist(self):
         """Tries to load a file that does not exist, in auto mode."""
@@ -135,18 +138,20 @@ class TestCube(object):
 
         assert 'filename not allowed in remote mode' in str(ee.value)
 
+    @pytest.mark.uses_db
     def test_getFullPath_no_plateifu(self, galaxy):
         cube = Cube(mangaid=galaxy.mangaid)
         cube.plateifu = None
         assert cube._getFullPath() is None
 
+    @pytest.mark.uses_db
     def test_download_no_plateifu(self, galaxy):
         cube = Cube(mangaid=galaxy.mangaid)
         cube.plateifu = None
         assert cube.download() is None
 
-    def test_repr(self, galaxy):
-        cube = Cube(plateifu=galaxy.plateifu)
+    def test_repr(self, cube):
+        #cube = Cube(filename=galaxy.plateifu)
         args = cube.plateifu, cube.mode, cube.data_origin
         expected = "<Marvin Cube (plateifu='{0}', mode='{1}', data_origin='{2}')>".format(*args)
         assert cube.__repr__() == expected
@@ -164,7 +169,7 @@ class TestCube(object):
         assert 'filename {0} cannot be found'.format(cube.filename) in str(ee.value)
 
     def test_load_cube_from_file_filever_ne_release(self, galaxy):
-        release_wrong = 'MPL-4' if galaxy.release != 'MPL-4' else galaxy.release
+        release_wrong = 'DR15'
         with pytest.warns(MarvinUserWarning) as record:
             cube = Cube(filename=galaxy.cubepath, release=release_wrong)
         assert len(record) >= 1
@@ -176,22 +181,23 @@ class TestCube(object):
 
         assert cube._release == galaxy.release
 
+    @pytest.mark.uses_db
     def test_load_cube_from_db_disconnected(self, galaxy, monkeypatch):
         monkeypatch.setattr(marvindb, 'isdbconnected', False)
-        with pytest.raises(MarvinError) as ee:
+        with pytest.raises(MarvinError, match='No DB connected'):
             Cube(plateifu=galaxy.plateifu)
 
-        assert 'No DB connected' in str(ee.value)
-
+    @pytest.mark.uses_db
     def test_load_cube_from_db_data(self, galaxy):
         cube = Cube(plateifu=galaxy.plateifu)
         cube._load_cube_from_db(data=cube.data)
 
     @marvin_test_if('include', data_origin=['db'])
     @pytest.mark.slow
+    @pytest.mark.uses_db
     def test_getExtensionData_db(self, galaxy):
         cube = Cube(plateifu=galaxy.plateifu)
-        cube._getExtensionData(extName='flux')
+        cube._get_extension_data('flux')
 
     def test_getrss(self, cube):
 
@@ -203,7 +209,7 @@ class TestCube(object):
         assert cube.mangaid == rss.mangaid
         assert cube.release == rss.release
 
-    @pytest.mark.parametrize('mode', [('db'), ('file')])
+    @pytest.mark.parametrize('mode', [pytest.param('db', marks=pytest.mark.uses_db), ('file')])
     def test_get_available_bintypes(self, galaxy, mode):
         if mode == 'db':
             cube = Cube(plateifu=galaxy.plateifu)
@@ -232,9 +238,9 @@ class TestPickling(object):
         assert cube.data is not None
 
         assert not os.path.isfile(galaxy.cubepath[0:-7] + 'mpf')
-        cube_file = temp_scratch.join('test_cube.mpf')
+        cube_file = temp_scratch / 'test_cube.mpf'
         cube.save(str(cube_file))
-        assert cube_file.check() is True
+        assert cube_file.exists() is True
         assert cube.data is not None
 
         cube = None
@@ -251,11 +257,11 @@ class TestPickling(object):
         assert isinstance(cube, Cube)
         assert cube.data is not None
 
-        test_path = temp_scratch.join('cubepickle').join('test_cube.mpf')
-        assert test_path.check(file=1) is False
+        test_path = temp_scratch / 'cubepickle' / 'test_cube.mpf'
+        assert test_path.exists() is False
 
         path = cube.save(path=str(test_path))
-        assert test_path.check(file=1) is True
+        assert test_path.exists() is True
         assert path == os.path.realpath(os.path.expanduser(str(test_path)))
 
         cube_restored = Cube.restore(str(test_path), delete=True)
@@ -265,26 +271,28 @@ class TestPickling(object):
 
         assert not os.path.exists(path)
 
+    @pytest.mark.uses_db
     def test_pickling_db(self, galaxy, temp_scratch):
         cube = Cube(plateifu=galaxy.plateifu)
         assert cube.data_origin == 'db'
 
-        file = temp_scratch.join('test_cube_db.mpf')
+        file = temp_scratch / 'test_cube_db.mpf'
         with pytest.raises(MarvinError) as cm:
             cube.save(str(file))
 
         assert 'objects with data_origin=\'db\' cannot be saved.' in str(cm.value)
 
+    @pytest.mark.uses_web
     def test_pickling_api(self, temp_scratch, galaxy):
         cube = Cube(plateifu=galaxy.plateifu, mode='remote')
         assert cube.data_origin == 'api'
         assert isinstance(cube, Cube)
         assert cube.data is None
 
-        test_path = temp_scratch.join('test_cube_api.mpf')
+        test_path = temp_scratch / 'test_cube_api.mpf'
 
         cube.save(str(test_path))
-        assert test_path.check() is True
+        assert test_path.exists() is True
 
         cube = None
         assert cube is None

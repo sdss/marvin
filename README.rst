@@ -4,13 +4,13 @@ Marvin
 Marvin is the ultimate tool to visualise and analyse MaNGA data. It is
 developed and maintained by the MaNGA team.
 
-|Build Package| |Coverage Status| |PyPI| |DOI| |astropy|
+|Build Package| |Run Test Suite| |CodeCov| |Coverage Status| |PyPI| |DOI| |astropy|
 |readthedocs|
 
 Installation
 ------------
 
-To painlessly install Marvin:
+To install Marvin:
 
 ::
 
@@ -24,7 +24,47 @@ dev dependencies:
 
     git clone https://github.com/sdss/marvin
     cd marvin
-    pip install -e .[dev]
+    pip install -e ".[dev,web,db]"
+
+This will install all dependencies needed for development and testing, including for
+the Marvin web/api server and the Marvin use of the MaNGA database.
+
+Testing
+-------
+
+To run the test suite on Marvin, use ``pytest tests/``.  By default this will run all tests against
+Marvin's core file access mode, as well as its database and remote access modes. The test suite uses
+the following two galaxies: `8485-1901` and `7443-12701` for testing. To successfully run all tests
+you will need:
+
+*  The file data for the two test galaxies
+*  A local MaNGA database with the galaxy loaded into it
+*  A local Marvin web server running
+
+You can download the necessary test data with the command.
+::
+
+   python bin/get_test_data.py
+
+You can run a local Marvin web server with the following command.  This will start a local web server running
+in debug mode on port 5000.
+::
+
+   cd bin/
+   run_marvin -d -p 5000
+
+You can disable database and web server tests by using Pytest markers.  The availble markers and options are:
+
+*  **slow**: Run only slow tests.
+*  **uses_db**: Run only tests that use the database.
+*  **uses_web**: Run only tests that use the web/api server.
+*  **--local-only**: Run only tests that use local data.
+
+To run the test suite minimally against the core marvin package with local file access, use the following command:
+::
+
+   pytest --local-only -m "not uses_db and not uses_web and not slow" tests/
+
 
 What is Marvin?
 ---------------
@@ -103,6 +143,10 @@ Marvin is licensed under a 3-clause BSD style license - see the
 
 .. |Build Package| image:: https://github.com/sdss/marvin/actions/workflows/build.yml/badge.svg
    :target: https://github.com/sdss/marvin/actions/workflows/build.yml
+.. |Run Test Suite| image:: https://github.com/sdss/marvin/actions/workflows/test.yml/badge.svg
+   :target: https://github.com/sdss/marvin/actions/workflows/test.yml
+.. |CodeCov| image:: https://codecov.io/gh/sdss/marvin/branch/main/graph/badge.svg
+   :target: https://codecov.io/gh/sdss/marvin
 .. |Coverage Status| image:: https://coveralls.io/repos/github/sdss/marvin/badge.svg?branch=master
    :target: https://coveralls.io/github/sdss/marvin?branch=master
 .. |PyPI| image:: https://img.shields.io/pypi/v/sdss-marvin.svg

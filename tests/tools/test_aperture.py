@@ -22,22 +22,24 @@ from tests.conftest import set_the_config
 # a value of 1. n_spaxels are the number of spaxels extracted given the threshold.
 test_params = [
 
-    [['Cube', '8485-1901', 'MPL-6', (17, 17), 3, 'circular', 'pixel', 0.5], [21, 25]],
-    [['Maps', '8485-1901', 'MPL-6', (17, 17), 3, 'circular', 'pixel', 0.5], [21, 25]],
-    [['ModelCube', '8485-1901', 'MPL-6', (17, 17), 3, 'circular', 'pixel', 0.5], [21, 25]],
+    [['Cube', '8485-1901', 'DR17', (17, 17), 3, 'circular', 'pixel', 0.5], [21, 25]],
+    [['Maps', '8485-1901', 'DR17', (17, 17), 3, 'circular', 'pixel', 0.5], [21, 25]],
+    [['ModelCube', '8485-1901', 'DR17', (17, 17), 3, 'circular', 'pixel', 0.5], [21, 25]],
 
-    [['Maps', '8485-1901', 'MPL-6', (232.5447, 48.690201), 1, 'circular', 'sky', 0.8], [5, 9]],
+    [['Maps', '8485-1901', 'DR17', (232.5447, 48.690201), 1, 'circular', 'sky', 0.8], [5, 9]],
 
-    [['Maps', '8485-1901', 'MPL-6', [(5, 5), (20, 20)], (4, 4, 0), 'rectangular', 'pixel', 0.5],
+    [['Maps', '8485-1901', 'DR17', [(5, 5), (20, 20)], (4, 4, 0), 'rectangular', 'pixel', 0.5],
      [18, 42]],
 
-    [['Maps', '8485-1901', 'MPL-6', (5, 5), (4, 4, 45), 'elliptical', 'pixel', 0.5], [9, 45]],
+    [['Maps', '8485-1901', 'DR17', (5, 5), (4, 4, 45), 'elliptical', 'pixel', 0.5], [9, 45]],
 
 ]
 
 
-@pytest.mark.parametrize('inputs, outputs', test_params)
-def test_get_aperture(inputs, outputs):
+@pytest.mark.parametrize('inputs, outputs', test_params,
+                         ids=['cube-pix', 'maps-pix', 'modelcube-pix', 'maps-sky',
+                              'maps-rect-pix', 'maps-ellip-pix'])
+def test_get_aperture(db_off, inputs, outputs):
 
     class_name, plateifu, release, coords, \
         aperture_params, aperture_type, coord_type, threshold = inputs
@@ -49,7 +51,7 @@ def test_get_aperture(inputs, outputs):
     n_pixels_mask, n_spaxels = outputs
 
     ToolClass = getattr(marvin.tools, class_name)
-    instance = ToolClass(plateifu, release=release)
+    instance = ToolClass(plateifu, release=release, mode='local')
 
     assert isinstance(instance, ToolClass)
     assert hasattr(instance, 'getAperture')

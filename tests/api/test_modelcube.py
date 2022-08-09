@@ -13,6 +13,8 @@ from tests.api.conftest import ApiPage
 from marvin import config
 import pytest
 
+pytestmark = pytest.mark.uses_web
+
 
 @pytest.mark.parametrize('page', [('api', 'getModelCube')], ids=['getModelCube'], indirect=True)
 class TestGetModelCubes(object):
@@ -33,10 +35,10 @@ class TestGetModelCubes(object):
                              [(None, 'release', 'Missing data for required field.', None, None),
                               ('badname', 'name', 'String does not match expected pattern.', None, None),
                               ('84', 'name', 'Shorter than minimum length 4.', None, None),
-                              ('8485-1901', 'bintype', 'Not a valid choice.', 'SPVOR', 'GAU-MILESHC'),
-                              ('8485-1901', 'template', 'Not a valid choice.', 'SPX', 'MILESHC'),
-                              ('8485-1901', 'bintype', 'Not a valid choice.', 'STONY', 'GAU-MILESHC'),
-                              ('8485-1901', 'template', 'Not a valid choice.', 'SPX', 'MILES'),
+                              ('8485-1901', 'bintype', 'Must be one of: HYB10, SPX, VOR10.', 'SPVOR', 'MILESHC-MASTARSSP'),
+                              ('8485-1901', 'template', 'Must be one of: MILESHC-MASTARHC2, MILESHC-MASTARSSP.', 'SPX', 'MILESHC'),
+                              ('8485-1901', 'bintype', 'Must be one of: HYB10, SPX, VOR10.', 'STONY', 'MILESHC-MASTARSSP'),
+                              ('8485-1901', 'template', 'Must be one of: MILESHC-MASTARHC2, MILESHC-MASTARSSP.', 'SPX', 'MILES'),
                               ('8485-1901', 'bintype', 'Field may not be null.', None, None),
                               ('8485-1901', 'template', 'Field may not be null.', 'SPX', None)],
                              ids=['norelease', 'badname', 'shortname', 'badbintype', 'badtemplate',
