@@ -4,7 +4,7 @@ Marvin
 Marvin is the ultimate tool to visualise and analyse MaNGA data. It is
 developed and maintained by the MaNGA team.
 
-|Build Package| |Coverage Status| |PyPI| |DOI| |astropy|
+|Build Package| |Run Test Suite| |CodeCov| |Coverage Status| |PyPI| |DOI| |astropy|
 |readthedocs|
 
 Installation
