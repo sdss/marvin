@@ -143,6 +143,10 @@ Marvin is licensed under a 3-clause BSD style license - see the
 
 .. |Build Package| image:: https://github.com/sdss/marvin/actions/workflows/build.yml/badge.svg
    :target: https://github.com/sdss/marvin/actions/workflows/build.yml
+.. |Run Test Suite| image:: https://github.com/sdss/marvin/actions/workflows/test.yml/badge.svg
+   :target: https://github.com/sdss/marvin/actions/workflows/test.yml
+.. |CodeCov| image:: https://codecov.io/gh/sdss/marvin/branch/main/graph/badge.svg
+   :target: https://codecov.io/gh/sdss/marvin
 .. |Coverage Status| image:: https://coveralls.io/repos/github/sdss/marvin/badge.svg?branch=master
    :target: https://coveralls.io/github/sdss/marvin?branch=master
 .. |PyPI| image:: https://img.shields.io/pypi/v/sdss-marvin.svg
