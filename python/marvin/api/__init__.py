@@ -23,34 +23,34 @@ def plate_in_range(val):
 
 
 # List of global View arguments across all API routes
-viewargs = {'name': fields.String(required=True, location='view_args', validate=[validate.Length(min=4),
+viewargs = {'name': fields.String(required=True, metadata={"location": 'view_args'}, validate=[validate.Length(min=4),
                                   validate.Regexp('^[0-9-]*$')]),
-            'galid': fields.String(required=True, location='view_args', validate=[validate.Length(min=4),
+            'galid': fields.String(required=True, metadata={"location": 'view_args'}, validate=[validate.Length(min=4),
                                    validate.Regexp('^[0-9-]*$')]),
-            'bintype': fields.String(required=True, location='view_args'),
-            'template': fields.String(required=True, location='view_args'),
-            'property_name': fields.String(required=True, location='view_args'),
-            'channel': fields.String(required=True, location='view_args'),
-            'binid': fields.Integer(required=True, location='view_args', validate=validate.Range(min=-1, max=5800)),
-            'plateid': fields.String(required=True, location='view_args', validate=[validate.Length(min=4, max=5),
+            'bintype': fields.String(required=True, metadata={"location": 'view_args'}),
+            'template': fields.String(required=True, metadata={"location": 'view_args'}),
+            'property_name': fields.String(required=True, metadata={"location": 'view_args'}),
+            'channel': fields.String(required=True, metadata={"location": 'view_args'}),
+            'binid': fields.Integer(required=True, metadata={"location": 'view_args'}, validate=validate.Range(min=-1, max=5800)),
+            'plateid': fields.String(required=True, metadata={"location": 'view_args'}, validate=[validate.Length(min=4, max=5),
                                      plate_in_range]),
-            'x': fields.Integer(required=True, location='view_args', validate=validate.Range(min=0, max=100)),
-            'y': fields.Integer(required=True, location='view_args', validate=validate.Range(min=0, max=100)),
-            'mangaid': fields.String(required=True, location='view_args', validate=validate.Length(min=4, max=20)),
-            'paramdisplay': fields.String(required=True, location='view_args', validate=validate.OneOf(['all', 'best'])),
-            'cube_extension': fields.String(required=True, location='view_args',
+            'x': fields.Integer(required=True, metadata={"location": 'view_args'}, validate=validate.Range(min=0, max=100)),
+            'y': fields.Integer(required=True, metadata={"location": 'view_args'}, validate=validate.Range(min=0, max=100)),
+            'mangaid': fields.String(required=True, metadata={"location": 'view_args'}, validate=validate.Length(min=4, max=20)),
+            'paramdisplay': fields.String(required=True, metadata={"location": 'view_args'}, validate=validate.OneOf(['all', 'best'])),
+            'cube_extension': fields.String(required=True, metadata={"location": 'view_args'},
                                             validate=validate.OneOf(['flux', 'ivar', 'mask',
                                                                      'disp', 'predisp',
                                                                      'specres', 'specresd',
                                                                      'prespecres',
                                                                      'prespecresd'])),
-            'modelcube_extension': fields.String(required=True, location='view_args',
+            'modelcube_extension': fields.String(required=True, metadata={"location": 'view_args'},
                                                  validate=validate.OneOf(['flux', 'ivar', 'mask',
                                                                           'model', 'emline',
                                                                           'emline_base',
                                                                           'emline_mask'])),
-            'colname': fields.String(required=True, location='view_args', allow_none=True),
-            'fiberid': fields.Integer(required=True, location='view_args',
+            'colname': fields.String(required=True, metadata={"location": 'view_args'}, allow_none=True),
+            'fiberid': fields.Integer(required=True, metadata={"location": 'view_args'},
                                       validate=validate.Range(min=-1, max=5800)),
             }
 
@@ -66,7 +66,7 @@ params = {'query': {'searchfilter': fields.String(allow_none=True),
                     'offset': fields.Integer(allow_none=True, validate=validate.Range(min=0)),
                     'limit': fields.Integer(allow_none=True, missing=100, validate=validate.Range(max=50000)),
                     'sort': fields.String(allow_none=True),
-                    'order': fields.String(missing='asc', validate=validate.OneOf(['asc', 'desc'])),
+                    'order': fields.String(load_default='asc', validate=validate.OneOf(['asc', 'desc'])),
                     'rettype': fields.String(allow_none=True, validate=validate.OneOf(['cube', 'spaxel', 'maps', 'rss', 'modelcube'])),
                     'returnparams': fields.DelimitedList(fields.String(), allow_none=True),
                     'defaults': fields.DelimitedList(fields.String(), allow_none=True),
@@ -286,7 +286,7 @@ class ArgValidator(object):
 
     def _update_viewarg(self, name, choices):
         ''' Updates the global View arguments validator '''
-        viewargs[name] = fields.String(required=True, location='view_args', validate=validate.OneOf(choices))
+        viewargs[name] = fields.String(required=True, metadata={"location": 'view_args'}, validate=validate.OneOf(choices))
         # viewargs[name].validate = validate.OneOf(choices)
 
     def _get_bin_temps(self):
