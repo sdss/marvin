@@ -400,6 +400,6 @@ class Maskbit(object):
         mask = mask if mask is not None else self.mask
 
         if len(bits) == 0:
-            return np.zeros(mask.shape, dtype=np.int)
+            return np.zeros(mask.shape, dtype=int)
 
         return np.sum([mask & 2**bit for bit in bits], axis=0).astype(dtype)
