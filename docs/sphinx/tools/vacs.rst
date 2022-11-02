@@ -66,7 +66,7 @@ includes a method for plotting spectra in addition to returning the HI data for 
     >>> from marvin.tools import Cube
     >>> cube = Cube('7443-12701')
     >>> # return an instance of HITarget
-    >>> hi = cube.vacs.mangahi
+    >>> hi = cube.vacs.HI
     >>> print(hi)
         Target(7443-12701)
 
