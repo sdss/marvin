@@ -34,9 +34,9 @@ specific to that target, use the ``vacs`` attribute attached to most Marvin Tool
     >>> cube.vacs
         <VACContainer ('firefly', 'galaxyzoo', 'gema', 'HI', 'visual_morphology')>
 
-    >>> # it is also available from a Maps object
+    >>> # VAC information is also available from a Maps object
     >>> maps = cube.getMaps()
-    >>> m.vacs
+    >>> maps.vacs
         <VACContainer ('firefly', 'galaxyzoo', 'gema', 'HI', 'visual_morphology')>
 
 
