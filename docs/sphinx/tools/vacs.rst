@@ -34,9 +34,9 @@ specific to that target, use the ``vacs`` attribute attached to most Marvin Tool
     >>> cube.vacs
         <VACContainer ('firefly', 'galaxyzoo', 'gema', 'HI', 'visual_morphology')>
 
-    >>> # it is also available from a Maps object
+    >>> # VAC information is also available from a Maps object
     >>> maps = cube.getMaps()
-    >>> m.vacs
+    >>> maps.vacs
         <VACContainer ('firefly', 'galaxyzoo', 'gema', 'HI', 'visual_morphology')>
 
 
@@ -66,7 +66,7 @@ includes a method for plotting spectra in addition to returning the HI data for 
     >>> from marvin.tools import Cube
     >>> cube = Cube('7443-12701')
     >>> # return an instance of HITarget
-    >>> hi = cube.vacs.mangahi
+    >>> hi = cube.vacs.HI
     >>> print(hi)
         Target(7443-12701)
 
