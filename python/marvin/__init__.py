@@ -402,7 +402,7 @@ class MarvinConfig(object):
 
     def _setDbConfig(self):
         ''' Set the db configuration '''
-        self.db = getDbMachine()
+        self.db = getDbMachine() or os.getenv("MANGADB_CONFIG")
 
     def _update_releases(self):
         ''' Update the allowed releases based on access '''
