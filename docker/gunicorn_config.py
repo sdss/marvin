@@ -6,4 +6,3 @@ workers = 1
 daemon = False
 errorlog = os.path.join(os.getenv("MARVIN_LOGS_DIR", '/tmp/marvin/logs'), 'marvin_app_error.log')
 accesslog = os.path.join(os.getenv("MARVIN_LOGS_DIR", '/tmp/marvin/logs'), 'marvin_app_access.log')
-root_path = '/marvin'
