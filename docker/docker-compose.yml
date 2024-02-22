@@ -21,17 +21,6 @@ services:
     networks:
      - backend
 
-  # db:
-  #   image: postgres:latest
-  #   volumes:
-  #     - ./dbdata/:/var/lib/postgresql/data
-  #   environment:
-  #     POSTGRES_DB: manga
-  #     POSTGRES_USER: ${MANGADB_USER}
-  #     POSTGRES_PASSWORD: ${MANGADB_PASS}
-  #   networks:
-  #     - backend
-
   marvin:
     container_name: marvin
     build:
@@ -56,8 +45,6 @@ services:
       - frontend
     depends_on:
       - redis
-      #- db
-
 
 networks:
   backend:
