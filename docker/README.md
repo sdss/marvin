@@ -44,3 +44,10 @@ The docker compose system starts three services:
 - Redis - a redis database for caching
 
 The final web application is available at `localhost:8080/marvin`
+
+## Build and Tag Version
+
+By default the marvin docker build will checkout the latest `main` branch of marvin on github and tag the image as `marvin:latest`.  To
+change this to a specific branch or tag of marvin, e.g. `2.8.0` or `branch_name`, set the `MARVIN_TAG` environment variable.  Then
+rebuild the system with `docker compose up --build`.  This will checkout that branch or tag of the marvin repository and create
+a new marvin docker image with that tag name.
