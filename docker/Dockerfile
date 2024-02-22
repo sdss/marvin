@@ -10,11 +10,12 @@ RUN apt-get update && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
+# Define an argument for the Git tag, defaulting to "main"
+ARG MARVIN_TAG=main
+
 # Clone the repository and checkout the specific tag
 RUN git clone https://github.com/sdss/marvin.git /app && \
-    git checkout docker
-#COPY . /app
-
+    git checkout ${MARVIN_TAG}
 
 # Install any needed packages
 RUN pip install --no-cache-dir ".[web,db]"

@@ -1,4 +1,5 @@
 version: '3.9'
+name: marvin
 services:
   nginx:
     container_name: nginx
@@ -33,7 +34,11 @@ services:
 
   marvin:
     container_name: marvin
-    image: marvin:latest
+    build:
+      context: .
+      args:
+        MARVIN_TAG: ${MARVIN_TAG:-main}
+    image: marvin:${MARVIN_TAG:-latest}
     ports:
       - 8000:8000
     volumes:
