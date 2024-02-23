@@ -1,0 +1,55 @@
+version: '3.9'
+name: marvin
+services:
+  nginx:
+    container_name: nginx
+    image: nginx:latest
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf
+      - socket_logs:/tmp/marvin
+      - web_assets:/usr/share/nginx/html
+    ports:
+      - 8080:80
+    depends_on:
+      - marvin
+    networks:
+      - frontend
+
+  redis:
+    container_name: redis
+    image: redis:latest
+    networks:
+     - backend
+
+  marvin:
+    container_name: marvin
+    build:
+      context: .
+      args:
+        MARVIN_TAG: ${MARVIN_TAG:-main}
+    image: marvin:${MARVIN_TAG:-latest}
+    ports:
+      - 8000:8000
+    volumes:
+      - ${SAS_BASE_DIR}:/root/sas/
+      - $HOME/.pgpass:/root/.pgpass
+      - socket_logs:/tmp/marvin
+      - web_assets:/app/python/marvin/web
+    environment:
+      - SESSION_REDIS=redis://redis:6379
+      - MARVIN_BASE=marvin
+      - PUBLIC_SERVER=True
+      - MANGADB_CONFIG=docker
+    networks:
+      - backend
+      - frontend
+    depends_on:
+      - redis
+
+networks:
+  backend:
+  frontend:
+
+volumes:
+  socket_logs:
+  web_assets:

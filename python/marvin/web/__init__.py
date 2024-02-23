@@ -71,18 +71,21 @@ def create_app(debug=False, local=False, object_config=None):
     config._inapp = True
     url_prefix = '/marvin' if local else '/{0}'.format(marvin_base)
 
+    # get env
+    env = os.getenv('FLASK_ENV', 'production')
+
     # ----------------------------------
     # Load the appropriate Flask configuration object for debug or production
     if not object_config:
-        if app.debug or local:
+        if app.debug or local or (env in ('dev', 'development')):
             app.logger.info('Loading Development Config!')
-            object_config = type('Config', (DevConfig, CustomConfig), dict())
-        elif config.db and config.db == 'jhu':
+            object_config = type('Config', (DevConfig, CustomConfig), {})
+        elif (env == 'docker') or (config.db and config.db == 'jhu'):
             app.logger.info('Loading Docker Config!')
-            object_config = type('Config', (DockerConfig, CustomConfig), dict())
+            object_config = type('Config', (DockerConfig, CustomConfig), {})
         else:
             app.logger.info('Loading Production Config!')
-            object_config = type('Config', (ProdConfig, CustomConfig), dict())
+            object_config = type('Config', (ProdConfig, CustomConfig), {})
     app.config.from_object(object_config)
 
     # ------------------------------------------
