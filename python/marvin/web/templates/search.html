@@ -165,10 +165,11 @@
 
 <!-- JS Code -->
 {% block code %}
-<script rel='preconnect' src='https://unpkg.com/jQuery-QueryBuilder@2.4.3/dist/js/query-builder.standalone.min.js'></script>
+<script rel='preconnect' src='https://unpkg.com/jQuery-QueryBuilder@2.6.2/dist/js/query-builder.standalone.min.js'></script>
 <script rel='preconnect' src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
 <script rel='preconnect'  src="https://unpkg.com/bootstrap-table@1.19.1/dist/extensions/defer-url/bootstrap-table-defer-url.min.js"></script>
 <script rel='preconnect' src="https://unpkg.com/bootstrap-table@1.19.1/dist/extensions/pipeline/bootstrap-table-pipeline.min.js"></script>
+<script rel='preconnect' src="https://unpkg.com/sql-parser@0.5.0/browser/sql-parser.js"></script>
 <script type='application/javascript'>
     $(function() {
         m.table = new Table($('#searchtable'));
@@ -176,15 +177,23 @@
         // Set up query typeahead
         m.search = new Search();
         // m.search.initTypeahead('#searchform .typeahead', '#searchform');
+
+        // init the query builder
+        let gpars = {{guideparams|tojson}};
+        m.search.setupQB(gpars);
+
         // Load Search Results if any
         var res = {{results|tojson}};
         var url = Flask.url_for('search_page.webtable')
         if (res) {
+            // init the table
             m.table.initTable(url, res);
+
+            // reload the query into the query builder
+            let sql = {{filter|tojson}};
+            m.search.loadQB(sql);
         };
-        // init the query builder
-        let gpars = {{guideparams|tojson}};
-        m.search.setupQB(gpars);
+
     });
 </script>
 {% endblock code %}
