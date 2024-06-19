@@ -595,7 +595,7 @@ class MarvinConfig(object):
             allowed = {k: v for k, v in allowed.items() if k in web_releases or 'DR' in k}
         return allowed
 
-    def switchSasUrl(self, sasmode='utah', ngrokid=None, port=5000, test=False,
+    def switchSasUrl(self, sasmode='mirror', ngrokid=None, port=5000, test=False,
                      base=None, public=None):
         ''' Switches the API SAS url config attribute
 
@@ -729,9 +729,9 @@ class MarvinConfig(object):
 
         # switch the API url depending on release
         if 'MPL' in value:
-            self.switchSasUrl('utah')
+            self.switchSasUrl('mirror')
         elif 'DR' in value:
-            self.switchSasUrl('utah', public=True)
+            self.switchSasUrl('mirror', public=True)
 
         # check to use the SAS mirror
         mirror = self._custom_config.get('use_mirror', None)

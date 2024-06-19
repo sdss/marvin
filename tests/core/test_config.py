@@ -315,6 +315,3 @@ class TestLogin(object):
         assert config.token is None
         config.login()
         assert config.token is not None
-
-
-
