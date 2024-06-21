@@ -15,19 +15,19 @@ import numpy
 
 
 try:
-    import photutils
+    import photutils.aperture as pap
 except ImportError:
-    photutils = None
+    pap = None
 
 
 __all__ = ['GetApertureMixIn', 'MarvinAperture']
 
 
-class MarvinAperture(photutils.Aperture if photutils else object):
-    """Extends `photutils.Aperture` allowing to extract spaxels in the aperture.
+class MarvinAperture(pap.Aperture if pap.Aperture else object):
+    """Extends `photutils.aperture.Aperture` allowing to extract spaxels in the aperture.
 
     This class is not intended for general use and it is dynamically set as
-    the base for a `~photutils.Aperture` instance.
+    the base for a `~photutils.aperture.Aperture` instance.
 
     """
 
@@ -49,15 +49,15 @@ class MarvinAperture(photutils.Aperture if photutils else object):
     def mask(self):
         """Returns the fractional overlap mask.
 
-        Equivalent to using `photutils.PixelAperture.to_mask` followed
-        by `photutils.ApertureMask.to_image` using the shape of the parent
+        Equivalent to using `photutils.aperture.PixelAperture.to_mask` followed
+        by `photutils.aperture.ApertureMask.to_image` using the shape of the parent
         object. Combines all the apertures in a single mask.
 
         """
 
         assert self.parent is not None, 'no parent set'
 
-        if isinstance(self, photutils.SkyAperture):
+        if isinstance(self, pap.SkyAperture):
             aperture = self.to_pixel(self.parent.wcs)
         else:
             aperture = self
@@ -198,7 +198,7 @@ class GetApertureMixIn(object):
 
         """
 
-        if photutils is None:
+        if pap is None:
             raise ImportError('this feature requires photutils. Install it by '
                               'doing pip install photutils.')
 
@@ -215,19 +215,19 @@ class GetApertureMixIn(object):
 
         if aperture_type == 'circular':
             if coord_type == 'pixel':
-                ApertureClass = photutils.CircularAperture
+                ApertureClass = pap.CircularAperture
             else:
-                ApertureClass = photutils.SkyCircularAperture
+                ApertureClass = pap.SkyCircularAperture
         elif aperture_type == 'elliptical':
             if coord_type == 'pixel':
-                ApertureClass = photutils.EllipticalAperture
+                ApertureClass = pap.EllipticalAperture
             else:
-                ApertureClass = photutils.SkyEllipticalAperture
+                ApertureClass = pap.SkyEllipticalAperture
         elif aperture_type == 'rectangular':
             if coord_type == 'pixel':
-                ApertureClass = photutils.RectangularAperture
+                ApertureClass = pap.RectangularAperture
             else:
-                ApertureClass = photutils.SkyRectangularAperture
+                ApertureClass = pap.SkyRectangularAperture
         else:
             raise ValueError('invalid aperture_type')
 

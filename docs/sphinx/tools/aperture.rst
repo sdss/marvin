@@ -79,7 +79,7 @@ The following examples shows how to define several types of aperture ::
 Working with masks
 ------------------
 
-`~mixins.aperture.MarvinAperture` objects are thin wraps around the `photutils.Aperture` class and thus provide all the methods and properties of the parent class. A very convenient feature is the ability of using the `photutils.Aperture.to_pixel` and `photutils.Aperture.to_mask` methods to generate a fractional pixel mask of all the apertures. `~mixins.aperture.MarvinAperture.mask` streamlines the process and returns the mask directly ::
+`~mixins.aperture.MarvinAperture` objects are thin wraps around the `photutils.aperture.Aperture` class and thus provide all the methods and properties of the parent class. A very convenient feature is the ability of using the `photutils.aperture.Aperture.to_pixel` and `photutils.aperture.Aperture.to_mask` methods to generate a fractional pixel mask of all the apertures. `~mixins.aperture.MarvinAperture.mask` streamlines the process and returns the mask directly ::
 
         >>> aperture_ell = cube.getAperture([(5, 5), (20, 15)], (4, 3, 0), aperture_type='elliptical')
         >>> aperture_ell.mask

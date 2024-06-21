@@ -18,7 +18,7 @@ Set Style Sheet
 .. code-block:: python
 
     import matplotlib.pyplot as plt
-    plt.style.use('seaborn-darkgrid')
+    plt.style.use('seaborn-v0_8-darkgrid')
 
 
 Restore Default Style
@@ -137,7 +137,7 @@ This code produces the right panel of Figure 1 from the `Marvin paper
     stsig = maps.stellar_sigma
     stsig_corr = stsig.inst_sigma_correction()
 
-    with plt.style.context('seaborn-darkgrid'):
+    with plt.style.context('seaborn-v0_8-darkgrid'):
         fig, axes = plt.subplots(nrows=2, ncols=2, figsize=(12, 11))
         halpha.plot(fig=fig, ax=axes[0, 0])
         nii_ha.plot(fig=fig, ax=axes[0, 1], title="log([NII]6585 / H-alpha)", snr_min=None)
@@ -161,7 +161,7 @@ Multi-panel Map Plot (Multiple Galaxies)
     plateifus = ['8485-1901', '7443-12701']
     mapnames = ['stellar_vel', 'stellar_sigma']
 
-    with plt.style.context('seaborn-darkgrid'):
+    with plt.style.context('seaborn-v0_8-darkgrid'):
         rows = len(plateifus)
         cols = len(mapnames)
         fig, axes = plt.subplots(rows, cols, figsize=(8, 6))
@@ -315,7 +315,7 @@ Custom Spectrum and Model Fit
 
     import matplotlib.pyplot as plt
     from marvin.tools import Maps
-    plt.style.use('seaborn-darkgrid')
+    plt.style.use('seaborn-v0_8-darkgrid')
 
     maps = Maps('1-209232')
     spax = maps.getSpaxel(x=0, y=0, xyorig='center', cube=True, modelcube=True)

@@ -28,8 +28,9 @@ Marvin is a tool specifically designed to visualise and analyse `MaNGA <https://
 
 .. note:: This documentation assumes that you are familiar with MaNGA data and its acronyms. If that is not your case, consider reading `this <https://www.sdss.org/dr16/manga/getting-started/>`_.
 
-.. warning:: Marvin 2.x is the last version that will support Python 2.
-  Marvin 3 and following will require Python 3.6+.
+.. warning:: As of June 2024, the Marvin Web and API have been migrated to a new server home.
+   ``sdss-marvin >= 2.8.2`` has been updated to reflect this change.  Please update to the latest package version.
+   For package versions ``<= 2.8.1``, please see this :ref:`Workaround <marvin-server-workaround>`
 
 
 At a Glance

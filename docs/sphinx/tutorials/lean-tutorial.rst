@@ -109,7 +109,7 @@ Now let's plot the spectrum and model fit:
 
     >>> import matplotlib.pyplot as plt
     >>> # Set matplotlib style sheet. Undo with matplotib.rcdefaults().
-    >>> plt.style.use('seaborn-darkgrid')
+    >>> plt.style.use('seaborn-v0_8-darkgrid')
 
     >>> ax = spax.flux.plot()
     >>> ax.plot(spax.full_fit.wavelength, spax.full_fit.value)
@@ -120,7 +120,7 @@ Now let's plot the spectrum and model fit:
     :include-source: False
 
     >>> import matplotlib.pyplot as plt
-    >>> plt.style.use('seaborn-darkgrid')
+    >>> plt.style.use('seaborn-v0_8-darkgrid')
     >>> from marvin.tools.maps import Maps
     >>> maps = Maps('1-22301')
     >>> spax = maps.getSpaxel(x=28, y=24, xyorig='lower', cube=True, modelcube=True)

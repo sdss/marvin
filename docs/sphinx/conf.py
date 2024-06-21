@@ -108,7 +108,7 @@ release = marvin_version
 #
 # This is also used if you do content translation via gettext catalogs.
 # Usually you set "language" from the command line for these cases.
-language = None
+language = 'en'
 
 highlight_language = 'default'
 
@@ -386,7 +386,7 @@ GoogleDocstring._parse = patched_parse
 # plot_pre_code = """
 # import matplotlib.pyplot as plt
 
-# plt.style.use(['seaborn-dark', 'seaborn-darkgrid'])
+# plt.style.use(['seaborn-v0_8-dark', 'seaborn-v0_8-darkgrid'])
 # """
 
 # plot_apply_rcparams = False
