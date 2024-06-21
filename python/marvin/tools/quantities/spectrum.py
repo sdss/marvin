@@ -203,11 +203,11 @@ class Spectrum(Quantity, QuantityMixIn):
             donotuse_mask = self.pixmask.get_mask('DONOTUSE') > 0
             value = self.masked
             wave = np.ma.array(self.wavelength.value, mask=donotuse_mask)
-            std = self.std.value if self.std else None
+            std = self.std.value if self.std is not None else None
         else:
             value = self.value
             wave = self.wavelength.value
-            std = self.std.value if self.std else None
+            std = self.std.value if self.std is not None else None
 
         ax.plot(wave, value, **kwargs)
 
