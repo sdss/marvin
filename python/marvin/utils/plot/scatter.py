@@ -363,7 +363,7 @@ def plot(x, y, **kwargs):
     use_density = True if count > 500000 else False
 
     # create figure and axes objects
-    with plt.style.context('seaborn-darkgrid'):
+    with plt.style.context('seaborn-v0_8-darkgrid'):
         fig, ax_scat, ax_hist_x, ax_hist_y = _create_figure(hist=with_hist, use_density=use_density,
                                                             hist_axes_visible=hist_axes_visible)
 
@@ -514,7 +514,7 @@ def hist(arr, mask=None, fig=None, ax=None, bins=None, **kwargs):
     orientation = kwargs.pop('orientation', 'vertical')
 
     # create a figure and axis if they don't exist
-    with plt.style.context('seaborn-darkgrid'):
+    with plt.style.context('seaborn-v0_8-darkgrid'):
         if fig is None and ax is None:
             fig, ax = plt.subplots()
         elif fig is None:
@@ -559,7 +559,3 @@ def hist(arr, mask=None, fig=None, ax=None, bins=None, **kwargs):
 
     output = (hist_data, fig, ax) if return_figure else hist_data
     return output
-
-
-
-

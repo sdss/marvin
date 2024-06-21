@@ -366,7 +366,7 @@ def bpt_kewley06(maps, snr_min=3, return_figure=True, use_oi=True, **kwargs):
         return bpt_return_classification
 
     # Does all the plotting
-    with plt.style.context('seaborn-darkgrid'):
+    with plt.style.context('seaborn-v0_8-darkgrid'):
         fig, grid_bpt, gal_bpt = _get_kewley06_axes(use_oi=use_oi)
 
     sf_kwargs = {'marker': 's', 's': 12, 'color': 'c', 'zorder': 50, 'alpha': 0.7, 'lw': 0.0,

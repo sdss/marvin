@@ -124,7 +124,7 @@ class Spectrum(Quantity, QuantityMixIn):
 
     def plot(self, xlim=None, ylim=None, show_std=True, use_mask=True,
              n_sigma=1, xlabel='Wavelength', ylabel='Flux', show_units=True,
-             plt_style='seaborn-darkgrid', figure=None, return_figure=False,
+             plt_style='seaborn-v0_8-darkgrid', figure=None, return_figure=False,
              title=None, ytrim='positive', **kwargs):
         """Plots the spectrum.
 
@@ -162,7 +162,7 @@ class Spectrum(Quantity, QuantityMixIn):
             title (str):
                 The title of the plot
             plt_style (str):
-                Matplotlib style sheet to use. Default is 'seaborn-darkgrid'.
+                Matplotlib style sheet to use. Default is 'seaborn-v0_8-darkgrid'.
             figure (`~matplotlib.figure.Figure` or None):
                 The matplotlib `~matplotlib.figure.Figure` object from which
                 the axes must be created. If ``figure=None``, a new figure will

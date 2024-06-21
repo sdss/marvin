@@ -81,7 +81,7 @@ This flexibilty is especially useful for passing in a custom mask, such as one c
     :context: close-figs
 
     import matplotlib.pyplot as plt
-    plt.style.use('seaborn-darkgrid')  # set matplotlib style sheet
+    plt.style.use('seaborn-v0_8-darkgrid')  # set matplotlib style sheet
 
     plateifus = ['8485-1901', '7443-12701']
     mapnames = ['stellar_vel', 'stellar_sigma']

@@ -335,7 +335,7 @@ def plot(*args, **kwargs):
             Otherwise provide a mask name as a string or multiple mask names as
             a list of strings. Default is ``True``.
         plt_style (str):
-            Matplotlib style sheet to use. Default is 'seaborn-darkgrid'.
+            Matplotlib style sheet to use. Default is 'seaborn-v0_8-darkgrid'.
         fig (matplotlib Figure object):
             Use if creating subplot of a multi-panel plot. Default is ``None``.
         ax (matplotlib Axis object):
@@ -394,7 +394,7 @@ def plot(*args, **kwargs):
     cblabel = kwargs.get('cblabel', None)
     sky_coords = kwargs.get('sky_coords', False)
     use_masks = kwargs.get('use_masks', True)
-    plt_style = kwargs.get('plt_style', 'seaborn-darkgrid')
+    plt_style = kwargs.get('plt_style', 'seaborn-v0_8-darkgrid')
     fig = kwargs.get('fig', None)
     ax = kwargs.get('ax', None)
     patch_kws = kwargs.get('patch_kws', {})
