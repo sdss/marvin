@@ -15,15 +15,15 @@ import numpy
 
 
 try:
-    from photutils import aperture
+    import photutils.aperture as pap
 except ImportError:
-    aperture = None
+    pap = None
 
 
 __all__ = ['GetApertureMixIn', 'MarvinAperture']
 
 
-class MarvinAperture(aperture.Aperture if aperture.Aperture else object):
+class MarvinAperture(pap.Aperture if pap.Aperture else object):
     """Extends `photutils.aperture.Aperture` allowing to extract spaxels in the aperture.
 
     This class is not intended for general use and it is dynamically set as
@@ -57,7 +57,7 @@ class MarvinAperture(aperture.Aperture if aperture.Aperture else object):
 
         assert self.parent is not None, 'no parent set'
 
-        if isinstance(self, aperture.SkyAperture):
+        if isinstance(self, pap.SkyAperture):
             aperture = self.to_pixel(self.parent.wcs)
         else:
             aperture = self
@@ -198,7 +198,7 @@ class GetApertureMixIn(object):
 
         """
 
-        if aperture is None:
+        if pap is None:
             raise ImportError('this feature requires photutils. Install it by '
                               'doing pip install photutils.')
 
@@ -215,19 +215,19 @@ class GetApertureMixIn(object):
 
         if aperture_type == 'circular':
             if coord_type == 'pixel':
-                ApertureClass = aperture.CircularAperture
+                ApertureClass = pap.CircularAperture
             else:
-                ApertureClass = aperture.SkyCircularAperture
+                ApertureClass = pap.SkyCircularAperture
         elif aperture_type == 'elliptical':
             if coord_type == 'pixel':
-                ApertureClass = aperture.EllipticalAperture
+                ApertureClass = pap.EllipticalAperture
             else:
-                ApertureClass = aperture.SkyEllipticalAperture
+                ApertureClass = pap.SkyEllipticalAperture
         elif aperture_type == 'rectangular':
             if coord_type == 'pixel':
-                ApertureClass = aperture.RectangularAperture
+                ApertureClass = pap.RectangularAperture
             else:
-                ApertureClass = aperture.SkyRectangularAperture
+                ApertureClass = pap.SkyRectangularAperture
         else:
             raise ValueError('invalid aperture_type')
 
