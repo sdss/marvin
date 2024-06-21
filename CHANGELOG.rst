@@ -1,6 +1,12 @@
 Marvin's Change Log
 ===================
 
+[2.8.1] - unreleased
+--------------------
+- Made the default API url the "mirror", i.e. point to the new JHU server home.
+- Changed the matplotlib ``seaborn-darkgrid`` style to ``seaborn-v0.8-darkgrid``
+- Fixed `astropy 6` quantity truthiness error in ``marvin.tools.quantities.spectrum``.
+
 [2.8.0] - 2022/08/17
 --------------------
 - Drop support for py <3.7.  Min. version is py3.8.
