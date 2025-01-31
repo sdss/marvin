@@ -12,7 +12,6 @@ from __future__ import absolute_import, division, print_function
 
 import copy
 import json
-from imp import reload
 
 import pandas as pd
 import pytest
@@ -519,4 +518,3 @@ class TestResultsPages(object):
         out = captured.out
         iterlines = len(out.split('\n')) - 1
         assert iterlines == iters
-

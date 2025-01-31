@@ -9,7 +9,7 @@ import yaml
 import pytest
 import copy
 import itertools
-from flask_jwt_extended import tokens
+#from flask_jwt_extended import tokens
 
 from brain import bconfig
 
@@ -185,12 +185,12 @@ def set_the_config(release):
     #config.login()
     config._traceback = None
 
-def custom_login():
-    config.token = tokens.encode_access_token('test', os.environ.get('MARVIN_SECRET'), 'HS256', False, True, 'user_claims', True, 'identity', 'user_claims')
+# def custom_login():
+#     config.token = tokens.encode_access_token('test', os.environ.get('MARVIN_SECRET'), 'HS256', False, True, 'user_claims', True, 'identity', 'user_claims')
 
-def custom_auth(self, authtype=None):
-    authtype = 'token'
-    super(Interaction, self).setAuth(authtype=authtype)
+# def custom_auth(self, authtype=None):
+#     authtype = 'token'
+#     super(Interaction, self).setAuth(authtype=authtype)
 
 
 def set_sasurl(loc='local', port=None):
@@ -388,8 +388,8 @@ def monkeyconfig(request, monkeypatch):
 
 @pytest.fixture()
 def monkeyauth(monkeypatch):
-    monkeypatch.setattr(config, 'login', custom_login)
-    monkeypatch.setattr(Interaction, 'setAuth', custom_auth)
+    #monkeypatch.setattr(config, 'login', custom_login)
+    #monkeypatch.setattr(Interaction, 'setAuth', custom_auth)
     monkeypatch.setattr(bconfig, '_public_api_url', config.sasurl)
     monkeypatch.setattr(bconfig, '_collab_api_url', config.sasurl)
 

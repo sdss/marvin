@@ -18,18 +18,16 @@ from __future__ import division
 from __future__ import print_function
 
 from numpyencoder import NumpyEncoder
-from flask import jsonify, Response, request
+from flask import jsonify, Response
 from flask_classful import route
 
 from brain.api.base import processRequest
 from brain.api.general import BrainGeneralRequestsView
-from brain.utils.general import validate_user, get_db_user
 from brain.utils.general.decorators import public
 from marvin import marvindb, config
 from marvin.utils.general import mangaid2plateifu as mangaid2plateifu
 from marvin.utils.general import get_nsa_data
 from marvin.api.base import BaseView, arg_validate as av
-from flask_jwt_extended import create_access_token
 import json
 
 
@@ -227,41 +225,3 @@ class GeneralRequestsView(BaseView, BrainGeneralRequestsView):
             self.results['error'] = 'get_nsa_data failed with error: {0}'.format(str(ee))
 
         return Response(json.dumps(self.results, cls=NumpyEncoder), mimetype='application/json')
-
-    @public
-    @route('/login/', methods=['POST'], endpoint='login')
-    def login(self):
-        ''' Server-Side login to generate a new token '''
-
-        result = {}
-
-        # check the form
-        form = processRequest(request=request)
-        if form is None:
-            result['error'] = 'Request has no form data!'
-            return jsonify(result), 400
-
-        # get username and password
-        username = form.get('username', None)
-        password = form.get('password', None)
-        # return if no valid login form data
-        if not username or not password:
-            result['error'] = 'Missing username and/or password!'
-            return jsonify(result), 400
-        username = username.strip()
-        password = password.strip()
-
-        # validate the user with htpassfile or trac username
-        is_valid, user, result = validate_user(username, password, request=request)
-
-        # User code goes here
-        if is_valid:
-            user = get_db_user(username, password, dbsession=marvindb.session, user_model=marvindb.datadb.User, request=request)
-            if user and user.check_password(password):
-                # generate token if valid
-                access_token = create_access_token(identity=user.username, fresh=True)
-                return jsonify(access_token=access_token), 200
-        else:
-            msg = result['error'] if 'error' in result else ''
-            result['error'] = 'Not valid login. Bad username or password. {0}'.format(msg)
-            return jsonify(result), 401

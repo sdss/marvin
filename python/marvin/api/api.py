@@ -101,14 +101,7 @@ class Interaction(BrainInteraction):
     def setAuth(self, authtype=None):
         ''' Set the authorization '''
 
-        release = self.params['release'] if self.params and 'release' in self.params else config.release
-
-        # disable authentication for specific cases (collab use of a DR, public access, or o)
-        usingdr = (config.access == 'collab' and 'DR' in release)
-        onserver = (config.access == 'collab' and config.db == 'lore')
-        if usingdr or config.access == 'public' or onserver:
-            authtype = None
-        else:
-            assert authtype is not None, 'Must have an authorization type set for collab access to MPLs!'
+        # explicitly set auth to None
+        authtype = None
 
         super(Interaction, self).setAuth(authtype=authtype)

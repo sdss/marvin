@@ -21,8 +21,6 @@ import sys
 import warnings
 from builtins import range
 from collections import OrderedDict
-from functools import wraps
-#from pkg_resources import parse_version
 from packaging.version import parse
 
 import matplotlib.pyplot as plt
@@ -31,7 +29,6 @@ import PIL
 from astropy import table, wcs
 from astropy.units.quantity import Quantity
 from brain.core.exceptions import BrainError
-from flask_jwt_extended import get_jwt_identity
 from scipy.interpolate import griddata
 
 import marvin
@@ -66,27 +63,13 @@ __all__ = ('convertCoords', 'parseIdentifier', 'mangaid2plateifu', 'findClosestV
            'invalidArgs', 'missingArgs', 'getRequiredArgs', 'getKeywordArgs',
            'isCallableWithArgs', 'map_bins_to_column', '_sort_dir', 'get_drpall_path',
            'get_dapall_path', 'temp_setattr', 'map_dapall', 'turn_off_ion', 'memory_usage',
-           'validate_jwt', 'target_status', 'target_is_observed', 'target_is_mastar',
+           'target_status', 'target_is_observed', 'target_is_mastar',
            'get_plates', 'get_manga_image', 'check_versions', 'get_drpall_table',
            'get_dapall_table', 'get_drpall_file', 'get_dapall_file')
 
 drpTable = {}
 dapTable = {}
 
-
-def validate_jwt(f):
-    ''' Decorator to validate a JWT and User '''
-
-    @wraps(f)
-    def wrapper(*args, **kwargs):
-        current_user = get_jwt_identity()
-
-        if not current_user:
-            raise MarvinError('Invalid user from API token!')
-        else:
-            marvin.config.access = 'collab'
-        return f(*args, **kwargs)
-    return wrapper
 
 
 def getSpaxel(cube=True, maps=True, modelcube=True,

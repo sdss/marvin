@@ -39,7 +39,7 @@ def urlmap(app):
 @pytest.fixture(scope='function')
 def init_api(monkeyauth, set_config, urlmap):
     config.forceDbOn()
-    config.login()
+    #config.login()
 
 
 class ApiPage(Page):

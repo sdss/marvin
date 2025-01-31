@@ -46,7 +46,7 @@ def test_db_stuff():
 @pytest.fixture(scope='function')
 def init_web(monkeypatch, monkeyauth, set_config):
     config.forceDbOn()
-    config.login()
+    #config.login()
 
     # monkeypath the render templating to nothing
     def _empty_render(template, context, app):
