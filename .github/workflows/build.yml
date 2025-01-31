@@ -13,16 +13,16 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: [3.8, 3.9]
+        python-version: [3.9, "3.10", "3.11", "3.12"]
         allow_failure: [false]
         os: [ubuntu-latest]
         include:
-          - python: "3.10"
+          - python: "3.13"
             os: ubuntu-latest
             allow_failure: true
 
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v4
 
     - name: Set up Python ${{ matrix.python-version }}
       uses: actions/setup-python@v2
