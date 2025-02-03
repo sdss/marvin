@@ -7,13 +7,7 @@ build:
 
 python:
   install:
-    - method: pip
-      path: .
-      extra_requirements:
-        - docs
-        - web
-      pip_install_args:
-        - "-c requirements.txt"
+    - requirements: requirements.txt
 
 sphinx:
   configuration: docs/sphinx/conf.py
