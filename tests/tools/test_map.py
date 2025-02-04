@@ -114,7 +114,7 @@ class TestMap(object):
     def test_plot(self, map_):
         fig, ax = map_.plot()
         assert isinstance(fig, matplotlib.figure.Figure)
-        assert isinstance(ax, matplotlib.axes._subplots.Subplot)
+        assert isinstance(ax, matplotlib.axes.Axes)
         assert 'Make single panel map or one panel of multi-panel map plot.' in map_.plot.__doc__
 
     @marvin_test_if(mark='skip', map_={'data_origin': ['db']})

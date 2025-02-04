@@ -9,15 +9,19 @@ jobs:
 
         runs-on: ubuntu-latest
 
+        permissions:
+          contents: write
+          id-token: write
+
         steps:
 
             - name: Checkout code
-              uses: actions/checkout@v2
+              uses: actions/checkout@v4
 
             - name: Set up Python
-              uses: actions/setup-python@v2
+              uses: actions/setup-python@v5
               with:
-                  python-version: 3.8
+                  python-version: "3.11"
 
             - name: Install dependencies
               run: |
@@ -29,7 +33,4 @@ jobs:
                 python setup.py sdist bdist_wheel --universal
 
             - name: Publish to PyPI
-              uses: pypa/gh-action-pypi-publish@master
-              with:
-                  user: __token__
-                  password: ${{ secrets.pypi_password }}
+              uses: pypa/gh-action-pypi-publish@release/v1

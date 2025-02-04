@@ -61,7 +61,7 @@ def marvin_test_if(mark='skip', **kfilter):
     @decorator
     def decorated_function(ff, *args, **kwargs):
 
-        ff_attr_names = inspect.getargspec(ff).args
+        ff_attr_names = inspect.getfullargspec(ff).args
         ff_attrs = {}
         for ii in range(len(args)):
             ff_attrs[ff_attr_names[ii]] = args[ii]
@@ -111,4 +111,3 @@ class marvin_test_if_class(object):
                         marvin_test_if(*self.args,
                                        **self.kwargs)(getattr(decorated_class, attr[0])))
         return decorated_class
-

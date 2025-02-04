@@ -236,7 +236,7 @@ class Maskbit(object):
 
         vallist = list(map(lambda x: uniqvals[x], flatmask))
         if ndim > 0:
-            vals_set = np.reshape(vallist, shape).tolist()
+            vals_set = np.array(vallist, dtype=object).reshape(shape).tolist()
         else:
             vals_set = vallist[0]
 

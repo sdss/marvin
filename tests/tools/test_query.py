@@ -10,7 +10,7 @@
 
 from __future__ import absolute_import, division, print_function
 
-from imp import reload
+from importlib import reload
 import pytest
 
 import marvin

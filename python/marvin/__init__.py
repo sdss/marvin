@@ -703,7 +703,7 @@ class MarvinConfig(object):
 
         # remove and return similar characters from value in self._release
         if self._release:
-            similar = re.sub('[^{0}]'.format(self._release.replace('-', '\-')), '', value)
+            similar = re.sub('[^{0}]'.format(self._release.replace('-', '\\-')), '', value)
             # are we still a DR?
             stilldr = 'DR' in similar
             # are we still an MPL?

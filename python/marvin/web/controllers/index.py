@@ -9,9 +9,6 @@ from marvin.web.controllers import BaseWebView
 from marvin.web.web_utils import setGlobalSession, set_session_versions, get_web_releases
 from marvin.web.extensions import cache
 
-from brain.utils.general import validate_user, get_db_user
-from flask_login import current_user, login_user, logout_user
-
 if config.db:
     from marvin import marvindb
 
@@ -132,7 +129,6 @@ class Marvin(BaseWebView):
         config.access = 'public'
         set_session_versions(config.release)
         setGlobalSession()
-        logout_user()
 
         return redirect(url_for('index_page.Marvin:index'))
 
@@ -141,31 +137,13 @@ class Marvin(BaseWebView):
         form = processRequest(request=request)
         result = {}
         username = form['username'].strip()
-        password = form['password'].strip()
 
-        # do nothing if already validated
-        if current_user.is_authenticated:
-            return jsonify(result=result)
-
-        # validate the user with htpassfile or trac username
-        is_valid, user, result = validate_user(username, password, request=request)
-
-        # get User only if valid
-        if is_valid:
-            user = get_db_user(username, password, dbsession=marvindb.session, user_model=marvindb.datadb.User, request=request)
-            if user and user.check_password(password):
-                login_user(user)
-
-        if is_valid:
-            result['status'] = 1
-            result['message'] = 'Login Successful!'
-            current_session['name'] = user.username
-            current_session['loginready'] = True
-            config.access = 'collab'
-            setGlobalSession()
-        else:
-            result['status'] = -1
-            result['message'] = 'Login {0} is not valid!'.format(username)
+        result['status'] = 1
+        result['message'] = 'Login Successful!'
+        current_session['name'] = username
+        current_session['loginready'] = True
+        config.access = 'public'
+        setGlobalSession()
 
         return jsonify(result=result)
 

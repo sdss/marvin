@@ -493,7 +493,7 @@ class Query(object):
         if not isinstance(self.sort, type(None)):
             # check any shortcut names
             self.sort = self._marvinform._param_form_lookup.get_real_name(self.sort)
-            
+
             # set the sort variable ModelClass parameter
             if '.' in self.sort:
                 param = self.datamodel.parameters[str(self.sort)].full
@@ -965,7 +965,7 @@ class Query(object):
         ''' Check for shortcuts in string filter and replace them '''
 
         # find all named parameters in the filter
-        keys = re.findall('(?<!\d)[a-z\._]+\d*', self.search_filter)
+        keys = re.findall('(?<!\\d)[a-z\._]+\\d*', self.search_filter)
         # remove the boolean operators
         keys = [i for i in keys if i not in ['and', 'or', 'not']]
         # look up real names of all keys

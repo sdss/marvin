@@ -1,20 +1,17 @@
 
 import contextlib
 import functools
-import os
 import re
 from copy import deepcopy
 
 from brain.utils.general import build_routemap
 from flask import current_app
-from flask_jwt_extended import fresh_jwt_required
 from webargs import ValidationError, fields, validate
 from webargs.flaskparser import parser, use_args, use_kwargs
 
 from marvin import config
 from marvin.core.exceptions import MarvinError
 from marvin.utils.datamodel.dap import datamodel as dm
-from marvin.utils.general import validate_jwt
 
 
 def plate_in_range(val):
@@ -473,10 +470,8 @@ def db_off():
 
 def set_api_decorators():
     ''' Sets the API decorators '''
-    if os.environ.get('PUBLIC_SERVER', None):
-        from brain.utils.general.decorators import public
-        decorators = [public]
-    else:
-        decorators = [fresh_jwt_required, validate_jwt]
+
+    from brain.utils.general.decorators import public
+    decorators = [public]
 
     return decorators

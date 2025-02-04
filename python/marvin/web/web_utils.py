@@ -156,7 +156,7 @@ def buildImageDict(imagelist, test=None, num=16):
     # get thumbnails and plateifus
     if imagelist:
         thumbs = [imagelist.pop(imagelist.index(t)) if 'thumb' in t else t for t in imagelist]
-        plateifu = ['-'.join(re.findall('\d{3,5}', im)) for im in imagelist]
+        plateifu = ['-'.join(re.findall('\\d{3,5}', im)) for im in imagelist]
 
     # build list of dictionaries
     images = []

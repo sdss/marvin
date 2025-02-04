@@ -12,7 +12,7 @@ from __future__ import absolute_import, division, print_function
 
 import itertools
 import pytest
-from imp import reload
+from importlib import reload
 
 import marvin
 from marvin import config

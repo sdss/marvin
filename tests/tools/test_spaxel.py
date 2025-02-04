@@ -16,6 +16,7 @@ import os
 import astropy.io.fits
 import pytest
 
+from astropy import units as u
 from marvin import config
 from marvin.core.exceptions import MarvinDeprecationError, MarvinError
 from tests import marvin_test_if, marvin_test_if_class
@@ -662,7 +663,10 @@ class TestMapsGetSpaxel(object):
 
             assert map[yy, xx].value == pytest.approx(channel_data['value'], abs=2.e-4)
             assert map.unit.scale == 1e-17
-            assert map.unit.to_string() == channel_data['unit']
+            spax = u.def_unit('spaxel')
+            u.add_enabled_units(spax)
+            uu = u.Unit(channel_data['unit'])
+            assert map.unit.to_string() == uu.to_string()
 
             assert map[yy, xx].mask == pytest.approx(channel_data['mask'], abs=2.e-4)
             assert map[yy, xx].ivar == pytest.approx(channel_data['ivar'], abs=2.e-4)
