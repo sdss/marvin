@@ -29,7 +29,7 @@ def datacube():
     flux = numpy.tile([numpy.arange(1, 1001, dtype=numpy.float32)],
                       (100, 1)).T.reshape(1000, 10, 10)
     ivar = (1. / (flux / 100))**2
-    mask = numpy.zeros(flux.shape, dtype=numpy.int)
+    mask = numpy.zeros(flux.shape, dtype=int)
     wave = numpy.arange(1, 1001)
 
     redcorr = numpy.ones(1000) * 1.5
@@ -52,7 +52,7 @@ def spectrum():
 
     flux = numpy.arange(1, 1001, dtype=numpy.float32)
     ivar = (1. / (flux / 100))**2
-    mask = numpy.zeros(flux.shape, dtype=numpy.int)
+    mask = numpy.zeros(flux.shape, dtype=int)
     wave = numpy.arange(1, 1001)
 
     mask[50:100] = 2**10
@@ -276,7 +276,7 @@ class TestSpectrum(object):
 
     def test_plot_no_std(self):
 
-        mask = numpy.zeros(1000, dtype=numpy.int)
+        mask = numpy.zeros(1000, dtype=int)
         mask[50:100] = 2**10
         mask[500:600] = 2**4
 

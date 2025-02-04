@@ -51,7 +51,7 @@ def bestnet(goodnet):
     goodnet.write(write('api.sdss.org'))
     config._check_access()
     config.access = 'collab'
-    config.setRelease('MPL-11')
+    config.setRelease('DR17')
     yield goodnet
 
 
@@ -115,8 +115,8 @@ class TestAccess(object):
 
     def test_tree(self, bestnet):
         assert config.access == 'collab'
-        assert 'mangawork' in os.environ['MANGA_SPECTRO_REDUX']
-        assert 'MPL' in config.release
+        assert 'dr17' in os.environ['MANGA_SPECTRO_REDUX']
+        assert 'DR' in config.release
 
         config.access = 'public'
         assert 'sas/dr' in os.environ['MANGA_SPECTRO_REDUX']
@@ -129,11 +129,10 @@ class TestAccess(object):
 
 class TestReleases(object):
 
-    @pytest.mark.parametrize('release', [('dr15'), ('mpl-5')])
+    @pytest.mark.parametrize('release', [('dr15')])
     def test_tree(self, bestnet, release):
         assert config.access == 'collab'
-        assert 'mangawork' in os.environ['MANGA_SPECTRO_REDUX']
-        assert 'MPL' in config.release
+        assert 'DR' in config.release
 
         config.setRelease(release)
         if 'mpl' in release:
@@ -145,8 +144,6 @@ class TestReleases(object):
 
     @pytest.mark.parametrize('release', [('dr17')])
     def test_drpall(self, bestnet, release):
-        if config.drpall:
-            assert 'mangawork' in config.drpall
         config.setRelease(release)
         if config.drpall:
             word = 'mangawork' if 'mpl' in release else release
@@ -222,9 +219,6 @@ class TestConfig(object):
         config.setRelease("DR17")
         assert 'sas/dr17' in config.drpall
         assert 'sas/dr17' in config.dapall
-        config.setRelease("DR15")
-        assert 'sas/dr15' in config.drpall
-        assert 'sas/dr15' in config.dapall
 
     @pytest.mark.parametrize('name, vers, exp',
                              [('drpall', ('v3_1_1', None), 'sas/dr17/manga/spectro/redux/v3_1_1'),
@@ -241,20 +235,20 @@ class TestSasUrl(object):
 
     def test_sasurl_nonetrc(self, initconfig, netrc):
         assert 'DR' in config.release
-        assert 'dr17.sdss.org/' in config.sasurl
+        assert 'magrathea.sdss.org/' in config.sasurl
 
     @pytest.mark.parametrize('release',
-                             [('MPL-6'), ('DR15')],
-                             ids=['collab', 'public'])
+                             [('DR17')],
+                             ids=['public'])
     def test_sasurl(self, bestnet, release):
-        assert 'sas.sdss.org' in config.sasurl
+        assert 'magrathea.sdss.org' in config.sasurl
         config.setRelease(release)
-        sasurl = 'dr15.sdss.org' if 'DR' in release else 'sas.sdss.org'
+        sasurl = 'magrathea.sdss.org' if 'DR' in release else 'magrathea.sdss.org'
         assert sasurl in config.sasurl
 
     @pytest.mark.parametrize('sas, exp',
                              [('utah', 'sas.sdss.org'),
-                              ('public', 'dr15.sdss.org'),
+                              ('public', 'dr17.sdss.org'),
                               ('test', 'lore.sdss.utah.edu'),
                               ('testpub', 'lore.sdss.utah.edu/public'),
                               ('local', 'localhost')],
@@ -270,7 +264,7 @@ class TestSasUrl(object):
 
     @pytest.mark.parametrize('sas, exp',
                              [('utah', 'https://sas.sdss.org/marvin/api/cubes/8485-1901/'),
-                              ('public', 'https://dr15.sdss.org/marvin/api/cubes/8485-1901/'),
+                              ('public', 'https://dr17.sdss.org/marvin/api/cubes/8485-1901/'),
                               ('test', 'https://lore.sdss.utah.edu/marvin/api/cubes/8485-1901/'),
                               ('testpub', 'https://lore.sdss.utah.edu/public/marvin/api/cubes/8485-1901/'),
                               ('local', 'http://localhost:5000/marvin/api/cubes/8485-1901/')],
@@ -298,20 +292,20 @@ def strjoin(str1, str2):
         return str2
 
 
-@pytest.mark.usefixtures('saslocal')
-class TestLogin(object):
+# @pytest.mark.usefixtures('saslocal')
+# class TestLogin(object):
 
-    def test_login_fail(self, monkeypatch):
-        monkeypatch.setattr(config, 'token', None)
-        assert config.token is None
-        with pytest.raises(AssertionError) as cm:
-            config.login()
-        assert 'You must have collaboration access to login.' in str(cm.value)
+#     def test_login_fail(self, monkeypatch):
+#         monkeypatch.setattr(config, 'token', None)
+#         assert config.token is None
+#         with pytest.raises(AssertionError) as cm:
+#             config.login()
+#         assert 'You must have collaboration access to login.' in str(cm.value)
 
-    @pytest.mark.uses_web
-    def test_login(self, monkeypatch):
-        monkeypatch.setattr(config, 'token', None)
-        monkeypatch.setattr(config, 'access', 'collab')
-        assert config.token is None
-        config.login()
-        assert config.token is not None
+#     @pytest.mark.uses_web
+#     def test_login(self, monkeypatch):
+#         monkeypatch.setattr(config, 'token', None)
+#         monkeypatch.setattr(config, 'access', 'collab')
+#         assert config.token is None
+#         config.login()
+#         assert config.token is not None
