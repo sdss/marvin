@@ -413,5 +413,5 @@ def setup(app):
     app.add_css_file('custom.css')
     app.add_js_file('copybutton.js')
 
-    if os.environ.get('READTHEDOCS') == 'True':
-        get_test_data()
+    # if os.environ.get('READTHEDOCS') == 'True':
+    #     get_test_data()
