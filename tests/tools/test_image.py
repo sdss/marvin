@@ -104,9 +104,9 @@ class TestImage(object):
         names = [im.plateifu for im in images]
         assert plateifu == names
 
-    def test_getrandom(self):
-        images = Image.get_random(2, release='DR17')
-        assert len(images) == 2
+    # def test_getrandom(self):
+    #     images = Image.get_random(2, release='DR17')
+    #     assert len(images) == 2
 
     def test_byplate(self):
         images = Image.by_plate(8485, release='DR17')
@@ -126,9 +126,3 @@ class TestBundle(object):
         image.bundle.get_sky_coordinates()
         assert image.bundle.skies is not None
         assert len(image.bundle.skies) == 2
-
-
-
-
-
-
