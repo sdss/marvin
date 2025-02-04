@@ -270,7 +270,7 @@ networkx==3.4.2
     # via marvin-brain
 nh3==0.2.20
     # via readme-renderer
-numpy==2.2.2
+numpy==1.26.4
     # via
     #   sdss-marvin (setup.py)
     #   astropy
@@ -569,6 +569,7 @@ typing-extensions==4.12.2
     # via
     #   beautifulsoup4
     #   flask-limiter
+    #   referencing
     #   sdsstools
     #   selenium
 tzdata==2025.1
