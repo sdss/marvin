@@ -96,7 +96,7 @@ fastjsonschema==2.21.1
     # via nbformat
 flake8==7.1.1
     # via sdss-marvin (setup.py)
-flask==2.1.3
+flask==2.2.5
     # via
     #   sdss-marvin (setup.py)
     #   flask-caching
