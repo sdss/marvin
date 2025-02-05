@@ -1,6 +1,11 @@
 Marvin's Change Log
 ===================
 
+[2.8.2] - 2025/02/05
+--------------------
+- Updating build to comply with PEP 625
+- Updates release action to use recommended build command
+
 [2.8.1] - 2025/02/04
 --------------------
 - Made the default API url the "mirror", i.e. point to the new JHU server home.
