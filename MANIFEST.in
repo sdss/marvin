@@ -1,8 +1,14 @@
+# Ensure required package data is included
 recursive-include python/marvin/data *
 
+# Include configuration files
 include python/marvin/db/dbconfig.ini
-include README.md
 
+# Include README and metadata files
+include README.rst
+include LICENSE.md
+
+# Exclude all web files except controllers and Python scripts
 recursive-exclude python/marvin/web *
 recursive-include python/marvin/web/controllers *
 include python/marvin/web/*.py
