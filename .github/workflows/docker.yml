@@ -15,6 +15,8 @@ jobs:
       USER: sdss
       APP: marvin
     steps:
+      - name: Checkout
+        uses: actions/checkout@v4
       - name: Set docker tags
         id: set-tags
         run: |
@@ -49,6 +51,7 @@ jobs:
           tags: |
             ghcr.io/${{ steps.set-tags.outputs.TAGS }}
             ghcr.io/${{ steps.set-tags.outputs.TAG_LATEST }}
-          file: ./docker/Dockerfile
+          context: docker
+          file: Dockerfile
       - name: Image digest
         run: echo ${{ steps.docker_build.outputs.digest }}
