@@ -43,14 +43,14 @@ def check_request_for_release(request):
 def configFeatures(app):
     ''' Configure Flask Feature Flags '''
 
-    app.config['FEATURE_FLAGS']['public'] = True if config.access == 'public' else False
+    app.config['FEATURE_FLAGS']['public'] = True
 
 
 def check_access():
     ''' Check the access mode in the session '''
 
     # check if on public server
-    public_server = request.environ.get('PUBLIC_SERVER', None) == 'True'
+    public_server = request.environ.get('PUBLIC_SERVER', True) == 'True'
     public_flag = public_server or current_app.config['FEATURE_FLAGS']['public']
     current_app.config['FEATURE_FLAGS']['public'] = public_server
     public_access = config.access == 'public'

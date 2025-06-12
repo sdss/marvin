@@ -22,10 +22,9 @@ RUN pip install --no-cache-dir ".[web,db]"
 
 # Resolve some dependency issues
 RUN pip install gunicorn
-RUN pip install "jinja2<3.1"
-RUN pip install "packaging<21"
 RUN pip install "itsdangerous==2.0.1"
 RUN pip install "pillow<10"
+RUN pip install "marshmallow<4.0.0"
 
 # Create the log directory and ensure it's writable
 RUN mkdir -p /tmp/marvin/logs && \
@@ -46,6 +45,10 @@ RUN chmod -R 755 /app/python/marvin/web
 
 # Set environment variables
 ENV FLASK_APP="marvin.web.uwsgi_conf_files.app:app"
+
+# Set a label
+LABEL org.opencontainers.image.source=https://github.com/sdss/marvin
+LABEL org.opencontainers.image.description="marvin production image"
 
 # Change to python dir
 WORKDIR /app/python

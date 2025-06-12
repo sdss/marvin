@@ -61,35 +61,6 @@
                         </li>
                     </ul>
                 </div>
-            {% elif not current_user.is_authenticated %}
-                <!-- Login -->
-                {# Login #}
-                <div class='navbar-login'>
-                  <ul class="nav navbar-nav navbar-right">
-                    <li id='login-drop' class="dropdown">
-                      <a href="#" class="dropdown-toggle" data-toggle="dropdown"><i class="fa fa-sign-in fa-fw" aria-hidden="true"></i><b>Login</b> <span class="caret"></span></a>
-                        <ul id="login-dp" class="dropdown-menu">
-                            <li>
-                                {{login()}}
-                            </li>
-                        </ul>
-                    </li>
-                  </ul>
-                </div>
-            {% else %}
-                <!-- User Preferences -->
-                {# User Preferences Post Login #}
-                <div class='navbar-userprefs'>
-                    <ul class="nav navbar-nav navbar-right">
-                        <li class="dropdown"><a href="#" class="dropdown-toggle" data-toggle="dropdown">Welcome, {{current_user.username}} <b class="caret"></b></a>
-                            <ul class="dropdown-menu">
-                                <li><a href="{{url_for('users_page.User:preferences')}}"><i class="fa fa-cog fa-fw" aria-hidden="true"></i> Preferences</a></li>
-                                <li class="divider"></li>
-                                <li><a href="{{url_for('index_page.logout')}}"><i class="fa fa-sign-out fa-fw" aria-hidden="true"></i> Logout</a></li>
-                            </ul>
-                        </li>
-                    </ul>
-                </div>
             {% endif %}
 
         </div>
