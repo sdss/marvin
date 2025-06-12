@@ -6,7 +6,6 @@ on:
       - '[0-9]+.[0-9]+.[0-9]+' # Exclude pre-releases
     branches:
       - main
-      - dockertweaks
 
 jobs:
   docker:

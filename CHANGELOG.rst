@@ -1,6 +1,13 @@
 Marvin's Change Log
 ===================
 
+
+[2.8.3] - 2025/06/12
+--------------------
+- Removed header UI user login to fix bug in web deploy
+- Updated docker build to fix deps issues
+- Adding docker github action
+
 [2.8.2] - 2025/02/05
 --------------------
 - Updating build to comply with PEP 625
