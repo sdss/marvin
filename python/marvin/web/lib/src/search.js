@@ -121,9 +121,34 @@ class Search {
     // Setup Query Builder
     setupQB(params) {
         $('.modal-dialog').draggable(); // makes the modal dialog draggable
+
+        // set some parameters
+        this.builder.params = params;
+        this.spaxelprops = this.builder.params.map(i => (i.id.includes('spaxelprop')) ? i.id.split('.')[1] : null).filter(i => ![null,'x','y'].includes(i));
+
+        // init the query builder
         this.builder.queryBuilder({plugins:['bt-selectpicker', 'not-group', 'invert'], filters:params,
             operators:['equal', 'not_equal', 'less', 'less_or_equal', 'greater', 'greater_or_equal',
                        'between', 'contains', 'begins_with', 'ends_with']});
+    }
+
+    // load the Query Builder with SQL
+    loadQB(sql) {
+
+        // patch incoming sql with spaxelprop parameter name
+        sql = sql.replace(/cleanspaxelprop\d{1,2}/i, 'spaxelprop');
+        this.spaxelprops.filter(i => (sql.includes(i) & !sql.includes('spaxelprop.'+i)) ? sql = sql.replace(i, 'spaxelprop.'+i): '');
+
+        let valid = this.builder.queryBuilder('validate', sql);
+        try {
+            this.builder.queryBuilder('setRulesFromSQL', sql);
+        } catch (error) {
+            let msg = 'Error reloading sql filter into the Query Builder';
+            if (!valid) {
+                msg = 'Error. Invalid SQL: Cannot reload. ' + error.message;    
+            }
+            this.sqlalert.html("<p class='text-center text-danger'>" + msg + "</p>");
+        }
     }
 
     // Get the SQL from the QB
@@ -149,10 +174,12 @@ class Search {
         }
     }
 
-    // Reset the SQL in SearchBox
+    // Reset the SQL in SearchBox and the QB
     resetSQL(event) {
         let _this = event.data;
        _this.searchbox.val("");
+       _this.sqlalert.html("");
+       _this.builder.queryBuilder('reset');
     }
 
     // Run the Query from the QB
