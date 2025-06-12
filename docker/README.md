@@ -51,3 +51,12 @@ By default the marvin docker build will checkout the latest `main` branch of mar
 change this to a specific branch or tag of marvin, e.g. `2.8.0` or `branch_name`, set the `MARVIN_TAG` environment variable.  Then
 rebuild the system with `docker compose up --build`.  This will checkout that branch or tag of the marvin repository and create
 a new marvin docker image with that tag name.
+
+## Developer Notes
+
+To run the local developer docker, run the following command from the top level marvin project directory:
+```bash
+docker compose -f docker/docker-compose-dev.yml up --build
+```
+
+If you do not have a local postgres manga database, you can create a tunnel to the manga db at JHU.
