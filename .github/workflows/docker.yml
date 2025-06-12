@@ -49,6 +49,6 @@ jobs:
           tags: |
             ghcr.io/${{ steps.set-tags.outputs.TAGS }}
             ghcr.io/${{ steps.set-tags.outputs.TAG_LATEST }}
-          file: ./Dockerfile
+          file: ./docker/Dockerfile
       - name: Image digest
         run: echo ${{ steps.docker_build.outputs.digest }}
