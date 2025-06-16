@@ -63,7 +63,7 @@ class Config(object):
     }
     # RATELIMIT_DEFAULT = '10/hour;100/day;2000 per year'
     RATELIMIT_STRATEGY = 'fixed-window-elastic-expiry'
-    RATELIMIT_ENABLED = False
+    RATELIMIT_ENABLED = True
 
     # Flask-Session settings
     SESSION_TYPE = 'redis'
