@@ -593,7 +593,7 @@ webencodings==0.5.1
     #   tinycss2
 websocket-client==1.8.0
     # via selenium
-werkzeug==2.1.2
+werkzeug==3.0.6
     # via
     #   sdss-marvin (setup.py)
     #   flask
