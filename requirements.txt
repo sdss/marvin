@@ -138,7 +138,7 @@ fonttools==4.55.8
     # via matplotlib
 fuzzywuzzy==0.18.0
     # via sdss-marvin (setup.py)
-h11==0.14.0
+h11==0.16.0
     # via wsproto
 idna==3.10
     # via
