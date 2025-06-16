@@ -2911,8 +2911,42 @@ var Search = function () {
         key: 'setupQB',
         value: function setupQB(params) {
             $('.modal-dialog').draggable(); // makes the modal dialog draggable
+
+            // set some parameters
+            this.builder.params = params;
+            this.spaxelprops = this.builder.params.map(function (i) {
+                return i.id.includes('spaxelprop') ? i.id.split('.')[1] : null;
+            }).filter(function (i) {
+                return ![null, 'x', 'y'].includes(i);
+            });
+
+            // init the query builder
             this.builder.queryBuilder({ plugins: ['bt-selectpicker', 'not-group', 'invert'], filters: params,
                 operators: ['equal', 'not_equal', 'less', 'less_or_equal', 'greater', 'greater_or_equal', 'between', 'contains', 'begins_with', 'ends_with'] });
+        }
+
+        // load the Query Builder with SQL
+
+    }, {
+        key: 'loadQB',
+        value: function loadQB(sql) {
+
+            // patch incoming sql with spaxelprop parameter name
+            sql = sql.replace(/cleanspaxelprop\d{1,2}/i, 'spaxelprop');
+            this.spaxelprops.filter(function (i) {
+                return sql.includes(i) & !sql.includes('spaxelprop.' + i) ? sql = sql.replace(i, 'spaxelprop.' + i) : '';
+            });
+
+            var valid = this.builder.queryBuilder('validate', sql);
+            try {
+                this.builder.queryBuilder('setRulesFromSQL', sql);
+            } catch (error) {
+                var msg = 'Error reloading sql filter into the Query Builder';
+                if (!valid) {
+                    msg = 'Error. Invalid SQL: Cannot reload. ' + error.message;
+                }
+                this.sqlalert.html("<p class='text-center text-danger'>" + msg + "</p>");
+            }
         }
 
         // Get the SQL from the QB
@@ -2941,13 +2975,15 @@ var Search = function () {
             }
         }
 
-        // Reset the SQL in SearchBox
+        // Reset the SQL in SearchBox and the QB
 
     }, {
         key: 'resetSQL',
         value: function resetSQL(event) {
             var _this = event.data;
             _this.searchbox.val("");
+            _this.sqlalert.html("");
+            _this.builder.queryBuilder('reset');
         }
 
         // Run the Query from the QB
