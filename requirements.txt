@@ -122,7 +122,7 @@ flask-cors==5.0.0
     # via sdss-marvin (setup.py)
 flask-featureflags==0.6
     # via sdss-marvin (setup.py)
-flask-httpauth==4.8.0
+flask-httpauth==4.8.1
     # via flask-profiler
 flask-limiter==2.3.3
     # via sdss-marvin (setup.py)
