@@ -539,7 +539,7 @@ termcolor==2.5.0
     # via pytest-sugar
 tinycss2==1.4.0
     # via bleach
-tornado==6.4.2
+tornado==6.5.5
     # via
     #   ipykernel
     #   jupyter-client
