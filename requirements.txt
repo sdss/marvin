@@ -322,7 +322,7 @@ pgpasslib==1.1.0
     # via sdss-marvin (setup.py)
 photutils==2.1.0
     # via sdss-marvin (setup.py)
-pillow==11.1.0
+pillow==12.2.0
     # via matplotlib
 pkginfo==1.12.0
     # via twine
