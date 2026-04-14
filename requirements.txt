@@ -367,7 +367,7 @@ pyparsing==2.4.7
     #   packaging
 pysocks==1.7.1
     # via urllib3
-pytest==8.3.4
+pytest==9.0.3
     # via
     #   sdss-marvin (setup.py)
     #   pytest-cov
