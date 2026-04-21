@@ -255,7 +255,7 @@ msgpack-numpy==0.4.8
     # via sdss-marvin (setup.py)
 nbclient==0.10.2
     # via nbconvert
-nbconvert==7.16.6
+nbconvert==7.17.1
     # via nbsphinx
 nbformat==5.10.4
     # via
